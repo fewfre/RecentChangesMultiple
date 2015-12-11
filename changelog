@@ -1,0 +1,5 @@
+== V1.1.18 - NotYetReleased ==
+- Rewrite of classes so that they may stand alone (and be loaded in separately in the future).
+	- To that end, some Class / variable names were renamed / where / how they were stored was altered.
+
+== ???? ==

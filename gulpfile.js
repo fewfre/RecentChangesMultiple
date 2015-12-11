@@ -1,19 +1,24 @@
 var gulp = require('gulp')
-	, gp_concat = require('gulp-concat')
+	, concat = require('gulp-concat')
+	// , jshint = require('gulp-jshint')
 ;
 
-gulp.task('default', function() {
-	// place code for your default task here
+gulp.task('core', function() {
+	// Make sure these are ordered from least reliant to most reliant.
 	return gulp.src(['src/js/Utils.js', 'src/js/WikiData.js', 'src/js/i18n.js', 'src/js/RCMOptions.js', 'src/js/RCData.js', 'src/js/RCList.js', , 'src/js/RCMManager.js', 'src/js/Main.js'])
-		.pipe(gp_concat('core.js'))
+		// .pipe(jshint())
+		// .pipe(jshint.reporter('default', {  }))
+		.pipe(concat('core.js'))
 		.pipe(gulp.dest("build"))
 	;
 });
 
-gulp.task('default', function() {
-	// place code for your default task here
-	return gulp.src(['src/js/code.2.js'])
-		.pipe(gp_concat('code.2.js'))
+gulp.task('loader', function() {
+	return gulp.src(['src/js/loader.js'])
+		.pipe(concat('code.2.js'))
 		.pipe(gulp.dest("build"))
 	;
 });
+
+	// place code for your default task here
+gulp.task('default', [ 'core', 'loader' ]);

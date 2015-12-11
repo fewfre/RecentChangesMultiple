@@ -45,12 +45,12 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			this.removeListeners[i] = null;
 		}
 		this.removeListeners = null;
-	}
+	};
 	
 	RCList.prototype.addRC = function(pRC) {
-		this.list.push(pRC)
+		this.list.push(pRC);
 		return this; // Return self for chaining or whatnot.
-	}
+	};
 	
 	RCList.prototype.shouldGroupWith = function(pRC) {
 		if(this.wikiInfo.servername == pRC.wikiInfo.servername
@@ -70,19 +70,19 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 		}
 		return false;
-	}
+	};
 	
 	// Returns a url that compares the edits of two RCs (can be the same one twice, since a RC has info on the current and previous edit).
 	// If "pToRC" is null, it will link to newest edit.
 	RCList.prototype.getLink = function(pRC, pDiff, pOldId) {
 		return pRC.hrefFS + "curid=" + pRC.pageid + (pDiff||pDiff==0 ? "&diff="+pDiff : "") + (pOldId ? "&oldid="+pOldId : "");
-	}
+	};
 	
 	// Returns a url that compares the edits of two RCs (can be the same one twice, since a RC has info on the current and previous edit).
 	// If "pToRC" is null, it will link to newest edit.
 	RCList.prototype.getDiffLink = function(pFromRC, pToRC) {
 		return Utils.formatString( "{0}curid={1}&diff={2}&oldid={3}", pFromRC.hrefFS , pFromRC.pageid , (pToRC ? pToRC.revid : 0) , pFromRC.old_revid );
-	}
+	};
 	
 	RCList.prototype._diffHist = function(pRC) {
 		var diffLink = i18n.RC_TEXT.diff;
@@ -90,7 +90,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
 		}
 		return "("+diffLink+i18n.RC_TEXT["pipe-separator"]+"<a href='"+pRC.hrefFS+"action=history'>"+i18n.RC_TEXT.hist+"</a>)";
-	}
+	};
 	
 	// Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
 	RCList.prototype._diffSizeText = function(pToRC, pFromRC/*optional*/) {
@@ -106,7 +106,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
 		}
 		return html;
-	}
+	};
 	
 	RCList.prototype._contributorsCountText = function() {
 		var contribs = {}, indx;
@@ -125,7 +125,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			if(total < tLength) { returnText += "; "; }
 		}, this);
 		return returnText + "]";
-	}
+	};
 	
 	// For use with comments / normal pages
 	RCList.prototype._changesText = function() {
@@ -135,7 +135,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
 		}
 		return returnText;
-	}
+	};
 	
 	RCList.prototype._userPageLink = function(pUsername, pUserEdited) {
 		if(pUserEdited) {
@@ -143,7 +143,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		} else {
 			return Utils.formatString("<a href='{0}Special:Contributions/{1}'>{1}</a>", this.wikiInfo.articlepath, pUsername);
 		}
-	}
+	};
 	
 	// Check each entry for "threadTitle", else return default text.
 	RCList.prototype.getThreadTitle = function() {
@@ -180,7 +180,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		return tTitle;
-	}
+	};
 	
 	RCList.prototype.getAjaxDiffButton = function() {
 		// https://commons.wikimedia.org/wiki/File:Columns_font_awesome.svg
@@ -203,7 +203,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			+'</svg>'
 		+'</span>';
 		//<img src="//upload.wikimedia.org/wikipedia/commons/e/ed/Cog.png" />
-	}
+	};
 	
 	// https://www.mediawiki.org/wiki/API:Revisions
 	RCList.prototype.addPreviewDiffListener = function(pElem, pFromRC, pToRC) {
@@ -217,7 +217,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			var undoLink = Utils.formatString( "{0}curid={1}&undo={2}&undoafter={3}&action=edit", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			
 			var tRCM_previewdiff = function() {
-				RecentChangesMultiple.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
+				RCMManager.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
 			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
@@ -225,7 +225,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			pFromRC = null;
 			pToRC = null;
 		}
-	}
+	};
 	
 	// RCList.prototype._addRollbackLink = function(pRC) {
 	// 	if(this.extraLoadingEnabled == false) { return ""; }
@@ -268,7 +268,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		else {
 			return "<abbr class='"+pFlag+"' title='"+i18n.RC_TEXT[tI18nTooltip]+"'>"+i18n.RC_TEXT[tI18nLetter]+"</abbr>";
 		}
-	}
+	};
 	
 	RCList.prototype._getFlags = function(pRC, pEmpty) {
 		return ""
@@ -277,7 +277,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			+this._flag("botedit", pRC, pEmpty)
 			+pEmpty//this._flag("unpatrolled", this.oldest)
 		;
-	}
+	};
 	
 	// An RC that is NOT part of a "block" of related changes (logs, edits to same page, etc)
 	RCList.prototype._toHTMLSingle = function(pRC) {
@@ -341,7 +341,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
 		
 		return tTable;
-	}
+	};
 	
 	// An RCList that IS a "block" of related changes (logs, edits to same page, etc)
 	RCList.prototype._toHTMLBlock = function() {
@@ -354,7 +354,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		// Make "blocks" collapsible - for this to work, make sure neither this NOR IT'S PARENT is modified via innerHTML after this has been added (to avoid event being "eaten").
 		if($(tBlockHead).makeCollapsible) { $(tBlockHead).makeCollapsible(); }
 		return tBlockHead;
-	}
+	};
 	
 	// The first line of a RC "group"
 	RCList.prototype._toHTMLBlockHead = function() {
@@ -417,7 +417,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
 		
 		return tTable;
-	}
+	};
 	
 	// The individual lines of a RC "group"
 	RCList.prototype._toHTMLBlockLine = function(pRC) {
@@ -481,7 +481,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
 		
 		return tRow;
-	}
+	};
 	
 	RCList.prototype._toHTMLNonEnhanced = function(pRC, pIndex) {
 		var html = "";
@@ -540,7 +540,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
 		
 		return tLi;
-	}
+	};
 	
 	RCList.prototype.toHTML = function(pIndex) {
 		if(this.manager.rcParams.hideenhanced) {
@@ -552,7 +552,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 				return this._toHTMLSingle(this.newest);
 			}
 		}
-	}
+	};
 	
 	//######################################
 	// Static methods

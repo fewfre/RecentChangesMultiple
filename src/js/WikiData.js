@@ -3,7 +3,7 @@
 //######################################
 // #### Wiki Data ####
 // * A data object to keep track of wiki data in an organized way, as well as also having convenience methods.
-// * These should only be created once per wiki per RecentChangesMultiple. No reason to re-create every refresh.
+// * These should only be created once per wiki per RCMManager. No reason to re-create every refresh.
 //######################################
 window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, Utils){
 	"use strict";
@@ -34,7 +34,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		/***************************
 		 * Siteinfo Data
 		 ***************************/
-		this.needsSiteinfoData	= true; // {bool} check if the RecentChangesMultiple should load the Siteinfo for the wiki when it requests wiki info.
+		this.needsSiteinfoData	= true; // {bool} check if the RCMManager should load the Siteinfo for the wiki when it requests wiki info.
 		this.server				= null; // {string} full url to base of the server (ex: //test.wikia.com)
 		this.articlepath		= null; // {string} full url to wiki article directory (including last "/"). ex: //test.wiki/wiki/
 		this.mwversion			= null; // {string} MW version number. ex: MediaWiki 1.24.1
@@ -43,7 +43,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		/***************************
 		 * User Data
 		 ***************************/
-		this.needsUserData		= true; // {bool} check if the RecentChangesMultiple should load the this user's account data for the wiki (detect what rights they have).
+		this.needsUserData		= true; // {bool} check if the RCMManager should load the this user's account data for the wiki (detect what rights they have).
 		this.canBlock			= false; // {bool} If the user has the "block" right on this wiki.
 		// this.canRollback		= false; // {bool} If the user has the "rollback" right on this wiki.
 		
