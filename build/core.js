@@ -1707,6 +1707,64 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		;
 	}
 	
+	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
+	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
+	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
+		if(module.debug) { console.log("http:"+ajaxLink); console.log(diffLink); console.log(undoLink); }
+		
+		// Retrieve the diff table.
+		// TODO - error support?
+		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+			success: function(pData){
+				$('#DiffView').html(""
+					+"<table class='diff'>"
+						+"<colgroup>"
+							+"<col class='diff-marker'>"
+							+"<col class='diff-content'>"
+							+"<col class='diff-marker'>"
+							+"<col class='diff-content'>"
+						+"</colgroup>"
+						+pData.query.pages[pageID].revisions[0].diff["*"]
+					+"</table>"
+				);
+			},
+		});
+		
+		if ($('#DiffView').length == 0) {
+			var ajaxform = ''
+				+'<form method="" name="" class="WikiaForm ">'
+					+'<div id="DiffView" style="width:975px; border:3px solid black; word-wrap: break-word;"/>'
+				+'</form>';
+			var tButtons = [];
+			tButtons.push({
+				message: i18n.TEXT.diffModuleOpen,
+				handler: function () { window.open(pDiffLink, '_blank'); $('#page-viewer').closeModal(); }
+			});
+			if(pUndoLink != null) {
+				tButtons.push({
+					message: i18n.TEXT.diffModuleUndo,
+					handler: function () { window.open(pUndoLink, '_blank'); $('#page-viewer').closeModal(); }
+				});
+			}
+			tButtons.push({
+				message: i18n.TEXT.diffModuleClose,
+				handler: RCData.closeDiff
+			});
+			$.showCustomModal(pPageName+" - "+i18n.TEXT.diffModuleTitle, ajaxform, {
+				id: 'page-viewer',
+				width: 1000,
+				buttons: tButtons
+			});
+		}
+		$('#DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
+	}
+	
+	RCData.closeDiff = function() {
+		if($('#DiffView').length != 0) {
+			$('#page-viewer').closeModal();
+		}
+	}
+	
 	return RCData;
 	
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
@@ -1930,7 +1988,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			var undoLink = Utils.formatString( "{0}curid={1}&undo={2}&undoafter={3}&action=edit", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			
 			var tRCM_previewdiff = function() {
-				RCMManager.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
+				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
 			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
@@ -2833,64 +2891,6 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			hideenhanced: false,
 			hidelogs	: false,
 		};
-	}
-	
-	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
-	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
-	RCMManager.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
-		if(module.debug) { console.log("http:"+ajaxLink); console.log(diffLink); console.log(undoLink); }
-		
-		// Retrieve the diff table.
-		// TODO - error support?
-		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
-			success: function(pData){
-				$('#DiffView').html(""
-					+"<table class='diff'>"
-						+"<colgroup>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-						+"</colgroup>"
-						+pData.query.pages[pageID].revisions[0].diff["*"]
-					+"</table>"
-				);
-			},
-		});
-		
-		if ($('#DiffView').length == 0) {
-			var ajaxform = ''
-				+'<form method="" name="" class="WikiaForm ">'
-					+'<div id="DiffView" style="width:975px; border:3px solid black; word-wrap: break-word;"/>'
-				+'</form>';
-			var tButtons = [];
-			tButtons.push({
-				message: i18n.TEXT.diffModuleOpen,
-				handler: function () { window.open(pDiffLink, '_blank'); $('#page-viewer').closeModal(); }
-			});
-			if(pUndoLink != null) {
-				tButtons.push({
-					message: i18n.TEXT.diffModuleUndo,
-					handler: function () { window.open(pUndoLink, '_blank'); $('#page-viewer').closeModal(); }
-				});
-			}
-			tButtons.push({
-				message: i18n.TEXT.diffModuleClose,
-				handler: RCMManager.closeDiff
-			});
-			$.showCustomModal(pPageName+" - "+i18n.TEXT.diffModuleTitle, ajaxform, {
-				id: 'page-viewer',
-				width: 1000,
-				buttons: tButtons
-			});
-		}
-		$('#DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
-	}
-	
-	RCMManager.closeDiff = function() {
-		if($('#DiffView').length != 0) {
-			$('#page-viewer').closeModal();
-		}
 	}
 	
 	return RCMManager;

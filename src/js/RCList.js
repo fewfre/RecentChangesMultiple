@@ -217,7 +217,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			var undoLink = Utils.formatString( "{0}curid={1}&undo={2}&undoafter={3}&action=edit", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			
 			var tRCM_previewdiff = function() {
-				RCMManager.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
+				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
 			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
