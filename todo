@@ -1,0 +1,25 @@
+## TODO ##
+Add option for "options panel" to not save values, save via cookie, or via url params
+Make sure "Wiki loaded" links reflect option panel changes? (extra "params" object)
+"&username=" support for external wikis. Disabled by default otherwise.
+Script 2-part loading
+Make options panel collapsible (collapsible collapsed). Use same cookie as normal RC panel for remembering.
+Remove side rail should also properly handle adds.
+
+## TERTIARY ##
+Add support for "rollback" (iffy to do without lots of extra loading calls; expensive)
+		"rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
+		Need to figure out if listed RC is most recent version (before adding link)
+		get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
+
+## OTHER / MAYBE? ##
+Display times using timezone set in preferences (maybe; might be a lot more trouble than it's worth, since "local" time should suffice)
+Loading display rework.
+* Display wikis as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
+* Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
+		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
+Finish RC "params" support - "from", "namespace" (and related ones), etc
+Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
+
+## NOT REALLY FEASIBLE (at this time) ##
+Show if a RC has been patrolled -- Not possible since it need to know you are logged in, and if no patrol right is found, whole request is invalid.
