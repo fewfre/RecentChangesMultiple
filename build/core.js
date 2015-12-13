@@ -242,6 +242,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.favicon			= null; // {string} full url of this wiki's favicon
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
+		this.username			= null; // {string} Username to user for this wiki.
 		
 		/***************************
 		 * Siteinfo Data
@@ -259,6 +260,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.canBlock			= false; // {bool} If the user has the "block" right on this wiki.
 		// this.canRollback		= false; // {bool} If the user has the "rollback" right on this wiki.
 		
+		this.isWikiaWiki		= true; // {bool} Is this wiki a wikia wiki
 		this.useOutdatedLogSystem = false; // {bool} Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
 	}
 	
@@ -285,52 +287,75 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.scriptdir = "";
 		this.firstSeperator = "?";
 		
-		this.useOutdatedLogSystem = this.servername.indexOf(".wikia.") > -1;
+		this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
+		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		if(this.servername.indexOf("/") > -1) {
 			this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>"+ Utils.formatString(i18n.TEXT.incorrectFormatLink, this.servername)+"</div>";
 			throw "Incorrect format";
 		}
 		
-		var tWikiDataSplit; // Split of raw data
+		var tWikiDataSplit, tKey, tVal; // Split of raw data
 		for(var i = 1; i < tWikiDataRaw.length; i++) {
 			tWikiDataSplit = tWikiDataRaw[i].split("=");
 			if(tWikiDataSplit.length > 1) {
-				if(tWikiDataSplit[0] == "params") {
-					this.rcParamsBase = this.manager.parseRCParams(tWikiDataSplit[1], ",", ":");
-				}
-				else if(tWikiDataSplit[0] == "hideusers") {
-					this["hideusers"] = tWikiDataSplit[1].replace("", " ").split(",");
-					this["hideusers"].forEach(function(o,i){ self["hideusers"][i] = self["hideusers"][i].trim(); });
-				}
-				else if(tWikiDataSplit[0] == "onlyshowusers") {
-					this["onlyshowusers"] = tWikiDataSplit[1].replace("", " ").split(",");
-					this["onlyshowusers"].forEach(function(o,i){ self["onlyshowusers"][i] = self["onlyshowusers"][i].trim(); });
-				}
-				else if(tWikiDataSplit[0] == "scriptdir") {
-					this["scriptdir"] = tWikiDataSplit[1];
-					if(this["scriptdir"][0] != "/") { this["scriptdir"] = "/"+this["scriptdir"]; }
-					if(this["scriptdir"][this["scriptdir"].length-1] == "/") { this["scriptdir"] = this["scriptdir"].slice(0, -1); }
-				}
-				else if(tWikiDataSplit[0] == "favicon") {
-					this["favicon"] = tWikiDataSplit[1];
-					if(this["favicon"].indexOf(".") > -1) {
-						this["favicon"] = "//"+this["favicon"];
-					} else {
-						this["favicon"] = "http://vignette3.wikia.nocookie.net/"+this["favicon"]+"/images/6/64/Favicon.ico"
+				tKey = tWikiDataSplit[0];
+				tVal = tWikiDataSplit[1];
+				switch(tKey) {
+					case "params": {
+						this.rcParamsBase = this.manager.parseRCParams(tVal, ",", ":");
+						break;
+					}
+					case "hideusers": {
+						this.hideusers = tVal.replace("", " ").split(",");
+						this.hideusers.forEach(function(o,i){ self.hideusers[i] = self.hideusers[i].trim(); });
+						break;
+					}
+					case "onlyshowusers": {
+						this.onlyshowusers = tVal.replace("", " ").split(",");
+						this.onlyshowusers.forEach(function(o,i){ self.onlyshowusers[i] = self.onlyshowusers[i].trim(); });
+						break;
+					}
+					case "scriptdir": {
+						this.scriptdir = tVal;
+						// Add / remove slashes as needed (encase added incorrectly).
+						if(this.scriptdir[0] != "/") { this.scriptdir = "/"+this.scriptdir; }
+						if(this.scriptdir[this.scriptdir.length-1] == "/") { this.scriptdir = this.scriptdir.slice(0, -1); }
+						break;
+					}
+					case "favicon": {
+						this.favicon = tVal;
+						if(this.favicon.indexOf(".") > -1) {
+							this.favicon = "//"+this.favicon;
+						} else {
+							// [depreciated]
+							this.favicon = "http://vignette3.wikia.nocookie.net/"+this.favicon+"/images/6/64/Favicon.ico"
+						}
+						break;
+					}
+					case "username": {
+						this.username = tVal;
+						break;
+					}
+					default: {
+						// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
+						this[tKey] = tVal;
+						break;
 					}
 				}
-				else {
-					// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
-					this[tWikiDataSplit[0]] = tWikiDataSplit[1];
-				}
 			}
+		}
+		
+		if(!this.username && this.isWikiaWiki && mw.config.get("wgUserName")) {
+			this.username = mw.config.get("wgUserName");
 		}
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
 		
 		this.setupRcParams();
 		
+		tKey = null;
+		tVal = null;
 		tWikiDataRaw = null;
 		tWikiDataSplit = null;
 		
@@ -452,8 +477,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
 		var tUser = null;
-		if(this.rcParams.hidemyself && mw.config.get("wgUserName")) {
-			tUser = mw.config.get("wgUserName");
+		if(this.rcParams.hidemyself && this.username) {
+			tUser = this.username;
 		} else if(this.manager.hideusers.length > 0) {
 			tUser = this.manager.hideusers[0];
 		} else if(this.hideusers) {
@@ -493,11 +518,11 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		/***************************
 		 * User Data - https://www.mediawiki.org/wiki/API:Users
-		 * If user logged in, get info for this wiki (Once per RCMManager)
+		 * If user logged in / set, get info for this wiki (Once per RCMManager)
 		 ***************************/
-		if(this.needsUserData && mw.config.get("wgUserName")) {
+		if(this.needsUserData && this.username) {
 			tUrlList.push("users");
-			tReturnText += "&ususers="+mw.config.get("wgUserName")+"&usprop=rights";
+			tReturnText += "&ususers="+this.username+"&usprop=rights";
 		}
 		else if(this.needsUserData) {
 			this.needsUserData = false;
@@ -894,14 +919,94 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	RCMOptions.prototype.init = function(pElem) {
 		this.root = pElem;
 		
-		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions" }, pElem);
+		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
+		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
+		
+		// $(tFieldset).makeCollapsible();
+		
+		// (function($) {
+  //       var checkboxes = ['nsassociated', 'nsinvert'];
+  //       var $select = null ;
+  //       var rc = {
+  //           handleCollapsible: function(cache) {
+  //               var prefix = 'rce_'
+  //                 , $collapsibleElements = $('.collapsible');
+  //               function toggleCollapsible($collapsible) {
+  //                   $collapsible.toggleClass('collapsed');
+  //                   updateCollapsedCache($collapsible);
+  //               }
+  //               function updateCollapsedCache($collapsible) {
+  //                   var id = $collapsible.attr('id');
+  //                   if (id !== null ) {
+  //                       if ($collapsible.hasClass('collapsed')) {
+  //                           cache.set(prefix + id, 'collapsed', cache.CACHE_LONG);
+  //                       } else {
+  //                           cache.set(prefix + id, 'expanded', cache.CACHE_LONG);
+  //                       }
+  //                   }
+  //               }
+  //               $collapsibleElements.each(function() {
+  //                   var $this = $(this)
+  //                     , id = $this.attr('id');
+  //                   if (id !== null ) {
+  //                       var previousState = cache.get(prefix + id);
+  //                       if (!!previousState) {
+  //                           if (previousState === 'collapsed') {
+  //                               $this.addClass('collapsed');
+  //                           } else {
+  //                               $this.removeClass('collapsed');
+  //                           }
+  //                       }
+  //                   }
+  //               }
+  //               );
+  //               $collapsibleElements.on('click', 'legend', function(e) {
+  //                   toggleCollapsible($(e.currentTarget).parent());
+  //               }
+  //               );
+  //           },
+  //           bindTracking: function(tracker) {
+  //               var $trackedElement = $('#recentchanges-on-wikia-box');
+  //               if ($trackedElement.length > 0) {
+  //                   $trackedElement.on('mousedown', 'a', function(e) {
+  //                       tracker.track({
+  //                           action: tracker.ACTIONS.CLICK_LINK_TEXT,
+  //                           category: 'recentchanges-on-wikia',
+  //                           label: $(e.currentTarget).attr('href'),
+  //                           trackingMethod: 'analytics'
+  //                       });
+  //                   }
+  //                   );
+  //               }
+  //           },
+  //           updateCheckboxes: function() {
+  //               var isAllNS = ('' === $select.find('option:selected').val());
+  //               $.each(checkboxes, function(i, id) {
+  //                   $('#' + id).prop('disabled', isAllNS);
+  //               }
+  //               );
+  //           },
+  //           init: function() {
+  //               $select = $('#namespace');
+  //               $select.change(rc.updateCheckboxes).change();
+  //               require(['wikia.cache', 'wikia.tracker'], function(cache, tracker) {
+  //                   rc.handleCollapsible(cache);
+  //                   rc.bindTracking(tracker);
+  //               }
+  //               );
+  //           }
+  //       };
+  //       $(rc.init);
+  //   }
+  //   )($);
+  //   ;
 		
 		/***************************
 		 * First line of choices (numbers)
 		 ***************************/
 		var tRow1Text = i18n.RC_TEXT['rclinks'].split("<br />")[0].split(/\$1|\$2/);
-		var tRow1 = Utils.newElement("div", {  }, tFieldset);
+		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);
 		this.limitField = Utils.newElement("select", {}, tRow1);
@@ -912,7 +1017,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * Second line of choices (checkboxes)
 		 ***************************/
-		var tRow2 = Utils.newElement("div", {  }, tFieldset);
+		var tRow2 = Utils.newElement("div", {  }, tContent);
 		var t1Text = "";//i18n.RC_TEXT['show'];
 		
 		this.minorEditsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
@@ -2548,7 +2653,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
-		RCMManager.closeDiff();
+		RCData.closeDiff();
 		
 		this._start();
 	};
@@ -2922,7 +3027,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	"use strict";
 	
 	// Statics
-	module.version = "1.1.8";
+	module.version = "1.2.0";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh";
@@ -2993,6 +3098,9 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		});
 		
 		tWrappers = null;
+		
+		// This does things like allow "fieldset" to collapse in RCMOptions
+		mw.loader.load( 'mediawiki.special.recentchanges' );
 	}
 	
 	module.unload = function() {

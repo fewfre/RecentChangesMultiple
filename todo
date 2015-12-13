@@ -2,15 +2,12 @@
 ## PRIMARY
 ############################################
 * Add option for "options panel" to not save values, save via cookie, or via url params
-* Make sure "Wiki loaded" links reflect option panel changes? (extra "params" object)
-* "&username=" support for external wikis. Disabled by default otherwise.
-* Script 2-part loading
-* Make options panel collapsible (collapsible collapsed). Use same cookie as normal RC panel for remembering.
-* Remove side rail should also properly handle adds.
+* Make sure "Wiki loaded" links reflect option panel changes? (extra "params" object for RCMOptions)
 
 ############################################
 ## SECONDARY
 ############################################
+* Date format should follow preferences (if possible?)
 * Add support for "rollback" (iffy to do without lots of extra loading calls; expensive)
 	"rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
 	Need to figure out if listed RC is most recent version (before adding link)
@@ -30,4 +27,4 @@
 ############################################
 ## NOT REALLY FEASIBLE (at this time at least)
 ############################################
-* Show if a RC has been patrolled -- Not possible since it need to know you are logged in, and if no patrol right is found, whole request is invalid.
+* Show if a RC has been patrolled -- Not possible since it needs to know you are logged in (cross domain issue), and if no patrol right is found, whole request is invalid.

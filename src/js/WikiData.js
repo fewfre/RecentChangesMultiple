@@ -30,6 +30,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.favicon			= null; // {string} full url of this wiki's favicon
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
+		this.username			= null; // {string} Username to user for this wiki.
 		
 		/***************************
 		 * Siteinfo Data
@@ -47,6 +48,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.canBlock			= false; // {bool} If the user has the "block" right on this wiki.
 		// this.canRollback		= false; // {bool} If the user has the "rollback" right on this wiki.
 		
+		this.isWikiaWiki		= true; // {bool} Is this wiki a wikia wiki
 		this.useOutdatedLogSystem = false; // {bool} Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
 	}
 	
@@ -73,52 +75,75 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.scriptdir = "";
 		this.firstSeperator = "?";
 		
-		this.useOutdatedLogSystem = this.servername.indexOf(".wikia.") > -1;
+		this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
+		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		if(this.servername.indexOf("/") > -1) {
 			this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>"+ Utils.formatString(i18n.TEXT.incorrectFormatLink, this.servername)+"</div>";
 			throw "Incorrect format";
 		}
 		
-		var tWikiDataSplit; // Split of raw data
+		var tWikiDataSplit, tKey, tVal; // Split of raw data
 		for(var i = 1; i < tWikiDataRaw.length; i++) {
 			tWikiDataSplit = tWikiDataRaw[i].split("=");
 			if(tWikiDataSplit.length > 1) {
-				if(tWikiDataSplit[0] == "params") {
-					this.rcParamsBase = this.manager.parseRCParams(tWikiDataSplit[1], ",", ":");
-				}
-				else if(tWikiDataSplit[0] == "hideusers") {
-					this["hideusers"] = tWikiDataSplit[1].replace("", " ").split(",");
-					this["hideusers"].forEach(function(o,i){ self["hideusers"][i] = self["hideusers"][i].trim(); });
-				}
-				else if(tWikiDataSplit[0] == "onlyshowusers") {
-					this["onlyshowusers"] = tWikiDataSplit[1].replace("", " ").split(",");
-					this["onlyshowusers"].forEach(function(o,i){ self["onlyshowusers"][i] = self["onlyshowusers"][i].trim(); });
-				}
-				else if(tWikiDataSplit[0] == "scriptdir") {
-					this["scriptdir"] = tWikiDataSplit[1];
-					if(this["scriptdir"][0] != "/") { this["scriptdir"] = "/"+this["scriptdir"]; }
-					if(this["scriptdir"][this["scriptdir"].length-1] == "/") { this["scriptdir"] = this["scriptdir"].slice(0, -1); }
-				}
-				else if(tWikiDataSplit[0] == "favicon") {
-					this["favicon"] = tWikiDataSplit[1];
-					if(this["favicon"].indexOf(".") > -1) {
-						this["favicon"] = "//"+this["favicon"];
-					} else {
-						this["favicon"] = "http://vignette3.wikia.nocookie.net/"+this["favicon"]+"/images/6/64/Favicon.ico"
+				tKey = tWikiDataSplit[0];
+				tVal = tWikiDataSplit[1];
+				switch(tKey) {
+					case "params": {
+						this.rcParamsBase = this.manager.parseRCParams(tVal, ",", ":");
+						break;
+					}
+					case "hideusers": {
+						this.hideusers = tVal.replace("", " ").split(",");
+						this.hideusers.forEach(function(o,i){ self.hideusers[i] = self.hideusers[i].trim(); });
+						break;
+					}
+					case "onlyshowusers": {
+						this.onlyshowusers = tVal.replace("", " ").split(",");
+						this.onlyshowusers.forEach(function(o,i){ self.onlyshowusers[i] = self.onlyshowusers[i].trim(); });
+						break;
+					}
+					case "scriptdir": {
+						this.scriptdir = tVal;
+						// Add / remove slashes as needed (encase added incorrectly).
+						if(this.scriptdir[0] != "/") { this.scriptdir = "/"+this.scriptdir; }
+						if(this.scriptdir[this.scriptdir.length-1] == "/") { this.scriptdir = this.scriptdir.slice(0, -1); }
+						break;
+					}
+					case "favicon": {
+						this.favicon = tVal;
+						if(this.favicon.indexOf(".") > -1) {
+							this.favicon = "//"+this.favicon;
+						} else {
+							// [depreciated]
+							this.favicon = "http://vignette3.wikia.nocookie.net/"+this.favicon+"/images/6/64/Favicon.ico"
+						}
+						break;
+					}
+					case "username": {
+						this.username = tVal;
+						break;
+					}
+					default: {
+						// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
+						this[tKey] = tVal;
+						break;
 					}
 				}
-				else {
-					// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
-					this[tWikiDataSplit[0]] = tWikiDataSplit[1];
-				}
 			}
+		}
+		
+		if(!this.username && this.isWikiaWiki && mw.config.get("wgUserName")) {
+			this.username = mw.config.get("wgUserName");
 		}
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
 		
 		this.setupRcParams();
 		
+		tKey = null;
+		tVal = null;
 		tWikiDataRaw = null;
 		tWikiDataSplit = null;
 		
@@ -240,8 +265,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
 		var tUser = null;
-		if(this.rcParams.hidemyself && mw.config.get("wgUserName")) {
-			tUser = mw.config.get("wgUserName");
+		if(this.rcParams.hidemyself && this.username) {
+			tUser = this.username;
 		} else if(this.manager.hideusers.length > 0) {
 			tUser = this.manager.hideusers[0];
 		} else if(this.hideusers) {
@@ -281,11 +306,11 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		/***************************
 		 * User Data - https://www.mediawiki.org/wiki/API:Users
-		 * If user logged in, get info for this wiki (Once per RCMManager)
+		 * If user logged in / set, get info for this wiki (Once per RCMManager)
 		 ***************************/
-		if(this.needsUserData && mw.config.get("wgUserName")) {
+		if(this.needsUserData && this.username) {
 			tUrlList.push("users");
-			tReturnText += "&ususers="+mw.config.get("wgUserName")+"&usprop=rights";
+			tReturnText += "&ususers="+this.username+"&usprop=rights";
 		}
 		else if(this.needsUserData) {
 			this.needsUserData = false;

@@ -107,6 +107,7 @@ table.mw-enhanced-rc caption, .rcm-tiled-favicon {
 .rcm-hiderail #WikiaMainContentContainer { margin-right:0; }
 .rcm-hiderail #WikiaMainContent { width:100%; }
 .rcm-hiderail #recentWikiActivity { display:none; }
+.rcm-hiderail .home-top-right-ads { display:none; }
 
 /* Monobook Support */
 #positioned_elements .blackout {

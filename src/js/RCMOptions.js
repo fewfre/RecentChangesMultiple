@@ -44,14 +44,94 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	RCMOptions.prototype.init = function(pElem) {
 		this.root = pElem;
 		
-		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions" }, pElem);
+		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
+		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
+		
+		// $(tFieldset).makeCollapsible();
+		
+		// (function($) {
+  //       var checkboxes = ['nsassociated', 'nsinvert'];
+  //       var $select = null ;
+  //       var rc = {
+  //           handleCollapsible: function(cache) {
+  //               var prefix = 'rce_'
+  //                 , $collapsibleElements = $('.collapsible');
+  //               function toggleCollapsible($collapsible) {
+  //                   $collapsible.toggleClass('collapsed');
+  //                   updateCollapsedCache($collapsible);
+  //               }
+  //               function updateCollapsedCache($collapsible) {
+  //                   var id = $collapsible.attr('id');
+  //                   if (id !== null ) {
+  //                       if ($collapsible.hasClass('collapsed')) {
+  //                           cache.set(prefix + id, 'collapsed', cache.CACHE_LONG);
+  //                       } else {
+  //                           cache.set(prefix + id, 'expanded', cache.CACHE_LONG);
+  //                       }
+  //                   }
+  //               }
+  //               $collapsibleElements.each(function() {
+  //                   var $this = $(this)
+  //                     , id = $this.attr('id');
+  //                   if (id !== null ) {
+  //                       var previousState = cache.get(prefix + id);
+  //                       if (!!previousState) {
+  //                           if (previousState === 'collapsed') {
+  //                               $this.addClass('collapsed');
+  //                           } else {
+  //                               $this.removeClass('collapsed');
+  //                           }
+  //                       }
+  //                   }
+  //               }
+  //               );
+  //               $collapsibleElements.on('click', 'legend', function(e) {
+  //                   toggleCollapsible($(e.currentTarget).parent());
+  //               }
+  //               );
+  //           },
+  //           bindTracking: function(tracker) {
+  //               var $trackedElement = $('#recentchanges-on-wikia-box');
+  //               if ($trackedElement.length > 0) {
+  //                   $trackedElement.on('mousedown', 'a', function(e) {
+  //                       tracker.track({
+  //                           action: tracker.ACTIONS.CLICK_LINK_TEXT,
+  //                           category: 'recentchanges-on-wikia',
+  //                           label: $(e.currentTarget).attr('href'),
+  //                           trackingMethod: 'analytics'
+  //                       });
+  //                   }
+  //                   );
+  //               }
+  //           },
+  //           updateCheckboxes: function() {
+  //               var isAllNS = ('' === $select.find('option:selected').val());
+  //               $.each(checkboxes, function(i, id) {
+  //                   $('#' + id).prop('disabled', isAllNS);
+  //               }
+  //               );
+  //           },
+  //           init: function() {
+  //               $select = $('#namespace');
+  //               $select.change(rc.updateCheckboxes).change();
+  //               require(['wikia.cache', 'wikia.tracker'], function(cache, tracker) {
+  //                   rc.handleCollapsible(cache);
+  //                   rc.bindTracking(tracker);
+  //               }
+  //               );
+  //           }
+  //       };
+  //       $(rc.init);
+  //   }
+  //   )($);
+  //   ;
 		
 		/***************************
 		 * First line of choices (numbers)
 		 ***************************/
 		var tRow1Text = i18n.RC_TEXT['rclinks'].split("<br />")[0].split(/\$1|\$2/);
-		var tRow1 = Utils.newElement("div", {  }, tFieldset);
+		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);
 		this.limitField = Utils.newElement("select", {}, tRow1);
@@ -62,7 +142,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * Second line of choices (checkboxes)
 		 ***************************/
-		var tRow2 = Utils.newElement("div", {  }, tFieldset);
+		var tRow2 = Utils.newElement("div", {  }, tContent);
 		var t1Text = "";//i18n.RC_TEXT['show'];
 		
 		this.minorEditsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);

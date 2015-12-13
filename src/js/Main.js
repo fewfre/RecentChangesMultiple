@@ -13,7 +13,7 @@
 	"use strict";
 	
 	// Statics
-	module.version = "1.1.8";
+	module.version = "1.2.0";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh";
@@ -84,6 +84,9 @@
 		});
 		
 		tWrappers = null;
+		
+		// This does things like allow "fieldset" to collapse in RCMOptions
+		mw.loader.load( 'mediawiki.special.recentchanges' );
 	}
 	
 	module.unload = function() {

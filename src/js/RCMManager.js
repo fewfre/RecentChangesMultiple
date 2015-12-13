@@ -190,7 +190,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
-		RCMManager.closeDiff();
+		RCData.closeDiff();
 		
 		this._start();
 	};
