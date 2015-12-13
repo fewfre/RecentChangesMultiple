@@ -25,7 +25,7 @@
 	];
 	
 	//######################################
-	// Load the scripts and CSS
+	// Load the scripts
 	//######################################
 	window.importArticles({ type:'script', articles: scripts });
 	

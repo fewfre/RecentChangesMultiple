@@ -12,6 +12,9 @@
 (function($, document, mw, module, i18n, RCMManager, Utils){
 	"use strict";
 	
+	// Double check that script can run; should always be true due to loader, but check is here just encase.
+	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
+	
 	// Statics
 	module.version = "1.2.0";
 	module.debug = module.debug != undefined ? module.debug : false;
