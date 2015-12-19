@@ -3,6 +3,8 @@
 ############################################
 * Add option for "options panel" to not save values, save via cookie, or via url params
 * Make sure "Wiki loaded" links reflect option panel changes? (extra "params" object for RCMOptions)
+* Make ajax diff container have a max height (so you scroll container, not page)
+* [Bug] IP should link to contribs on LIST groups
 
 ############################################
 ## SECONDARY
@@ -16,6 +18,7 @@
 ############################################
 ## TERTIARY (other / maybe?)
 ############################################
+* Clicking on one of the "loaded wiki" icons shows various links for that wiki (RC, front page, "New pages – New files – Logs – Insights", etc).
 * Display times using timezone set in preferences (maybe; might be a lot more trouble than it's worth, since "local" time should suffice)
 * Loading display rework.
 	Display wikis as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
