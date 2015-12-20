@@ -38,6 +38,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.needsSiteinfoData	= true; // {bool} check if the RCMManager should load the Siteinfo for the wiki when it requests wiki info.
 		this.server				= null; // {string} full url to base of the server (ex: //test.wikia.com)
 		this.articlepath		= null; // {string} full url to wiki article directory (including last "/"). ex: //test.wiki/wiki/
+		this.sitename			= null; // {string} Name of the wiki
+		this.mainpage			= null; // {string} Main page for the wiki (not all wiki's redirect to main page if you link to domain)
 		this.mwversion			= null; // {string} MW version number. ex: MediaWiki 1.24.1
 		this.namespaces			= null; // {array<object>} A data object with all namespaces on the wiki by number = { "1":{ -data- } }
 		
@@ -161,6 +163,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			this.server = pQuery.general.server || ("//" + this.servername);
 			this.articlepath = this.server + pQuery.general.articlepath.replace("$1", "");
 			if(this.articlepath.indexOf("?") > -1) { this.firstSeperator = "&"; }
+			this.sitename = pQuery.general.sitename;
+			this.mainpage = pQuery.general.mainpage;
 			this.mwversion = pQuery.general.generator;
 			
 			if(this.favicon == null) {
@@ -226,7 +230,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
 	WikiData.prototype.getFaviconHTML = function() {
-		return "<img src='"+this.favicon+"' width='16' height='16' />"; // Return self for chaining or whatnot.
+		return "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />"; // Return self for chaining or whatnot.
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)

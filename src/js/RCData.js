@@ -20,7 +20,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		 ***************************/
 		this.date				= null; // {Date} The DateTime this edit was made at.
 		this.author				= null; // {string} The user or anon that made the edit.
-		this.userEdited			= null; // {bool} Wether the author is a user vs an anon.
+		this.userEdited			= null; // {bool} Whether the author is a user vs an anon.
 		this.userhidden			= null; // {bool} If the rc is marked "userhidden"
 		this.title				= null; // {string} Title of the page. (without "/@comment"s). Includes namespace.
 		this.namespace			= null; // {int} Namespace of the page edited.
@@ -59,7 +59,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		
 		/***************************
 		 * Log Info - info for specific logs that require additional info via API:Logevents.
-		 * THESE ARE USED, but not instantiated since no reason to take up the memory until used.
+		 * THESE ARE USED, but not instantiated since no reason to take up the memory until used (since logs might not be present).
 		 ***************************/
 		// this.log_move_newTitle			= null; // {string} Name of new page after page moved.
 		// this.log_move_noredirect		= null; // {string} If redirect is suppressed, should be "-noredirect" else ""
@@ -83,8 +83,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	
 	RCData.prototype.init = function(pData, pLogDataArray) {
 		this.date = new Date(pData.timestamp);
-		this.userEdited = pData.user != "";
-		this.author = this.userEdited ? pData.user : pData.anon;
+		this.userEdited = pData.user != "" && pData.anon != "";
+		this.author = this.userEdited ? pData.user : (pData.anon ? pData.anon : pData.user);
 		this.userhidden = pData.userhidden == "";
 		this.title = Utils.escapeCharacters( pData.title.split("/@comment")[0] );
 		this.namespace = pData.ns;
@@ -523,7 +523,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	}
 	
 	// Assumes it's a wall/board that has an action (will just return summary otherwise).
-	RCData.prototype.wallBoardActionMessageWithSummary = function() {
+	RCData.prototype.wallBoardActionMessageWithSummary = function(pThreadTitle) {
+		var tThreadTitle = pThreadTitle || this.getThreadTitle(); // Title is passed in due to it being found via ajax.
 		var tLocalizedActionMessage = "";
 		var tPrefix = this.type == RCData.TYPE.BOARD ? "forum-recentchanges" : "wall-recentchanges";
 		var tMsgType = this.isSubComment ? "reply" : "thread";
@@ -535,7 +536,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread";
 		}
 		if(tLocalizedActionMessage != "") {
-			return " "+Utils.wiki2html(i18n.RC_TEXT[tLocalizedActionMessage], this.href, this.getThreadTitle(), this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
+			return " "+Utils.wiki2html(i18n.RC_TEXT[tLocalizedActionMessage], this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
 		} else {
 			return this.getSummary(); // Else not a wall/board action
 		}
@@ -614,7 +615,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 			success: function(pData){
-				$('#DiffView').html(""
+				$('#rcm-DiffView').html(""
 					+"<table class='diff'>"
 						+"<colgroup>"
 							+"<col class='diff-marker'>"
@@ -628,11 +629,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			},
 		});
 		
-		if ($('#DiffView').length == 0) {
+		// While we are waiting for results, open diff window to acknowledge user's input
+		if ($('#rcm-DiffView').length == 0) {
 			var ajaxform = ''
 				+'<form method="" name="" class="WikiaForm ">'
-					+'<div id="DiffView" style="width:975px; border:3px solid black; word-wrap: break-word;"/>'
+					+'<div id="rcm-DiffView"></div>'
 				+'</form>';
+			// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 			var tButtons = [];
 			tButtons.push({
 				message: i18n.TEXT.diffModuleOpen,
@@ -649,16 +652,17 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				handler: RCData.closeDiff
 			});
 			$.showCustomModal(pPageName+" - "+i18n.TEXT.diffModuleTitle, ajaxform, {
-				id: 'page-viewer',
+				id: 'rcm-diff-viewer',
 				width: 1000,
 				buttons: tButtons
 			});
+			$("#rcm-DiffView").css("max-height", ($(window).height() - 220) + "px");
 		}
-		$('#DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
+		$('#rcm-DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
 	}
 	
 	RCData.closeDiff = function() {
-		if($('#DiffView').length != 0) {
+		if($('#rcm-DiffView').length != 0) {
 			$('#page-viewer').closeModal();
 		}
 	}

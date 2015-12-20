@@ -20,5 +20,12 @@ gulp.task('loader', function() {
 	;
 });
 
+gulp.task('css', function() {
+	return gulp.src(['src/css/stylesheet.css'])
+		.pipe(concat('stylesheet.css'))
+		.pipe(gulp.dest("build"))
+	;
+});
+
 	// place code for your default task here
-gulp.task('default', [ 'core', 'loader' ]);
+gulp.task('default', [ 'core', 'loader', 'css' ]);

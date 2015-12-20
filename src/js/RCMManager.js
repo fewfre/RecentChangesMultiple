@@ -20,6 +20,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.resultCont		= pWrapper; // {HTMLElement}
 		this.statusNode		= null; // {HTMLElement}
 		this.wikisNode		= null; // {HTMLElement}
+		this.wikisNodeList	= null; // {HTMLElement}
+		this.wikisNodeInfo	= null; // {HTMLElement}
 		this.resultsNode	= null; // {HTMLElement}
 		this.footerNode		= null; // {HTMLElement}
 		
@@ -64,6 +66,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.resultCont		= null;
 		this.statusNode		= null;
 		this.wikisNode		= null;
+		this.wikisNodeList	= null;
+		this.wikisNodeInfo	= null;
 		this.resultsNode	= null;
 		this.footerNode		= null;
 		
@@ -142,7 +146,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 * Setup
 		 ***************************/
 		// Footer never changes, so set here
-		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		// Now start the app
 		this._start();
@@ -155,6 +159,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		clearTimeout(this.autoRefreshTimeoutID);
 		this.wikisNode.innerHTML = i18n.TEXT.wikisLoaded;
+		this.wikisNodeList	= Utils.newElement("span", { className:"rcm-wikis-list" }, this.wikisNode);
+		this.wikisNodeInfo	= Utils.newElement("div", { className:"rcm-wikis-info" }, this.wikisNode);
 		
 		this.recentChangesEntries = [];
 		this.ajaxCallbacks = [];
@@ -179,6 +185,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.statusNode.innerHTML = "";
 		this.wikisNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
+		this.wikisNodeList = null;
 		
 		if(this.recentChangesEntries != null) {
 			for (var i = 0; i < this.recentChangesEntries.length; i++) {
@@ -332,10 +339,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
 	RCMManager.prototype.onWikiParsingFinished = function(pWikiInfo) {
 		this.wikisLeftToLoad--;
-		this.wikisNode.innerHTML += Utils.formatString("<a href='{0}Special:RecentChanges{2}'>{1}</a>:", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
+		this.addWikiIcon(pWikiInfo);
 		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
 		if(this.wikisLeftToLoad > 0) {
 			// Parse / wait for next wiki
+			Utils.addTextTo(":", this.wikisNodeList);
 			this.ajaxCallbacks.shift();
 			if(this.ajaxCallbacks.length > 0){ this.ajaxCallbacks[0](); }
 		} else {
@@ -348,10 +356,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 	};
 	
+	// All wikis are loaded
 	RCMManager.prototype.rcmChunkStart = function() {
-		// All wikis are loaded
-		this.wikisNode.innerHTML = this.wikisNode.innerHTML.substring(0, this.wikisNode.innerHTML.length-1);
-		
 		var tDate = new Date();
 		this.statusNode.innerHTML = Utils.formatString(i18n.TEXT.timeStamp, "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
 		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+Utils.formatString(i18n.TEXT.changesAdded, "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
@@ -485,6 +491,46 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	
 	RCMManager.prototype.calcLoadPercent = function() {
 		return Math.round((this.totalWikisToLoad - this.wikisLeftToLoad) / this.totalWikisToLoad * 100);
+	};
+	
+	RCMManager.prototype.addWikiIcon = function(pWikiInfo) {
+		var self = this;
+		// this.wikisNodeList.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
+		var favicon = Utils.newElement("span", { className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.wikisNodeList);
+		favicon.addEventListener("click", function(){
+			var infoBanner = self.wikisNodeInfo.querySelector(".banner-notification");
+			// If already open for that wiki, then close it.
+			if(infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername) {
+				self.closeWikiInfoBanner();
+			} else {
+				// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
+				self.wikisNodeInfo.innerHTML = "<div class='banner-notification warn' data-wiki='"+pWikiInfo.servername+"'>"//notify
+				+ "<button class='close wikia-chiclet-button'><img></button>"
+				+ "<div class='msg'>"
+				+ pWikiInfo.getFaviconHTML()
+				+ " "
+				+ "<b><a href='"+pWikiInfo.articlepath+pWikiInfo.mainpage.replace(" ", "_")+"'>"+pWikiInfo.sitename+"</a></b>"
+				+ " : "
+				+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n.RC_TEXT["recentchanges"]+"</a>"
+				+ " - "
+				+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n.RC_TEXT["newpages"]+"</a>"
+				+ " - "
+				+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n.RC_TEXT["newimages"]+"</a>"
+				+ " - "
+				+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n.RC_TEXT["log"]+"</a>"
+				+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n.RC_TEXT["insights"]+"</a>" : "")
+				+ "</div>";
+				+ "</div>";
+				self.wikisNodeInfo.querySelector(".banner-notification .close").addEventListener("click", self.closeWikiInfoBanner.bind(self));
+			}
+		});
+	};
+	
+	RCMManager.prototype.closeWikiInfoBanner = function() {
+		// $(infoBanner).hide(500, "linear", function() {
+		$(this.wikisNodeInfo.querySelector(".banner-notification")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
+			$(this).remove();
+		});
 	};
 	
 	// take a "&" seperated list of RC params, and returns a Object with settings.

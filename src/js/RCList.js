@@ -296,7 +296,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 				if(pRC.isWallBoardAction) {
 					html += SEP;
 					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary();
+					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
 				} else {
 					html += pRC.wallBoardTitleText( this.getThreadTitle() );
 					html += " "+this._diffHist(pRC);
@@ -436,7 +436,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 					html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>"
 					html += SEP;
 					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary();
+					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
 				} else {
 					html += "<span class='mw-enhanced-rc-time'><a href='"+pRC.href+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>";
 					html += " (<a href='"+pRC.href+"'>"+i18n.RC_TEXT["cur"]+"</a>";
@@ -500,7 +500,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 					html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
 					html += SEP;
 					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary();
+					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
 				} else {
 					html += this._diffHist(pRC);
 					html += SEP;

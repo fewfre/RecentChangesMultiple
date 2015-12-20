@@ -1,9 +1,10 @@
 //<syntaxhighlight lang="javascript">
 /*
- * https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
- * Search: /api.php?action=query&meta=allmessages&format=json&amfilter=searchterm
  *  TEXT - Custom text used in the script to explain what's happening. {#} means that the script will input a number / word / url here on the fly, and is expected / potentially important.
  *         This i18n is set depending on your local language (en if not available).
+ *
+ * https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
+ * Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
  * RC_TEXT - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
  * 			 Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
  * 			 POTENTIAL ISSUES:
@@ -178,6 +179,11 @@ window.dev.RecentChangesMultiple.i18n = {
 		'article-comments-rc-comment' : 'Article comment (<span class="plainlinks">[$1 $2]</span>)',
 		'article-comments-rc-comments' : 'Article comments ([[$1]])',
 		'and' : '&#32;and',
+		'recentchanges' : 'Recent changes',
+		'newpages' : 'New pages',
+		'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find. Alts: prefs-files (Files), listfiles (File list), statistics-files (Uploaded files)
+		'log' : 'Logs',
+		'insights' : 'Insights',
 		
 		/***************************
 		 * Log Names - wgLogHeaders

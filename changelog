@@ -1,3 +1,17 @@
+== V1.2.1 - 20 December 2015 ==
+- Make ajax diff viewer container have a max height less than the screen height (so you scroll container, not page)
+	- Moved some inline CSS to stylesheet
+- [Bug] Anons were not being detected correctly, causing all links to link to their userpage (like normal users) instead of to their Contributions page.
+- "Wikis Loaded" favicons are no longer links; instead, they will bring up an info box with various links (more may be added later):
+	- Front page (by clicking name of wiki)
+	- Special:RecentChanges (same behavior as before; link has same settings that the script uses for that wiki)
+	- Special:NewPages
+	- Special:NewFiles
+	- Special:Log
+	- Special:Insights (if Wikia wiki)
+- [Bug] Wall / Board -action- titles were not getting updated via ajax (e.g. reopened thread [thread name]).
+
+
 == V1.2.0 - 12 December 2015 ==
 - changelog file started (changes before this point added retroactively)
 - Script pre-loader added (script only loads when needed).
