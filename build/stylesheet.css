@@ -34,11 +34,27 @@
 	font-size:80%;
 	font-decoration:underline;
 }
+.rcm-options {
+	position: relative;
+}
 .rcm-options .rcoptions {
 	margin:0;
 }
 .rcm-options .rcoptions legend {
 	padding-top:0;
+}
+.rcm-wikis-info {
+	margin-top: 2px;
+}
+.rcm-options .rcm-options-settings {
+	position:absolute;
+	top:1em;
+	right:0px;
+	line-height:1.2;
+	padding:0 4px;
+	color:#DDD;
+	background:#333;
+	border:1px solid #555;
 }
 .rcm-autoRefresh, #rcm-autoRefresh {
 	font-size:xx-small;

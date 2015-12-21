@@ -1,30 +1,35 @@
 ############################################
 ## PRIMARY
 ############################################
-* Add option for "options panel" to not save values (default), save via cookie, or via url params (maybe)
-* Make sure "Wiki loaded" links reflect option panel changes? (extra "params" object for RCMOptions)
+- None
 
 ############################################
 ## SECONDARY
 ############################################
-* Date format should follow preferences (if possible?)
-* Add support for "rollback" (iffy to do without lots of extra loading calls; expensive)
-	"rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
-	Need to figure out if listed RC is most recent version (before adding link)
-	get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
+* Rollback support - two considerations:
+	* Most recent version only
+		- Need to figure out if listed RC is most recent version (before adding link). Iffy to do without lots of extra loading calls; expensive
+		- "rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
+			- But would require a small rewrite since all the RCData would have to be looped-through / modified again. Or some kinda fancy custom event system added.
+				- If this WAS done, then Board/Thread titles should use same rework to cut down on necessary calls.
+	* Getting Rollback Token
+		- Get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
+		- Or maybe get all tokens at once (in a THIRD request) and add them using the rewrite mentioned above
 
 ############################################
 ## TERTIARY (other / maybe?)
 ############################################
-* Display times using timezone set in preferences (maybe; might be a lot more trouble than it's worth, since "local" time should suffice)
 * Loading display rework.
-	Display wikis as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
-	Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
+	A) Display wiki results as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
+	B) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
 		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
-* Finish RC "params" support - "from", "namespace" (and related ones), etc
+		May add needless complexity while adding little to nothing.
+* Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script
 * Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
 
 ############################################
 ## NOT REALLY FEASIBLE (at this time at least)
 ############################################
 * Show if a RC has been patrolled -- Not possible since it needs to know you are logged in (cross domain issue), and if no patrol right is found, whole request is invalid.
+* [Not possible to access user setting?] Date format should follow preferences
+* [Not possible to access user setting?] Display times using timezone set in preferences ("local" time option should be sufficient?)

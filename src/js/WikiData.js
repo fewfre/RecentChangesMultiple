@@ -142,7 +142,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
 		
-		this.setupRcParams();
+		// this.setupRcParams(); // Moved to manager
 		
 		tKey = null;
 		tVal = null;
@@ -207,25 +207,34 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	}
 	
 	WikiData.prototype.setupRcParams = function() {
-		var self = this;
-		if(this.rcParamsBase != null) {
-			this.rcParams = $.extend( this.manager.rcParamsBase, this.rcParamsBase );
-			
-			this.rcParams.paramString = [];
-			$.each( this.rcParams, function( tKey, tVal ) {
-				if( tKey != "paramString" ) {
-					if(tVal === true) { tVal="1"; }
-					if(tVal === false) { tVal="0"; }
-					self.rcParams.paramString.push(tKey+"="+tVal);
-				}
-			});
-			this.rcParams.paramString = this.rcParams.paramString.join("&");
-			
-			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
-		} else {
-			this.rcParams = this.manager.rcParams;
+		this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
+		if(Object.keys(this.manager.optionsNode.rcParams).length > 0) {
+			this.rcParams = $.extend( this.rcParams, this.manager.optionsNode.rcParams );
 		}
-		self = null;
+		if(this.rcParamsBase != null) {
+			this.rcParams = $.extend( this.rcParams, this.rcParamsBase );
+		}
+		
+		// if(this.rcParams == this.manager.rcParamsBase) {
+		// 	this.rcParams = this.manager.rcParams; // The manager's RC params are valid if no changes more specific than it exist.
+		// } else {
+			this.rcParams.paramString = this.createRcParamsString(this.rcParams);
+			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
+		// }
+	}
+	
+	// Get the string for use with Special:RecentChanges link for this wiki.
+	// Don't pass in params with "default" values included, or the link will have them all specified.
+	WikiData.prototype.createRcParamsString = function(pParams) {
+		var tArray = [];
+		$.each( pParams, function( tKey, tVal ) { 
+			if( tKey != "paramString" ) {
+				if(tVal === true) { tVal="1"; }
+				if(tVal === false) { tVal="0"; }
+				tArray.push(tKey+"="+tVal);
+			}
+		});
+		return tArray.join("&");
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set

@@ -27,5 +27,5 @@ gulp.task('css', function() {
 	;
 });
 
-	// place code for your default task here
+// place code for your default task here
 gulp.task('default', [ 'core', 'loader', 'css' ]);

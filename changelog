@@ -10,7 +10,8 @@
 	- Special:Log
 	- Special:Insights (if Wikia wiki)
 - [Bug] Wall / Board -action- titles were not getting updated via ajax (e.g. reopened thread [thread name]).
-
+- [Bug] When clicking the RC link for a wiki, the script will now include the params from the RCMOptions form (instead of only preset values)
+- RCMOptions panel now as an option to remember your changes via a cookie.
 
 == V1.2.0 - 12 December 2015 ==
 - changelog file started (changes before this point added retroactively)

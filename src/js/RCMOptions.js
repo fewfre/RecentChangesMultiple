@@ -19,6 +19,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * Fields
 		 ***************************/
+		this.settingsSaveCookieCheckbox		= null;
+		
 		this.limitField				= null;
 		this.daysField				= null;
 		
@@ -35,97 +37,40 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.removeEventListeners();
 		
 		this.manager = null;
-		this.wikiInfo = null;
+		this.root = null;
 		
-		this.date = null;
-		this.type = null;
+		this.rcParams = null;
+		this.limitField				= null;
+		this.daysField				= null;
+		
+		this.minorEditsCheckbox		= null;
+		this.botsCheckbox			= null;
+		this.anonsCheckbox			= null;
+		this.usersCheckbox			= null;
+		this.myEditsCheckbox		= null;
+		this.groupedChangesCheckbox	= null;
+		this.logsCheckbox			= null;
 	}
 	
 	RCMOptions.prototype.init = function(pElem) {
 		this.root = pElem;
+		this.rcParams = this.getSave();//$.extend({}, this.manager.rcParamsBase);
+		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
 		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
 		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
 		
-		// $(tFieldset).makeCollapsible();
+		/***************************
+		 * RCMOptions settings
+		 ***************************/
+		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
+		tSettingsPanel.innerHTML = '<svg style="height:19px; vertical-align: top;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z" fill="currentColor" /></svg>';
 		
-		// (function($) {
-  //       var checkboxes = ['nsassociated', 'nsinvert'];
-  //       var $select = null ;
-  //       var rc = {
-  //           handleCollapsible: function(cache) {
-  //               var prefix = 'rce_'
-  //                 , $collapsibleElements = $('.collapsible');
-  //               function toggleCollapsible($collapsible) {
-  //                   $collapsible.toggleClass('collapsed');
-  //                   updateCollapsedCache($collapsible);
-  //               }
-  //               function updateCollapsedCache($collapsible) {
-  //                   var id = $collapsible.attr('id');
-  //                   if (id !== null ) {
-  //                       if ($collapsible.hasClass('collapsed')) {
-  //                           cache.set(prefix + id, 'collapsed', cache.CACHE_LONG);
-  //                       } else {
-  //                           cache.set(prefix + id, 'expanded', cache.CACHE_LONG);
-  //                       }
-  //                   }
-  //               }
-  //               $collapsibleElements.each(function() {
-  //                   var $this = $(this)
-  //                     , id = $this.attr('id');
-  //                   if (id !== null ) {
-  //                       var previousState = cache.get(prefix + id);
-  //                       if (!!previousState) {
-  //                           if (previousState === 'collapsed') {
-  //                               $this.addClass('collapsed');
-  //                           } else {
-  //                               $this.removeClass('collapsed');
-  //                           }
-  //                       }
-  //                   }
-  //               }
-  //               );
-  //               $collapsibleElements.on('click', 'legend', function(e) {
-  //                   toggleCollapsible($(e.currentTarget).parent());
-  //               }
-  //               );
-  //           },
-  //           bindTracking: function(tracker) {
-  //               var $trackedElement = $('#recentchanges-on-wikia-box');
-  //               if ($trackedElement.length > 0) {
-  //                   $trackedElement.on('mousedown', 'a', function(e) {
-  //                       tracker.track({
-  //                           action: tracker.ACTIONS.CLICK_LINK_TEXT,
-  //                           category: 'recentchanges-on-wikia',
-  //                           label: $(e.currentTarget).attr('href'),
-  //                           trackingMethod: 'analytics'
-  //                       });
-  //                   }
-  //                   );
-  //               }
-  //           },
-  //           updateCheckboxes: function() {
-  //               var isAllNS = ('' === $select.find('option:selected').val());
-  //               $.each(checkboxes, function(i, id) {
-  //                   $('#' + id).prop('disabled', isAllNS);
-  //               }
-  //               );
-  //           },
-  //           init: function() {
-  //               $select = $('#namespace');
-  //               $select.change(rc.updateCheckboxes).change();
-  //               require(['wikia.cache', 'wikia.tracker'], function(cache, tracker) {
-  //                   rc.handleCollapsible(cache);
-  //                   rc.bindTracking(tracker);
-  //               }
-  //               );
-  //           }
-  //       };
-  //       $(rc.init);
-  //   }
-  //   )($);
-  //   ;
+		this.settingsSaveCookieCheckbox = Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
+		Utils.addTextTo(i18n.TEXT["optionsPanelSaveWithCookie"], tSettingsPanel);
+		
+		this.settingsSaveCookieCheckbox.checked = !$.isEmptyObject(this.rcParams);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -189,6 +134,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.addEventListeners();
 		
 		this.refresh();
+		return this;
 	}
 	
 	// Add / set the values of the fields.
@@ -238,6 +184,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	}
 	
 	RCMOptions.prototype.addEventListeners = function() {
+		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		
 		this.limitField.addEventListener("change", this._onChange_limit.bind(this));
 		this.daysField.addEventListener("change", this._onChange_days.bind(this));
 		
@@ -251,6 +199,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	}
 	
 	RCMOptions.prototype.removeEventListeners = function() {
+		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		
 		this.limitField.removeEventListener("change", this._onChange_limit);
 		this.daysField.removeEventListener("change", this._onChange_days);
 		
@@ -312,18 +262,43 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.afterChangeBoolean("hidelogs", !pEvent.target.checked);
 	}
 	
+	RCMOptions.prototype._onChange_settingsSaveCookie = function(pEvent) {
+		if(pEvent.target.checked) {
+			this.save();
+		} else {
+			localStorage.removeItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID);
+		}
+	}
+	
 	/***************************
 	 * Helper Methods
 	 ***************************/
 	// Will add / edit the url param & script value with details entered.
 	RCMOptions.prototype.afterChangeNumber = function(pKey, pVal) {
+		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh();
+		this.manager.refresh(true);
+		this.save();
 	}
 	
 	RCMOptions.prototype.afterChangeBoolean = function(pKey, pVal) {
+		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh();
+		this.manager.refresh(true);
+		this.save();
+	}
+	
+	RCMOptions.prototype.save = function() {
+		if(this.settingsSaveCookieCheckbox.checked) {
+			localStorage.setItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID, JSON.stringify(this.rcParams));
+		}
+	}
+	
+	RCMOptions.prototype.getSave = function() {
+		return localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID)
+			? JSON.parse(localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID))
+			: {}
+			;
 	}
 	
 	return RCMOptions;

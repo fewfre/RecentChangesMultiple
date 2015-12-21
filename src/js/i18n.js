@@ -32,6 +32,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Version {0} by {1}",
 			// Options Panel
 			optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Diff Viewer",
 			diffModuleOpen : "Open diff",
@@ -71,6 +72,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Wersja {0} stworzona przez {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Podgląd zmian",
 			diffModuleOpen : "Pokaż zmiany",
@@ -110,6 +112,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Versión {0} por {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Visor de cambios",
 			diffModuleOpen : "Abrir cambio",

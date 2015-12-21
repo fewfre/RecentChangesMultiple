@@ -95,8 +95,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		var tDataset = this.resultCont.dataset;
 		
-		this.rcParamsBase = this.parseRCParams(tDataset.params, "&", "=");
-		this.rcParams = $.extend( this.getDefaultRCParams(), module.rcParamsURL, this.rcParamsBase );
+		this.rcParamsBase = $.extend( module.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
+		this.rcParams = $.extend( this.getDefaultRCParams(), this.rcParamsBase );
 		
 		this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
 		this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
@@ -149,12 +149,13 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		// Now start the app
-		this._start();
+		this._start(true);
 		
 		return this;
 	};
 	
-	RCMManager.prototype._start = function() {
+	/* pUpdateParams : Bool - optional (default: false) */
+	RCMManager.prototype._start = function(pUpdateParams) {
 		var self = this;
 		
 		clearTimeout(this.autoRefreshTimeoutID);
@@ -173,6 +174,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		this.totalWikisToLoad = 0;
 		Utils.forEach(this.chosenWikis, function(wikiInfo){
+			if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
 			self.totalWikisToLoad++;
 			self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
 		});
@@ -181,7 +183,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n.TEXT.loading+" (<span class='rcm-load-perc'>0%</span>)";
 	};
 	
-	RCMManager.prototype.refresh = function() {
+	/* pUpdateParams : Bool - optional (default: false) */
+	RCMManager.prototype.refresh = function(pUpdateParams) {
 		this.statusNode.innerHTML = "";
 		this.wikisNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
@@ -199,7 +202,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		RCData.closeDiff();
 		
-		this._start();
+		this._start(pUpdateParams);
 	};
 	
 	// Separate method so that it can be reused if the loading failed

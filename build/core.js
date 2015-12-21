@@ -354,7 +354,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
 		
-		this.setupRcParams();
+		// this.setupRcParams(); // Moved to manager
 		
 		tKey = null;
 		tVal = null;
@@ -419,25 +419,34 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	}
 	
 	WikiData.prototype.setupRcParams = function() {
-		var self = this;
-		if(this.rcParamsBase != null) {
-			this.rcParams = $.extend( this.manager.rcParamsBase, this.rcParamsBase );
-			
-			this.rcParams.paramString = [];
-			$.each( this.rcParams, function( tKey, tVal ) {
-				if( tKey != "paramString" ) {
-					if(tVal === true) { tVal="1"; }
-					if(tVal === false) { tVal="0"; }
-					self.rcParams.paramString.push(tKey+"="+tVal);
-				}
-			});
-			this.rcParams.paramString = this.rcParams.paramString.join("&");
-			
-			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
-		} else {
-			this.rcParams = this.manager.rcParams;
+		this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
+		if(Object.keys(this.manager.optionsNode.rcParams).length > 0) {
+			this.rcParams = $.extend( this.rcParams, this.manager.optionsNode.rcParams );
 		}
-		self = null;
+		if(this.rcParamsBase != null) {
+			this.rcParams = $.extend( this.rcParams, this.rcParamsBase );
+		}
+		
+		// if(this.rcParams == this.manager.rcParamsBase) {
+		// 	this.rcParams = this.manager.rcParams; // The manager's RC params are valid if no changes more specific than it exist.
+		// } else {
+			this.rcParams.paramString = this.createRcParamsString(this.rcParams);
+			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
+		// }
+	}
+	
+	// Get the string for use with Special:RecentChanges link for this wiki.
+	// Don't pass in params with "default" values included, or the link will have them all specified.
+	WikiData.prototype.createRcParamsString = function(pParams) {
+		var tArray = [];
+		$.each( pParams, function( tKey, tVal ) { 
+			if( tKey != "paramString" ) {
+				if(tVal === true) { tVal="1"; }
+				if(tVal === false) { tVal="0"; }
+				tArray.push(tKey+"="+tVal);
+			}
+		});
+		return tArray.join("&");
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
@@ -585,6 +594,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Version {0} by {1}",
 			// Options Panel
 			optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Diff Viewer",
 			diffModuleOpen : "Open diff",
@@ -624,6 +634,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Wersja {0} stworzona przez {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Podgląd zmian",
 			diffModuleOpen : "Pokaż zmiany",
@@ -663,6 +674,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Versión {0} por {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
+			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
 			// Diff Module
 			diffModuleTitle : "Visor de cambios",
 			diffModuleOpen : "Abrir cambio",
@@ -734,7 +746,7 @@ window.dev.RecentChangesMultiple.i18n = {
 		'and' : '&#32;and',
 		'recentchanges' : 'Recent changes',
 		'newpages' : 'New pages',
-		'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find.
+		'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find. Alts: prefs-files (Files), listfiles (File list), statistics-files (Uploaded files)
 		'log' : 'Logs',
 		'insights' : 'Insights',
 		
@@ -904,6 +916,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * Fields
 		 ***************************/
+		this.settingsSaveCookieCheckbox		= null;
+		
 		this.limitField				= null;
 		this.daysField				= null;
 		
@@ -920,97 +934,40 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.removeEventListeners();
 		
 		this.manager = null;
-		this.wikiInfo = null;
+		this.root = null;
 		
-		this.date = null;
-		this.type = null;
+		this.rcParams = null;
+		this.limitField				= null;
+		this.daysField				= null;
+		
+		this.minorEditsCheckbox		= null;
+		this.botsCheckbox			= null;
+		this.anonsCheckbox			= null;
+		this.usersCheckbox			= null;
+		this.myEditsCheckbox		= null;
+		this.groupedChangesCheckbox	= null;
+		this.logsCheckbox			= null;
 	}
 	
 	RCMOptions.prototype.init = function(pElem) {
 		this.root = pElem;
+		this.rcParams = this.getSave();//$.extend({}, this.manager.rcParamsBase);
+		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
 		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
 		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
 		
-		// $(tFieldset).makeCollapsible();
+		/***************************
+		 * RCMOptions settings
+		 ***************************/
+		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
+		tSettingsPanel.innerHTML = '<svg style="height:19px; vertical-align: top;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z" fill="currentColor" /></svg>';
 		
-		// (function($) {
-  //       var checkboxes = ['nsassociated', 'nsinvert'];
-  //       var $select = null ;
-  //       var rc = {
-  //           handleCollapsible: function(cache) {
-  //               var prefix = 'rce_'
-  //                 , $collapsibleElements = $('.collapsible');
-  //               function toggleCollapsible($collapsible) {
-  //                   $collapsible.toggleClass('collapsed');
-  //                   updateCollapsedCache($collapsible);
-  //               }
-  //               function updateCollapsedCache($collapsible) {
-  //                   var id = $collapsible.attr('id');
-  //                   if (id !== null ) {
-  //                       if ($collapsible.hasClass('collapsed')) {
-  //                           cache.set(prefix + id, 'collapsed', cache.CACHE_LONG);
-  //                       } else {
-  //                           cache.set(prefix + id, 'expanded', cache.CACHE_LONG);
-  //                       }
-  //                   }
-  //               }
-  //               $collapsibleElements.each(function() {
-  //                   var $this = $(this)
-  //                     , id = $this.attr('id');
-  //                   if (id !== null ) {
-  //                       var previousState = cache.get(prefix + id);
-  //                       if (!!previousState) {
-  //                           if (previousState === 'collapsed') {
-  //                               $this.addClass('collapsed');
-  //                           } else {
-  //                               $this.removeClass('collapsed');
-  //                           }
-  //                       }
-  //                   }
-  //               }
-  //               );
-  //               $collapsibleElements.on('click', 'legend', function(e) {
-  //                   toggleCollapsible($(e.currentTarget).parent());
-  //               }
-  //               );
-  //           },
-  //           bindTracking: function(tracker) {
-  //               var $trackedElement = $('#recentchanges-on-wikia-box');
-  //               if ($trackedElement.length > 0) {
-  //                   $trackedElement.on('mousedown', 'a', function(e) {
-  //                       tracker.track({
-  //                           action: tracker.ACTIONS.CLICK_LINK_TEXT,
-  //                           category: 'recentchanges-on-wikia',
-  //                           label: $(e.currentTarget).attr('href'),
-  //                           trackingMethod: 'analytics'
-  //                       });
-  //                   }
-  //                   );
-  //               }
-  //           },
-  //           updateCheckboxes: function() {
-  //               var isAllNS = ('' === $select.find('option:selected').val());
-  //               $.each(checkboxes, function(i, id) {
-  //                   $('#' + id).prop('disabled', isAllNS);
-  //               }
-  //               );
-  //           },
-  //           init: function() {
-  //               $select = $('#namespace');
-  //               $select.change(rc.updateCheckboxes).change();
-  //               require(['wikia.cache', 'wikia.tracker'], function(cache, tracker) {
-  //                   rc.handleCollapsible(cache);
-  //                   rc.bindTracking(tracker);
-  //               }
-  //               );
-  //           }
-  //       };
-  //       $(rc.init);
-  //   }
-  //   )($);
-  //   ;
+		this.settingsSaveCookieCheckbox = Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
+		Utils.addTextTo(i18n.TEXT["optionsPanelSaveWithCookie"], tSettingsPanel);
+		
+		this.settingsSaveCookieCheckbox.checked = !$.isEmptyObject(this.rcParams);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -1074,6 +1031,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.addEventListeners();
 		
 		this.refresh();
+		return this;
 	}
 	
 	// Add / set the values of the fields.
@@ -1123,6 +1081,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	}
 	
 	RCMOptions.prototype.addEventListeners = function() {
+		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		
 		this.limitField.addEventListener("change", this._onChange_limit.bind(this));
 		this.daysField.addEventListener("change", this._onChange_days.bind(this));
 		
@@ -1136,6 +1096,8 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	}
 	
 	RCMOptions.prototype.removeEventListeners = function() {
+		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		
 		this.limitField.removeEventListener("change", this._onChange_limit);
 		this.daysField.removeEventListener("change", this._onChange_days);
 		
@@ -1197,18 +1159,43 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.afterChangeBoolean("hidelogs", !pEvent.target.checked);
 	}
 	
+	RCMOptions.prototype._onChange_settingsSaveCookie = function(pEvent) {
+		if(pEvent.target.checked) {
+			this.save();
+		} else {
+			localStorage.removeItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID);
+		}
+	}
+	
 	/***************************
 	 * Helper Methods
 	 ***************************/
 	// Will add / edit the url param & script value with details entered.
 	RCMOptions.prototype.afterChangeNumber = function(pKey, pVal) {
+		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh();
+		this.manager.refresh(true);
+		this.save();
 	}
 	
 	RCMOptions.prototype.afterChangeBoolean = function(pKey, pVal) {
+		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh();
+		this.manager.refresh(true);
+		this.save();
+	}
+	
+	RCMOptions.prototype.save = function() {
+		if(this.settingsSaveCookieCheckbox.checked) {
+			localStorage.setItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID, JSON.stringify(this.rcParams));
+		}
+	}
+	
+	RCMOptions.prototype.getSave = function() {
+		return localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID)
+			? JSON.parse(localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID))
+			: {}
+			;
 	}
 	
 	return RCMOptions;
@@ -2572,8 +2559,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		var tDataset = this.resultCont.dataset;
 		
-		this.rcParamsBase = this.parseRCParams(tDataset.params, "&", "=");
-		this.rcParams = $.extend( this.getDefaultRCParams(), module.rcParamsURL, this.rcParamsBase );
+		this.rcParamsBase = $.extend( module.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
+		this.rcParams = $.extend( this.getDefaultRCParams(), this.rcParamsBase );
 		
 		this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
 		this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
@@ -2626,12 +2613,13 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		// Now start the app
-		this._start();
+		this._start(true);
 		
 		return this;
 	};
 	
-	RCMManager.prototype._start = function() {
+	/* pUpdateParams : Bool - optional (default: false) */
+	RCMManager.prototype._start = function(pUpdateParams) {
 		var self = this;
 		
 		clearTimeout(this.autoRefreshTimeoutID);
@@ -2650,6 +2638,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		this.totalWikisToLoad = 0;
 		Utils.forEach(this.chosenWikis, function(wikiInfo){
+			if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
 			self.totalWikisToLoad++;
 			self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
 		});
@@ -2658,7 +2647,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n.TEXT.loading+" (<span class='rcm-load-perc'>0%</span>)";
 	};
 	
-	RCMManager.prototype.refresh = function() {
+	/* pUpdateParams : Bool - optional (default: false) */
+	RCMManager.prototype.refresh = function(pUpdateParams) {
 		this.statusNode.innerHTML = "";
 		this.wikisNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
@@ -2676,7 +2666,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		RCData.closeDiff();
 		
-		this._start();
+		this._start(pUpdateParams);
 	};
 	
 	// Separate method so that it can be reused if the loading failed
@@ -3094,6 +3084,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh";
+	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie";
 	module.LOADER_IMG = "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
 	
 	module.rcmList = [];
