@@ -1,7 +1,15 @@
 ############################################
 ## PRIMARY
 ############################################
-- None
+- [Bug] For Wikia wikis, Comment "move" logs can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
+- [Bug] thread title retrieval error if script reset before all obtained.
+- [Bug] diff viewer "Close" button not working
+- [Bug] options cookie should be per RCM, not every RCM
+- [Bug] favicon in options panel maybe not square (set height AND width)
+- [Bug] Code error on timeout
+- Make "close" button use diff CSS class
+- For RCM, change ".diff" text color to near black (since white background is forced due to monobook support, force text color for dark-themed wikis)
+- Have left-side icons bring you to top of RCM, and open that wiki's "link box"
 
 ############################################
 ## SECONDARY

@@ -4,6 +4,26 @@
 		"selected_items":
 		[
 			[
+				"check",
+				"checked"
+			],
+			[
+				"sett",
+				"settingsSaveCookieCheckbox"
+			],
+			[
+				"data",
+				"dataset"
+			],
+			[
+				"wikis",
+				"wikisNode"
+			],
+			[
+				"wiki",
+				"wikisNodeList"
+			],
+			[
 				"user",
 				"username"
 			],
@@ -55,7 +75,7 @@
 			"file": "/C/Users/peppy/Desktop/z",
 			"settings":
 			{
-				"buffer_size": 0,
+				"buffer_size": 315,
 				"line_ending": "Windows"
 			}
 		},
@@ -63,15 +83,7 @@
 			"file": "build/core.js",
 			"settings":
 			{
-				"buffer_size": 139298,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/css/stylesheet.css",
-			"settings":
-			{
-				"buffer_size": 5291,
+				"buffer_size": 143170,
 				"line_ending": "Windows"
 			}
 		},
@@ -79,7 +91,7 @@
 			"file": "todo",
 			"settings":
 			{
-				"buffer_size": 2297,
+				"buffer_size": 2898,
 				"line_ending": "Windows"
 			}
 		},
@@ -87,7 +99,7 @@
 			"file": "changelog",
 			"settings":
 			{
-				"buffer_size": 6673,
+				"buffer_size": 7715,
 				"line_ending": "Windows"
 			}
 		},
@@ -95,15 +107,7 @@
 			"file": "src/js/Main.js",
 			"settings":
 			{
-				"buffer_size": 6750,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/js/loader.js",
-			"settings":
-			{
-				"buffer_size": 1403,
+				"buffer_size": 6837,
 				"line_ending": "Windows"
 			}
 		},
@@ -111,7 +115,7 @@
 			"file": "src/js/WikiData.js",
 			"settings":
 			{
-				"buffer_size": 13622,
+				"buffer_size": 14491,
 				"line_ending": "Windows"
 			}
 		},
@@ -119,7 +123,15 @@
 			"file": "src/js/RCMManager.js",
 			"settings":
 			{
-				"buffer_size": 23607,
+				"buffer_size": 26312,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/js/i18n.js",
+			"settings":
+			{
+				"buffer_size": 19598,
 				"line_ending": "Windows"
 			}
 		},
@@ -127,7 +139,15 @@
 			"file": "src/js/RCMOptions.js",
 			"settings":
 			{
-				"buffer_size": 13546,
+				"buffer_size": 12772,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "gulpfile.js",
+			"settings":
+			{
+				"buffer_size": 890,
 				"line_ending": "Windows"
 			}
 		},
@@ -135,7 +155,7 @@
 			"file": "src/js/RCData.js",
 			"settings":
 			{
-				"buffer_size": 30520,
+				"buffer_size": 30935,
 				"line_ending": "Windows"
 			}
 		},
@@ -143,7 +163,7 @@
 			"file": "src/js/RCList.js",
 			"settings":
 			{
-				"buffer_size": 24135,
+				"buffer_size": 24204,
 				"line_ending": "Windows"
 			}
 		}
@@ -191,23 +211,27 @@
 	[
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/branches",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/build",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/css",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js"
 	],
 	"file_history":
 	[
+		"/T/Documents/Documents/aaBooks.txt",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/css/stylesheet.css",
+		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/build/stylesheet.css",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/gulpfile.js",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/loader.js",
+		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/SideBarEnhancements/Open With/Side Bar.sublime-menu",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/Utils.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/branches/V1.0.3/code.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/branches/V1.1.7/code.2.js",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/loader.js",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/gulpfile.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/RCMManager.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/README.md",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/WikiData.js",
-		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/css/stylesheet.css",
 		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/T/Documents/aCode/RecentChangesMultiple/src/js/Main.js",
 		"/T/Documents/aCode/RecentChangesMultiple/todo",
@@ -259,6 +283,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"rcm-wikis-info",
+			"AUTO_REFRESH_LOCAL_STORAGE_ID",
+			"autoRefresh",
+			"cookie",
+			"top",
+			"optionsNode",
+			"end",
+			"home",
+			"getThreadTitle",
+			"RC_TEXT",
+			"Diff",
+			"page",
 			"closeD",
 			"wgUserName",
 			"RecentChangesMultiple",
@@ -307,7 +343,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -316,7 +352,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 315,
 						"regions":
 						{
 						},
@@ -345,15 +381,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 139298,
+						"buffer_size": 143170,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								779,
-								779
+								0,
+								143170
 							]
 						],
 						"settings":
@@ -362,7 +398,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2295.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
@@ -370,76 +406,19 @@
 				},
 				{
 					"buffer": 2,
-					"file": "src/css/stylesheet.css",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5291,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2376,
-								2376
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CSS/CSS.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "todo",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2297,
+						"buffer_size": 2898,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								578,
-								579
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "changelog",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6673,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1886,
-								1886
+								577,
+								577
 							]
 						],
 						"settings":
@@ -451,58 +430,29 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "src/js/Main.js",
+					"buffer": 3,
+					"file": "changelog",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6750,
+						"buffer_size": 7715,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								785,
-								785
+								566,
+								566
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/js/loader.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1403,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								37,
-								37
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
@@ -513,107 +463,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "src/js/WikiData.js",
+					"buffer": 4,
+					"file": "src/js/Main.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13622,
+						"buffer_size": 6837,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4580,
-								4580
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1305.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "src/js/RCMManager.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 23607,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8344,
-								8344
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": -0.0,
-						"translation.y": 2435.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "src/js/RCMOptions.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 13546,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1299,
-								1299
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 350.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "src/js/RCData.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 30520,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2147,
-								2147
+								1008,
+								1041
 							]
 						],
 						"settings":
@@ -623,6 +486,180 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/js/WikiData.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14491,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8797,
+								8797
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2780.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/js/RCMManager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 26312,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								20197,
+								20197
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 6200.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/js/i18n.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 19598,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								496,
+								424
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "src/js/RCMOptions.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12772,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3001,
+								3001
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 495.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "gulpfile.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 890,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								890,
+								890
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/js/RCData.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 30935,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								24427,
+								24427
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 7430.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 7,
@@ -634,15 +671,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 24135,
+						"buffer_size": 24204,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								15413,
-								15183
+								21510,
+								21543
 							]
 						],
 						"settings":
@@ -651,7 +688,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": -0.0,
-						"translation.y": 5030.0,
+						"translation.y": 7865.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 11,
