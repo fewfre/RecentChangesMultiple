@@ -3,6 +3,7 @@
 ############################################
 - [Bug] For Wikia wikis, Comment "move" logs can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
 	- Fixing may not be possible for Wikia wiki, unless logs messages are replaced with parsing RC info (at least for move logs)
+- change "i18n.TEXT" to "i18n" and "i18n.RC_TEXT" to "i18nMessages" (or something similar). Or even just combine the two into "i18n" object.
 
 ############################################
 ## SECONDARY
