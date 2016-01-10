@@ -91,7 +91,7 @@
 			"file": "todo",
 			"settings":
 			{
-				"buffer_size": 2898,
+				"buffer_size": 3271,
 				"line_ending": "Windows"
 			}
 		},
@@ -410,15 +410,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2898,
+						"buffer_size": 3271,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								577,
-								577
+								951,
+								951
 							]
 						],
 						"settings":

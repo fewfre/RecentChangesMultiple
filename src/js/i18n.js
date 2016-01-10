@@ -72,7 +72,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Wersja {0} stworzona przez {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
-			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
+			optionsPanelSaveWithCookie: "Zapisz zmiany w pamięci podręcznej",
 			// Diff Module
 			diffModuleTitle : "Podgląd zmian",
 			diffModuleOpen : "Pokaż zmiany",
@@ -162,7 +162,7 @@ window.dev.RecentChangesMultiple.i18n = {
 		'unpatrolledletter' : '!',
 		'blocklink' : 'block', // L3150
 		'contribslink' : 'contribs', // L3153
-		'tags-hitcount' : '$1 {{PLURAL:$1|change|changes}}', // L4650
+		'nchanges' : '$1 {{PLURAL:$1|change|changes}}', // L4650
 		'rollbacklink' : 'rollback', // L2869
 		// Tooltips
 		'recentchanges-label-newpage' : 'This edit created a new page', // L2041
@@ -174,6 +174,7 @@ window.dev.RecentChangesMultiple.i18n = {
 		// "Extra" support - "# only translate this message to other languages if you have to change it"
 		'semicolon-separator' : ';&#32;',
 		'pipe-separator' : '&#32;|&#32;',
+		'parentheses' : '($1)',
 		// Revision deletion
 		'rev-deleted-comment' : '(edit summary removed)',
 		'rev-deleted-user' : '(username removed)',
@@ -182,11 +183,18 @@ window.dev.RecentChangesMultiple.i18n = {
 		'article-comments-rc-comment' : 'Article comment (<span class="plainlinks">[$1 $2]</span>)',
 		'article-comments-rc-comments' : 'Article comments ([[$1]])',
 		'and' : '&#32;and',
+		// Wiki Infobar
 		'recentchanges' : 'Recent changes',
 		'newpages' : 'New pages',
 		'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find. Alts: prefs-files (Files), listfiles (File list), statistics-files (Uploaded files)
 		'log' : 'Logs',
 		'insights' : 'Insights',
+		'randompage' : 'Random page',
+		'group-sysop' : 'Administrators',
+		'group-user' : 'Users',
+		'prefs-files' : 'Files',
+		'awc-metrics-articles' : 'Articles',
+		'awc-metrics-edits' : 'Edits',
 		
 		/***************************
 		 * Log Names - wgLogHeaders

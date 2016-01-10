@@ -149,7 +149,11 @@
 		},
 		
 		escapeCharacters: function(pString) {
-			return pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+			return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
+		},
+		
+		escapeCharactersLink: function(pString) {
+			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
 		},
 		
 		// http://phpjs.org/functions/version_compare/
@@ -243,6 +247,11 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
 		this.username			= null; // {string} Username to user for this wiki.
+		this.bgcolor			= null; // {string} A valid CSS color code.
+		
+		this.htmlName			= null; // {string} a unique identifier for this wiki. Just the server name with dashes for the dots.
+		this.infoID				= null; // {string} element ID for the wiki's info banner.
+		this.rcClass			= null; // {string} class name for this wiki's RC entries.
 		
 		/***************************
 		 * Siteinfo Data
@@ -254,6 +263,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.mainpage			= null; // {string} Main page for the wiki (not all wiki's redirect to main page if you link to domain)
 		this.mwversion			= null; // {string} MW version number. ex: MediaWiki 1.24.1
 		this.namespaces			= null; // {array<object>} A data object with all namespaces on the wiki by number = { "1":{ -data- } }
+		this.statistics			= null; // {object} A data object with statistics about number of articles / files / users there are on the wiki.
 		
 		/***************************
 		 * User Data
@@ -288,6 +298,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.servername = tWikiDataRaw[0];
 		this.scriptdir = "";
 		this.firstSeperator = "?";
+		this.htmlName = this.servername.replace(/(\.)/g, "-");
 		
 		this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
 		this.useOutdatedLogSystem = this.isWikiaWiki;
@@ -339,6 +350,10 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 						this.username = tVal;
 						break;
 					}
+					case "bgcolor": {
+						this.bgcolor = tVal;
+						break;
+					}
 					default: {
 						// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
 						this[tKey] = tVal;
@@ -353,6 +368,9 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		}
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
+		
+		this.infoID = "wiki-"+this.htmlName;
+		this.rcClass = "rc-entry-"+this.htmlName;
 		
 		// this.setupRcParams(); // Moved to manager
 		
@@ -397,6 +415,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			}
 			
 			this.namespaces = pQuery.namespaces || {};
+			this.statistics = pQuery.statistics || {};
 		}
 		
 		/***************************
@@ -450,8 +469,10 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
-	WikiData.prototype.getFaviconHTML = function() {
-		return "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />"; // Return self for chaining or whatnot.
+	WikiData.prototype.getFaviconHTML = function(pOpenInfoBanner) {
+		var html = "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />";
+		if(pOpenInfoBanner) { html = "<span class='rcm-favicon-goto-button' data-infoid='"+this.infoID+"'>"+html+"</span>"; }
+		return html;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
@@ -520,7 +541,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		if(this.needsSiteinfoData) {
 			tMetaList.push("siteinfo");
-			tReturnText += "&siprop=" + ["general", "namespaces"].join("|");
+			tReturnText += "&siprop=" + ["general", "namespaces", "statistics"].join("|");
 			
 			/***************************
 			 * Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
@@ -546,7 +567,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		tReturnText += "&list="+tUrlList.join("|");
 		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
-		tReturnText.replace(" ", "_");
+		tReturnText.replace(/ /g, "_");
 		
 		tUrlList = null;
 		tMetaList = null;
@@ -634,7 +655,7 @@ window.dev.RecentChangesMultiple.i18n = {
 			footer : "Wersja {0} stworzona przez {1}",
 			// Options Panel
 			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
-			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
+			optionsPanelSaveWithCookie: "Zapisz zmiany w pamięci podręcznej",
 			// Diff Module
 			diffModuleTitle : "Podgląd zmian",
 			diffModuleOpen : "Pokaż zmiany",
@@ -724,7 +745,7 @@ window.dev.RecentChangesMultiple.i18n = {
 		'unpatrolledletter' : '!',
 		'blocklink' : 'block', // L3150
 		'contribslink' : 'contribs', // L3153
-		'tags-hitcount' : '$1 {{PLURAL:$1|change|changes}}', // L4650
+		'nchanges' : '$1 {{PLURAL:$1|change|changes}}', // L4650
 		'rollbacklink' : 'rollback', // L2869
 		// Tooltips
 		'recentchanges-label-newpage' : 'This edit created a new page', // L2041
@@ -736,6 +757,7 @@ window.dev.RecentChangesMultiple.i18n = {
 		// "Extra" support - "# only translate this message to other languages if you have to change it"
 		'semicolon-separator' : ';&#32;',
 		'pipe-separator' : '&#32;|&#32;',
+		'parentheses' : '($1)',
 		// Revision deletion
 		'rev-deleted-comment' : '(edit summary removed)',
 		'rev-deleted-user' : '(username removed)',
@@ -744,11 +766,18 @@ window.dev.RecentChangesMultiple.i18n = {
 		'article-comments-rc-comment' : 'Article comment (<span class="plainlinks">[$1 $2]</span>)',
 		'article-comments-rc-comments' : 'Article comments ([[$1]])',
 		'and' : '&#32;and',
+		// Wiki Infobar
 		'recentchanges' : 'Recent changes',
 		'newpages' : 'New pages',
 		'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find. Alts: prefs-files (Files), listfiles (File list), statistics-files (Uploaded files)
 		'log' : 'Logs',
 		'insights' : 'Insights',
+		'randompage' : 'Random page',
+		'group-sysop' : 'Administrators',
+		'group-user' : 'Users',
+		'prefs-files' : 'Files',
+		'awc-metrics-articles' : 'Articles',
+		'awc-metrics-edits' : 'Edits',
 		
 		/***************************
 		 * Log Names - wgLogHeaders
@@ -907,6 +936,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	function RCMOptions(pManager) {
 		this.manager = pManager; // {RCMManager} Keep track of what manager this data is attached to.
 		this.root = null;
+		this.localStorageID = module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", ""),
 		
 		/***************************
 		 * Data
@@ -954,7 +984,18 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.rcParams = this.getSave();//$.extend({}, this.manager.rcParamsBase);
 		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
-		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
+		if(module.langLoaded) {
+			this._addElements();
+		} else {
+			var self = this;
+			module.onLangLoadCallbacks.push(function(){ self._addElements(); });
+		}
+		
+		return this;
+	}
+	
+	RCMOptions.prototype._addElements = function() {
+		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, this.root);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
 		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
 		
@@ -967,7 +1008,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.settingsSaveCookieCheckbox = Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
 		Utils.addTextTo(i18n.TEXT["optionsPanelSaveWithCookie"], tSettingsPanel);
 		
-		this.settingsSaveCookieCheckbox.checked = !$.isEmptyObject(this.rcParams);
+		this.settingsSaveCookieCheckbox.checked = this.isSaveEnabled();//!$.isEmptyObject(this.rcParams);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -1163,7 +1204,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		if(pEvent.target.checked) {
 			this.save();
 		} else {
-			localStorage.removeItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID);
+			localStorage.removeItem(this.localStorageID);
 		}
 	}
 	
@@ -1187,15 +1228,19 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	
 	RCMOptions.prototype.save = function() {
 		if(this.settingsSaveCookieCheckbox.checked) {
-			localStorage.setItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID, JSON.stringify(this.rcParams));
+			localStorage.setItem(this.localStorageID, JSON.stringify(this.rcParams));
 		}
 	}
 	
 	RCMOptions.prototype.getSave = function() {
-		return localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID)
-			? JSON.parse(localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID))
+		return localStorage.getItem(this.localStorageID)
+			? JSON.parse(localStorage.getItem(this.localStorageID))
 			: {}
 			;
+	}
+	
+	RCMOptions.prototype.isSaveEnabled = function() {
+		return localStorage.getItem(this.localStorageID) != null;
 	}
 	
 	return RCMOptions;
@@ -1313,7 +1358,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled = pData.patrolled == "";
 		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = this.title; // By default; make change based on this.type.
-		this.href = Utils.escapeCharacters( this.wikiInfo.articlepath + pData.title.replace(/ /g, "_") );
+		this.href = this.wikiInfo.articlepath + Utils.escapeCharactersLink( pData.title );
 		this.hrefBasic = this.href.split("/@comment")[0];
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
@@ -1527,14 +1572,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	};
 	
 	RCData.prototype.userDetails = function() {
-		if(this.userhidden) {
-			return '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-user"]+'</span>';
-		}
+		if(this.userhidden) { return '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-user"]+'</span>'; }
+		
 		var blockText = this.wikiInfo.canBlock ? i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Block/{1}'>"+i18n.RC_TEXT["blocklink"]+"</a>" : "";
 		if(this.userEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{1}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Contributions/{1}'>"+i18n.RC_TEXT["contribslink"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Contributions/{1}'>"+i18n.RC_TEXT["contribslink"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		} else {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{1}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		}
 	}
 	
@@ -1631,7 +1675,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					"<a href='"+ this.hrefFS+"redirect=no" +"'>"+ this.title + "</a>",
-					"<a href='"+ this.wikiInfo.articlepath+this.log_move_newTitle.replace(" ", "_") +"'>"+ this.log_move_newTitle + "</a>"
+					"<a href='"+ this.wikiInfo.articlepath+ Utils.escapeCharactersLink(this.log_move_newTitle) +"'>"+ this.log_move_newTitle + "</a>"
 				);
 				break;
 			}
@@ -1791,10 +1835,10 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	RCData.prototype.wallBoardHistoryLink = function() {
 		var tLink = "", tText = "";
 		if(this.type == RCData.TYPE.WALL) {
-			tLink = this.wikiInfo.articlepath + this.getBoardWallParentTitleWithNamespace() + this.wikiInfo.firstSeperator + "action=history";
+			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "wall-recentchanges-thread-history-link" : "wall-recentchanges-history-link";
 		} else {
-			tLink = this.wikiInfo.articlepath + this.getBoardWallParentTitleWithNamespace() + this.wikiInfo.firstSeperator + "action=history";
+			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "forum-recentchanges-thread-history-link" : "forum-recentchanges-history-link";
 		}
 		return Utils.formatString("(<a href='{0}'>{1}</a>)", tLink, i18n.RC_TEXT[tText]);
@@ -1813,62 +1857,100 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
 	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
 	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
-		if(module.debug) { console.log("http:"+ajaxLink); console.log(diffLink); console.log(undoLink); }
+		if(module.debug) { console.log("http:"+pAjaxUrl); console.log(pDiffLink); console.log(pUndoLink); }
+		
+		var tTitle = pPageName+" - "+i18n.TEXT.diffModuleTitle;
+		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+		var tButtons = [];
+		tButtons.push({
+			defaultButton: true,
+			message: i18n.TEXT.diffModuleOpen,
+			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeDiff(); }
+		});
+		if(pUndoLink != null) {
+			tButtons.push({
+				defaultButton: true,
+				message: i18n.TEXT.diffModuleUndo,
+				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeDiff(); }
+			});
+		}
+		tButtons.push({
+			defaultButton: false,
+			message: i18n.TEXT.diffModuleClose,
+			handler: RCData.closeDiff
+		});
 		
 		// Retrieve the diff table.
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 			success: function(pData){
-				$('#rcm-DiffView').html(""
-					+"<table class='diff'>"
-						+"<colgroup>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-						+"</colgroup>"
-						+pData.query.pages[pageID].revisions[0].diff["*"]
-					+"</table>"
-				);
+				// $('#rcm-DiffView').html(""
+				// 	+"<table class='diff'>"
+				// 		+"<colgroup>"
+				// 			+"<col class='diff-marker'>"
+				// 			+"<col class='diff-content'>"
+				// 			+"<col class='diff-marker'>"
+				// 			+"<col class='diff-content'>"
+				// 		+"</colgroup>"
+				// 		+pData.query.pages[pageID].revisions[0].diff["*"]
+				// 	+"</table>"
+				// );
+				
+				// Re-open modal so that it gets re-positioned based on new content size.
+				RCData.closeDiff();
+				var ajaxform = ''
+				+'<form method="" name="" class="WikiaForm">'
+					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">'
+						+"<table class='diff'>"
+							+"<colgroup>"
+								+"<col class='diff-marker'>"
+								+"<col class='diff-content'>"
+								+"<col class='diff-marker'>"
+								+"<col class='diff-content'>"
+							+"</colgroup>"
+							+pData.query.pages[pageID].revisions[0].diff["*"]
+						+"</table>"
+					+'</div>'
+				+'</form>';
+				var tModule = $.showCustomModal(tTitle, ajaxform, {
+					id: 'rcm-diff-viewer',
+					width: 1000,
+					buttons: tButtons,
+					callbackBefore: function() {
+						/* Disable page scrolling */
+						if ($(document).height() > $(window).height()) {
+							$('html').addClass('rcm-noscroll');
+						}
+					},
+					onAfterClose: RCData.onDiffClosed,
+				});
 			},
 		});
 		
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if ($('#rcm-DiffView').length == 0) {
 			var ajaxform = ''
-				+'<form method="" name="" class="WikiaForm ">'
-					+'<div id="rcm-DiffView"></div>'
-				+'</form>';
-			// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-			var tButtons = [];
-			tButtons.push({
-				message: i18n.TEXT.diffModuleOpen,
-				handler: function () { window.open(pDiffLink, '_blank'); $('#page-viewer').closeModal(); }
-			});
-			if(pUndoLink != null) {
-				tButtons.push({
-					message: i18n.TEXT.diffModuleUndo,
-					handler: function () { window.open(pUndoLink, '_blank'); $('#page-viewer').closeModal(); }
-				});
-			}
-			tButtons.push({
-				message: i18n.TEXT.diffModuleClose,
-				handler: RCData.closeDiff
-			});
-			$.showCustomModal(pPageName+" - "+i18n.TEXT.diffModuleTitle, ajaxform, {
+			+'<form method="" name="" class="WikiaForm">'
+				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
+					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
+				+'</div>'
+			+'</form>';
+			$.showCustomModal(tTitle, ajaxform, {
 				id: 'rcm-diff-viewer',
 				width: 1000,
 				buttons: tButtons
 			});
-			$("#rcm-DiffView").css("max-height", ($(window).height() - 220) + "px");
 		}
-		$('#rcm-DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
 	}
 	
 	RCData.closeDiff = function() {
 		if($('#rcm-DiffView').length != 0) {
-			$('#page-viewer').closeModal();
+			$('#rcm-diff-viewer').closeModal();
 		}
+	}
+	
+	RCData.onDiffClosed = function() {
+		$("html").removeClass("rcm-noscroll");
 	}
 	
 	return RCData;
@@ -1974,15 +2056,19 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		var tDiffSize = pToRC.newlen - (pFromRC ? pFromRC : pToRC).oldlen;
 		var tDiffSizeText = mw.language.convertNumber(tDiffSize);
 		
-		var html = "<strong class='{0}'>({1}{2})</strong>";
+		// var html = "<strong class='{0}'>({1}{2})</strong>";
+		var html = "<strong class='{0}'>{1}</strong>";
 		if(tDiffSize > 0) {
-			html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
+			return Utils.formatString(html, "mw-plusminus-pos", Utils.wiki2html(i18n.RC_TEXT.parentheses, "+"+tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
 		} else if(tDiffSize < 0) {
-			html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
+			return Utils.formatString(html, "mw-plusminus-neg", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
 		} else {
-			html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
+			return Utils.formatString(html, "mw-plusminus-null", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
 		}
-		return html;
+		// return html;
 	};
 	
 	RCList.prototype._contributorsCountText = function() {
@@ -2007,7 +2093,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	// For use with comments / normal pages
 	RCList.prototype._changesText = function() {
 		//var returnText = Utils.formatString(i18n.RC_TEXT.numChanges, this.list.length);
-		var returnText = Utils.wiki2html(i18n.RC_TEXT["tags-hitcount"], this.list.length);
+		var returnText = Utils.wiki2html(i18n.RC_TEXT["nchanges"], this.list.length);
 		if(this.type == RCData.TYPE.NORMAL && this.oldest.isNewPage == false) {
 			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
 		}
@@ -2016,9 +2102,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	
 	RCList.prototype._userPageLink = function(pUsername, pUserEdited) {
 		if(pUserEdited) {
-			return Utils.formatString("<a href='{0}User:{1}'>{1}</a>", this.wikiInfo.articlepath, pUsername);
+			return Utils.formatString("<a href='{0}User:{1}'>{2}</a>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(pUsername), pUsername);
 		} else {
-			return Utils.formatString("<a href='{0}Special:Contributions/{1}'>{1}</a>", this.wikiInfo.articlepath, pUsername);
+			return Utils.formatString("<a href='{0}Special:Contributions/{1}'>{2}</a>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(pUsername), pUsername);
 		}
 	};
 	
@@ -2202,10 +2288,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 		}
 		
-		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc" });
-		Utils.newElement("caption", {}, tTable).style.cssText = "background-image:url("+pRC.wikiInfo.favicon+")";
+		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
+		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
-		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML() }, tRow);
+		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+'<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
 			+this._getFlags(pRC, "&nbsp;")
@@ -2270,17 +2356,17 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += SEP;
 		html += this._contributorsCountText();
 		
-		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed" }); // mw-made-collapsible
-		Utils.newElement("caption", {}, tTable).style.cssText = "background-image:url("+this.newest.wikiInfo.favicon+")";
+		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
+		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
-		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML() }, tRow);
+		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
-				+'<span class="mw-rc-openarrow"><a title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'" href="#">'
+				+'<span class="mw-rc-openarrow"><a title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'">'// href="#"
 					+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
 				+'</a></span>'
-				+'<span class="mw-rc-closearrow"><a title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" href="#">'
+				+'<span class="mw-rc-closearrow"><a title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'">'// href="#"
 						+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
@@ -2409,9 +2495,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 		}
 		
-		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd") });
-		Utils.newElement("div", { className:'rcm-tiled-favicon', style:"background-image:url("+pRC.wikiInfo.favicon+")" }, tLi);;
-		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML();
+		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
+		Utils.newElement("div", { className:'rcm-tiled-favicon' }, tLi);;
+		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true);
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
@@ -2439,7 +2525,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	// 	if(isV1_24Plus) {
 	// 		tAPiUrl += "action=query&meta=tokens&type=rollback";
 	// 	} else {
-	// 		tAPiUrl += "action=query&prop=revisions&format=json&rvtoken=rollback&titles="+pPageName.replace(" ", "_")
+	// 		tAPiUrl += "action=query&prop=revisions&format=json&rvtoken=rollback&titles="+Utils.escapeCharactersLink(pPageName)
 	// 	}
 		
 	// 	$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url:tAPiUrl,
@@ -2559,7 +2645,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		var tDataset = this.resultCont.dataset;
 		
-		this.rcParamsBase = $.extend( module.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
+		this.rcParamsBase = $.extend( {}, module.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
 		this.rcParams = $.extend( this.getDefaultRCParams(), this.rcParamsBase );
 		
 		this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
@@ -2567,7 +2653,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
-		if(tDataset.hideusers) { this.hideusers = tDataset.hideusers.replace("_", " ").split(","); }
+		if(tDataset.hideusers) { this.hideusers = tDataset.hideusers.replace(/_/g, " ").split(","); }
 		// if(this.rcParams.hidemyself) {
 		// 	var tUsername = mw.config.get("wgUserName");
 		// 	if(tUsername) { this.hideusers.push(tUsername); }
@@ -2576,7 +2662,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		// Only show these users' edits across whole RCMManager
 		this.onlyshowusers = []; // {array}
-		if(tDataset.onlyshowusers) { this.onlyshowusers = tDataset.onlyshowusers.replace("_", " ").split(","); }
+		if(tDataset.onlyshowusers) { this.onlyshowusers = tDataset.onlyshowusers.replace(/_/g, " ").split(","); }
 		this.onlyshowusers.forEach(function(o,i,a){ a[i] = a[i].trim(); });
 		
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
@@ -2611,6 +2697,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		// Footer never changes, so set here
 		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		
+		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.onGoToWikiInfo);
 		
 		// Now start the app
 		this._start(true);
@@ -2715,6 +2803,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				}
 			);
 			self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
 			console.log("Error loading "+pWikiInfo.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
@@ -2748,7 +2837,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			return;
 		}
 		
-		if(pData.warning) { console.log("WARNING: ", pData.warning); }
+		if(pData && pData.warning) { console.log("WARNING: ", pData.warning); }
 		
 		// Store wiki-data retrieved that's needed before wiki parsing
 		pWikiInfo.initAfterLoad(pData.query);
@@ -2829,6 +2918,19 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.statusNode.innerHTML = Utils.formatString(i18n.TEXT.timeStamp, "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
 		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+Utils.formatString(i18n.TEXT.changesAdded, "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
 		this.resultsNode.innerHTML = "";
+		
+		// Add some run-time CSS classes
+		if(!this.rcm_style_for_rc_bg_added) {
+			this.rcm_style_for_rc_bg_added = true;
+			var tCSS = "";
+			Utils.forEach(this.chosenWikis, function(wikiInfo){
+				// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
+				tCSS += "\ntable.mw-enhanced-rc."+wikiInfo.rcClass+" caption, table.mw-enhanced-rc."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
+					+(wikiInfo.bgcolor != null ? "opacity:0.2; background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
+				+" }";
+			});
+			Utils.newElement("style", { innerHTML:tCSS }, document.body);
+		}
 		
 		// console.log(this.recentChangesEntries);
 		if(this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime) {
@@ -2914,7 +3016,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			dataType: 'jsonp',
 			data: {},
 			url: tUrl,
-			success: tCallback,
+			success: function(){ if(pID != self.ajaxID) { return; } tCallback.apply(this, arguments); },//tCallback,
 			// error: function(data){ self.onWikiLoaded(null, pWikiInfo, pTries, pID, true); },
 		});
 		
@@ -2963,21 +3065,26 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	RCMManager.prototype.addWikiIcon = function(pWikiInfo) {
 		var self = this;
 		// this.wikisNodeList.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
-		var favicon = Utils.newElement("span", { className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.wikisNodeList);
-		favicon.addEventListener("click", function(){
+		var favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.wikisNodeList);
+		favicon.addEventListener("click", function(e){
 			var infoBanner = self.wikisNodeInfo.querySelector(".banner-notification");
 			// If already open for that wiki, then close it.
-			if(infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername) {
+			if(infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername && /*Not called via click()*/(e.screenX != 0 && e.screenY != 0)) {
 				self.closeWikiInfoBanner();
 			} else {
 				// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
 				self.wikisNodeInfo.innerHTML = "<div class='banner-notification warn' data-wiki='"+pWikiInfo.servername+"'>"//notify
 				+ "<button class='close wikia-chiclet-button'><img></button>"
 				+ "<div class='msg'>"
+				+ "<table class='rcm-wiki-infotable'>"
+				+ "<tr>"
+				+ "<td rowspan='2' class='rcm-title-cell'>"
 				+ pWikiInfo.getFaviconHTML()
 				+ " "
-				+ "<b><a href='"+pWikiInfo.articlepath+pWikiInfo.mainpage.replace(" ", "_")+"'>"+pWikiInfo.sitename+"</a></b>"
+				+ "<b><a href='"+pWikiInfo.articlepath+Utils.escapeCharactersLink(pWikiInfo.mainpage)+"'>"+pWikiInfo.sitename+"</a></b>"
 				+ " : "
+				+ "</td>"
+				+ "<td>"
 				+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n.RC_TEXT["recentchanges"]+"</a>"
 				+ " - "
 				+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n.RC_TEXT["newpages"]+"</a>"
@@ -2985,7 +3092,27 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n.RC_TEXT["newimages"]+"</a>"
 				+ " - "
 				+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n.RC_TEXT["log"]+"</a>"
+				
 				+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n.RC_TEXT["insights"]+"</a>" : "")
+				+ " - "
+				+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n.RC_TEXT["randompage"]+"</a>"
+				+ "</td>"
+				+ "</tr>"
+				// Now for the statistics
+					+ "<tr>"
+					+ "<td>"
+					+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
+					+ "<tr>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n.RC_TEXT["awc-metrics-articles"]+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListFiles'>"+i18n.RC_TEXT["prefs-files"]+"</a>: <b>" + pWikiInfo.statistics.images +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListUsers'>"+i18n.RC_TEXT["group-user"]+"</a>: <b>" + pWikiInfo.statistics.activeusers +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListAdmins'>"+i18n.RC_TEXT["group-sysop"]+"</a>: <b>" + pWikiInfo.statistics.admins +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:Statistics'>"+i18n.RC_TEXT["awc-metrics-edits"]+"</a>: <b>" + pWikiInfo.statistics.edits +"</b></td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td>"
+					+ "</tr>"
+				+ "</table>"
 				+ "</div>";
 				+ "</div>";
 				self.wikisNodeInfo.querySelector(".banner-notification .close").addEventListener("click", self.closeWikiInfoBanner.bind(self));
@@ -2993,11 +3120,60 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		});
 	};
 	
+	// RCMManager.prototype.addWikiIconOld = function(pWikiInfo) {
+	// 	var self = this;
+	// 	// this.wikisNodeList.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
+	// 	var favicon = Utils.newElement("span", { className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.wikisNodeList);
+	// 	favicon.addEventListener("click", function(){
+	// 		var infoBanner = self.wikisNodeInfo.querySelector(".banner-notification");
+	// 		// If already open for that wiki, then close it.
+	// 		if(infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername) {
+	// 			self.closeWikiInfoBanner();
+	// 		} else {
+	// 			// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
+	// 			self.wikisNodeInfo.innerHTML = "<div class='banner-notification warn' data-wiki='"+pWikiInfo.servername+"'>"//notify
+	// 			+ "<button class='close wikia-chiclet-button'><img></button>"
+	// 			+ "<div class='msg'>"
+	// 			+ pWikiInfo.getFaviconHTML()
+	// 			+ " "
+	// 			+ "<b><a href='"+pWikiInfo.articlepath+pWikiInfo.mainpage.replace(/ /g, "_")+"'>"+pWikiInfo.sitename+"</a></b>"
+	// 			+ " : "
+	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n.RC_TEXT["recentchanges"]+"</a>"
+	// 			+ " - "
+	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n.RC_TEXT["newpages"]+"</a>"
+	// 			+ " - "
+	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n.RC_TEXT["newimages"]+"</a>"
+	// 			+ " - "
+	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n.RC_TEXT["log"]+"</a>"
+				
+	// 			+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n.RC_TEXT["insights"]+"</a>" : "")
+	// 			+ " - "
+	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n.RC_TEXT["randompage"]+"</a>"
+	// 			+ "</div>";
+	// 			+ "</div>";
+	// 			self.wikisNodeInfo.querySelector(".banner-notification .close").addEventListener("click", self.closeWikiInfoBanner.bind(self));
+	// 		}
+	// 	});
+	// };
+	
 	RCMManager.prototype.closeWikiInfoBanner = function() {
 		// $(infoBanner).hide(500, "linear", function() {
 		$(this.wikisNodeInfo.querySelector(".banner-notification")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
 			$(this).remove();
 		});
+	};
+	
+	RCMManager.prototype.onGoToWikiInfo = function(e) {
+		// console.log(e, e.currentTarget);
+		// console.log(e.currentTarget.dataset.infoid);
+		
+		var btn = document.querySelector("#"+e.currentTarget.dataset.infoid);
+		if(btn) {
+			var tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;
+			// $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
+			$('html, body').scrollTop( $(btn).offset().top + tScrollOffset - 6 );
+			btn.click();
+		}
 	};
 	
 	// take a "&" seperated list of RC params, and returns a Object with settings.
@@ -3080,12 +3256,12 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.1";
+	module.version = "1.2.2";
 	module.debug = module.debug != undefined ? module.debug : false;
-	module.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
-	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh";
-	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie";
-	module.LOADER_IMG = "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
+	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
+	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
+	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie-" + mw.config.get("wgPageName");
+	module.LOADER_IMG = module.LOADER_IMG || "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
 	
 	module.rcmList = [];
 	module.uniqID = 0;
@@ -3141,7 +3317,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			if(param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
 				module.rcParamsURL[param] = tUrlVars[param]=="1";
 			}
-			if(param == debug) { module.debug = (param=="true"); }
+			if(param == "debug") { module.debug = (tUrlVars[param]=="true"); }
 		}
 		
 		/***************************
@@ -3155,6 +3331,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		// This does things like allow "fieldset" to collapse in RCMOptions
 		mw.loader.load( 'mediawiki.special.recentchanges' );
+		
+		// // For Testing CSS
+		// Utils.newElement("style", { innerHTML:""
+		// 	+""
+		// +"" }, document.body);
 	}
 	
 	module.unload = function() {
@@ -3204,14 +3385,10 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		
 		// When loading of all translated messages is done (or one failed) do this.
-		$.when.apply(tLangLoadAjaxPromises)
+		$.when.apply($, tLangLoadAjaxPromises)
 		.done(function(pData){
 			module.langLoaded = true;
-			// $.each( (data.query || {}).allmessages, function( index, message ) {
-			// 	if( message.missing !== '' ) {
-			// 		i18n.RC_TEXT[message.name] = message['*'];
-			// 	}
-			// });
+			
 			for (var i = 0; i < module.onLangLoadCallbacks.length; i++) {
 				module.onLangLoadCallbacks[i]();
 			}

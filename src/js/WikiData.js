@@ -31,6 +31,11 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
 		this.username			= null; // {string} Username to user for this wiki.
+		this.bgcolor			= null; // {string} A valid CSS color code.
+		
+		this.htmlName			= null; // {string} a unique identifier for this wiki. Just the server name with dashes for the dots.
+		this.infoID				= null; // {string} element ID for the wiki's info banner.
+		this.rcClass			= null; // {string} class name for this wiki's RC entries.
 		
 		/***************************
 		 * Siteinfo Data
@@ -42,6 +47,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.mainpage			= null; // {string} Main page for the wiki (not all wiki's redirect to main page if you link to domain)
 		this.mwversion			= null; // {string} MW version number. ex: MediaWiki 1.24.1
 		this.namespaces			= null; // {array<object>} A data object with all namespaces on the wiki by number = { "1":{ -data- } }
+		this.statistics			= null; // {object} A data object with statistics about number of articles / files / users there are on the wiki.
 		
 		/***************************
 		 * User Data
@@ -76,6 +82,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.servername = tWikiDataRaw[0];
 		this.scriptdir = "";
 		this.firstSeperator = "?";
+		this.htmlName = this.servername.replace(/(\.)/g, "-");
 		
 		this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
 		this.useOutdatedLogSystem = this.isWikiaWiki;
@@ -127,6 +134,10 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 						this.username = tVal;
 						break;
 					}
+					case "bgcolor": {
+						this.bgcolor = tVal;
+						break;
+					}
 					default: {
 						// For sanity's sake, this shouldn't actually be used (so that it's obvious what the script is assuming will be passed in).
 						this[tKey] = tVal;
@@ -141,6 +152,9 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		}
 		
 		this.scriptpath =  "//"+this.servername+this.scriptdir;
+		
+		this.infoID = "wiki-"+this.htmlName;
+		this.rcClass = "rc-entry-"+this.htmlName;
 		
 		// this.setupRcParams(); // Moved to manager
 		
@@ -185,6 +199,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			}
 			
 			this.namespaces = pQuery.namespaces || {};
+			this.statistics = pQuery.statistics || {};
 		}
 		
 		/***************************
@@ -238,8 +253,10 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
-	WikiData.prototype.getFaviconHTML = function() {
-		return "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />"; // Return self for chaining or whatnot.
+	WikiData.prototype.getFaviconHTML = function(pOpenInfoBanner) {
+		var html = "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />";
+		if(pOpenInfoBanner) { html = "<span class='rcm-favicon-goto-button' data-infoid='"+this.infoID+"'>"+html+"</span>"; }
+		return html;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
@@ -308,7 +325,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		if(this.needsSiteinfoData) {
 			tMetaList.push("siteinfo");
-			tReturnText += "&siprop=" + ["general", "namespaces"].join("|");
+			tReturnText += "&siprop=" + ["general", "namespaces", "statistics"].join("|");
 			
 			/***************************
 			 * Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
@@ -334,7 +351,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		tReturnText += "&list="+tUrlList.join("|");
 		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
-		tReturnText.replace(" ", "_");
+		tReturnText.replace(/ /g, "_");
 		
 		tUrlList = null;
 		tMetaList = null;

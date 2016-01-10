@@ -109,7 +109,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled = pData.patrolled == "";
 		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = this.title; // By default; make change based on this.type.
-		this.href = Utils.escapeCharacters( this.wikiInfo.articlepath + pData.title.replace(/ /g, "_") );
+		this.href = this.wikiInfo.articlepath + Utils.escapeCharactersLink( pData.title );
 		this.hrefBasic = this.href.split("/@comment")[0];
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
@@ -323,14 +323,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	};
 	
 	RCData.prototype.userDetails = function() {
-		if(this.userhidden) {
-			return '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-user"]+'</span>';
-		}
+		if(this.userhidden) { return '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-user"]+'</span>'; }
+		
 		var blockText = this.wikiInfo.canBlock ? i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Block/{1}'>"+i18n.RC_TEXT["blocklink"]+"</a>" : "";
 		if(this.userEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{1}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Contributions/{1}'>"+i18n.RC_TEXT["contribslink"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Contributions/{1}'>"+i18n.RC_TEXT["contribslink"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		} else {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{1}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		}
 	}
 	
@@ -427,7 +426,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					"<a href='"+ this.hrefFS+"redirect=no" +"'>"+ this.title + "</a>",
-					"<a href='"+ this.wikiInfo.articlepath+this.log_move_newTitle.replace(" ", "_") +"'>"+ this.log_move_newTitle + "</a>"
+					"<a href='"+ this.wikiInfo.articlepath+ Utils.escapeCharactersLink(this.log_move_newTitle) +"'>"+ this.log_move_newTitle + "</a>"
 				);
 				break;
 			}
@@ -587,10 +586,10 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	RCData.prototype.wallBoardHistoryLink = function() {
 		var tLink = "", tText = "";
 		if(this.type == RCData.TYPE.WALL) {
-			tLink = this.wikiInfo.articlepath + this.getBoardWallParentTitleWithNamespace() + this.wikiInfo.firstSeperator + "action=history";
+			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "wall-recentchanges-thread-history-link" : "wall-recentchanges-history-link";
 		} else {
-			tLink = this.wikiInfo.articlepath + this.getBoardWallParentTitleWithNamespace() + this.wikiInfo.firstSeperator + "action=history";
+			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "forum-recentchanges-thread-history-link" : "forum-recentchanges-history-link";
 		}
 		return Utils.formatString("(<a href='{0}'>{1}</a>)", tLink, i18n.RC_TEXT[tText]);
@@ -609,62 +608,100 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
 	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
 	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
-		if(module.debug) { console.log("http:"+ajaxLink); console.log(diffLink); console.log(undoLink); }
+		if(module.debug) { console.log("http:"+pAjaxUrl); console.log(pDiffLink); console.log(pUndoLink); }
+		
+		var tTitle = pPageName+" - "+i18n.TEXT.diffModuleTitle;
+		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+		var tButtons = [];
+		tButtons.push({
+			defaultButton: true,
+			message: i18n.TEXT.diffModuleOpen,
+			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeDiff(); }
+		});
+		if(pUndoLink != null) {
+			tButtons.push({
+				defaultButton: true,
+				message: i18n.TEXT.diffModuleUndo,
+				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeDiff(); }
+			});
+		}
+		tButtons.push({
+			defaultButton: false,
+			message: i18n.TEXT.diffModuleClose,
+			handler: RCData.closeDiff
+		});
 		
 		// Retrieve the diff table.
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 			success: function(pData){
-				$('#rcm-DiffView').html(""
-					+"<table class='diff'>"
-						+"<colgroup>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-							+"<col class='diff-marker'>"
-							+"<col class='diff-content'>"
-						+"</colgroup>"
-						+pData.query.pages[pageID].revisions[0].diff["*"]
-					+"</table>"
-				);
+				// $('#rcm-DiffView').html(""
+				// 	+"<table class='diff'>"
+				// 		+"<colgroup>"
+				// 			+"<col class='diff-marker'>"
+				// 			+"<col class='diff-content'>"
+				// 			+"<col class='diff-marker'>"
+				// 			+"<col class='diff-content'>"
+				// 		+"</colgroup>"
+				// 		+pData.query.pages[pageID].revisions[0].diff["*"]
+				// 	+"</table>"
+				// );
+				
+				// Re-open modal so that it gets re-positioned based on new content size.
+				RCData.closeDiff();
+				var ajaxform = ''
+				+'<form method="" name="" class="WikiaForm">'
+					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">'
+						+"<table class='diff'>"
+							+"<colgroup>"
+								+"<col class='diff-marker'>"
+								+"<col class='diff-content'>"
+								+"<col class='diff-marker'>"
+								+"<col class='diff-content'>"
+							+"</colgroup>"
+							+pData.query.pages[pageID].revisions[0].diff["*"]
+						+"</table>"
+					+'</div>'
+				+'</form>';
+				var tModule = $.showCustomModal(tTitle, ajaxform, {
+					id: 'rcm-diff-viewer',
+					width: 1000,
+					buttons: tButtons,
+					callbackBefore: function() {
+						/* Disable page scrolling */
+						if ($(document).height() > $(window).height()) {
+							$('html').addClass('rcm-noscroll');
+						}
+					},
+					onAfterClose: RCData.onDiffClosed,
+				});
 			},
 		});
 		
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if ($('#rcm-DiffView').length == 0) {
 			var ajaxform = ''
-				+'<form method="" name="" class="WikiaForm ">'
-					+'<div id="rcm-DiffView"></div>'
-				+'</form>';
-			// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-			var tButtons = [];
-			tButtons.push({
-				message: i18n.TEXT.diffModuleOpen,
-				handler: function () { window.open(pDiffLink, '_blank'); $('#page-viewer').closeModal(); }
-			});
-			if(pUndoLink != null) {
-				tButtons.push({
-					message: i18n.TEXT.diffModuleUndo,
-					handler: function () { window.open(pUndoLink, '_blank'); $('#page-viewer').closeModal(); }
-				});
-			}
-			tButtons.push({
-				message: i18n.TEXT.diffModuleClose,
-				handler: RCData.closeDiff
-			});
-			$.showCustomModal(pPageName+" - "+i18n.TEXT.diffModuleTitle, ajaxform, {
+			+'<form method="" name="" class="WikiaForm">'
+				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
+					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
+				+'</div>'
+			+'</form>';
+			$.showCustomModal(tTitle, ajaxform, {
 				id: 'rcm-diff-viewer',
 				width: 1000,
 				buttons: tButtons
 			});
-			$("#rcm-DiffView").css("max-height", ($(window).height() - 220) + "px");
 		}
-		$('#rcm-DiffView').html("<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>");
 	}
 	
 	RCData.closeDiff = function() {
 		if($('#rcm-DiffView').length != 0) {
-			$('#page-viewer').closeModal();
+			$('#rcm-diff-viewer').closeModal();
 		}
+	}
+	
+	RCData.onDiffClosed = function() {
+		$("html").removeClass("rcm-noscroll");
 	}
 	
 	return RCData;

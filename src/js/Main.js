@@ -16,12 +16,12 @@
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.1";
+	module.version = "1.2.2";
 	module.debug = module.debug != undefined ? module.debug : false;
-	module.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
-	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh";
-	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie";
-	module.LOADER_IMG = "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
+	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
+	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
+	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie-" + mw.config.get("wgPageName");
+	module.LOADER_IMG = module.LOADER_IMG || "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
 	
 	module.rcmList = [];
 	module.uniqID = 0;
@@ -77,7 +77,7 @@
 			if(param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
 				module.rcParamsURL[param] = tUrlVars[param]=="1";
 			}
-			if(param == debug) { module.debug = (param=="true"); }
+			if(param == "debug") { module.debug = (tUrlVars[param]=="true"); }
 		}
 		
 		/***************************
@@ -91,6 +91,11 @@
 		
 		// This does things like allow "fieldset" to collapse in RCMOptions
 		mw.loader.load( 'mediawiki.special.recentchanges' );
+		
+		// // For Testing CSS
+		// Utils.newElement("style", { innerHTML:""
+		// 	+""
+		// +"" }, document.body);
 	}
 	
 	module.unload = function() {
@@ -140,14 +145,10 @@
 		}
 		
 		// When loading of all translated messages is done (or one failed) do this.
-		$.when.apply(tLangLoadAjaxPromises)
+		$.when.apply($, tLangLoadAjaxPromises)
 		.done(function(pData){
 			module.langLoaded = true;
-			// $.each( (data.query || {}).allmessages, function( index, message ) {
-			// 	if( message.missing !== '' ) {
-			// 		i18n.RC_TEXT[message.name] = message['*'];
-			// 	}
-			// });
+			
 			for (var i = 0; i < module.onLangLoadCallbacks.length; i++) {
 				module.onLangLoadCallbacks[i]();
 			}

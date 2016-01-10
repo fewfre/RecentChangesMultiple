@@ -97,15 +97,19 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		var tDiffSize = pToRC.newlen - (pFromRC ? pFromRC : pToRC).oldlen;
 		var tDiffSizeText = mw.language.convertNumber(tDiffSize);
 		
-		var html = "<strong class='{0}'>({1}{2})</strong>";
+		// var html = "<strong class='{0}'>({1}{2})</strong>";
+		var html = "<strong class='{0}'>{1}</strong>";
 		if(tDiffSize > 0) {
-			html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
+			return Utils.formatString(html, "mw-plusminus-pos", Utils.wiki2html(i18n.RC_TEXT.parentheses, "+"+tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
 		} else if(tDiffSize < 0) {
-			html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
+			return Utils.formatString(html, "mw-plusminus-neg", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
 		} else {
-			html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
+			return Utils.formatString(html, "mw-plusminus-null", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			// html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
 		}
-		return html;
+		// return html;
 	};
 	
 	RCList.prototype._contributorsCountText = function() {
@@ -130,7 +134,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	// For use with comments / normal pages
 	RCList.prototype._changesText = function() {
 		//var returnText = Utils.formatString(i18n.RC_TEXT.numChanges, this.list.length);
-		var returnText = Utils.wiki2html(i18n.RC_TEXT["tags-hitcount"], this.list.length);
+		var returnText = Utils.wiki2html(i18n.RC_TEXT["nchanges"], this.list.length);
 		if(this.type == RCData.TYPE.NORMAL && this.oldest.isNewPage == false) {
 			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
 		}
@@ -139,9 +143,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	
 	RCList.prototype._userPageLink = function(pUsername, pUserEdited) {
 		if(pUserEdited) {
-			return Utils.formatString("<a href='{0}User:{1}'>{1}</a>", this.wikiInfo.articlepath, pUsername);
+			return Utils.formatString("<a href='{0}User:{1}'>{2}</a>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(pUsername), pUsername);
 		} else {
-			return Utils.formatString("<a href='{0}Special:Contributions/{1}'>{1}</a>", this.wikiInfo.articlepath, pUsername);
+			return Utils.formatString("<a href='{0}Special:Contributions/{1}'>{2}</a>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(pUsername), pUsername);
 		}
 	};
 	
@@ -325,10 +329,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 		}
 		
-		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc" });
-		Utils.newElement("caption", {}, tTable).style.cssText = "background-image:url("+pRC.wikiInfo.favicon+")";
+		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
+		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
-		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML() }, tRow);
+		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+'<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
 			+this._getFlags(pRC, "&nbsp;")
@@ -393,17 +397,17 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += SEP;
 		html += this._contributorsCountText();
 		
-		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed" }); // mw-made-collapsible
-		Utils.newElement("caption", {}, tTable).style.cssText = "background-image:url("+this.newest.wikiInfo.favicon+")";
+		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
+		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
-		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML() }, tRow);
+		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
-				+'<span class="mw-rc-openarrow"><a title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'" href="#">'
+				+'<span class="mw-rc-openarrow"><a title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'">'// href="#"
 					+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
 				+'</a></span>'
-				+'<span class="mw-rc-closearrow"><a title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" href="#">'
+				+'<span class="mw-rc-closearrow"><a title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'">'// href="#"
 						+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
@@ -532,9 +536,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 		}
 		
-		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd") });
-		Utils.newElement("div", { className:'rcm-tiled-favicon', style:"background-image:url("+pRC.wikiInfo.favicon+")" }, tLi);;
-		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML();
+		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
+		Utils.newElement("div", { className:'rcm-tiled-favicon' }, tLi);;
+		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true);
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
@@ -562,7 +566,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	// 	if(isV1_24Plus) {
 	// 		tAPiUrl += "action=query&meta=tokens&type=rollback";
 	// 	} else {
-	// 		tAPiUrl += "action=query&prop=revisions&format=json&rvtoken=rollback&titles="+pPageName.replace(" ", "_")
+	// 		tAPiUrl += "action=query&prop=revisions&format=json&rvtoken=rollback&titles="+Utils.escapeCharactersLink(pPageName)
 	// 	}
 		
 	// 	$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url:tAPiUrl,

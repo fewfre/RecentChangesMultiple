@@ -149,7 +149,11 @@
 		},
 		
 		escapeCharacters: function(pString) {
-			return pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+			return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
+		},
+		
+		escapeCharactersLink: function(pString) {
+			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
 		},
 		
 		// http://phpjs.org/functions/version_compare/

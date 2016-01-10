@@ -10,6 +10,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	function RCMOptions(pManager) {
 		this.manager = pManager; // {RCMManager} Keep track of what manager this data is attached to.
 		this.root = null;
+		this.localStorageID = module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", ""),
 		
 		/***************************
 		 * Data
@@ -57,7 +58,18 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.rcParams = this.getSave();//$.extend({}, this.manager.rcParamsBase);
 		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
-		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, pElem);
+		if(module.langLoaded) {
+			this._addElements();
+		} else {
+			var self = this;
+			module.onLangLoadCallbacks.push(function(){ self._addElements(); });
+		}
+		
+		return this;
+	}
+	
+	RCMOptions.prototype._addElements = function() {
+		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, this.root);
 		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
 		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
 		
@@ -70,7 +82,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		this.settingsSaveCookieCheckbox = Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
 		Utils.addTextTo(i18n.TEXT["optionsPanelSaveWithCookie"], tSettingsPanel);
 		
-		this.settingsSaveCookieCheckbox.checked = !$.isEmptyObject(this.rcParams);
+		this.settingsSaveCookieCheckbox.checked = this.isSaveEnabled();//!$.isEmptyObject(this.rcParams);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -266,7 +278,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		if(pEvent.target.checked) {
 			this.save();
 		} else {
-			localStorage.removeItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID);
+			localStorage.removeItem(this.localStorageID);
 		}
 	}
 	
@@ -290,15 +302,19 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	
 	RCMOptions.prototype.save = function() {
 		if(this.settingsSaveCookieCheckbox.checked) {
-			localStorage.setItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID, JSON.stringify(this.rcParams));
+			localStorage.setItem(this.localStorageID, JSON.stringify(this.rcParams));
 		}
 	}
 	
 	RCMOptions.prototype.getSave = function() {
-		return localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID)
-			? JSON.parse(localStorage.getItem(module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID))
+		return localStorage.getItem(this.localStorageID)
+			? JSON.parse(localStorage.getItem(this.localStorageID))
 			: {}
 			;
+	}
+	
+	RCMOptions.prototype.isSaveEnabled = function() {
+		return localStorage.getItem(this.localStorageID) != null;
 	}
 	
 	return RCMOptions;

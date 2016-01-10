@@ -1,3 +1,22 @@
+== V1.2.2 - 10 January 2016 ==
+- [Bug] options cookie changed to be per RCM, not EVERY RCM.
+- [Bug] Fixed small code error when wiki doesn't exist / timesout.
+- [Bug] diff viewer "Close" button fixed
+- Diff viewer close button now looks different from the diff/undo buttons.
+- For RCList expand/hide arrows, removed href=”#” (no need for ie back support, and it occasionally causes page to jump to top)
+- [Bug] Things that were supposed to be waiting for translations from the server weren't. This has been fixed.
+- [Bug] “hidemyself” was not working properly in data-params (hid by default, even though it should show by default. fixed.
+- Added link for "Special:Random" to a wiki's info banner
+- [Bug] fixed a small code error that was triggered when RCM was refreshed while thread title retrieval wasn't finished.
+- Changed diff window text color to near black, since text color on dark wikis is white, and a white diff background is forced due to monobook support.
+- Wiki info banner shows some stats on the wiki's count of users/pages/files
+- Clicking a favicon along the left side will now bring you to the top of the RCM container, and open the wiki info banner.
+- [Bug] Various links were not checking for special characters (specifically ?, but also % and ' and "). This caused links with a "?" at the end to link incorrectly.
+- Individual wikis may now define a background color (bgcolor) to show behind recent changes instead of a favicon. Any valid CSS color (or even url()) works.
+- [Bug] diff viewer positioning oddly on monobook. Opening it a second time with loaded content fixed.
+- On scroll, diff viewer now prevents the page from scrolling while it's open.
+
+
 == V1.2.1 - 20 December 2015 ==
 - Make ajax diff viewer container have a max height less than the screen height (so you scroll container, not page)
 	- Moved some inline CSS to stylesheet
@@ -12,6 +31,7 @@
 - [Bug] Wall / Board -action- titles were not getting updated via ajax (e.g. reopened thread [thread name]).
 - [Bug] When clicking the RC link for a wiki, the script will now include the params from the RCMOptions form (instead of only preset values)
 - RCMOptions panel now as an option to remember your changes via a cookie.
+
 
 == V1.2.0 - 12 December 2015 ==
 - changelog file started (changes before this point added retroactively)

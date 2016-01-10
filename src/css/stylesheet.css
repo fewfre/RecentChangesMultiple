@@ -43,9 +43,6 @@
 .rcm-options .rcoptions legend {
 	padding-top:0;
 }
-.rcm-wikis-info {
-	margin-top: 2px;
-}
 .rcm-options .rcm-options-settings {
 	position:absolute;
 	top:1em;
@@ -56,6 +53,9 @@
 	background:#333;
 	border:1px solid #555;
 }
+.rcm-options .rcm-options-settings {
+	vertical-align: middle;
+}
 .rcm-autoRefresh, #rcm-autoRefresh {
 	font-size:xx-small;
 	line-height:100%;
@@ -64,6 +64,16 @@
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }
+
+.rcm-wikis-info { margin-top: 2px; }
+.rcm-wikis-info table { margin: 0; }
+.rcm-wikis-info .banner-notification { padding: 4px 8px; }
+.rcm-wiki-infotable { width: 95%; width: calc(100% - 20px); }
+.rcm-wiki-infotable td { padding: 2px; }
+.rcm-title-cell { white-space: nowrap; }
+.rcm-title-cell+td { width: 100%; }
+.statisticstable { table-layout: fixed; }
+
 .rcm-previouslyLoaded {
 	font-size: small;
 	margin: 3px 5% 0;
@@ -106,7 +116,7 @@ table.mw-enhanced-rc td:last-child {
 	position: relative;
 }
 table.mw-enhanced-rc caption, .rcm-tiled-favicon {
-	opacity: 0.08;
+	opacity: 0.1;
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -131,13 +141,16 @@ table.mw-enhanced-rc caption, .rcm-tiled-favicon {
 .rcm-hiderail #recentWikiActivity { display:none; }
 .rcm-hiderail .home-top-right-ads { display:none; }
 
+/* Prevent page from scrolling when lightbox active. */
+.rcm-noscroll { overflow-y: hidden; }
+
 /* Monobook Support */
 #positioned_elements .blackout {
 	position: fixed;
 	height: 100%;
 	width: 100%;
 }
-#positioned_elements .wikia-button.secondary {
+#positioned_elements .wikia-button {
 	border:1px solid #999;
 	padding:2px 5px;
 	margin:2px 2px 0px;
@@ -159,6 +172,6 @@ table.mw-enhanced-rc{border:0;border-spacing:0}table.mw-enhanced-rc th,table.mw-
  * ## Diff table CSS doesn't seem to be on all namespaces, so duplicating it here. ##
  **************************/
 /* mediawiki.action.history.diff */
-table.diff,td.diff-otitle,td.diff-ntitle{background-color:white}td.diff-otitle,td.diff-ntitle{text-align:center}td.diff-marker{text-align:right}td.diff-lineno{font-weight:bold}td.diff-addedline{background:#cfc;font-size:smaller}td.diff-deletedline{background:#ffa;font-size:smaller}td.diff-context{background:#eee;font-size:smaller}.diffchange{color:red;font-weight:bold;white-space:-moz-pre-wrap;white-space:pre-wrap;text-decoration:none}table.diff{border:none;width:98%;border-spacing:4px; table-layout:fixed}table.diff td{padding:0}table.diff col.diff-marker{width:2%}table.diff col.diff-content{width:48%}table.diff td div{ word-wrap:break-word; overflow:auto}
+table.diff,td.diff-otitle,td.diff-ntitle{background-color:white;color:#3A3A3A}td.diff-otitle,td.diff-ntitle{text-align:center}td.diff-marker{text-align:right}td.diff-lineno{font-weight:bold}td.diff-addedline{background:#cfc;font-size:smaller}td.diff-deletedline{background:#ffa;font-size:smaller}td.diff-context{background:#eee;font-size:smaller}.diffchange{color:red;font-weight:bold;white-space:-moz-pre-wrap;white-space:pre-wrap;text-decoration:none}table.diff{border:none;width:98%;border-spacing:4px; table-layout:fixed}table.diff td{padding:0}table.diff col.diff-marker{width:2%}table.diff col.diff-content{width:48%}table.diff td div{ word-wrap:break-word; overflow:auto}
 
 /* </syntaxhighlight> */
