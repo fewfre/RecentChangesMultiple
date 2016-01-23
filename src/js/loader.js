@@ -21,7 +21,7 @@
 	// Create script list
 	//######################################
 	var scripts = [
-		"u:dev:RecentChangesMultiple/core.js"
+		"u:dev:MediaWiki:RecentChangesMultiple/core.js"
 	];
 	
 	//######################################

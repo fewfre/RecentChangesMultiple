@@ -330,7 +330,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
-		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
 		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
@@ -398,7 +398,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += this._contributorsCountText();
 		
 		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
-		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
 		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);

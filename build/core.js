@@ -2289,7 +2289,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
-		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
 		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
@@ -2357,7 +2357,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += this._contributorsCountText();
 		
 		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
-		Utils.newElement("caption", {}, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
 		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
@@ -2925,11 +2925,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			var tCSS = "";
 			Utils.forEach(this.chosenWikis, function(wikiInfo){
 				// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-				tCSS += "\ntable.mw-enhanced-rc."+wikiInfo.rcClass+" caption, table.mw-enhanced-rc."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
-					+(wikiInfo.bgcolor != null ? "opacity:0.2; background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
+				tCSS += "\n."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
+					+(wikiInfo.bgcolor != null ? "background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
 				+" }";
 			});
-			Utils.newElement("style", { innerHTML:tCSS }, document.body);
+			mw.util.addCSS(tCSS);
 		}
 		
 		// console.log(this.recentChangesEntries);
@@ -3256,7 +3256,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.2";
+	module.version = "1.2.3";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");

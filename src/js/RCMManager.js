@@ -375,11 +375,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			var tCSS = "";
 			Utils.forEach(this.chosenWikis, function(wikiInfo){
 				// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-				tCSS += "\ntable.mw-enhanced-rc."+wikiInfo.rcClass+" caption, table.mw-enhanced-rc."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
-					+(wikiInfo.bgcolor != null ? "opacity:0.2; background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
+				tCSS += "\n."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
+					+(wikiInfo.bgcolor != null ? "background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
 				+" }";
 			});
-			Utils.newElement("style", { innerHTML:tCSS }, document.body);
+			mw.util.addCSS(tCSS);
 		}
 		
 		// console.log(this.recentChangesEntries);
