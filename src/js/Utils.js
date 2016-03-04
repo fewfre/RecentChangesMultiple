@@ -30,7 +30,7 @@
 		
 		// http://download.remysharp.com/wiki2html.js
 		wiki2html: function(pText) {
-			if(pText == undefined) { console.log("ERROR: rcm Utils.wiki2html was passed an undefined string"); return pText; };
+			if(pText == undefined) { console.log("ERROR: [RecentChangesMultiple] Utils.wiki2html was passed an undefined string"); return pText; };
 			var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
 			
 			return pText
@@ -154,6 +154,16 @@
 		
 		escapeCharactersLink: function(pString) {
 			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
+		},
+		
+		// Assumes the file has already been checked to be in namespace 6
+		isFileAudio: function(pTitle) {
+			var tExt = null, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia
+			for(var i = 0; i < audioExtensions.length; i++) {
+				tExt = "."+audioExtensions[i];
+				if(pTitle.indexOf(tExt, pTitle.length - tExt.length) !== -1) { return true; } // If title ends with extension.
+			}
+			return false;
 		},
 		
 		// http://phpjs.org/functions/version_compare/

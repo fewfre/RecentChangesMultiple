@@ -44,6 +44,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled		= null; // {bool} If this page has been patrolled.
 		this.titleNoNS			= null; // {string} Same as this.title, but with the namespace removed (if there is one)
 		this.uniqueID			= null; // {string} A unique ID is primarily important for boards/walls, since they group by the first "/@comment" in the page name.
+		this.hrefTitle			= null; // {string} Title of page, escaped for url (neccisary if page name as passed along an ajax call)
 		this.href				= null; // {string} link the the page (no "&diff", etc) ex: http://test.wikia.com/wiki/Test
 		this.hrefBasic			= null; // {string} Same as this.href, but with no "/@comment"s either.
 		this.hrefFS				= null; // {string} Same as this.href, but followed by this.wikiInfo.firstSeperator.
@@ -109,7 +110,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled = pData.patrolled == "";
 		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = this.title; // By default; make change based on this.type.
-		this.href = this.wikiInfo.articlepath + Utils.escapeCharactersLink( pData.title );
+		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
+		this.href = this.wikiInfo.articlepath + this.hrefTitle;
 		this.hrefBasic = this.href.split("/@comment")[0];
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
@@ -528,11 +530,11 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tPrefix = this.type == RCData.TYPE.BOARD ? "forum-recentchanges" : "wall-recentchanges";
 		var tMsgType = this.isSubComment ? "reply" : "thread";
 		switch(this.logaction) {
-			case "wall_remove":			tLocalizedActionMessage = tPrefix + "-removed-" + tMsgType;
-			case "wall_admindelete":	tLocalizedActionMessage = tPrefix + "-deleted-" + tMsgType;
-			case "wall_restore":		tLocalizedActionMessage = tPrefix + "-restored-" + tMsgType;
-			case "wall_archive":		tLocalizedActionMessage = tPrefix + "-closed-thread";
-			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread";
+			case "wall_remove":			tLocalizedActionMessage = tPrefix + "-removed-" + tMsgType; break;
+			case "wall_admindelete":	tLocalizedActionMessage = tPrefix + "-deleted-" + tMsgType; break;
+			case "wall_restore":		tLocalizedActionMessage = tPrefix + "-restored-" + tMsgType; break;
+			case "wall_archive":		tLocalizedActionMessage = tPrefix + "-closed-thread"; break;
+			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread"; break;
 		}
 		if(tLocalizedActionMessage != "") {
 			return " "+Utils.wiki2html(i18n.RC_TEXT[tLocalizedActionMessage], this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
@@ -663,6 +665,138 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 						+"</table>"
 					+'</div>'
 				+'</form>';
+				var tModule = $.showCustomModal(tTitle, ajaxform, {
+					id: 'rcm-diff-viewer',
+					width: 1000,
+					buttons: tButtons,
+					callbackBefore: function() {
+						/* Disable page scrolling */
+						if ($(document).height() > $(window).height()) {
+							$('html').addClass('rcm-noscroll');
+						}
+					},
+					onAfterClose: RCData.onDiffClosed,
+				});
+			},
+		});
+		
+		// While we are waiting for results, open diff window to acknowledge user's input
+		if ($('#rcm-DiffView').length == 0) {
+			var ajaxform = ''
+			+'<form method="" name="" class="WikiaForm">'
+				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
+					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
+				+'</div>'
+			+'</form>';
+			$.showCustomModal(tTitle, ajaxform, {
+				id: 'rcm-diff-viewer',
+				width: 1000,
+				buttons: tButtons
+			});
+		}
+	}
+	
+	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
+	RCData.previewImages = function(pAjaxUrl, pArticlePath) {
+		var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
+		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
+		if(module.debug) { console.log("http:"+pAjaxUrl.replace("&format=json", "&format=jsonfm")); }
+		
+		var tTitle = "Images";
+		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+		var tButtons = [
+			{
+				defaultButton: false,
+				message: i18n.TEXT.diffModuleClose,
+				handler: RCData.closeDiff
+			}
+		];
+		
+		// Retrieve the diff table.
+		// TODO - error support?
+		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+			success: function(pData){
+				// Re-open modal so that it gets re-positioned based on new content size.
+				RCData.closeDiff();
+				var ajaxform = ''
+				+'<style>'
+					+'#rcm-diff-viewer .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
+					+'#rcm-diff-viewer .wikia-gallery-item { width: '+size+'px; }'
+					// +'#rcm-diff-viewer .wikia-gallery-item .lightbox { width: '+size+'px; }'
+					+'#rcm-diff-viewer .thumb { height: '+size+'px; }'
+					+'.image-no-lightbox { width: '+size+'px; }'
+				+'</style>'
+				+'<div class="wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
+					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">';
+					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
+					for(var key in pData.query.pages) {
+						tPage = pData.query.pages[key];
+						tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
+						tInvalidImage = false;
+						if(tPage.missing == "") {
+							tInvalidImage = {
+								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+								thumbText: Utils.wiki2html(i18n.RC_TEXT['filedelete-success'], tPage.title),
+								caption: tPageTitleNoNS
+							};
+						} else if(tPage.imageinfo == null || tPage.imageinfo[0] == null) {
+							tInvalidImage = {
+								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+								thumbText: Utils.wiki2html(i18n.RC_TEXT['shared_help_was_redirect'], tPage.title),
+								caption: tPageTitleNoNS
+							};
+						} else if(Utils.isFileAudio(tPage.title) || (tImage=tPage.imageinfo[0]).thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+							tInvalidImage = {
+								thumbHref: tImage.url,
+								thumbText: tPage.title,
+								caption: tPageTitleNoNS
+							};
+						}
+						
+						if(tInvalidImage !== false) {
+							// Display text instead of image
+							ajaxform += '<div class="wikia-gallery-item">'
+								+'<div class="thumb">'
+								+'<div class="gallery-image-wrapper accent">'
+								+'<a class="image-no-lightbox" href="'+tInvalidImage.thumbHref+'" target="_blank" style="height:'+size+'px; width:'+size+'px; line-height:inherit;">'
+									+tInvalidImage.thumbText
+								+'</a>'
+								+'</div>'
+								+'</div>'
+								+'<div class="lightbox-caption" style="width:100%;">'
+									+tInvalidImage.caption
+								+'</div>'
+							+'</div>';
+						} else {
+							tImage = tPage.imageinfo[0];
+							var tOffsetY = size/2 - tImage.thumbheight/2;//0;
+							// if(tImage.height < tImage.width || tImage.height < size) {
+							// 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
+							// }
+							var tScaledWidth = tImage.thumbwidth;//size;
+							// if(tImage.width < tImage.height && tImage.height > size) {
+							// 	tScaledWidth = tImage.width * (size / tImage.height);
+							// } else if(tImage.width < size) {
+							// 	tScaledWidth = tImage.width;
+							// }
+							
+							ajaxform += '<div class="wikia-gallery-item">'//style="width:'+size+'px;"
+								+'<div class="thumb">' // style="height:'+size+'px;"
+									+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
+										+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
+											+'<img class="thumbimage" src="'+tImage.url+'" alt="'+tPage.title+'">'
+										+'</a>'
+									+'</div>'
+								+'</div>'
+								+'<div class="lightbox-caption" style="width:100%;">'
+									+'<a href="'+tImage.descriptionurl+'">'+tPageTitleNoNS+'</a>'
+								+'</div>'
+							+'</div>';
+						}
+					}
+				ajaxform += ''
+					+'</div>'
+				+'</div>';
 				var tModule = $.showCustomModal(tTitle, ajaxform, {
 					id: 'rcm-diff-viewer',
 					width: 1000,

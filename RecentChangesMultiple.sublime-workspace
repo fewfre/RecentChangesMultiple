@@ -95,7 +95,7 @@
 			"file": "/C/Users/peppy/Desktop/z",
 			"settings":
 			{
-				"buffer_size": 315,
+				"buffer_size": 295,
 				"line_ending": "Windows"
 			}
 		},
@@ -103,15 +103,7 @@
 			"file": "build/core.js",
 			"settings":
 			{
-				"buffer_size": 151481,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/css/stylesheet.css",
-			"settings":
-			{
-				"buffer_size": 6139,
+				"buffer_size": 151419,
 				"line_ending": "Windows"
 			}
 		},
@@ -119,7 +111,7 @@
 			"file": "todo",
 			"settings":
 			{
-				"buffer_size": 3498,
+				"buffer_size": 3738,
 				"line_ending": "Windows"
 			}
 		},
@@ -127,7 +119,15 @@
 			"file": "changelog",
 			"settings":
 			{
-				"buffer_size": 9394,
+				"buffer_size": 9820,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/js/loader.js",
+			"settings":
+			{
+				"buffer_size": 1457,
 				"line_ending": "Windows"
 			}
 		},
@@ -143,7 +143,7 @@
 			"file": "src/js/RCMManager.js",
 			"settings":
 			{
-				"buffer_size": 31183,
+				"buffer_size": 31059,
 				"line_ending": "Windows"
 			}
 		},
@@ -183,7 +183,7 @@
 			"file": "src/js/RCList.js",
 			"settings":
 			{
-				"buffer_size": 24657,
+				"buffer_size": 24719,
 				"line_ending": "Windows"
 			}
 		}
@@ -237,15 +237,16 @@
 	],
 	"file_history":
 	[
+		"/D/downloads/Call+of+Duty+Wiki-20160227224934.xml",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/loader.js",
+		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/css/stylesheet.css",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/Utils.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/gulpfile.js",
 		"/T/Documents/Documents/aaBooks.txt",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/css/stylesheet.css",
 		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
 		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
 		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/build/stylesheet.css",
-		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/src/js/loader.js",
 		"/C/Users/peppy/AppData/Roaming/Sublime Text 3/Packages/User/SideBarEnhancements/Open With/Side Bar.sublime-menu",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/branches/V1.0.3/code.js",
 		"/C/Users/peppy/Documents/GitHub/RecentChangesMultiple/branches/V1.1.7/code.2.js",
@@ -303,6 +304,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"u:dev",
 			"lower",
 			"cons",
 			"settings",
@@ -378,7 +380,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -387,15 +389,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 315,
+						"buffer_size": 295,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								315,
-								315
+								0,
+								0
 							]
 						],
 						"settings":
@@ -407,7 +409,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -416,7 +418,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 151481,
+						"buffer_size": 151419,
 						"regions":
 						{
 						},
@@ -424,7 +426,7 @@
 						[
 							[
 								0,
-								151481
+								151419
 							]
 						],
 						"settings":
@@ -433,56 +435,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7592.0,
+						"translation.y": 7590.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "src/css/stylesheet.css",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6139,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3326,
-								3326
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CSS/CSS.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1715.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "todo",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3498,
+						"buffer_size": 3738,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								691,
-								691
+								925,
+								925
 							]
 						],
 						"settings":
@@ -498,20 +471,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 3,
 					"file": "changelog",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9394,
+						"buffer_size": 9820,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								669,
-								301
+								141,
+								157
 							]
 						],
 						"settings":
@@ -527,6 +500,35 @@
 					"type": "text"
 				},
 				{
+					"buffer": 4,
+					"file": "src/js/loader.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1457,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								283,
+								283
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
 					"buffer": 5,
 					"file": "src/js/Main.js",
 					"semi_transient": false,
@@ -539,8 +541,8 @@
 						"selection":
 						[
 							[
-								4078,
-								3971
+								1171,
+								1171
 							]
 						],
 						"settings":
@@ -549,10 +551,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 900.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -561,15 +563,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 31183,
+						"buffer_size": 31059,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								25310,
-								25310
+								16793,
+								16810
 							]
 						],
 						"settings":
@@ -577,11 +579,11 @@
 							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 62.0,
-						"translation.y": 0.0,
+						"translation.x": 0.0,
+						"translation.y": 5180.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -606,11 +608,11 @@
 							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 4497.0,
+						"translation.x": -0.0,
+						"translation.y": 2835.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -664,11 +666,11 @@
 							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
+						"translation.x": -0.0,
 						"translation.y": 3905.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -697,7 +699,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -706,15 +708,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 24657,
+						"buffer_size": 24719,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10550,
-								10558
+								14674,
+								14674
 							]
 						],
 						"settings":
@@ -722,11 +724,11 @@
 							"syntax": "Packages/Better JavaScript/JavaScript.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 2732.0,
+						"translation.x": -0.0,
+						"translation.y": 4370.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 6,
 					"type": "text"
 				}
 			]

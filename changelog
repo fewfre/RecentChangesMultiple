@@ -1,9 +1,20 @@
+== V1.2.4 - 4 March 2016 ==
+- Added ajax image preview for file namespace / upload log (for grouped upload log, all images appear in a gallery [up to the 50 cap for thumbnails])
+	- Non-image assets appear in gallery, just listed as their file name.
+	- [Bug] Currently "breaks" (sometimes?) if the uploaded file was a redirect. telling script to follow redirect doesn't retrieve all info.
+- Favicon images that open the "info banner" now display cursor:pointer; when hovered over.
+- [Bug] "Minor" flag no longer bubbles up the the head on grouped changes (like "new" and "bot" changes do), so as to be more in-line with RecentChanges.
+- [Bug] Fixed all wall/forum thread actions being displayed as "reopened thread [thread] on [wall]".
+- Version number at bottom of script is now a link to github changelog.
+
+
 == V1.2.3 - 23 January 2016 ==
 - Default &bgcolor= opacity decreased back to previous value (20%->10%).
 - Dynamic CSS classes changed to us "mw.util.addCSS()"
 - Script updated to support being stored in the MediaWiki namespace on a wiki.
 - [Bug] Fixed &bgcolor not working when changes were not grouped (hideenhanced=1)
 - Tweaked how &bgcolor and default backgrounds to always utilize the rcm-tiled-favicon, even for tables.
+
 
 == V1.2.2 - 10 January 2016 ==
 - [Bug] options cookie changed to be per RCM, not EVERY RCM.

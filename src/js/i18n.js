@@ -195,6 +195,8 @@ window.dev.RecentChangesMultiple.i18n = {
 		'prefs-files' : 'Files',
 		'awc-metrics-articles' : 'Articles',
 		'awc-metrics-edits' : 'Edits',
+		'filedelete-success' : "'''$1''' has been deleted.",
+		'shared_help_was_redirect' : 'This page is a redirect to $1',
 		
 		/***************************
 		 * Log Names - wgLogHeaders

@@ -357,7 +357,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		tMetaList = null;
 		tEndDate = null;
 		
-		if(module.debug) { console.log(tReturnText.replace("&format=json", "&format=jsonfm")); }
+		if(module.debug) { console.log("http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
 		return tReturnText;
 	}
 	

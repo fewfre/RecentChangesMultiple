@@ -30,7 +30,7 @@
 		
 		// http://download.remysharp.com/wiki2html.js
 		wiki2html: function(pText) {
-			if(pText == undefined) { console.log("ERROR: rcm Utils.wiki2html was passed an undefined string"); return pText; };
+			if(pText == undefined) { console.log("ERROR: [RecentChangesMultiple] Utils.wiki2html was passed an undefined string"); return pText; };
 			var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
 			
 			return pText
@@ -154,6 +154,16 @@
 		
 		escapeCharactersLink: function(pString) {
 			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
+		},
+		
+		// Assumes the file has already been checked to be in namespace 6
+		isFileAudio: function(pTitle) {
+			var tExt = null, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia
+			for(var i = 0; i < audioExtensions.length; i++) {
+				tExt = "."+audioExtensions[i];
+				if(pTitle.indexOf(tExt, pTitle.length - tExt.length) !== -1) { return true; } // If title ends with extension.
+			}
+			return false;
 		},
 		
 		// http://phpjs.org/functions/version_compare/
@@ -573,7 +583,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		tMetaList = null;
 		tEndDate = null;
 		
-		if(module.debug) { console.log(tReturnText.replace("&format=json", "&format=jsonfm")); }
+		if(module.debug) { console.log("http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
 		return tReturnText;
 	}
 	
@@ -778,6 +788,8 @@ window.dev.RecentChangesMultiple.i18n = {
 		'prefs-files' : 'Files',
 		'awc-metrics-articles' : 'Articles',
 		'awc-metrics-edits' : 'Edits',
+		'filedelete-success' : "'''$1''' has been deleted.",
+		'shared_help_was_redirect' : 'This page is a redirect to $1',
 		
 		/***************************
 		 * Log Names - wgLogHeaders
@@ -1293,6 +1305,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled		= null; // {bool} If this page has been patrolled.
 		this.titleNoNS			= null; // {string} Same as this.title, but with the namespace removed (if there is one)
 		this.uniqueID			= null; // {string} A unique ID is primarily important for boards/walls, since they group by the first "/@comment" in the page name.
+		this.hrefTitle			= null; // {string} Title of page, escaped for url (neccisary if page name as passed along an ajax call)
 		this.href				= null; // {string} link the the page (no "&diff", etc) ex: http://test.wikia.com/wiki/Test
 		this.hrefBasic			= null; // {string} Same as this.href, but with no "/@comment"s either.
 		this.hrefFS				= null; // {string} Same as this.href, but followed by this.wikiInfo.firstSeperator.
@@ -1358,7 +1371,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.isPatrolled = pData.patrolled == "";
 		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = this.title; // By default; make change based on this.type.
-		this.href = this.wikiInfo.articlepath + Utils.escapeCharactersLink( pData.title );
+		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
+		this.href = this.wikiInfo.articlepath + this.hrefTitle;
 		this.hrefBasic = this.href.split("/@comment")[0];
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
@@ -1777,11 +1791,11 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tPrefix = this.type == RCData.TYPE.BOARD ? "forum-recentchanges" : "wall-recentchanges";
 		var tMsgType = this.isSubComment ? "reply" : "thread";
 		switch(this.logaction) {
-			case "wall_remove":			tLocalizedActionMessage = tPrefix + "-removed-" + tMsgType;
-			case "wall_admindelete":	tLocalizedActionMessage = tPrefix + "-deleted-" + tMsgType;
-			case "wall_restore":		tLocalizedActionMessage = tPrefix + "-restored-" + tMsgType;
-			case "wall_archive":		tLocalizedActionMessage = tPrefix + "-closed-thread";
-			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread";
+			case "wall_remove":			tLocalizedActionMessage = tPrefix + "-removed-" + tMsgType; break;
+			case "wall_admindelete":	tLocalizedActionMessage = tPrefix + "-deleted-" + tMsgType; break;
+			case "wall_restore":		tLocalizedActionMessage = tPrefix + "-restored-" + tMsgType; break;
+			case "wall_archive":		tLocalizedActionMessage = tPrefix + "-closed-thread"; break;
+			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread"; break;
 		}
 		if(tLocalizedActionMessage != "") {
 			return " "+Utils.wiki2html(i18n.RC_TEXT[tLocalizedActionMessage], this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
@@ -1943,6 +1957,138 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		}
 	}
 	
+	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
+	RCData.previewImages = function(pAjaxUrl, pArticlePath) {
+		var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
+		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
+		if(module.debug) { console.log("http:"+pAjaxUrl.replace("&format=json", "&format=jsonfm")); }
+		
+		var tTitle = "Images";
+		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+		var tButtons = [
+			{
+				defaultButton: false,
+				message: i18n.TEXT.diffModuleClose,
+				handler: RCData.closeDiff
+			}
+		];
+		
+		// Retrieve the diff table.
+		// TODO - error support?
+		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+			success: function(pData){
+				// Re-open modal so that it gets re-positioned based on new content size.
+				RCData.closeDiff();
+				var ajaxform = ''
+				+'<style>'
+					+'#rcm-diff-viewer .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
+					+'#rcm-diff-viewer .wikia-gallery-item { width: '+size+'px; }'
+					// +'#rcm-diff-viewer .wikia-gallery-item .lightbox { width: '+size+'px; }'
+					+'#rcm-diff-viewer .thumb { height: '+size+'px; }'
+					+'.image-no-lightbox { width: '+size+'px; }'
+				+'</style>'
+				+'<div class="wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
+					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">';
+					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
+					for(var key in pData.query.pages) {
+						tPage = pData.query.pages[key];
+						tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
+						tInvalidImage = false;
+						if(tPage.missing == "") {
+							tInvalidImage = {
+								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+								thumbText: Utils.wiki2html(i18n.RC_TEXT['filedelete-success'], tPage.title),
+								caption: tPageTitleNoNS
+							};
+						} else if(tPage.imageinfo == null || tPage.imageinfo[0] == null) {
+							tInvalidImage = {
+								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+								thumbText: Utils.wiki2html(i18n.RC_TEXT['shared_help_was_redirect'], tPage.title),
+								caption: tPageTitleNoNS
+							};
+						} else if(Utils.isFileAudio(tPage.title) || (tImage=tPage.imageinfo[0]).thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+							tInvalidImage = {
+								thumbHref: tImage.url,
+								thumbText: tPage.title,
+								caption: tPageTitleNoNS
+							};
+						}
+						
+						if(tInvalidImage !== false) {
+							// Display text instead of image
+							ajaxform += '<div class="wikia-gallery-item">'
+								+'<div class="thumb">'
+								+'<div class="gallery-image-wrapper accent">'
+								+'<a class="image-no-lightbox" href="'+tInvalidImage.thumbHref+'" target="_blank" style="height:'+size+'px; width:'+size+'px; line-height:inherit;">'
+									+tInvalidImage.thumbText
+								+'</a>'
+								+'</div>'
+								+'</div>'
+								+'<div class="lightbox-caption" style="width:100%;">'
+									+tInvalidImage.caption
+								+'</div>'
+							+'</div>';
+						} else {
+							tImage = tPage.imageinfo[0];
+							var tOffsetY = size/2 - tImage.thumbheight/2;//0;
+							// if(tImage.height < tImage.width || tImage.height < size) {
+							// 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
+							// }
+							var tScaledWidth = tImage.thumbwidth;//size;
+							// if(tImage.width < tImage.height && tImage.height > size) {
+							// 	tScaledWidth = tImage.width * (size / tImage.height);
+							// } else if(tImage.width < size) {
+							// 	tScaledWidth = tImage.width;
+							// }
+							
+							ajaxform += '<div class="wikia-gallery-item">'//style="width:'+size+'px;"
+								+'<div class="thumb">' // style="height:'+size+'px;"
+									+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
+										+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
+											+'<img class="thumbimage" src="'+tImage.url+'" alt="'+tPage.title+'">'
+										+'</a>'
+									+'</div>'
+								+'</div>'
+								+'<div class="lightbox-caption" style="width:100%;">'
+									+'<a href="'+tImage.descriptionurl+'">'+tPageTitleNoNS+'</a>'
+								+'</div>'
+							+'</div>';
+						}
+					}
+				ajaxform += ''
+					+'</div>'
+				+'</div>';
+				var tModule = $.showCustomModal(tTitle, ajaxform, {
+					id: 'rcm-diff-viewer',
+					width: 1000,
+					buttons: tButtons,
+					callbackBefore: function() {
+						/* Disable page scrolling */
+						if ($(document).height() > $(window).height()) {
+							$('html').addClass('rcm-noscroll');
+						}
+					},
+					onAfterClose: RCData.onDiffClosed,
+				});
+			},
+		});
+		
+		// While we are waiting for results, open diff window to acknowledge user's input
+		if ($('#rcm-DiffView').length == 0) {
+			var ajaxform = ''
+			+'<form method="" name="" class="WikiaForm">'
+				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
+					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
+				+'</div>'
+			+'</form>';
+			$.showCustomModal(tTitle, ajaxform, {
+				id: 'rcm-diff-viewer',
+				width: 1000,
+				buttons: tButtons
+			});
+		}
+	}
+	
 	RCData.closeDiff = function() {
 		if($('#rcm-DiffView').length != 0) {
 			$('#rcm-diff-viewer').closeModal();
@@ -2047,6 +2193,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		var diffLink = i18n.RC_TEXT.diff;
 		if(pRC.isNewPage == false) {
 			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
+		}
+		if(this.type == RCData.TYPE.NORMAL && pRC.namespace == 6) {
+			diffLink += this.getAjaxImageButton();
 		}
 		return "("+diffLink+i18n.RC_TEXT["pipe-separator"]+"<a href='"+pRC.hrefFS+"action=history'>"+i18n.RC_TEXT.hist+"</a>)";
 	};
@@ -2168,6 +2317,21 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		//<img src="//upload.wikimedia.org/wikipedia/commons/e/ed/Cog.png" />
 	};
 	
+	RCList.prototype.getAjaxImageButton = function() {
+		// <div>Icons made by <a href="http://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+		// inline SVG allows icon to use font color.
+		return ' <span class="rcm-ajaxImage">'
+			+'<svg width="15px" height="15px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 548.176 548.176" style="enable-background:new 0 0 548.176 548.176;" xml:space="preserve">'
+				+'<g>'
+					+'<path style="fill:currentColor" d="M534.75,68.238c-8.945-8.945-19.694-13.417-32.261-13.417H45.681c-12.562,0-23.313,4.471-32.264,13.417 C4.471,77.185,0,87.936,0,100.499v347.173c0,12.566,4.471,23.318,13.417,32.264c8.951,8.946,19.702,13.419,32.264,13.419h456.815 c12.56,0,23.312-4.473,32.258-13.419c8.945-8.945,13.422-19.697,13.422-32.264V100.499 C548.176,87.936,543.699,77.185,534.75,68.238z M511.623,447.672c0,2.478-0.899,4.613-2.707,6.427 c-1.81,1.8-3.952,2.703-6.427,2.703H45.681c-2.473,0-4.615-0.903-6.423-2.703c-1.807-1.813-2.712-3.949-2.712-6.427V100.495 c0-2.474,0.902-4.611,2.712-6.423c1.809-1.803,3.951-2.708,6.423-2.708h456.815c2.471,0,4.613,0.905,6.42,2.708 c1.801,1.812,2.707,3.949,2.707,6.423V447.672L511.623,447.672z"/>'
+					+'<path style="fill:currentColor" d="M127.91,237.541c15.229,0,28.171-5.327,38.831-15.987c10.657-10.66,15.987-23.601,15.987-38.826 c0-15.23-5.333-28.171-15.987-38.832c-10.66-10.656-23.603-15.986-38.831-15.986c-15.227,0-28.168,5.33-38.828,15.986 c-10.656,10.66-15.986,23.601-15.986,38.832c0,15.225,5.327,28.169,15.986,38.826C99.742,232.211,112.683,237.541,127.91,237.541z"/>'
+					+'<polygon style="fill:currentColor" points="210.134,319.765 164.452,274.088 73.092,365.447 73.092,420.267 475.085,420.267 475.085,292.36 356.315,173.587"/>'
+				+'</g>'
+			+'</svg>'
+		+'</span>';
+		//<img src="//upload.wikimedia.org/wikipedia/commons/e/ed/Cog.png" />
+	};
+	
 	// https://www.mediawiki.org/wiki/API:Revisions
 	RCList.prototype.addPreviewDiffListener = function(pElem, pFromRC, pToRC) {
 		if(pElem) {
@@ -2187,6 +2351,28 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			
 			pFromRC = null;
 			pToRC = null;
+		}
+	};
+	
+	// https://www.mediawiki.org/wiki/API:Imageinfo
+	RCList.prototype.addPreviewImageListener = function(pElem, pImageRCs) {
+		if( Object.prototype.toString.call( pImageRCs ) !== '[object Array]' ) {
+			pImageRCs = [ pImageRCs ];
+		}
+		if(pElem) {
+			var tImageNames = [];
+			for (var i = 0; i < pImageRCs.length; i++) { tImageNames.push(pImageRCs[i].hrefTitle); }
+			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size&titles="+tImageNames.join("|");
+			var articlepath = this.wikiInfo.articlepath;
+			
+			var tRCM_previewdiff = function() {
+				RCData.previewImages(ajaxLink, articlepath);
+			}
+			pElem.addEventListener("click", tRCM_previewdiff);
+			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
+			
+			tImageNames = null;
+			pImageRCs = null;
 		}
 	};
 	
@@ -2233,10 +2419,11 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 	};
 	
-	RCList.prototype._getFlags = function(pRC, pEmpty) {
+	RCList.prototype._getFlags = function(pRC, pEmpty, pData) {
+		pData = pData || {};
 		return ""
 			+this._flag("newpage", pRC, pEmpty)
-			+this._flag("minoredit", pRC, pEmpty)
+			+(pData.ignoreminoredit ? pEmpty : this._flag("minoredit", pRC, pEmpty) )
 			+this._flag("botedit", pRC, pEmpty)
 			+pEmpty//this._flag("unpatrolled", this.oldest)
 		;
@@ -2250,6 +2437,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += pRC.logTitleText();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += SEP;
 				html += pRC.logActionText();
 				break;
@@ -2302,6 +2490,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tTable;
 	};
@@ -2325,6 +2514,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(this.type) {
 			case RCData.TYPE.LOG: {
 				html += this.newest.logTitleText();
+				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
 				break;
 			}
 			case RCData.TYPE.NORMAL: {
@@ -2370,7 +2560,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 						+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
-			+this._getFlags(this.oldest, "&nbsp;")
+			+this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit:true })
 			+"&nbsp;"
 			+this.newest.time()
 			+"&nbsp;"
@@ -2378,6 +2568,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
+		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
 		
 		return tTable;
 	};
@@ -2389,6 +2580,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>"
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += SEP;
 				html += pRC.logActionText();
 				break;
@@ -2442,6 +2634,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { className:"mw-enhanced-rc-nested", innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tRow;
 	};
@@ -2451,6 +2644,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += pRC.logTitleText();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
 				html += SEP;
 				html += pRC.logActionText();
@@ -2501,6 +2695,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tLi;
 	};
@@ -2696,7 +2891,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 * Setup
 		 ***************************/
 		// Footer never changes, so set here
-		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, module.version, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+module.version+"</a>", "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.onGoToWikiInfo);
 		
@@ -3256,7 +3451,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.3";
+	module.version = "1.2.4";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");

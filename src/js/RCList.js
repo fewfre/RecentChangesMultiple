@@ -89,6 +89,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		if(pRC.isNewPage == false) {
 			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
 		}
+		if(this.type == RCData.TYPE.NORMAL && pRC.namespace == 6) {
+			diffLink += this.getAjaxImageButton();
+		}
 		return "("+diffLink+i18n.RC_TEXT["pipe-separator"]+"<a href='"+pRC.hrefFS+"action=history'>"+i18n.RC_TEXT.hist+"</a>)";
 	};
 	
@@ -209,6 +212,21 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		//<img src="//upload.wikimedia.org/wikipedia/commons/e/ed/Cog.png" />
 	};
 	
+	RCList.prototype.getAjaxImageButton = function() {
+		// <div>Icons made by <a href="http://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+		// inline SVG allows icon to use font color.
+		return ' <span class="rcm-ajaxImage">'
+			+'<svg width="15px" height="15px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 548.176 548.176" style="enable-background:new 0 0 548.176 548.176;" xml:space="preserve">'
+				+'<g>'
+					+'<path style="fill:currentColor" d="M534.75,68.238c-8.945-8.945-19.694-13.417-32.261-13.417H45.681c-12.562,0-23.313,4.471-32.264,13.417 C4.471,77.185,0,87.936,0,100.499v347.173c0,12.566,4.471,23.318,13.417,32.264c8.951,8.946,19.702,13.419,32.264,13.419h456.815 c12.56,0,23.312-4.473,32.258-13.419c8.945-8.945,13.422-19.697,13.422-32.264V100.499 C548.176,87.936,543.699,77.185,534.75,68.238z M511.623,447.672c0,2.478-0.899,4.613-2.707,6.427 c-1.81,1.8-3.952,2.703-6.427,2.703H45.681c-2.473,0-4.615-0.903-6.423-2.703c-1.807-1.813-2.712-3.949-2.712-6.427V100.495 c0-2.474,0.902-4.611,2.712-6.423c1.809-1.803,3.951-2.708,6.423-2.708h456.815c2.471,0,4.613,0.905,6.42,2.708 c1.801,1.812,2.707,3.949,2.707,6.423V447.672L511.623,447.672z"/>'
+					+'<path style="fill:currentColor" d="M127.91,237.541c15.229,0,28.171-5.327,38.831-15.987c10.657-10.66,15.987-23.601,15.987-38.826 c0-15.23-5.333-28.171-15.987-38.832c-10.66-10.656-23.603-15.986-38.831-15.986c-15.227,0-28.168,5.33-38.828,15.986 c-10.656,10.66-15.986,23.601-15.986,38.832c0,15.225,5.327,28.169,15.986,38.826C99.742,232.211,112.683,237.541,127.91,237.541z"/>'
+					+'<polygon style="fill:currentColor" points="210.134,319.765 164.452,274.088 73.092,365.447 73.092,420.267 475.085,420.267 475.085,292.36 356.315,173.587"/>'
+				+'</g>'
+			+'</svg>'
+		+'</span>';
+		//<img src="//upload.wikimedia.org/wikipedia/commons/e/ed/Cog.png" />
+	};
+	
 	// https://www.mediawiki.org/wiki/API:Revisions
 	RCList.prototype.addPreviewDiffListener = function(pElem, pFromRC, pToRC) {
 		if(pElem) {
@@ -228,6 +246,28 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			
 			pFromRC = null;
 			pToRC = null;
+		}
+	};
+	
+	// https://www.mediawiki.org/wiki/API:Imageinfo
+	RCList.prototype.addPreviewImageListener = function(pElem, pImageRCs) {
+		if( Object.prototype.toString.call( pImageRCs ) !== '[object Array]' ) {
+			pImageRCs = [ pImageRCs ];
+		}
+		if(pElem) {
+			var tImageNames = [];
+			for (var i = 0; i < pImageRCs.length; i++) { tImageNames.push(pImageRCs[i].hrefTitle); }
+			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size&titles="+tImageNames.join("|");
+			var articlepath = this.wikiInfo.articlepath;
+			
+			var tRCM_previewdiff = function() {
+				RCData.previewImages(ajaxLink, articlepath);
+			}
+			pElem.addEventListener("click", tRCM_previewdiff);
+			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
+			
+			tImageNames = null;
+			pImageRCs = null;
 		}
 	};
 	
@@ -274,10 +314,11 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 	};
 	
-	RCList.prototype._getFlags = function(pRC, pEmpty) {
+	RCList.prototype._getFlags = function(pRC, pEmpty, pData) {
+		pData = pData || {};
 		return ""
 			+this._flag("newpage", pRC, pEmpty)
-			+this._flag("minoredit", pRC, pEmpty)
+			+(pData.ignoreminoredit ? pEmpty : this._flag("minoredit", pRC, pEmpty) )
 			+this._flag("botedit", pRC, pEmpty)
 			+pEmpty//this._flag("unpatrolled", this.oldest)
 		;
@@ -291,6 +332,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += pRC.logTitleText();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += SEP;
 				html += pRC.logActionText();
 				break;
@@ -343,6 +385,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tTable;
 	};
@@ -366,6 +409,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(this.type) {
 			case RCData.TYPE.LOG: {
 				html += this.newest.logTitleText();
+				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
 				break;
 			}
 			case RCData.TYPE.NORMAL: {
@@ -411,7 +455,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 						+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
-			+this._getFlags(this.oldest, "&nbsp;")
+			+this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit:true })
 			+"&nbsp;"
 			+this.newest.time()
 			+"&nbsp;"
@@ -419,6 +463,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
+		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
 		
 		return tTable;
 	};
@@ -430,6 +475,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>"
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += SEP;
 				html += pRC.logActionText();
 				break;
@@ -483,6 +529,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { className:"mw-enhanced-rc-nested", innerHTML:html }, tRow);
 		
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tRow;
 	};
@@ -492,6 +539,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		switch(pRC.type) {
 			case RCData.TYPE.LOG: {
 				html += pRC.logTitleText();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
 				html += SEP;
 				html += pRC.logActionText();
@@ -542,6 +590,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
+		this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
 		
 		return tLi;
 	};

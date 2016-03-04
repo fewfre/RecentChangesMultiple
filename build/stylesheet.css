@@ -73,6 +73,7 @@
 .rcm-title-cell { white-space: nowrap; }
 .rcm-title-cell+td { width: 100%; }
 .statisticstable { table-layout: fixed; }
+.rcm-favicon-goto-button, .rcm-wikis-list .favicon { cursor: pointer; }
 
 .rcm-previouslyLoaded {
 	font-size: small;

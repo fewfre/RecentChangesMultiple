@@ -10,10 +10,10 @@
 	// Pre-script checks - make sure script hasn't already been loaded, and make sure it needs to run.
 	//######################################
 	// Find RCM container, and exit if not found (needed for script to function)
-	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log('No "Recent Changes Multiple" container found; exiting.'); return; }
+	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log('[RecentChangesMultiple] No "rc-content-multiple" container found; exiting.'); return; }
 	
 	// Don't create/run this code twice on the same page
-	if(module.loaded) { console.log("Script already loaded; exiting."); return; }
+	if(module.loaded) { console.log("[RecentChangesMultiple] Script already loaded; exiting."); return; }
 	// Mark script as loaded
 	module.loaded = true;
 	
