@@ -784,7 +784,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 								+'<div class="thumb">' // style="height:'+size+'px;"
 									+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
 										+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
-											+'<img class="thumbimage" src="'+tImage.url+'" alt="'+tPage.title+'">'
+											+'<img class="thumbimage" src="'+tImage.thumburl+'" alt="'+tPage.title+'">'
 										+'</a>'
 									+'</div>'
 								+'</div>'

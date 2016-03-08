@@ -4,6 +4,7 @@
 - [Bug] For Wikia wikis, Comment "move" logs can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
 	- Fixing may not be possible for Wikia wiki, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
 - [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
+- If over 50 thumbnails in ajax gallery, show warning / "load more"
 
 ############################################
 ## SECONDARY

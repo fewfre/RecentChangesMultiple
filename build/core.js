@@ -2045,7 +2045,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 								+'<div class="thumb">' // style="height:'+size+'px;"
 									+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
 										+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
-											+'<img class="thumbimage" src="'+tImage.url+'" alt="'+tPage.title+'">'
+											+'<img class="thumbimage" src="'+tImage.thumburl+'" alt="'+tPage.title+'">'
 										+'</a>'
 									+'</div>'
 								+'</div>'
@@ -3451,7 +3451,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.4";
+	module.version = "1.2.4b";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
