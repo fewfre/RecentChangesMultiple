@@ -44,6 +44,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		this.ajaxID					= 0;    // {int} A unique ID for all ajax data for a given "load" (used to prevent previously requested data from mixing with currently requested data after "Refresh" is hit after a script error)
 		this.autoRefreshTimeoutID	= null; // {int} ID for the auto refresh timeout.
+		this.autoRefreshEnabledDefault	= null; // {bool} Default value for auto refresh being enabled.
 		
 		this.recentChangesEntries	= null; // {array} Array of either RecentChange/RecentChangeList objects.
 		this.ajaxCallbacks			= null; // {array} Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
@@ -117,6 +118,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
 		
+		this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
 		// Wikis for the script to load
 		this.chosenWikis = []; // {array}
 		var self = this;
@@ -495,8 +497,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		var autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
 		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n.TEXT.autoRefresh, title:Utils.formatString(i18n.TEXT.autoRefreshTooltip, Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
-		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true");
-		
+		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
+		console.log("TEST: "+this.autoRefreshEnabledDefault);
 		checkBox.addEventListener("click", function tHandler(e){
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
 				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);

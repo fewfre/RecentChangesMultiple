@@ -153,7 +153,7 @@
 		},
 		
 		escapeCharactersLink: function(pString) {
-			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
+			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
 		},
 		
 		// Assumes the file has already been checked to be in namespace 6
@@ -1992,6 +1992,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
 					for(var key in pData.query.pages) {
 						tPage = pData.query.pages[key];
+						if(tPage.imageinfo) { tImage = tPage.imageinfo[0]; }
 						tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
 						tInvalidImage = false;
 						if(tPage.missing == "") {
@@ -2000,13 +2001,19 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 								thumbText: Utils.wiki2html(i18n.RC_TEXT['filedelete-success'], tPage.title),
 								caption: tPageTitleNoNS
 							};
-						} else if(tPage.imageinfo == null || tPage.imageinfo[0] == null) {
+						} else if(tImage == null) {
 							tInvalidImage = {
 								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
 								thumbText: Utils.wiki2html(i18n.RC_TEXT['shared_help_was_redirect'], tPage.title),
 								caption: tPageTitleNoNS
 							};
-						} else if(Utils.isFileAudio(tPage.title) || (tImage=tPage.imageinfo[0]).thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+						} else if(Utils.isFileAudio(tPage.title)) {
+							tInvalidImage = {
+								thumbHref: tImage.url,
+								thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tPage.title,
+								caption: tPageTitleNoNS
+							};
+						} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
 							tInvalidImage = {
 								thumbHref: tImage.url,
 								thumbText: tPage.title,
@@ -2297,7 +2304,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype.getAjaxDiffButton = function() {
 		// https://commons.wikimedia.org/wiki/File:Columns_font_awesome.svg
 		// inline SVG allows icon to use font color.
-		return ' <span class="rcm-ajaxDiff">'
+		return ' <span class="rcm-ajaxIcon rcm-ajaxDiff">'
 			+'<svg width="15px" height="15px" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 -256 1792 1792" id="svg2" version="1.1" inkscape:version="0.48.3.1 r9886" sodipodi:docname="columns_font_awesome.svg">'
 				+'<metadata id="metadata12">'
 					+'<rdf:rdf>'
@@ -2320,7 +2327,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype.getAjaxImageButton = function() {
 		// <div>Icons made by <a href="http://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 		// inline SVG allows icon to use font color.
-		return ' <span class="rcm-ajaxImage">'
+		return ' <span class="rcm-ajaxIcon rcm-ajaxImage">'
 			+'<svg width="15px" height="15px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 548.176 548.176" style="enable-background:new 0 0 548.176 548.176;" xml:space="preserve">'
 				+'<g>'
 					+'<path style="fill:currentColor" d="M534.75,68.238c-8.945-8.945-19.694-13.417-32.261-13.417H45.681c-12.562,0-23.313,4.471-32.264,13.417 C4.471,77.185,0,87.936,0,100.499v347.173c0,12.566,4.471,23.318,13.417,32.264c8.951,8.946,19.702,13.419,32.264,13.419h456.815 c12.56,0,23.312-4.473,32.258-13.419c8.945-8.945,13.422-19.697,13.422-32.264V100.499 C548.176,87.936,543.699,77.185,534.75,68.238z M511.623,447.672c0,2.478-0.899,4.613-2.707,6.427 c-1.81,1.8-3.952,2.703-6.427,2.703H45.681c-2.473,0-4.615-0.903-6.423-2.703c-1.807-1.813-2.712-3.949-2.712-6.427V100.495 c0-2.474,0.902-4.611,2.712-6.423c1.809-1.803,3.951-2.708,6.423-2.708h456.815c2.471,0,4.613,0.905,6.42,2.708 c1.801,1.812,2.707,3.949,2.707,6.423V447.672L511.623,447.672z"/>'
@@ -2789,6 +2796,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 ***************************/
 		this.ajaxID					= 0;    // {int} A unique ID for all ajax data for a given "load" (used to prevent previously requested data from mixing with currently requested data after "Refresh" is hit after a script error)
 		this.autoRefreshTimeoutID	= null; // {int} ID for the auto refresh timeout.
+		this.autoRefreshEnabledDefault	= null; // {bool} Default value for auto refresh being enabled.
 		
 		this.recentChangesEntries	= null; // {array} Array of either RecentChange/RecentChangeList objects.
 		this.ajaxCallbacks			= null; // {array} Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
@@ -2862,6 +2870,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
 		
+		this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
 		// Wikis for the script to load
 		this.chosenWikis = []; // {array}
 		var self = this;
@@ -3240,8 +3249,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		var autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
 		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n.TEXT.autoRefresh, title:Utils.formatString(i18n.TEXT.autoRefreshTooltip, Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
-		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true");
-		
+		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
+		console.log("TEST: "+this.autoRefreshEnabledDefault);
 		checkBox.addEventListener("click", function tHandler(e){
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
 				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);
@@ -3451,7 +3460,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.4b";
+	module.version = "1.2.5";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");

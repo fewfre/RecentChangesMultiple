@@ -106,6 +106,12 @@
 .rcm-ajaxDiff {
 	vertical-align: top;
 }
+.rcm-ajaxIcon {
+	cursor: pointer;
+}
+.rcm-ajaxIcon svg:hover {
+	box-shadow: 0 0 5px 0 currentColor;
+}
 table.mw-enhanced-rc {
 	position:relative;
 	width:100%;

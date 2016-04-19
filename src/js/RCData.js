@@ -731,6 +731,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
 					for(var key in pData.query.pages) {
 						tPage = pData.query.pages[key];
+						if(tPage.imageinfo) { tImage = tPage.imageinfo[0]; }
 						tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
 						tInvalidImage = false;
 						if(tPage.missing == "") {
@@ -739,13 +740,19 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 								thumbText: Utils.wiki2html(i18n.RC_TEXT['filedelete-success'], tPage.title),
 								caption: tPageTitleNoNS
 							};
-						} else if(tPage.imageinfo == null || tPage.imageinfo[0] == null) {
+						} else if(tImage == null) {
 							tInvalidImage = {
 								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
 								thumbText: Utils.wiki2html(i18n.RC_TEXT['shared_help_was_redirect'], tPage.title),
 								caption: tPageTitleNoNS
 							};
-						} else if(Utils.isFileAudio(tPage.title) || (tImage=tPage.imageinfo[0]).thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+						} else if(Utils.isFileAudio(tPage.title)) {
+							tInvalidImage = {
+								thumbHref: tImage.url,
+								thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tPage.title,
+								caption: tPageTitleNoNS
+							};
+						} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
 							tInvalidImage = {
 								thumbHref: tImage.url,
 								thumbText: tPage.title,

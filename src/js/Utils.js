@@ -153,7 +153,7 @@
 		},
 		
 		escapeCharactersLink: function(pString) {
-			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F') : pString;
+			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
 		},
 		
 		// Assumes the file has already been checked to be in namespace 6

@@ -1,5 +1,13 @@
+== V1.2.5 - 19 April 2016 ==
+- "data-autorefresh-enabled" feature added to toggle auto refresh on/off by default (as per http://dev.wikia.com/wiki/Talk:RecentChangesMultiple#Auto_Refresh).
+- [Bug] Gallery: “+” in image url caused image name to not work.
+- [Bug] Gallery: audio listings broke due to tImage being null
+- ajax diff/img icon now uses cursor:pointer + some hover styling.
+
+
 == V1.2.4b - 7 March 2016 ==
 - [Bug] Ajax Image preview now uses thumbnail url instead of normal url.
+
 
 == V1.2.4 - 4 March 2016 ==
 - Added ajax image preview for file namespace / upload log (for grouped upload log, all images appear in a gallery [up to the 50 cap for thumbnails])
