@@ -1,3 +1,8 @@
+== V1.2.6 - 30 April 2016 ==
+- "namespace" support added for "params".
+- [Bug] Having zero changes listed would result in refresh button never appearing.
+
+
 == V1.2.5 - 19 April 2016 ==
 - "data-autorefresh-enabled" feature added to toggle auto refresh on/off by default (as per http://dev.wikia.com/wiki/Talk:RecentChangesMultiple#Auto_Refresh).
 - [Bug] Gallery: “+” in image url caused image name to not work.

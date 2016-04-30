@@ -304,6 +304,10 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		}
 		if(tUser != null) { tReturnText += "&rcexcludeuser="+tUser; }
 		
+		if(this.rcParams.namespace || this.rcParams.namespace === "0") {
+			tReturnText += "&rcnamespace="+this.rcParams.namespace; // Already separated by "|"
+		}
+		
 		/***************************
 		 * Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
 		 * Get info for logs that don't return all necessary info through "Recent Changes" api.

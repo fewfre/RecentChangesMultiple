@@ -385,7 +385,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		
 		// console.log(this.recentChangesEntries);
-		if(this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime) {
+		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n.TEXT.noNewChanges+"</strong>" }, this.resultsNode);
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
@@ -395,6 +395,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	RCMManager.prototype.rcmChunk = function(pIndex, pLastDay, pLastMonth, pContainer, pID) {
 		if(pID != this.ajaxID) { return; } // If the script is refreshed (by auto refresh) while entries are adding, stop adding old entries.
 		var self = this;
+		
+		if(this.recentChangesEntries.length == 0) { this.finishScript(); return; }
 		
 		var date = this.recentChangesEntries[pIndex].date;
 		// Add new date grouping if necessary.
@@ -498,7 +500,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n.TEXT.autoRefresh, title:Utils.formatString(i18n.TEXT.autoRefreshTooltip, Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
 		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
-		console.log("TEST: "+this.autoRefreshEnabledDefault);
+		
 		checkBox.addEventListener("click", function tHandler(e){
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
 				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);
@@ -629,7 +631,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	};
 	
 	// take a "&" seperated list of RC params, and returns a Object with settings.
-	// NOTE: Script does not currently support: "from" and "namespace" (or related fields)
+	// NOTE: Script does not currently support: "from" and "namespace" related fields (like invert)
 	RCMManager.prototype.parseRCParams = function(pData, pExplodeOn, pSplitOn) {
 		var tRcParams = {};
 		tRcParams.paramString = [];
@@ -645,6 +647,9 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				}
 				else if(tRcParamsDataSplit[0] == "days" && tRcParamsDataSplit[1]) {
 					tRcParams["days"] = parseInt( tRcParamsDataSplit[1] );
+				}
+				else if(tRcParamsDataSplit[0] == "namespace" && (tRcParamsDataSplit[1] || tRcParamsDataSplit[1] === "0")) {
+					tRcParams["namespace"] = tRcParamsDataSplit[1];
 				}
 				// else if(tRcParamsDataSplit[0] == "from" && tRcParamsDataSplit[1]) {
 				// 	tRcParams["from"] = tRcParamsDataSplit[1];
@@ -673,6 +678,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			hidemyself	: false,
 			hideenhanced: false,
 			hidelogs	: false,
+			namespace	: null,
 		};
 	}
 	
