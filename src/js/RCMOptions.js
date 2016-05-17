@@ -70,7 +70,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	
 	RCMOptions.prototype._addElements = function() {
 		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, this.root);
-		Utils.newElement("legend", { innerHTML:i18n.RC_TEXT['recentchanges-legend'] }, tFieldset);
+		Utils.newElement("legend", { innerHTML:i18n('recentchanges-legend') }, tFieldset);
 		var tContent = Utils.newElement("div", { className:"rc-fieldset-content" }, tFieldset);
 		
 		/***************************
@@ -80,14 +80,14 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		tSettingsPanel.innerHTML = '<svg style="height:19px; vertical-align: top;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z" fill="currentColor" /></svg>';
 		
 		this.settingsSaveCookieCheckbox = Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
-		Utils.addTextTo(i18n.TEXT["optionsPanelSaveWithCookie"], tSettingsPanel);
+		Utils.addTextTo(i18n('rcm-optionspanel-savewithcookie'), tSettingsPanel);
 		
 		this.settingsSaveCookieCheckbox.checked = this.isSaveEnabled();//!$.isEmptyObject(this.rcParams);
 		
 		/***************************
 		 * First line of choices (numbers)
 		 ***************************/
-		var tRow1Text = i18n.RC_TEXT['rclinks'].split("<br />")[0].split(/\$1|\$2/);
+		var tRow1Text = i18n('rclinks').split("<br />")[0].split(/\$1|\$2/);
 		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);
@@ -100,45 +100,45 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		 * Second line of choices (checkboxes)
 		 ***************************/
 		var tRow2 = Utils.newElement("div", {  }, tContent);
-		var t1Text = "";//i18n.RC_TEXT['show'];
+		var t1Text = "";//i18n('show');
 		
 		this.minorEditsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhideminor'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhideminor', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.botsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhidebots'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhidebots', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.anonsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhideanons'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhideanons', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.usersCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhideliu'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhideliu', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.myEditsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhidemine'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhidemine', t1Text), tRow2);
 		if(mw.config.get("wgUserName") && this.manager.hideusers.indexOf(mw.config.get("wgUserName")) != -1) {
 			this.myEditsCheckbox.disabled = true;
 			this.myEditsCheckbox.checked = false;
-			this.myEditsCheckbox.title = i18n.TEXT.optionsPanelHideUsersOverride;
+			this.myEditsCheckbox.title = i18n('rcm-optionspanel-hideusersoverride');
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.groupedChangesCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhideenhanced'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhideenhanced', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		
 		this.logsCheckbox = Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(Utils.wiki2html(i18n.RC_TEXT['rcshowhidelogs'], t1Text), tRow2);
+		Utils.addTextTo(i18n('rcshowhidelogs', t1Text), tRow2);
 		
 		/***************************
 		 * Finish - make this work!

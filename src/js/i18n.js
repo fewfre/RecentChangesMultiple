@@ -1,45 +1,51 @@
 //<syntaxhighlight lang="javascript">
 /*
- *  TEXT - Custom text used in the script to explain what's happening. {#} means that the script will input a number / word / url here on the fly, and is expected / potentially important.
+ *  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
  *         This i18n is set depending on your local language (en if not available).
  *
  * https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
  * Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
- * RC_TEXT - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
+ * MESSAGES - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
  * 			 Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
  * 			 POTENTIAL ISSUES:
  * 			 	* Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
  */
-window.dev.RecentChangesMultiple.i18n = {
-	TEXT: {
+window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
+	"use strict";
+	var i18n = function(pKey){
+		arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
+		return i18n.wiki2html.apply(this, arguments);
+	}
+	
+	i18n.TEXT = {
 		en: { // English (ENGLISH)
 			// Errors
-			incorrectFormatLink : "'{0}' is an incorrect format. Please do <b>not</b> include 'http://' or anything after, including the first '/'.",
-			errorLoadingSyntaxHang : "Error loading [{0}] ({1} tries). Please correct syntax (or refresh script to try again).",
-			errorLoadingConnection : "Error loading [{0}] ({1} tries). Most likely a connection issue; refresh script to try again.",
-			tryMoreTimes : "Try {0} more times",
+			'rcm-error-linkformat' : "'$1' is an incorrect format. Please do <b>not</b> include 'http://' or anything after, including the first '/'.",
+			'rcm-error-loading-syntaxhang' : "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
+			'rcm-error-loading-connection' : "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
+			'rcm-error-trymoretimes' : "Try $1 more times",
 			// Notifications
-			loading : "Loading/Sorting...",
-			refresh : "Refresh",
-			timeStamp : "Recent Changes downloaded at: {0}",
-			changesAdded : " - [{0} Recent Changes added]",
+			'rcm-loading' : "Loading/Sorting...",
+			'rcm-refresh' : "Refresh",
+			'rcm-download-timestamp' : "Recent Changes downloaded at: $1",
+			'rcm-download-changesadded' : " - [$1 Recent Changes added]",
 			// Basics
-			wikisLoaded : "Wikis Loaded: ",
-			previouslyLoaded : "Previously loaded:",
-			noNewChanges : "No new changes",
-			autoRefresh : "Auto Refresh",
-			autoRefreshTooltip : "Automatically refreshes Recent Changes every {0} seconds",
-			footer : "Version {0} by {1}",
+			'rcm-wikisloaded' : "Wikis Loaded: ",
+			'rcm-previouslyloaded' : "Previously loaded:",
+			'rcm-nonewchanges' : "No new changes",
+			'rcm-autorefresh' : "Auto Refresh",
+			'rcm-autorefresh-tooltip' : "Automatically refreshes Recent Changes every {0} seconds",
+			'rcm-footer' : "Version {0} by {1}",
 			// Options Panel
-			optionsPanelHideUsersOverride: "data-hideusers overrides this.",
-			optionsPanelSaveWithCookie: "Save changes with cookie",
-			// Diff Module
-			diffModuleTitle : "Diff Viewer",
-			diffModuleOpen : "Open diff",
-			diffModuleUndo : "Undo edit",
-			diffModuleClose : "Close",
-			// Custom RC_TEXT - Does not appear in the real Special:RecentChangesMultiple
-			unknownThreadName : "thread", // If name of a wall/board thread is not found, this will take it's place.
+			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
+			'rcm-optionspanel-savewithcookie': "Save changes with cookie",
+			// Modules
+			'rcm-module-diff-title' : "Diff Viewer",
+			'rcm-module-diff-open' : "Open diff",
+			'rcm-module-diff-undo' : "Undo edit",
+			'rcm-module-close' : "Close",
+			// Other
+			'rcm-unknownthreadname' : "thread", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
 			 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
 			 ***************************/
@@ -54,32 +60,32 @@ window.dev.RecentChangesMultiple.i18n = {
 		},
 		pl: { // Polski (POLISH) - @author: Szynka013, Matik7
 			// Errors
-			incorrectFormatLink : "'{0}' to nieodpowiedni format. Proszę nie używać elementu 'http://', niczego po nim oraz pierwszego '/'.",
-			errorLoadingSyntaxHang : "Błąd podczas wczytywania [{0}] (prób: {1}) Proszę poprawić syntax (lub odświeżyć skrypt by spróbować ponownie).",
-			errorLoadingConnection : "Błąd podczas wczytywania [{0}] (prób: {1}). Najprawdopodobniej jest to błąd z połączeniem, odśwież skrypt by spróbować ponownie.",
-			tryMoreTimes : "Spróbuj {0} razy",
+			'rcm-error-linkformat' : "'$1' to nieodpowiedni format. Proszę nie używać elementu 'http://', niczego po nim oraz pierwszego '/'.",
+			'rcm-error-loading-syntaxhang' : "Błąd podczas wczytywania [$1] (prób: $2) Proszę poprawić syntax (lub odświeżyć skrypt by spróbować ponownie).",
+			'rcm-error-loading-connection' : "Błąd podczas wczytywania [$1] (prób: $2). Najprawdopodobniej jest to błąd z połączeniem, odśwież skrypt by spróbować ponownie.",
+			'rcm-error-trymoretimes' : "Spróbuj $1 razy",
 			// Notifications
-			loading : "Ładowanie/Sortowanie...",
-			refresh : "Odśwież",
-			timeStamp : "Ostatnie zmiany pobrane o: {0}",
-			changesAdded : " - [{0} dodanych ostatnich zmian]",
+			'rcm-loading' : "Ładowanie/Sortowanie...",
+			'rcm-refresh' : "Odśwież",
+			'rcm-download-timestamp' : "Ostatnie zmiany pobrane o: $1",
+			'rcm-download-changesadded' : " - [$1 dodanych ostatnich zmian]",
 			// Basics
-			wikisLoaded : "Załadowane wiki: ",
-			previouslyLoaded : "Poprzednio załadowane:",
-			noNewChanges : "Brak nowych zmian",
-			autoRefresh : "Automatyczne odświeżanie",
-			autoRefreshTooltip : "Automatyczne odświeżanie ostatnich zmian co każde {0} sekund",
-			footer : "Wersja {0} stworzona przez {1}",
+			'rcm-wikisloaded' : "Załadowane wiki: ",
+			'rcm-previouslyloaded' : "Poprzednio załadowane:",
+			'rcm-nonewchanges' : "Brak nowych zmian",
+			'rcm-autorefresh' : "Automatyczne odświeżanie",
+			'rcm-autorefresh-tooltip' : "Automatyczne odświeżanie ostatnich zmian co każde $1 sekund",
+			'rcm-footer' : "Wersja $1 stworzona przez $2",
 			// Options Panel
-			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
-			optionsPanelSaveWithCookie: "Zapisz zmiany w pamięci podręcznej",
-			// Diff Module
-			diffModuleTitle : "Podgląd zmian",
-			diffModuleOpen : "Pokaż zmiany",
-			diffModuleUndo : "Cofnij zmiany",
-			diffModuleClose : "Zamknij",
-			// Custom RC_TEXT - Does not appear in the real Special:RecentChangesMultiple
-			unknownThreadName : "wątek", // If name of a wall/board thread is not found, this will take it's place.
+			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",			/* [TODO] */
+			'rcm-optionspanel-savewithcookie': "Zapisz zmiany w pamięci podręcznej",
+			// Modules
+			'rcm-module-diff-title' : "Podgląd zmian",
+			'rcm-module-diff-open' : "Pokaż zmiany",
+			'rcm-module-diff-undo' : "Cofnij zmiany",
+			'rcm-module-close' : "Zamknij",
+			// Other
+			'rcm-unknownthreadname' : "wątek", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
 			 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
 			 ***************************/
@@ -94,32 +100,32 @@ window.dev.RecentChangesMultiple.i18n = {
 		},
 		es: { // Español (SPANISH) @author: Paynekiller92
 			// Errors
-			incorrectFormatLink : "'{0}' es un formato incorrecto. Por favor <b>no</b> incluyas 'http://' o cualquier cosa después, incluyendo el primer '/'.",
-			errorLoadingSyntaxHang : "Error cargando [{0}] ({1} intentos). Por favor corrige la sintaxis (o recarga el script para intentarlo otra vez).",
-			errorLoadingConnection : "Error cargando [{0}] ({1} intentos). Seguramente sea un problema de conexión; recarga el script para intentarlo otra vez.",
-			tryMoreTimes : "Inténtalo {0} veces más",
+			'rcm-error-linkformat' : "'$1' es un formato incorrecto. Por favor <b>no</b> incluyas 'http://' o cualquier cosa después, incluyendo el primer '/'.",
+			'rcm-error-loading-syntaxhang' : "Error cargando [$1] ($2 intentos). Por favor corrige la sintaxis (o recarga el script para intentarlo otra vez).",
+			'rcm-error-loading-connection' : "Error cargando [$1] ($2 intentos). Seguramente sea un problema de conexión; recarga el script para intentarlo otra vez.",
+			'rcm-error-trymoretimes' : "Inténtalo $1 veces más",
 			// Notifications
-			loading : "Cargando/Clasificando...",
-			refresh : "Recargar",
-			timeStamp : "Cambios recientes descargados en: {0}",
-			changesAdded : " - [{0} Cambios Recientes añadidos]",
+			'rcm-loading' : "Cargando/Clasificando...",
+			'rcm-refresh' : "Recargar",
+			'rcm-download-timestamp' : "Cambios recientes descargados en: $1",
+			'rcm-download-changesadded' : " - [$1 Cambios Recientes añadidos]",
 			// Basics
-			wikisLoaded : "Wikis Cargados: ",
-			previouslyLoaded : "Previamente cargados:",
-			noNewChanges : "No hay nuevos cambios",
-			autoRefresh : "Auto Recargar",
-			autoRefreshTooltip : "Recarga los Cambios Recientes automáticamente cada {0} segundos",
-			footer : "Versión {0} por {1}",
+			'rcm-wikisloaded' : "Wikis Cargados: ",
+			'rcm-previouslyloaded' : "Previamente cargados:",
+			'rcm-nonewchanges' : "No hay nuevos cambios",
+			'rcm-autorefresh' : "Auto Recargar",
+			'rcm-autorefresh-tooltip' : "Recarga los Cambios Recientes automáticamente cada $1 segundos",
+			'rcm-footer' : "Versión $1 por $2",
 			// Options Panel
-			/* [TODO] */ optionsPanelHideUsersOverride: "data-hideusers overrides this.",
-			/* [TODO] */ optionsPanelSaveWithCookie: "Save changes with cookie",
-			// Diff Module
-			diffModuleTitle : "Visor de cambios",
-			diffModuleOpen : "Abrir cambio",
-			diffModuleUndo : "Deshacer edición",
-			diffModuleClose : "Cerrar",
-			// Custom RC_TEXT - Does not appear in the real Special:RecentChangesMultiple
-			unknownThreadName : "hilo", // If name of a wall/board thread is not found, this will take it's place.
+			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",			/* [TODO] */
+			'rcm-optionspanel-savewithcookie': "Save changes with cookie",					/* [TODO] */
+			// Modules
+			'rcm-module-diff-title' : "Visor de cambios",
+			'rcm-module-diff-open' : "Abrir cambio",
+			'rcm-module-diff-undo' : "Deshacer edición",
+			'rcm-module-close' : "Cerrar",
+			// Other
+			'rcm-unknownthreadname' : "hilo", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
 			 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
 			 ***************************/
@@ -132,9 +138,14 @@ window.dev.RecentChangesMultiple.i18n = {
 				"fallbackLanguages": []
 			},
 		},
-	},
-	/* DO NOT CHANGE THIS WHEN TRANSLATING */
-	RC_TEXT: {
+	};
+	
+	/*******************************************************************************
+	 * DO NOT CHANGE THIS WHEN TRANSLATING
+	 * MESSAGES is all text that is retrieved from the Wikia servers for any supported language.
+	 * If it is necessary to overwrite a system message, simply add its key to the TEXT object with the new text for your language.
+	 *******************************************************************************/
+	i18n.MESSAGES = {
 		/***************************
 		 * Common Stuff
 		 ***************************/
@@ -340,6 +351,72 @@ window.dev.RecentChangesMultiple.i18n = {
 		'forum-recentchanges-thread-history-link'	: 'thread history',
 		'forum-recentchanges-closed-thread'			: 'closed thread "[[$1|$2]]" from [[$3|$4]]',
 		'forum-recentchanges-reopened-thread'		: 'reopened thread "[[$1|$2]]" from [[$3|$4]]',
-	},
-}
+	};
+	
+	// http://download.remysharp.com/wiki2html.js
+	i18n.wiki2html = function(pText) {
+		if(pText == undefined) { console.log("ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string"); return pText; };
+		var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
+		
+		return pText
+			// bold
+			.replace(/'''(.*?)'''/g, function (m, l) {
+				return '<strong>' + l + '</strong>';
+			})
+			// italic
+			.replace(/''(.*?)''/g, function (m, l) {
+				return '<em>' + l + '</em>';
+			})
+			// normal link
+			.replace(/[^\[](http[^\[\s]*)/g, function (m, l) {
+				return '<a href="' + l + '">' + l + '</a>';
+			})
+			// format string by replacing wiki $1 string vars with text.
+			.replace(/\$(\d+)/g, function(match, number) { 
+				return typeof args[number-1] != 'undefined' ? args[number-1]  : match ;
+			})
+			// internal link or image
+			.replace(/\[\[(.*?)\]\]/g, function (m, l) {
+				var p = l.split(/\|/);
+				var link = p.shift();
+
+				// if (link.match(/^Image:(.*)/)) {
+				// 	// no support for images - since it looks up the source from the wiki db
+				// 	return m;
+				// } else {
+					return '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
+				// }
+			})
+			// external link
+			.replace(/[\[](http:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
+				var p = l.replace(/[\[\]]/g, '').split(/ /);
+				var link = p.shift();
+				return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';
+			})
+			/*******************************************************************************
+			 * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.language
+			 *******************************************************************************/
+			// {{GENDER}} - cannot be checked by script, so just uses {{{1}}}/{{{2}}}
+			.replace(/{{GENDER:(.*?)}}/g, function(m, l) { 
+				var p = l.split("|");
+				var user = p.shift(); // Currently doesn't work, so this will just assume male.
+				return mw.language.gender(user, p);
+			})
+			// {{PLURAL}} - only does default support
+			.replace(/{{PLURAL:(.*?)}}/g, function(m, l) { 
+				var p = l.split("|");
+				var num = p.shift();
+				return mw.language.convertPlural(num, p);
+			})
+			// {{GRAMMAR}}
+			.replace(/{{GRAMMAR:(.*?)}}/g, function(m, l) { 
+				var p = l.split("|");
+				//var num = p.shift();
+				return mw.language.convertGrammar(p[1], p[0]);
+			})
+		;
+	};
+	
+	return i18n;
+})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple);
 //</syntaxhighlight>

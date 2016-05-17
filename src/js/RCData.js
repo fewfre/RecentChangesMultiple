@@ -97,7 +97,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			this.summary = pData.parsedcomment; // De-wikified.
 			this.summary = this.summary.replace("<a href=\"/", "<a href=\""+this.wikiInfo.server+"/"); // Make links point to correct wiki.
 		} else {
-			this.summary = '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-comment"]+'</span>';
+			this.summary = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
 		}
 		
 		this.pageid = pData.pageid;
@@ -159,7 +159,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				
 				// If a wall / board was edited, display a message saying so.
 				if(this.isWallBoardAction == false && this.isNewPage == false && this.summary == "") {
-					this.summary = this.type == RCData.TYPE.BOARD ? i18n.RC_TEXT["forum-recentchanges-edit"] : i18n.RC_TEXT["wall-recentchanges-edit"];
+					this.summary = this.type == RCData.TYPE.BOARD ? i18n("forum-recentchanges-edit") : i18n("wall-recentchanges-edit");
 				}
 			}
 		}
@@ -220,14 +220,14 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				this.log_rights_newgroups = "?";
 				if(this.wikiInfo.useOutdatedLogSystem == false) {
 					if(tLogParams) {
-						this.log_rights_oldgroups = tLogParams.oldgroups.length == 0 ? i18n.RC_TEXT["rightsnone"] : tLogParams.oldgroups.join(", ");
-						this.log_rights_newgroups = tLogParams.newgroups.length == 0 ? i18n.RC_TEXT["rightsnone"] : tLogParams.newgroups.join(", ");
+						this.log_rights_oldgroups = tLogParams.oldgroups.length == 0 ? i18n("rightsnone") : tLogParams.oldgroups.join(", ");
+						this.log_rights_newgroups = tLogParams.newgroups.length == 0 ? i18n("rightsnone") : tLogParams.newgroups.join(", ");
 					}
 				} else {
 					tLogParams = tLogParams.rights;
 					if(tLogParams) {
-						this.log_rights_oldgroups = tLogParams.old == "" ? i18n.RC_TEXT["rightsnone"] : tLogParams.old;
-						this.log_rights_newgroups = tLogParams["new"] == "" ? i18n.RC_TEXT["rightsnone"] : tLogParams["new"];
+						this.log_rights_oldgroups = tLogParams.old == "" ? i18n("rightsnone") : tLogParams.old;
+						this.log_rights_newgroups = tLogParams["new"] == "" ? i18n("rightsnone") : tLogParams["new"];
 					}
 				}
 				break;
@@ -251,8 +251,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				
 				for (var i = 0; i < this.log_block_flags.length; i++) {
 					// If we have a translation for flag, use it. otherwise, leave the flag id alone.
-					if(i18n.RC_TEXT["block-log-flags-" + this.log_block_flags[i]]) {
-						this.log_block_flags[i] = i18n.RC_TEXT["block-log-flags-" + this.log_block_flags[i]];
+					if(i18n("block-log-flags-" + this.log_block_flags[i])) {
+						this.log_block_flags[i] = i18n("block-log-flags-" + this.log_block_flags[i]);
 					}
 				}
 				this.log_block_flags = "("+ this.log_block_flags.join(", ") +")";
@@ -279,15 +279,15 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				
 				switch(this.log_delete_new_bitmask) {
 					case 1: {
-						this.log_delete_new_bitmask = i18n.RC_TEXT["revdelete-content-hid"];
+						this.log_delete_new_bitmask = i18n("revdelete-content-hid");
 						break;
 					}
 					case 2: {
-						this.log_delete_new_bitmask = i18n.RC_TEXT["revdelete-summary-hid"]; // I'm assuming; couldn't actually find what "2" was.
+						this.log_delete_new_bitmask = i18n("revdelete-summary-hid"); // I'm assuming; couldn't actually find what "2" was.
 						break;
 					}
 					case 3: {
-						this.log_delete_new_bitmask = i18n.RC_TEXT["revdelete-content-hid"] + i18n.RC_TEXT["and"] + " " + i18n.RC_TEXT["revdelete-summary-hid"];
+						this.log_delete_new_bitmask = i18n("revdelete-content-hid") + i18n("and") + " " + i18n("revdelete-summary-hid");
 						break;
 					}
 				}
@@ -325,34 +325,34 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	};
 	
 	RCData.prototype.userDetails = function() {
-		if(this.userhidden) { return '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-user"]+'</span>'; }
+		if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		var blockText = this.wikiInfo.canBlock ? i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Block/{1}'>"+i18n.RC_TEXT["blocklink"]+"</a>" : "";
+		var blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		if(this.userEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+i18n.RC_TEXT["pipe-separator"]+"<a href='{0}Special:Contributions/{1}'>"+i18n.RC_TEXT["contribslink"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		} else {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n.RC_TEXT["talkpagelinktext"]+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		}
 	}
 	
 	RCData.prototype.logTitleText = function() {
 		var logTemplate = "(<a href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
 		switch(this.logtype) {
-			case "abusefilter"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["abusefilter-log"]); }
-			case "block"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["blocklogpage"]); }
-			case "chatban"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["chat-chatban-log"]); }
-			case "delete"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["dellogpage"]); }
-			case "import"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["importlogpage"]); }
-			case "maps"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["wikia-interactive-maps-log-name"]); }
-			case "merge"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["mergelog"]); }
-			case "move"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["movelogpage"]); }
-			case "protect"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["protectlogpage"]); }
-			case "upload"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["uploadlogpage"]); }
-			case "useravatar"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["useravatar-log"]); }
-			case "newusers"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["newuserlogpage"]); }
-			case "renameuser"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["userrenametool-logpage"]); }
-			case "rights"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["rightslog"]); }
-			case "wikifeatures"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n.RC_TEXT["wikifeatures-log-name"]); }
+			case "abusefilter"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("abusefilter-log")); }
+			case "block"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("blocklogpage")); }
+			case "chatban"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("chat-chatban-log")); }
+			case "delete"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("dellogpage")); }
+			case "import"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("importlogpage")); }
+			case "maps"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n("wikia-interactive-maps-log-name")); }
+			case "merge"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("mergelog")); }
+			case "move"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n("movelogpage")); }
+			case "protect"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("protectlogpage")); }
+			case "upload"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("uploadlogpage")); }
+			case "useravatar"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("useravatar-log")); }
+			case "newusers"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("newuserlogpage")); }
+			case "renameuser"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("userrenametool-logpage")); }
+			case "rights"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("rightslog")); }
+			case "wikifeatures"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("wikifeatures-log-name")); }
 			default				:{ return Utils.formatString(logTemplate, this.logtype,	this.logtype); } // At least display it as a log.
 		}
 		return "";
@@ -360,7 +360,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	
 	// Check each entry for "threadTitle", else return default text.
 	RCData.prototype.getThreadTitle = function() {
-		return this.threadTitle ? this.threadTitle :  "<i>"+i18n.TEXT.unknownThreadName+"</i>";
+		return this.threadTitle ? this.threadTitle :  "<i>"+i18n('rcm-unknownthreadname')+"</i>";
 	}
 	
 	RCData.prototype.getSummary = function(pSummary) {
@@ -379,7 +379,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tLogMessage = "";
 		
 		if(this.actionhidden) {
-			tLogMessage = '<span class="history-deleted">'+i18n.RC_TEXT["rev-deleted-event"]+'</span>';
+			tLogMessage = '<span class="history-deleted">'+i18n("rev-deleted-event")+'</span>';
 			tLogMessage += this.getSummary();
 		}
 		
@@ -387,15 +387,15 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			case "block": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
-					case "block": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["blocklogentry"],		this.href+"|"+this.titleNoNS, this.log_block_duration, this.log_block_flags ); break; }
-					case "reblock": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["reblock-logentry"],	this.href+"|"+this.titleNoNS, this.log_block_duration, this.log_block_flags ); break; }
-					case "unblock": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["unblocklogentry"],	this.titleNoNS ); break; }
+					case "block": { tLogMessage += i18n("blocklogentry",		this.href+"|"+this.titleNoNS, this.log_block_duration, this.log_block_flags ); break; }
+					case "reblock": { tLogMessage += i18n("reblock-logentry",	this.href+"|"+this.titleNoNS, this.log_block_duration, this.log_block_flags ); break; }
+					case "unblock": { tLogMessage += i18n("unblocklogentry",	this.titleNoNS ); break; }
 				}
 				break;
 			}
 			case "delete": {
 				// logactions assumed: delete, restore, event, revision, event-legacy, revision-legacy
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["logentry-delete-"+this.logaction],
+				tLogMessage += i18n("logentry-delete-"+this.logaction,
 					this.userDetails(),
 					undefined, // Cannot know gender of edit user
 					"<a href='"+this.href+"'>"+this.title+"</a>",
@@ -407,15 +407,15 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			case "import": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
-					case "upload": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["import-logentry-upload"], this.href+"|"+this.title ); break; }
-					case "interwiki": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["import-logentry-interwiki"], this.title ); break; }
+					case "upload": { tLogMessage += i18n("import-logentry-upload", this.href+"|"+this.title ); break; }
+					case "interwiki": { tLogMessage += i18n("import-logentry-interwiki", this.title ); break; }
 				}
 				break;
 			}
 			case "merge": {
 				tLogMessage += this.userDetails()+" ";
 				// merged [[$1]] into [[$2]] (revisions up to $3)
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["import-logentry-upload"],
+				tLogMessage += i18n("import-logentry-upload",
 					this.href + "|" + this.title,
 					this.wikiInfo.articlepath+this.log_merge_destination + "|" + this.log_merge_destination,
 					this.getLogTimeStamp(new Date(this.log_merge_mergepoint))
@@ -424,7 +424,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			}
 			case "move": {
 				// logactions assumed: move, move-noredirect, move_redir, move_redir-noredirect
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["logentry-move-"+this.logaction+this.log_move_noredirect],
+				tLogMessage += i18n("logentry-move-"+this.logaction+this.log_move_noredirect,
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					"<a href='"+ this.hrefFS+"redirect=no" +"'>"+ this.title + "</a>",
@@ -436,38 +436,38 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				tLogMessage += this.userDetails()+" ";
 				var t$1 = this.href+"|"+this.title;
 				switch(this.logaction) {
-					case "protect": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["protectedarticle"], t$1 ) + " "+this.log_info_0; break; }
-					case "modify": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["modifiedarticleprotection"], t$1 ) + " "+this.log_info_0; break; }
-					case "unprotect": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["unprotectedarticle"], t$1 ); break; }
-					case "move_prot": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["movedarticleprotection"].replace("[[$2]]", this.log_info_0), t$1 ); break; }
+					case "protect": { tLogMessage += i18n("protectedarticle", t$1 ) + " "+this.log_info_0; break; }
+					case "modify": { tLogMessage += i18n("modifiedarticleprotection", t$1 ) + " "+this.log_info_0; break; }
+					case "unprotect": { tLogMessage += i18n("unprotectedarticle", t$1 ); break; }
+					case "move_prot": { tLogMessage += i18n.wiki2html( i18n.MESSAGES["movedarticleprotection"].replace("[[$2]]", this.log_info_0), t$1 ); break; }
 				}
 				break;
 			}
 			case "upload": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
-					case "upload": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["uploadedimage"],		this.href+"|"+this.title ); break; }
-					case "overwrite": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["overwroteimage"],	this.href+"|"+this.title ); break; }
+					case "upload": { tLogMessage += i18n("uploadedimage",		this.href+"|"+this.title ); break; }
+					case "overwrite": { tLogMessage += i18n("overwroteimage",	this.href+"|"+this.title ); break; }
 				}
 				break;
 			}
 			case "newusers": {
 				// logactions assumed: newusers, create, create2, autocreate (kinda sorta maybe)
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["logentry-newusers-"+this.logaction], this.userDetails(), undefined, "" );
+				tLogMessage += i18n("logentry-newusers-"+this.logaction, this.userDetails(), undefined, "" );
 				break;
 			}
 			case "rights": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
-					case "rights": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["rightslogentry"], "<a href='"+this.href + "'>" + this.title+"</a>", this.log_rights_oldgroups, this.log_rights_newgroups ); break; }
+					case "rights": { tLogMessage += i18n("rightslogentry", "<a href='"+this.href + "'>" + this.title+"</a>", this.log_rights_oldgroups, this.log_rights_newgroups ); break; }
 				}
 				break;
 			}
 			case "useravatar": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
-					case "avatar_chn": { tLogMessage += i18n.RC_TEXT["blog-avatar-changed-log"]; break; } // 'Added or changed avatar'
-					case "avatar_rem": { tLogMessage += Utils.wiki2html( i18n.RC_TEXT["blog-avatar-removed-log"], "<a href='"+this.href+"'>"+this.title+"</a>"); break; } // "Removed $1's avatars"
+					case "avatar_chn": { tLogMessage += i18n("blog-avatar-changed-log"); break; } // 'Added or changed avatar'
+					case "avatar_rem": { tLogMessage += i18n("blog-avatar-removed-log", "<a href='"+this.href+"'>"+this.title+"</a>"); break; } // "Removed $1's avatars"
 				}
 				break;
 			}
@@ -488,7 +488,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				
 				tLogMessage += this.userDetails()+" ";
 				// logaction assumed: chatbanadd, chatbanremove, chatbanchange
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["chat-"+this.logaction+"-log-entry"], "<a href='"+this.href+"'>"+this.titleNoNS+"</a>", tChatData[2], t$3 );
+				tLogMessage += i18n("chat-"+this.logaction+"-log-entry", "<a href='"+this.href+"'>"+this.titleNoNS+"</a>", tChatData[2], t$3 );
 				tChatData = null;
 				break;
 			}
@@ -496,7 +496,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				// logactions assumed: create_map, update_map, delete_map, undelete_map
 				//						create_pin_type, update_pin_type, delete_pin_type
 				//						create_pin, update_pin, delete_pin
-				tLogMessage += Utils.wiki2html( i18n.RC_TEXT["logentry-maps-"+this.logaction], this.userDetails(), undefined, this.title );
+				tLogMessage += i18n("logentry-maps-"+this.logaction, this.userDetails(), undefined, this.title );
 				break;
 			}
 			case "abusefilter": {
@@ -506,9 +506,9 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
 					case "modify": {
-						tLogMessage += Utils.wiki2html( i18n.RC_TEXT["abusefilter-log-entry-modify"],
+						tLogMessage += i18n("abusefilter-log-entry-modify",
 							"<a href='"+this.href + "'>" + this.title+"</a>",
-							"<a href='"+this.wikiInfo.articlepath + "Special:AbuseFilter/history/" + tAbusePage + "/diff/prev/" + tAbuseItem + "'>" + i18n.RC_TEXT["abusefilter-log-detailslink"] + "</a>"
+							"<a href='"+this.wikiInfo.articlepath + "Special:AbuseFilter/history/" + tAbusePage + "/diff/prev/" + tAbuseItem + "'>" + i18n("abusefilter-log-detailslink") + "</a>"
 						);
 						break;
 					}
@@ -537,7 +537,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread"; break;
 		}
 		if(tLocalizedActionMessage != "") {
-			return " "+Utils.wiki2html(i18n.RC_TEXT[tLocalizedActionMessage], this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
+			return " "+i18n(tLocalizedActionMessage, this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
 		} else {
 			return this.getSummary(); // Else not a wall/board action
 		}
@@ -562,7 +562,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	
 	RCData.prototype.pageTitleTextLink = function() {
 		if(this.type == RCData.TYPE.COMMENT) {
-			return Utils.wiki2html(i18n.RC_TEXT["article-comments-rc-comment"], this.href, this.titleNoNS);
+			return i18n("article-comments-rc-comment", this.href, this.titleNoNS);
 		} else {
 			return Utils.formatString("<a href='{0}'>{1}</a>", this.href, this.title);
 		}
@@ -571,13 +571,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	RCData.prototype.wallBoardTitleText = function(pThreadTitle) {
 		if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
 		if(this.type == RCData.TYPE.WALL) {
-			return Utils.wiki2html(i18n.RC_TEXT["wall-recentchanges-thread-group"],
+			return i18n("wall-recentchanges-thread-group",
 				"<a href='"+this.href+"'>"+pThreadTitle+"</a>",
 				this.getBoardWallParentLink(),
 				this.titleNoNS
 			);
 		} else {
-			return Utils.wiki2html(i18n.RC_TEXT["forum-recentchanges-thread-group"],
+			return i18n("forum-recentchanges-thread-group",
 				"<a href='"+this.href+"'>"+pThreadTitle+"</a>",
 				this.getBoardWallParentLink(),
 				this.titleNoNS
@@ -594,7 +594,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "forum-recentchanges-thread-history-link" : "forum-recentchanges-history-link";
 		}
-		return Utils.formatString("(<a href='{0}'>{1}</a>)", tLink, i18n.RC_TEXT[tText]);
+		return Utils.formatString("(<a href='{0}'>{1}</a>)", tLink, i18n(tText));
 	}
 	
 	RCData.prototype.getLogTimeStamp = function(pDate) {
@@ -612,24 +612,24 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
 		if(module.debug) { console.log("http:"+pAjaxUrl); console.log(pDiffLink); console.log(pUndoLink); }
 		
-		var tTitle = pPageName+" - "+i18n.TEXT.diffModuleTitle;
+		var tTitle = pPageName+" - "+i18n('rcm-module-diff-title');
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [];
 		tButtons.push({
 			defaultButton: true,
-			message: i18n.TEXT.diffModuleOpen,
+			message: i18n('rcm-module-diff-open'),
 			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeDiff(); }
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
 				defaultButton: true,
-				message: i18n.TEXT.diffModuleUndo,
+				message: i18n('rcm-module-diff-undo'),
 				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeDiff(); }
 			});
 		}
 		tButtons.push({
 			defaultButton: false,
-			message: i18n.TEXT.diffModuleClose,
+			message: i18n('rcm-module-close'),
 			handler: RCData.closeDiff
 		});
 		
@@ -707,7 +707,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tButtons = [
 			{
 				defaultButton: false,
-				message: i18n.TEXT.diffModuleClose,
+				message: i18n('rcm-module-close'),
 				handler: RCData.closeDiff
 			}
 		];
@@ -737,13 +737,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 						if(tPage.missing == "") {
 							tInvalidImage = {
 								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-								thumbText: Utils.wiki2html(i18n.RC_TEXT['filedelete-success'], tPage.title),
+								thumbText: i18n('filedelete-success', tPage.title),
 								caption: tPageTitleNoNS
 							};
 						} else if(tImage == null) {
 							tInvalidImage = {
 								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-								thumbText: Utils.wiki2html(i18n.RC_TEXT['shared_help_was_redirect'], tPage.title),
+								thumbText: i18n('shared_help_was_redirect', tPage.title),
 								caption: tPageTitleNoNS
 							};
 						} else if(Utils.isFileAudio(tPage.title)) {

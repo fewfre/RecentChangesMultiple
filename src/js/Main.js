@@ -16,7 +16,7 @@
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.6";
+	module.version = "1.2.7";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -121,7 +121,7 @@
 				success: function(pData){
 					$.each( (pData.query || {}).allmessages, function( index, message ) {
 						if( message.missing !== '' ) {
-							i18n.RC_TEXT[message.name] = message['*'];
+							i18n.MESSAGES[message.name] = message['*'];
 						}
 					});
 				}
@@ -130,7 +130,7 @@
 		
 		// Loads messages in increments of 50.
 		var tMessages = "", tNumLoading = 0;
-		Object.keys(i18n.RC_TEXT).forEach(function (key) {
+		Object.keys(i18n.MESSAGES).forEach(function (key) {
 			tMessages += (tNumLoading > 0 ? "|" : "")+key
 			tNumLoading++;
 			if(tNumLoading >= 50) {

@@ -54,7 +54,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		this.needsUserData		= true; // {bool} check if the RCMManager should load the this user's account data for the wiki (detect what rights they have).
 		this.canBlock			= false; // {bool} If the user has the "block" right on this wiki.
-		// this.canRollback		= false; // {bool} If the user has the "rollback" right on this wiki.
+		this.canRollback		= true; // {bool} If the user has the "rollback" right on this wiki. Set to true by default so as to fetch extra necessary data first time around.
 		
 		this.isWikiaWiki		= true; // {bool} Is this wiki a wikia wiki
 		this.useOutdatedLogSystem = false; // {bool} Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
@@ -88,7 +88,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		if(this.servername.indexOf("/") > -1) {
-			this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>"+ Utils.formatString(i18n.TEXT.incorrectFormatLink, this.servername)+"</div>";
+			this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>"+ i18n("rcm-error-linkformat", this.servername)+"</div>";
 			throw "Incorrect format";
 		}
 		
@@ -195,6 +195,12 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 					if(pQuery.pages[tPageID] && pQuery.pages[tPageID].imageinfo) {
 						this.favicon = pQuery.pages[tPageID].imageinfo[0].url;
 					}
+					// for (var tPageID in pQuery.pages) {
+					// 	if(pQuery.pages[tPageID] && pQuery.pages[tPageID].ns == 6 && pQuery.pages[tPageID].title.split(":")[1] == "Favicon.ico") {
+					// 		if(pQuery.pages[tPageID].imageinfo) { this.favicon = pQuery.pages[tPageID].imageinfo[0].url; }
+					// 		break;
+					// 	}
+					// }
 				}
 			}
 			
@@ -205,11 +211,13 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		/***************************
 		 * User Data
 		 ***************************/
+		this.canBlock			= false;
+		this.canRollback		= false;
 		if(this.needsUserData && !!pQuery.users){
 			this.needsUserData = false;
 			for(var i in pQuery.users[0].rights) { 
 				if(pQuery.users[0].rights[i] == "block") { this.canBlock = true; }
-				// else if(pQuery.users[0].rights[i] == "rollback") { this.canRollback = true; }
+				else if(pQuery.users[0].rights[i] == "rollback") { this.canRollback = true; }
 			}
 		}
 		
@@ -265,6 +273,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		var tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
 		var tUrlList = [];
 		var tMetaList = [];
+		var tPropList = [];
 		
 		// Get results up to this time stamp.
 		var tEndDate = new Date();//this.rcParams.from ? new Date(this.rcParams.from) : new Date();
@@ -335,7 +344,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			 * Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
 			 * Get favicon url for wiki (needed for wikis below V1.23 [Added to siteinfo]) (Once per RCMManager)
 			 ***************************/
-			tReturnText += "&prop=imageinfo&iiprop=url&titles=File:Favicon.ico";
+			tPropList.push("imageinfo");
+			tReturnText += "&iiprop=url&titles=File:Favicon.ico";
 		}
 		
 		/***************************
@@ -355,10 +365,12 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		 ***************************/
 		tReturnText += "&list="+tUrlList.join("|");
 		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
+		if(tPropList.length > 0){ tReturnText += "&prop="+tPropList.join("|"); }
 		tReturnText.replace(/ /g, "_");
 		
 		tUrlList = null;
 		tMetaList = null;
+		tPropList = null;
 		tEndDate = null;
 		
 		if(module.debug) { console.log("http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }

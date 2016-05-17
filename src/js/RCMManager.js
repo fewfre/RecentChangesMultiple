@@ -148,7 +148,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 * Setup
 		 ***************************/
 		// Footer never changes, so set here
-		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + Utils.formatString(i18n.TEXT.footer, "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+module.version+"</a>", "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+module.version+"</a>", "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.onGoToWikiInfo);
 		
@@ -163,7 +163,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		var self = this;
 		
 		clearTimeout(this.autoRefreshTimeoutID);
-		this.wikisNode.innerHTML = i18n.TEXT.wikisLoaded;
+		this.wikisNode.innerHTML = i18n('rcm-wikisloaded');
 		this.wikisNodeList	= Utils.newElement("span", { className:"rcm-wikis-list" }, this.wikisNode);
 		this.wikisNodeInfo	= Utils.newElement("div", { className:"rcm-wikis-info" }, this.wikisNode);
 		
@@ -184,7 +184,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		});
 		//this.totalWikisToLoad = this.chosenWikis.length;
 		this.wikisLeftToLoad = this.totalWikisToLoad;
-		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n.TEXT.loading+" (<span class='rcm-load-perc'>0%</span>)";
+		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 	};
 	
 	/* pUpdateParams : Bool - optional (default: false) */
@@ -241,8 +241,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
-			this.statusNode.innerHTML = "<div class='rcm-error'>"+Utils.formatString(i18n.TEXT.errorLoadingSyntaxHang, "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-			Utils.newElement("button", { innerHTML:Utils.formatString(i18n.TEXT.tryMoreTimes, 1) }, self.statusNode).addEventListener("click",
+			this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n("rcm-error-loading-syntaxhang", "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+			Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click",
 				function tHandler(pData){
 					pData.target.removeEventListener("click", tHandler);
 					
@@ -251,7 +251,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 						self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
 					});
 					self.erroredWikis = [];
-					self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n.TEXT.loading+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+					self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
 				}
 			);
 			self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
@@ -264,9 +264,9 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				this.loadWiki(pWikiInfo, pTries, pID, 0);
 			} else {
 				if(this.erroredWikis.length === 0) {
-					this.statusNode.innerHTML = "<div class='rcm-error'>"+Utils.formatString((pFailStatus==null ? i18n.TEXT.errorLoadingSyntaxHang : i18n.TEXT.errorLoadingConnection), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+					this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n((pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection"), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
 					this.addRefreshButtonTo(this.statusNode);
-					Utils.newElement("button", { innerHTML:Utils.formatString(i18n.TEXT.tryMoreTimes, RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click",
+					Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click",
 						function tHandler(pData){
 							self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 							pData.target.removeEventListener("click", tHandler);
@@ -276,7 +276,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 								self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
 							});
 							self.erroredWikis = [];
-							self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n.TEXT.loading+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+							self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
 						}
 					);
 					self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
@@ -367,8 +367,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	// All wikis are loaded
 	RCMManager.prototype.rcmChunkStart = function() {
 		var tDate = new Date();
-		this.statusNode.innerHTML = Utils.formatString(i18n.TEXT.timeStamp, "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
-		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+Utils.formatString(i18n.TEXT.changesAdded, "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
+		this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
+		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
 		this.resultsNode.innerHTML = "";
 		
 		// Add some run-time CSS classes
@@ -386,7 +386,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		// console.log(this.recentChangesEntries);
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime)) {
-			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n.TEXT.noNewChanges+"</strong>" }, this.resultsNode);
+			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
 	}
@@ -409,7 +409,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		// Show at what point new changes start at.
 		if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date < this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
-			Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n.TEXT.previouslyLoaded+"</strong>" }, pContainer);
+			Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
 		}
 		
 		// Add to page
@@ -485,7 +485,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		pParent.appendChild(document.createTextNode(" "));
 		
-		Utils.newElement("button", { innerHTML:i18n.TEXT.refresh }, pParent).addEventListener("click", function tHandler(e){
+		Utils.newElement("button", { innerHTML:i18n('rcm-refresh') }, pParent).addEventListener("click", function tHandler(e){
 			e.target.removeEventListener("click", tHandler);
 			self.refresh();
 		});
@@ -497,7 +497,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		pParent.appendChild(document.createTextNode(" "));
 		
 		var autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
-		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n.TEXT.autoRefresh, title:Utils.formatString(i18n.TEXT.autoRefreshTooltip, Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
+		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n('rcm-autorefresh'), title:i18n('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
 		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
 		
@@ -539,17 +539,17 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				+ " : "
 				+ "</td>"
 				+ "<td>"
-				+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n.RC_TEXT["recentchanges"]+"</a>"
+				+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n("recentchanges")+"</a>"
 				+ " - "
-				+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n.RC_TEXT["newpages"]+"</a>"
+				+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n("newpages")+"</a>"
 				+ " - "
-				+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n.RC_TEXT["newimages"]+"</a>"
+				+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n("newimages")+"</a>"
 				+ " - "
-				+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n.RC_TEXT["log"]+"</a>"
+				+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n("log")+"</a>"
 				
-				+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n.RC_TEXT["insights"]+"</a>" : "")
+				+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>" : "")
 				+ " - "
-				+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n.RC_TEXT["randompage"]+"</a>"
+				+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>"
 				+ "</td>"
 				+ "</tr>"
 				// Now for the statistics
@@ -557,11 +557,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 					+ "<td>"
 					+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
 					+ "<tr>"
-						+ "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n.RC_TEXT["awc-metrics-articles"]+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
-						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListFiles'>"+i18n.RC_TEXT["prefs-files"]+"</a>: <b>" + pWikiInfo.statistics.images +"</b></td>"
-						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListUsers'>"+i18n.RC_TEXT["group-user"]+"</a>: <b>" + pWikiInfo.statistics.activeusers +"</b></td>"
-						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListAdmins'>"+i18n.RC_TEXT["group-sysop"]+"</a>: <b>" + pWikiInfo.statistics.admins +"</b></td>"
-						+ "<td><a href='"+pWikiInfo.articlepath+"Special:Statistics'>"+i18n.RC_TEXT["awc-metrics-edits"]+"</a>: <b>" + pWikiInfo.statistics.edits +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n("awc-metrics-articles")+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListFiles'>"+i18n("prefs-files")+"</a>: <b>" + pWikiInfo.statistics.images +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListUsers'>"+i18n("group-user")+"</a>: <b>" + pWikiInfo.statistics.activeusers +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:ListAdmins'>"+i18n("group-sysop")+"</a>: <b>" + pWikiInfo.statistics.admins +"</b></td>"
+						+ "<td><a href='"+pWikiInfo.articlepath+"Special:Statistics'>"+i18n("awc-metrics-edits")+"</a>: <b>" + pWikiInfo.statistics.edits +"</b></td>"
 					+ "</tr>"
 					+ "</table>"
 					+ "</td>"
@@ -573,42 +573,6 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			}
 		});
 	};
-	
-	// RCMManager.prototype.addWikiIconOld = function(pWikiInfo) {
-	// 	var self = this;
-	// 	// this.wikisNodeList.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
-	// 	var favicon = Utils.newElement("span", { className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.wikisNodeList);
-	// 	favicon.addEventListener("click", function(){
-	// 		var infoBanner = self.wikisNodeInfo.querySelector(".banner-notification");
-	// 		// If already open for that wiki, then close it.
-	// 		if(infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername) {
-	// 			self.closeWikiInfoBanner();
-	// 		} else {
-	// 			// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
-	// 			self.wikisNodeInfo.innerHTML = "<div class='banner-notification warn' data-wiki='"+pWikiInfo.servername+"'>"//notify
-	// 			+ "<button class='close wikia-chiclet-button'><img></button>"
-	// 			+ "<div class='msg'>"
-	// 			+ pWikiInfo.getFaviconHTML()
-	// 			+ " "
-	// 			+ "<b><a href='"+pWikiInfo.articlepath+pWikiInfo.mainpage.replace(/ /g, "_")+"'>"+pWikiInfo.sitename+"</a></b>"
-	// 			+ " : "
-	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n.RC_TEXT["recentchanges"]+"</a>"
-	// 			+ " - "
-	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n.RC_TEXT["newpages"]+"</a>"
-	// 			+ " - "
-	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n.RC_TEXT["newimages"]+"</a>"
-	// 			+ " - "
-	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n.RC_TEXT["log"]+"</a>"
-				
-	// 			+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n.RC_TEXT["insights"]+"</a>" : "")
-	// 			+ " - "
-	// 			+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n.RC_TEXT["randompage"]+"</a>"
-	// 			+ "</div>";
-	// 			+ "</div>";
-	// 			self.wikisNodeInfo.querySelector(".banner-notification .close").addEventListener("click", self.closeWikiInfoBanner.bind(self));
-	// 		}
-	// 	});
-	// };
 	
 	RCMManager.prototype.closeWikiInfoBanner = function() {
 		// $(infoBanner).hide(500, "linear", function() {

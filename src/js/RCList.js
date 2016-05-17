@@ -85,14 +85,14 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	};
 	
 	RCList.prototype._diffHist = function(pRC) {
-		var diffLink = i18n.RC_TEXT.diff;
+		var diffLink = i18n('diff');
 		if(pRC.isNewPage == false) {
 			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
 		}
 		if(this.type == RCData.TYPE.NORMAL && pRC.namespace == 6) {
 			diffLink += this.getAjaxImageButton();
 		}
-		return "("+diffLink+i18n.RC_TEXT["pipe-separator"]+"<a href='"+pRC.hrefFS+"action=history'>"+i18n.RC_TEXT.hist+"</a>)";
+		return "("+diffLink+i18n("pipe-separator")+"<a href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
 	};
 	
 	// Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
@@ -103,13 +103,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		// var html = "<strong class='{0}'>({1}{2})</strong>";
 		var html = "<strong class='{0}'>{1}</strong>";
 		if(tDiffSize > 0) {
-			return Utils.formatString(html, "mw-plusminus-pos", Utils.wiki2html(i18n.RC_TEXT.parentheses, "+"+tDiffSizeText));
+			return Utils.formatString(html, "mw-plusminus-pos", i18n('parentheses', "+"+tDiffSizeText));
 			// html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
 		} else if(tDiffSize < 0) {
-			return Utils.formatString(html, "mw-plusminus-neg", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			return Utils.formatString(html, "mw-plusminus-neg", i18n('parentheses', tDiffSizeText));
 			// html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
 		} else {
-			return Utils.formatString(html, "mw-plusminus-null", Utils.wiki2html(i18n.RC_TEXT.parentheses, tDiffSizeText));
+			return Utils.formatString(html, "mw-plusminus-null", i18n('parentheses', tDiffSizeText));
 			// html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
 		}
 		// return html;
@@ -136,8 +136,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	
 	// For use with comments / normal pages
 	RCList.prototype._changesText = function() {
-		//var returnText = Utils.formatString(i18n.RC_TEXT.numChanges, this.list.length);
-		var returnText = Utils.wiki2html(i18n.RC_TEXT["nchanges"], this.list.length);
+		var returnText = i18n("nchanges", this.list.length);
 		if(this.type == RCData.TYPE.NORMAL && this.oldest.isNewPage == false) {
 			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
 		}
@@ -154,7 +153,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	
 	// Check each entry for "threadTitle", else return default text.
 	RCList.prototype.getThreadTitle = function() {
-		var tTitle = null;//"<i>"+i18n.TEXT.unknownThreadName+"</i>";
+		var tTitle = null;//"<i>"+i18n('rcm-unknownthreadname')+"</i>";
 		this.list.some(function(rc){
 			if(rc.threadTitle) {
 				tTitle = rc.threadTitle;
@@ -164,7 +163,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		});
 		if(this.manager.extraLoadingEnabled) {
 			var tElemID = Utils.uniqID();
-			tTitle = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n.TEXT.unknownThreadName)+"</i></span>";
+			tTitle = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n('rcm-unknownthreadname'))+"</i></span>";
 			
 			var self = this;
 			this.manager.secondaryWikiData.push({
@@ -182,7 +181,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			});
 		} else {
 			if(tTitle == null) {
-				tTitle = "<i>"+i18n.TEXT.unknownThreadName+"</i>";
+				tTitle = "<i>"+i18n('rcm-unknownthreadname')+"</i>";
 			}
 		}
 		
@@ -276,7 +275,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 	// 	var tRollback = Utils.newElement("span", { className:"mw-rollback-link" });
 	// 	tRollback.appendChild(document.createTextNode(" "));
-	// 	var tRollbackLink = Utils.newElement("a", { innerHTML:i18n.RC_TEXT["rollbacklink"] }, tRollback);
+	// 	var tRollbackLink = Utils.newElement("a", { innerHTML:i18n("rollbacklink") }, tRollback);
 	// 	tRollback.appendChild(document.createTextNode("]"));
 		
 	// 	// Initializing here since "rc" may be nulled by the time the event is triggered.
@@ -310,7 +309,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		if(tI18nLetter == "") { return pEmpty; }
 		else {
-			return "<abbr class='"+pFlag+"' title='"+i18n.RC_TEXT[tI18nTooltip]+"'>"+i18n.RC_TEXT[tI18nLetter]+"</abbr>";
+			return "<abbr class='"+pFlag+"' title='"+i18n(tI18nTooltip)+"'>"+i18n(tI18nLetter)+"</abbr>";
 		}
 	};
 	
@@ -414,7 +413,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 			case RCData.TYPE.NORMAL: {
 				html += "<a href='"+this.newest.href+"'>"+this.newest.title+"</a>";
-				html += " ("+this._changesText()+i18n.RC_TEXT["pipe-separator"]+"<a href='"+this.newest.hrefFS+"action=history'>"+i18n.RC_TEXT["hist"]+"</a>)";
+				html += " ("+this._changesText()+i18n("pipe-separator")+"<a href='"+this.newest.hrefFS+"action=history'>"+i18n("hist")+"</a>)";
 				html += SEP
 				html += this._diffSizeText(this.newest, this.oldest);
 				break;
@@ -431,7 +430,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			}
 			case RCData.TYPE.COMMENT: {
 				// Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
-				html += Utils.wiki2html( i18n.RC_TEXT["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath+(this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":")+this.newest.titleNoNS+"#WikiaArticleComments" );
+				html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath+(this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":")+this.newest.titleNoNS+"#WikiaArticleComments" );
 				html += " ("+this._changesText()+")";
 				// html += SEP
 				// html += this._diffSizeText(this.newest, this.oldest);
@@ -448,11 +447,11 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
-				+'<span class="mw-rc-openarrow"><a title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'">'// href="#"
-					+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-expand"]+'" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
+					+'<img width="12" height="12" title="'+i18n("rc-enhanced-expand")+'" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
 				+'</a></span>'
-				+'<span class="mw-rc-closearrow"><a title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'">'// href="#"
-						+'<img width="12" height="12" title="'+i18n.RC_TEXT["rc-enhanced-hide"]+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+				+'<span class="mw-rc-closearrow"><a title="'+i18n("rc-enhanced-hide")+'">'// href="#"
+						+'<img width="12" height="12" title="'+i18n("rc-enhanced-hide")+'" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit:true })
@@ -489,9 +488,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
 				} else {
 					html += "<span class='mw-enhanced-rc-time'><a href='"+pRC.href+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>";
-					html += " (<a href='"+pRC.href+"'>"+i18n.RC_TEXT["cur"]+"</a>";
+					html += " (<a href='"+pRC.href+"'>"+i18n("cur")+"</a>";
 					if(pRC.isNewPage == false) {
-						html += i18n.RC_TEXT["pipe-separator"]+"<a href='"+this.getDiffLink(pRC, pRC)+"'>"+i18n.RC_TEXT["last"]+"</a>"+this.getAjaxDiffButton();
+						html += i18n("pipe-separator")+"<a href='"+this.getDiffLink(pRC, pRC)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
 					}
 					html += ")";
 					html += SEP;
@@ -505,9 +504,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			case RCData.TYPE.COMMENT:
 			case RCData.TYPE.NORMAL: {
 				html += "<span class='mw-enhanced-rc-time'><a href='"+this.getLink(pRC, null, pRC.revid)+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>"
-				html += " (<a href='"+this.getLink(pRC, 0, pRC.revid)+"'>"+i18n.RC_TEXT["cur"]+"</a>";
+				html += " (<a href='"+this.getLink(pRC, 0, pRC.revid)+"'>"+i18n("cur")+"</a>";
 				if(pRC.isNewPage == false) {
-					html += i18n.RC_TEXT["pipe-separator"]+"<a href='"+this.getLink(pRC, pRC.revid, pRC.old_revid)+"'>"+i18n.RC_TEXT["last"]+"</a>"+this.getAjaxDiffButton();
+					html += i18n("pipe-separator")+"<a href='"+this.getLink(pRC, pRC.revid, pRC.old_revid)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
 				}
 				html += ")";
 				html += SEP;
@@ -540,7 +539,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			case RCData.TYPE.LOG: {
 				html += pRC.logTitleText();
 				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
-				html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
+				html += i18n("semicolon-separator")+pRC.time();
 				html += SEP;
 				html += pRC.logActionText();
 				break;
@@ -549,7 +548,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			case RCData.TYPE.BOARD: {
 				if(pRC.isWallBoardAction) {
 					html += pRC.wallBoardHistoryLink();
-					html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
+					html += i18n("semicolon-separator")+pRC.time();
 					html += SEP;
 					html += pRC.userDetails();
 					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
@@ -558,7 +557,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 					html += SEP;
 					html += this._getFlags(pRC, "")+" ";
 					html += pRC.wallBoardTitleText();
-					html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
+					html += i18n("semicolon-separator")+pRC.time();
 					html += SEP;
 					html += this._diffSizeText(pRC);
 					html += SEP;
@@ -574,7 +573,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 				html += SEP;
 				html += this._getFlags(pRC, "")+" ";
 				html += pRC.pageTitleTextLink();
-				html += i18n.RC_TEXT["semicolon-separator"]+pRC.time();
+				html += i18n("semicolon-separator")+pRC.time();
 				html += SEP;
 				html += this._diffSizeText(pRC);
 				html += SEP;

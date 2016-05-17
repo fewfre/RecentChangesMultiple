@@ -1,19 +1,14 @@
 ############################################
 ## PRIMARY
 ############################################
-- [Bug] For Wikia wikis, Comment "move" logs can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
-	- Fixing may not be possible for Wikia wiki, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
-- [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
-- If over 50 thumbnails in ajax gallery, show warning / "load more" - "warnings": { "query": { "*": "Too many values supplied for parameter 'titles': the limit is 50" } }
 
+* [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 
-############################################
-## SECONDARY
-############################################
+* If over 50 thumbnails in ajax gallery, show warning / "load more" - "warnings": { "query": { "*": "Too many values supplied for parameter 'titles': the limit is 50" } }
+
 * [Idea] change "i18n.TEXT" to "i18n" and "i18n.RC_TEXT" to "i18nMessages" (or something similar). Or even just combine the two into "i18n" object.
-* [Idea] Ajax Comment preview?
-- [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
-- [Idea] Update wiki-specific params to use sub-lists for data. ex: *test.wikia.com \n **hideusers=name \n **params= \n ***param-also-using-sublist \n *next.wikia.com
+	* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
+
 * Rollback support - two considerations:
 	* Most recent version only
 		- Need to figure out if listed RC is most recent version (before adding link). Iffy to do without lots of extra loading calls; expensive
@@ -23,12 +18,22 @@
 	* Getting Rollback Token
 		- Get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
 		- Or maybe get all tokens at once (in a THIRD request) and add them using the rewrite mentioned above
+
+
+############################################
+## SECONDARY
+############################################
+* [Idea] Ajax Comment preview?
+* [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
 * Make sure Script resembles normal RC as closely as possible:
 	* uselang=qqx:
 		- walls (and probably forums) are a little different in "qqx". ex: wall-recentchanges-thread-group (RCM) vs wall-recentchanges-new-message (RC)
 	* Visual:
 		- Comment deletions go under "comments", not logs (same for when it's by itself?). I kinda prefer under deletion, but should be consistent.
 		- Don't forcefully style diff windows.
+* [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
+	- Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
+
 
 ############################################
 ## TERTIARY (other / maybe?)
@@ -40,6 +45,8 @@
 		May add needless complexity while adding little to nothing.
 * Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script
 * Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
+* [Idea] Update wiki-specific params to use sub-lists for data. ex: *test.wikia.com \n **hideusers=name \n **params= \n ***param-also-using-sublist \n *next.wikia.com
+
 
 ############################################
 ## NOT REALLY FEASIBLE (at this time at least)
