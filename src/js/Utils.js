@@ -52,6 +52,12 @@
 			pNode.appendChild( document.createTextNode(pText) );
 		},
 		
+		elemIsVisible: function(elm) {
+			var rect = elm.getBoundingClientRect();
+			var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+			return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+		},
+		
 		// Based on: http://stackoverflow.com/a/9229821
 		uniq_fast_key: function(a, key) {
 			var seen = {};

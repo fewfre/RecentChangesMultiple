@@ -211,9 +211,9 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		/***************************
 		 * User Data
 		 ***************************/
-		this.canBlock			= false;
-		this.canRollback		= false;
 		if(this.needsUserData && !!pQuery.users){
+			this.canBlock = false;
+			this.canRollback = false;
 			this.needsUserData = false;
 			for(var i in pQuery.users[0].rights) { 
 				if(pQuery.users[0].rights[i] == "block") { this.canBlock = true; }

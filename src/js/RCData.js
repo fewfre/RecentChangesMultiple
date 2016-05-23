@@ -424,7 +424,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			}
 			case "move": {
 				// logactions assumed: move, move-noredirect, move_redir, move_redir-noredirect
-				tLogMessage += i18n("logentry-move-"+this.logaction+this.log_move_noredirect,
+				tLogMessage += i18n("logentry-move-"+this.logaction+(this.log_move_noredirect || ""/*band-aid fix*/),
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					"<a href='"+ this.hrefFS+"redirect=no" +"'>"+ this.title + "</a>",
@@ -618,39 +618,39 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		tButtons.push({
 			defaultButton: true,
 			message: i18n('rcm-module-diff-open'),
-			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeDiff(); }
+			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeModal(); }
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
 				defaultButton: true,
 				message: i18n('rcm-module-diff-undo'),
-				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeDiff(); }
+				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeModal(); }
 			});
 		}
 		tButtons.push({
 			defaultButton: false,
-			message: i18n('rcm-module-close'),
-			handler: RCData.closeDiff
+			message: i18n('flags-edit-modal-close-button-text'),
+			handler: RCData.closeModal
 		});
 		
 		// Retrieve the diff table.
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 			success: function(pData){
-				// $('#rcm-DiffView').html(""
-				// 	+"<table class='diff'>"
-				// 		+"<colgroup>"
-				// 			+"<col class='diff-marker'>"
-				// 			+"<col class='diff-content'>"
-				// 			+"<col class='diff-marker'>"
-				// 			+"<col class='diff-content'>"
-				// 		+"</colgroup>"
-				// 		+pData.query.pages[pageID].revisions[0].diff["*"]
-				// 	+"</table>"
-				// );
-				
+				var tPage = pData.query.pages[pageID];
+				var tRevision = tPage.revisions[0];
 				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeDiff();
+				RCData.closeModal();
+				
+				// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
+				// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
+				// 	tButtons.splice(tButtons.length-2, 0, {
+				// 		defaultButton: true,
+				// 		message: i18n('rollbacklink'),
+				// 		handler: function () { window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); RCData.closeModal(); }
+				// 	});
+				// }
+				
 				var ajaxform = ''
 				+'<form method="" name="" class="WikiaForm">'
 					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">'
@@ -661,7 +661,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 								+"<col class='diff-marker'>"
 								+"<col class='diff-content'>"
 							+"</colgroup>"
-							+pData.query.pages[pageID].revisions[0].diff["*"]
+							+tRevision.diff["*"]
 						+"</table>"
 					+'</div>'
 				+'</form>';
@@ -675,7 +675,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 							$('html').addClass('rcm-noscroll');
 						}
 					},
-					onAfterClose: RCData.onDiffClosed,
+					onAfterClose: RCData.onModalClosed,
 				});
 			},
 		});
@@ -697,27 +697,129 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
-	RCData.previewImages = function(pAjaxUrl, pArticlePath) {
+	RCData.previewImages = function(pAjaxUrl, pImageNames, pArticlePath) {
+		var tImagesInLog = pImageNames.slice();
 		var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
 		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
-		if(module.debug) { console.log("http:"+pAjaxUrl.replace("&format=json", "&format=jsonfm")); }
+		var tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
+		
+		if(module.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames); }
 		
 		var tTitle = "Images";
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [
 			{
 				defaultButton: false,
-				message: i18n('rcm-module-close'),
-				handler: RCData.closeDiff
+				message: i18n('flags-edit-modal-close-button-text'),
+				handler: RCData.closeModal
 			}
 		];
 		
+		var tGetGalleryItem = function (pPage) {
+			var tPage = pPage, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
+			
+			if(tPage.imageinfo) { tImage = tPage.imageinfo[0]; }
+			tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
+			tInvalidImage = false;
+			if(tPage.missing == "") {
+				tInvalidImage = {
+					thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+					thumbText: i18n('filedelete-success', tPage.title),
+					caption: tPageTitleNoNS
+				};
+			} else if(tImage == null) {
+				tInvalidImage = {
+					thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
+					thumbText: i18n('shared_help_was_redirect', tPage.title),
+					caption: tPageTitleNoNS
+				};
+			} else if(Utils.isFileAudio(tPage.title)) {
+				tInvalidImage = {
+					thumbHref: tImage.url,
+					thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tPage.title,
+					caption: tPageTitleNoNS
+				};
+			} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+				tInvalidImage = {
+					thumbHref: tImage.url,
+					thumbText: tPage.title,
+					caption: tPageTitleNoNS
+				};
+			}
+			
+			if(tInvalidImage !== false) {
+				// Display text instead of image
+				return '<div class="wikia-gallery-item">'
+					+'<div class="thumb">'
+					+'<div class="gallery-image-wrapper accent">'
+					+'<a class="image-no-lightbox" href="'+tInvalidImage.thumbHref+'" target="_blank" style="height:'+size+'px; width:'+size+'px; line-height:inherit;">'
+						+tInvalidImage.thumbText
+					+'</a>'
+					+'</div>'
+					+'</div>'
+					+'<div class="lightbox-caption" style="width:100%;">'
+						+tInvalidImage.caption
+					+'</div>'
+				+'</div>';
+			} else {
+				tImage = tPage.imageinfo[0];
+				var tOffsetY = size/2 - tImage.thumbheight/2;//0;
+				// if(tImage.height < tImage.width || tImage.height < size) {
+				// 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
+				// }
+				var tScaledWidth = tImage.thumbwidth;//size;
+				// if(tImage.width < tImage.height && tImage.height > size) {
+				// 	tScaledWidth = tImage.width * (size / tImage.height);
+				// } else if(tImage.width < size) {
+				// 	tScaledWidth = tImage.width;
+				// }
+				
+				return '<div class="wikia-gallery-item">'//style="width:'+size+'px;"
+					+'<div class="thumb">' // style="height:'+size+'px;"
+						+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
+							+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
+								+'<img class="thumbimage" src="'+tImage.thumburl+'" alt="'+tPage.title+'">'
+							+'</a>'
+						+'</div>'
+					+'</div>'
+					+'<div class="lightbox-caption" style="width:100%;">'
+						+'<a href="'+tImage.descriptionurl+'">'+tPageTitleNoNS+'</a>'
+					+'</div>'
+				+'</div>';
+			}
+		}
+		
+		var tAddLoadMoreButton = function () {
+			if(tImagesInLog.length > 0) {
+				if(module.debug) { console.log("Over 50 images to display; Extra images must be loaded later."); }
+				var tModal = document.querySelector("#rcm-DiffView");
+				var tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
+				var tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
+				
+				tButton.addEventListener("click", function(){
+					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
+					if(module.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm")); }
+					tCont.innerHTML = "<img src='"+module.LOADER_IMG+"' />";
+					
+					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
+						success: function(pData){
+							Utils.removeElement(tCont);
+							for(var key in pData.query.pages) {
+								tModal.innerHTML += tGetGalleryItem(pData.query.pages[key]);
+							}
+							tAddLoadMoreButton();
+						},
+					});
+				});
+			}
+		}
+		
 		// Retrieve the diff table.
 		// TODO - error support?
-		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 			success: function(pData){
 				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeDiff();
+				RCData.closeModal();
 				var ajaxform = ''
 				+'<style>'
 					+'#rcm-diff-viewer .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
@@ -730,80 +832,12 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">';
 					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
 					for(var key in pData.query.pages) {
-						tPage = pData.query.pages[key];
-						if(tPage.imageinfo) { tImage = tPage.imageinfo[0]; }
-						tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
-						tInvalidImage = false;
-						if(tPage.missing == "") {
-							tInvalidImage = {
-								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-								thumbText: i18n('filedelete-success', tPage.title),
-								caption: tPageTitleNoNS
-							};
-						} else if(tImage == null) {
-							tInvalidImage = {
-								thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-								thumbText: i18n('shared_help_was_redirect', tPage.title),
-								caption: tPageTitleNoNS
-							};
-						} else if(Utils.isFileAudio(tPage.title)) {
-							tInvalidImage = {
-								thumbHref: tImage.url,
-								thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tPage.title,
-								caption: tPageTitleNoNS
-							};
-						} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
-							tInvalidImage = {
-								thumbHref: tImage.url,
-								thumbText: tPage.title,
-								caption: tPageTitleNoNS
-							};
-						}
-						
-						if(tInvalidImage !== false) {
-							// Display text instead of image
-							ajaxform += '<div class="wikia-gallery-item">'
-								+'<div class="thumb">'
-								+'<div class="gallery-image-wrapper accent">'
-								+'<a class="image-no-lightbox" href="'+tInvalidImage.thumbHref+'" target="_blank" style="height:'+size+'px; width:'+size+'px; line-height:inherit;">'
-									+tInvalidImage.thumbText
-								+'</a>'
-								+'</div>'
-								+'</div>'
-								+'<div class="lightbox-caption" style="width:100%;">'
-									+tInvalidImage.caption
-								+'</div>'
-							+'</div>';
-						} else {
-							tImage = tPage.imageinfo[0];
-							var tOffsetY = size/2 - tImage.thumbheight/2;//0;
-							// if(tImage.height < tImage.width || tImage.height < size) {
-							// 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
-							// }
-							var tScaledWidth = tImage.thumbwidth;//size;
-							// if(tImage.width < tImage.height && tImage.height > size) {
-							// 	tScaledWidth = tImage.width * (size / tImage.height);
-							// } else if(tImage.width < size) {
-							// 	tScaledWidth = tImage.width;
-							// }
-							
-							ajaxform += '<div class="wikia-gallery-item">'//style="width:'+size+'px;"
-								+'<div class="thumb">' // style="height:'+size+'px;"
-									+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
-										+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
-											+'<img class="thumbimage" src="'+tImage.thumburl+'" alt="'+tPage.title+'">'
-										+'</a>'
-									+'</div>'
-								+'</div>'
-								+'<div class="lightbox-caption" style="width:100%;">'
-									+'<a href="'+tImage.descriptionurl+'">'+tPageTitleNoNS+'</a>'
-								+'</div>'
-							+'</div>';
-						}
+						ajaxform += tGetGalleryItem(pData.query.pages[key]);
 					}
 				ajaxform += ''
 					+'</div>'
 				+'</div>';
+				
 				var tModule = $.showCustomModal(tTitle, ajaxform, {
 					id: 'rcm-diff-viewer',
 					width: 1000,
@@ -814,8 +848,9 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 							$('html').addClass('rcm-noscroll');
 						}
 					},
-					onAfterClose: RCData.onDiffClosed,
+					onAfterClose: RCData.onModalClosed,
 				});
+				setTimeout(function(){ tAddLoadMoreButton(); }, 100);
 			},
 		});
 		
@@ -835,13 +870,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		}
 	}
 	
-	RCData.closeDiff = function() {
+	RCData.closeModal = function() {
 		if($('#rcm-DiffView').length != 0) {
 			$('#rcm-diff-viewer').closeModal();
 		}
 	}
 	
-	RCData.onDiffClosed = function() {
+	RCData.onModalClosed = function() {
 		$("html").removeClass("rcm-noscroll");
 	}
 	

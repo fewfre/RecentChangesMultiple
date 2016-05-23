@@ -5,7 +5,7 @@ var gulp = require('gulp')
 
 gulp.task('core', function() {
 	// Make sure these are ordered from least reliant to most reliant.
-	return gulp.src(['src/js/Utils.js', 'src/js/WikiData.js', 'src/js/i18n.js', 'src/js/RCMOptions.js', 'src/js/RCData.js', 'src/js/RCList.js', , 'src/js/RCMManager.js', 'src/js/Main.js'])
+	return gulp.src(['src/js/Utils.js', 'src/js/WikiData.js', 'src/js/i18n.js', 'src/js/RCMOptions.js', 'src/js/RCMWikiPanel.js', 'src/js/RCData.js', 'src/js/RCList.js', , 'src/js/RCMManager.js', 'src/js/Main.js'])
 		// .pipe(jshint())
 		// .pipe(jshint.reporter('default', {  }))
 		.pipe(concat('core.js'))

@@ -1,6 +1,11 @@
-== V1.2.7 - ???? ==
+== V1.2.7 - 22 May 2016 ==
 - i18n system updated to be more concise, consistent, and with the ability to override system translations.
-
+- All RCMs on page can be refreshed at once using a button with the `rcm-refresh-all` class.
+- Opening info panel via favicon on the left won't jump the page any longer if the panel is within your view ("visible").
+- If an RCM only has 1 wiki in it, the info panel will open automatically.
+- Moved info panel code into it's own class, RCMWikiPanel.
+- "Load more" button added to ajax gallery (since only 50 images may be retrieved at a time).
+- pt-br lang support added (Translation provided by DannielaServer).
 
 == V1.2.6 - 30 April 2016 ==
 - "namespace" support added for "params".

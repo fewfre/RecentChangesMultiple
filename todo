@@ -1,29 +1,17 @@
 ############################################
 ## PRIMARY
 ############################################
-
 * [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 
-* If over 50 thumbnails in ajax gallery, show warning / "load more" - "warnings": { "query": { "*": "Too many values supplied for parameter 'titles': the limit is 50" } }
-
-* [Idea] change "i18n.TEXT" to "i18n" and "i18n.RC_TEXT" to "i18nMessages" (or something similar). Or even just combine the two into "i18n" object.
-	* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
-
-* Rollback support - two considerations:
-	* Most recent version only
-		- Need to figure out if listed RC is most recent version (before adding link). Iffy to do without lots of extra loading calls; expensive
-		- "rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
-			- But would require a small rewrite since all the RCData would have to be looped-through / modified again. Or some kinda fancy custom event system added.
-				- If this WAS done, then Board/Thread titles should use same rework to cut down on necessary calls.
-	* Getting Rollback Token
-		- Get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
-		- Or maybe get all tokens at once (in a THIRD request) and add them using the rewrite mentioned above
+* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
+	* support "rtl" lang dir
 
 
 ############################################
 ## SECONDARY
 ############################################
 * [Idea] Ajax Comment preview?
+* [Idea] single wiki RCM only show info panel (instead of "wikis loaded")
 * [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
 * Make sure Script resembles normal RC as closely as possible:
 	* uselang=qqx:
@@ -32,7 +20,8 @@
 		- Comment deletions go under "comments", not logs (same for when it's by itself?). I kinda prefer under deletion, but should be consistent.
 		- Don't forcefully style diff windows.
 * [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
-	- Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
+	* Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
+* Add support for mwLanguageData.fallbackLanguages (on the few occasions were a translation may not have a word in it's normal section)
 
 
 ############################################
@@ -55,3 +44,13 @@
 * [Not possible to access user setting?] Date format should follow preferences
 * [Not possible to access user setting?] Display times using timezone set in preferences ("local" time option should be sufficient?)
 * bold if watched. Requires user to be logged in to get that info?
+* Rollback support
+	* rollback tokens cannot be accessed cross-domain.
+	* Most recent version only
+		- Need to figure out if listed RC is most recent version (before adding link). Iffy to do without lots of extra loading calls; expensive
+		- "rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
+			- But would require a small rewrite since all the RCData would have to be looped-through / modified again. Or some kinda fancy custom event system added.
+				- If this WAS done, then Board/Thread titles should use same rework to cut down on necessary calls.
+	* Getting Rollback Token
+		- Get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
+		- Or maybe get all tokens at once (in a THIRD request) and add them using the rewrite mentioned above

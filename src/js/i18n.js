@@ -14,13 +14,18 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 	"use strict";
 	var i18n = function(pKey){
 		arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
-		return i18n.wiki2html.apply(this, arguments);
+		if(arguments[0] == undefined) {
+			console.log("[RecentChangesMultiple.i18n]() "+pKey+" is undefined.");
+			// if(module.debug) { throw(pKey); }
+			return pKey;
+		}
+		return i18n.wiki2html.apply(i18n, arguments);
 	}
 	
 	i18n.TEXT = {
 		en: { // English (ENGLISH)
 			// Errors
-			'rcm-error-linkformat' : "'$1' is an incorrect format. Please do <b>not</b> include 'http://' or anything after, including the first '/'.",
+			'rcm-error-linkformat' : "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
 			'rcm-error-loading-syntaxhang' : "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
 			'rcm-error-loading-connection' : "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
 			'rcm-error-trymoretimes' : "Try $1 more times",
@@ -34,8 +39,8 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-previouslyloaded' : "Previously loaded:",
 			'rcm-nonewchanges' : "No new changes",
 			'rcm-autorefresh' : "Auto Refresh",
-			'rcm-autorefresh-tooltip' : "Automatically refreshes Recent Changes every {0} seconds",
-			'rcm-footer' : "Version {0} by {1}",
+			'rcm-autorefresh-tooltip' : "Automatically refreshes Recent Changes every $1 seconds",
+			'rcm-footer' : "Version $1 by $2",
 			// Options Panel
 			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 			'rcm-optionspanel-savewithcookie': "Save changes with cookie",
@@ -43,7 +48,6 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-module-diff-title' : "Diff Viewer",
 			'rcm-module-diff-open' : "Open diff",
 			'rcm-module-diff-undo' : "Undo edit",
-			'rcm-module-close' : "Close",
 			// Other
 			'rcm-unknownthreadname' : "thread", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
@@ -77,13 +81,12 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-autorefresh-tooltip' : "Automatyczne odświeżanie ostatnich zmian co każde $1 sekund",
 			'rcm-footer' : "Wersja $1 stworzona przez $2",
 			// Options Panel
-			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",			/* [TODO] */
+			// 'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 			'rcm-optionspanel-savewithcookie': "Zapisz zmiany w pamięci podręcznej",
 			// Modules
 			'rcm-module-diff-title' : "Podgląd zmian",
 			'rcm-module-diff-open' : "Pokaż zmiany",
 			'rcm-module-diff-undo' : "Cofnij zmiany",
-			'rcm-module-close' : "Zamknij",
 			// Other
 			'rcm-unknownthreadname' : "wątek", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
@@ -100,7 +103,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		},
 		es: { // Español (SPANISH) @author: Paynekiller92
 			// Errors
-			'rcm-error-linkformat' : "'$1' es un formato incorrecto. Por favor <b>no</b> incluyas 'http://' o cualquier cosa después, incluyendo el primer '/'.",
+			'rcm-error-linkformat' : "'$1' es un formato incorrecto. Por favor '''no''' incluyas 'http://' o cualquier cosa después, incluyendo el primer '/'.",
 			'rcm-error-loading-syntaxhang' : "Error cargando [$1] ($2 intentos). Por favor corrige la sintaxis (o recarga el script para intentarlo otra vez).",
 			'rcm-error-loading-connection' : "Error cargando [$1] ($2 intentos). Seguramente sea un problema de conexión; recarga el script para intentarlo otra vez.",
 			'rcm-error-trymoretimes' : "Inténtalo $1 veces más",
@@ -117,13 +120,12 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-autorefresh-tooltip' : "Recarga los Cambios Recientes automáticamente cada $1 segundos",
 			'rcm-footer' : "Versión $1 por $2",
 			// Options Panel
-			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",			/* [TODO] */
-			'rcm-optionspanel-savewithcookie': "Save changes with cookie",					/* [TODO] */
+			// 'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
+			// 'rcm-optionspanel-savewithcookie': "Save changes with cookie",
 			// Modules
 			'rcm-module-diff-title' : "Visor de cambios",
 			'rcm-module-diff-open' : "Abrir cambio",
 			'rcm-module-diff-undo' : "Deshacer edición",
-			'rcm-module-close' : "Cerrar",
 			// Other
 			'rcm-unknownthreadname' : "hilo", // If name of a wall/board thread is not found, this will take it's place.
 			/***************************
@@ -138,6 +140,48 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": []
 			},
 		},
+		"pt-br": { // Português brasileiro (PORTUGUÊS BRASILEIRO) @author: DannielaServer 
+			// Erros
+			'rcm-error-linkformat' : "'$1' é um formato incorreto. Por favor, não inclua 'http://' ou alguma coisa depois do domínio, incluindo a primeira '/'.",
+			'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrija a sintaxes (ou recarregue o script e tente novamente).",
+			'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Devido a um erro de conexão; recarregue o script e tente novamente.",
+			'rcm-error-trymoretimes' : "Tente $1 mais vezes",
+			// Notificações
+			'rcm-loading' : "Carregando/Classificando...",
+			'rcm-refresh' : "Auto refresh para atualizar",
+			'rcm-download-timestamp' : "Mudanças recentes baixadas em: $1",
+			'rcm-download-changesadded' : " - [$1 Mudanças recentes adicionadas]",
+			// Básicos
+			'rcm-wikisloaded' : "Wikias carregadas: ",
+			'rcm-previouslyloaded' : "Brevemente carregadas:",
+			'rcm-nonewchanges' : "Não há novas mudanças",
+			'rcm-autorefresh' : "Auto refresh para atualizar",
+			'rcm-autorefresh-tooltip' : "Recarregar automaticamente as mudanças recentes a cada $1 segundos",
+			'rcm-footer' : "Versão $1 de $2",
+			// Painel de opções
+			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
+			'rcm-optionspanel-savewithcookie': "Salvar mudanças pelo cookie",
+			// Modulos
+			'rcm-module-diff-title' : "Vizualizador de página",
+			'rcm-module-diff-open' : "Abrir página",
+			'rcm-module-diff-undo' : "Desfazer mudança",
+			// Outros
+			'rcm-unknownthreadname' : "tópico",
+			/***************************
+			 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": " ",
+					".": ","
+				},
+				"grammarForms": [],
+				"pluralRules": ["n = 0..2 and n != 2 @integer 0, 1 @decimal 0.0, 1.0, 0.00, 1.00, 0.000, 1.000, 0.0000, 1.0000"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["pt", "en"]
+			},
+		}
 	};
 	
 	/*******************************************************************************
@@ -208,6 +252,8 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'awc-metrics-edits' : 'Edits',
 		'filedelete-success' : "'''$1''' has been deleted.",
 		'shared_help_was_redirect' : 'This page is a redirect to $1',
+		'specialvideos-btn-load-more' : 'Load More',
+		'flags-edit-modal-close-button-text' : 'Close',
 		
 		/***************************
 		 * Log Names - wgLogHeaders

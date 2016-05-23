@@ -49,7 +49,7 @@
 		// Set default lang for script
 		module.defaultLang = tDataset.lang ? tDataset.lang.toLowerCase() : mw.config.get('wgUserLanguage'); // {string}
 		i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[module.defaultLang]);
-		mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Lets mw.language.convertPlural() to work.
+		mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 		
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { module.loadDelay = tDataset.loaddelay; }
@@ -96,11 +96,21 @@
 		// Utils.newElement("style", { innerHTML:""
 		// 	+""
 		// +"" }, document.body);
+		
+		var refreshAllButton = document.querySelector(".rcm-refresh-all");
+		if(refreshAllButton) {
+			refreshAllButton.addEventListener("click", function(){
+				for(i = 0; i < module.rcmList.length; i++) {
+					module.rcmList[i].refresh();
+				}
+			});
+		}
 	}
 	
 	module.unload = function() {
 		for(i = 0; i < module.rcmList.length; i++) {
-			module.rcmList[i].dispose();
+			// Something on things seems to lag the page.
+			// module.rcmList[i].dispose();
 			module.rcmList[i] = null;
 		}
 		module.rcmList = null;
