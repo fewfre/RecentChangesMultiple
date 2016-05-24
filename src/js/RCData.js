@@ -705,7 +705,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		
 		if(module.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames); }
 		
-		var tTitle = "Images";
+		var tTitle = i18n("awc-metrics-images");
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [
 			{

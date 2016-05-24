@@ -1,10 +1,10 @@
 ############################################
 ## PRIMARY
 ############################################
-* [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
-
-* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
+* Translations
+	* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
 	* support "rtl" lang dir
+	* uselang=oc breaks a little on options panel: "$3 cambiaments menors."
 
 
 ############################################
@@ -22,6 +22,7 @@
 * [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
 	* Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
 * Add support for mwLanguageData.fallbackLanguages (on the few occasions were a translation may not have a word in it's normal section)
+* [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 
 
 ############################################
