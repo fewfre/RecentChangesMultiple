@@ -13,6 +13,7 @@
  */
 window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 	"use strict";
+	// Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 	var i18n = function(pKey){
 		arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
 		if(arguments[0] == undefined) {
@@ -22,7 +23,17 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		}
 		return i18n.wiki2html.apply(i18n, arguments);
 	}
+	i18n.defaultLang = "en";
 	
+	i18n.init = function(pLang/*optional*/) {
+		// Set default lang for script
+		i18n.defaultLang = pLang ? pLang.toLowerCase() : mw.config.get('wgUserLanguage'); // {string}
+		// split("-") checks for the "default" form of a language encase the specialized version isn't available for TEXT (ex: zh and zh-tw)
+		i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[i18n.defaultLang] || i18n.TEXT[i18n.defaultLang.split("-")[0]]);
+		mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
+	}
+	
+	// Big thanks to wlb.wikia.com for translations.
 	i18n.TEXT = {
 		en: { // English (ENGLISH)
 			// Errors
@@ -63,6 +74,69 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": []
 			},
 		},
+		be: { // Беларуская (BELARUSIAN) @author: Mix Gerder
+			// Errors
+			'rcm-error-linkformat' : "'$1' паказаны ў няздатным фармаце. Калі ласка, не выкарыстоўвайце элемент 'http://', не ўстаўляйце нічога пасля яго і першага '/'.",
+			'rcm-error-loading-syntaxhang' : "Памылка пры загрузцы [$1] (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
+			'rcm-error-loading-connection' : "Памылка пры загрузцы [$1] (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
+			'rcm-error-trymoretimes' : "Паспрабуйце $1 раз(а)",
+			// Notifications
+			'rcm-loading' : "Загрузка/Сартаванне...",
+			'rcm-refresh' : "Абнавіць",
+			'rcm-download-timestamp' : "Апошнія змены ўзятыя з: $1",
+			'rcm-download-changesadded' : " - [$1 апошніх дададзеных змяненняў]",
+			// Basics
+			'rcm-wikisloaded' : "Загружаныя вікі: ",
+			'rcm-previouslyloaded' : "Раней загружаныя:",
+			'rcm-nonewchanges' : "Няма новых зменаў",
+			'rcm-autorefresh' : "Аўтаматычнае абнаўленне",
+			'rcm-autorefresh-tooltip' : "Аўтаматычнае абнаўленне апошніх змяненняў кожныя $1 секунд",
+			'rcm-footer' : "Версія $1, створаная $2",
+			// Options Panel
+			// 'rcm-optionspanel-hideusersoverride': "data-hideusers вызначаюцца так.",
+			'rcm-optionspanel-savewithcookie': "Захаваць змены ў Cookie",
+			// Modules
+			'rcm-module-diff-title' : "Папярэдні прагляд змяненняў",
+			'rcm-module-diff-open' : "Паказаць змены",
+			'rcm-module-diff-undo' : "Адмяніць змены",
+			// Other
+			'rcm-unknownthreadname' : "тэма",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": " ",
+					".": ","
+				},
+				"grammarForms": {
+					"родны": {
+						"ВікіВіды": "ВікіВідаў",
+						"ВікіКнігі": "ВікіКніг",
+						"Вікікрыніцы": "Вікікрыніц",
+						"ВікіНавіны": "ВікіНавін",
+						"Вікіслоўнік": "Вікіслоўніка",
+						"Вікіпедыя": "Вікіпедыі"
+					},
+					"вінавальны": {
+						"Вікіпедыя": "Вікіпедыю"
+					},
+					"месны": {
+						"ВікіВіды": "ВікіВідах",
+						"ВікіКнігі": "ВікіКнігах",
+						"Вікікрыніцы": "Вікікрыніцах",
+						"ВікіНавіны": "ВікіНавінах",
+						"Вікіслоўнік": "Вікіслоўніку",
+						"Вікіпедыя": "Вікіпедыі"
+					}
+				},
+				"pluralRules": [
+				"n % 10 = 1 and n % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, … @decimal 1.0, 21.0, 31.0, 41.0, 51.0, 61.0, 71.0, 81.0, 101.0, 1001.0, …", "n % 10 = 2..4 and n % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, … @decimal 2.0, 3.0, 4.0, 22.0, 23.0, 24.0, 32.0, 33.0, 102.0, 1002.0, …", "n % 10 = 0 or n % 10 = 5..9 or n % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, … @decimal 0.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
 		ca: { // Català (CATALAN) @author: Josep Maria Roca Peña
 			// Errors
 			'rcm-error-linkformat' : "'$1' és un format incorrecte. Si us plau, no afegeixis 'http://' o alguna cosa darrere del domini, incloent el primer '/'.",
@@ -71,7 +145,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-error-trymoretimes' : "Intenta-ho $1 més vegades",
 			// Notificacions
 			'rcm-loading' : "Carregant/Classificant…",
-			'rcm-refresh' : "Actualització automàtica",
+			'rcm-refresh' : "Actualització",
 			'rcm-download-timestamp' : "Canvis recents baixats a: $1",
 			'rcm-download-changesadded' : " - [$1 Canvis recents afegits]",
 			// Bàsics
@@ -90,6 +164,47 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-module-diff-undo' : "Desfés el canvi",
 			// Altres
 			'rcm-unknownthreadname' : "tema",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": ".",
+					".": ","
+				},
+				"grammarForms": [],
+				"pluralRules": ["i = 1 and v = 0 @integer 1"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
+		de: { // Deutsch (German) @author: Cyanide3, Dragon Rainbow 
+			'rcm-error-linkformat' : "'$1' ist ein fehlerhaftes Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
+			'rcm-error-loading-syntaxhang' : "Ladefehler [$1] ($2 Versuche). Bitte korrigiere den Syntax (oder aktualisiere das Script, um es erneut zu versuchen).",
+			'rcm-error-loading-connection' : "Ladefehler [$1] ($2 Versuche). Höchstwahrscheinlich ein Verbindungsproblem; Lade das Script neu, um es erneut zu versuchen.",
+			'rcm-error-trymoretimes' : "Versuche $1 mehrmals",
+			
+			'rcm-loading' : "Lade/Sortiere...",
+			'rcm-refresh' : "Aktualisieren",
+			'rcm-download-timestamp' : "Letzte Veränderungen nach: $1",
+			'rcm-download-changesadded' : " - [$1 Letzte Änderungen, die hinzugefügt wurden]",
+			
+			'rcm-wikisloaded' : "Geladene Wikis: ",
+			'rcm-previouslyloaded' : "Bisher geladen:",
+			'rcm-nonewchanges' : "Keine neuen Veränderungen",
+			'rcm-autorefresh' : "Auto-Aktualisierung",
+			'rcm-autorefresh-tooltip' : "Aktualisiert automatisch die letzten Veränderungen jede $1 Sekunden",
+			'rcm-footer' : "Version $1 bis $2",
+			
+			'rcm-optionspanel-hideusersoverride': "data-hideusers überschreibt dies.",
+			'rcm-optionspanel-savewithcookie': "Speicher Veränderungen mit Cookie",
+			
+			'rcm-module-diff-title' : "Anderer Viewer",
+			'rcm-module-diff-open' : "Öffne Veränderung",
+			'rcm-module-diff-undo' : "Rückgängig",
+			
+			'rcm-unknownthreadname' : "Thread",
 			/***************************
 			 * mediawiki.language.data
 			 ***************************/
@@ -152,7 +267,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-error-trymoretimes' : "Téntao $1 máis veces",
 			// Notificacións
 			'rcm-loading' : "A cargar/A clasificar…",
-			'rcm-refresh' : "Actualización automática",
+			'rcm-refresh' : "Actualización",
 			'rcm-download-timestamp' : "Cambios recentes baixados en: $1",
 			'rcm-download-changesadded' : " - [$1 Cambios recentes engadidos]",
 			// Básicos
@@ -228,6 +343,44 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["en"]
 			},
 		},
+		ja: { // 日本語 (JAPANESE) @author: [anonymous]
+			'rcm-error-linkformat' : "'$1' は表記に誤りがあります。 'http://' や、'/'を含むドメイン名以降の部分を'''含めずに'''指定してください。",
+			'rcm-error-loading-syntaxhang' : "($2回試しましたが) [$1]の読み込みに失敗しました。（再更新してみるか、）設定を修正してください。",
+			'rcm-error-loading-connection' : "($2回試しましたが) [$1]の読み込みに失敗しました。接続に失敗した可能性があります。再更新してください。",
+			'rcm-error-trymoretimes' : "もう$1回お試しください",
+			
+			'rcm-loading' : "読込・整列中...",
+			'rcm-refresh' : "更新",
+			'rcm-download-timestamp' : "$1時点の最近の更新を表示中",
+			'rcm-download-changesadded' : " - [$1件の最近の更新が追加されました]",
+			
+			'rcm-wikisloaded' : "対象のWikiaコミュニティ: ",
+			'rcm-previouslyloaded' : "前回との変更点:",
+			'rcm-nonewchanges' : "新しい変更はありません",
+			'rcm-autorefresh' : "自動更新",
+			'rcm-autorefresh-tooltip' : "$1秒おきに情報を自動更新します",
+			'rcm-footer' : "Version $1 (編集者は$2)",
+			
+			'rcm-optionspanel-hideusersoverride': "data-hideusersの設定によって無効にされています",
+			'rcm-optionspanel-savewithcookie': "クッキーに変更を保存する",
+			
+			'rcm-module-diff-title' : "差分を表示",
+			'rcm-module-diff-open' : "差分を別のページで表示",
+			'rcm-module-diff-undo' : "編集を取り消す", 
+			
+			'rcm-unknownthreadname' : "無題",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": null ,
+				"grammarForms": [],
+				"pluralRules": ["i = 1 and v = 0 @integer 1"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
 		oc: { // Occitan (OCCITAN) @author: Josep Maria Roca Peña
 			// Errors
 			'rcm-error-linkformat' : "'$1' es un format incorrècte. Se vos plai, apondètz pas 'http://' o quicòm darrièr del domeni, en comprenent lo primièr '/'.",
@@ -236,7 +389,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-Error-trymoretimes' : "Ensaja-o $1 mai de còps",
 			// Notificacions
 			'rcm-loading' : "En cargant/En classificant…",
-			'rcm-refresh' : "Actualizacion automatica",
+			'rcm-refresh' : "Actualizacion",
 			'rcm-download-timestamp' : "Cambiaments recents davalats sus: $1",
 			'rcm-download-changesadded' : " - [$1 Cambiaments recents apondis]",
 			// Basics
@@ -317,7 +470,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-error-trymoretimes' : "Tenta $1 mais vezes",
 			// Notificações
 			'rcm-loading' : "A carregar/A classificar…",
-			'rcm-refresh' : "Actualização automática",
+			'rcm-refresh' : "Actualização",
 			'rcm-download-timestamp' : "Mudanças recentes baixadas em: $1",
 			'rcm-download-changesadded' : " - [$1 Mudanças recentes acrescentadas]",
 			// Básicos
@@ -355,11 +508,11 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			// Erros
 			'rcm-error-linkformat' : "'$1' é um formato incorreto. Por favor, não inclua 'http://' ou alguma coisa depois do domínio, incluindo a primeira '/'.",
 			'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrija as suas sintaxes (ou recarregue o seu script para tentar novamente).",
-			'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Devido a um erro de conexão,; recarregue o script e tente novamente.",
+			'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Devido a um erro de conexão,; recarregue o seu script e tente novamente.",
 			'rcm-error-trymoretimes' : "Tente $1 mais vezes",
 			// Notificações
 			'rcm-loading' : "Carregando/Classificando...",
-			'rcm-refresh' : "Auto refresh para atualizar automaticamente",
+			'rcm-refresh' : "Refresh",
 			'rcm-download-timestamp' : "Mudanças recentes baixadas em: $1",
 			'rcm-download-changesadded' : " - [$1 Mudanças recentes adicionadas]",
 			// Básicos
@@ -435,15 +588,168 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["en"]
 			},
 		},
+		ru: { // Русский (RUSSIAN) @author: Mix Gerder
+			// Errors
+			'rcm-error-linkformat' : "'$1' указан в неподходящем формате. Пожалуйста, не используйте элемент 'http://', не вставляйте ничего после него и первого '/'.",
+			'rcm-error-loading-syntaxhang' : "Ошибка при загрузке [$1] (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
+			'rcm-error-loading-connection' : "Ошибка при загрузке [$1] (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
+			'rcm-error-trymoretimes' : "Попробуйте $1 раз(а)",
+			// Notifications
+			'rcm-loading' : "Загрузка/Сортировка...",
+			'rcm-refresh' : "Обновить",
+			'rcm-download-timestamp' : "Последние изменения взяты с: $1",
+			'rcm-download-changesadded' : " - [$1 последних добавленных изменений]",
+			// Basics
+			'rcm-wikisloaded' : "Загруженные вики: ",
+			'rcm-previouslyloaded' : "Ранее загруженные:",
+			'rcm-nonewchanges' : "Нет новых изменений",
+			'rcm-autorefresh' : "Автоматическое обновление",
+			'rcm-autorefresh-tooltip' : "Автоматическое обновление последних изменений каждые $1 секунд",
+			'rcm-footer' : "Версия $1, созданная $2",
+			// Options Panel
+			// 'rcm-optionspanel-hideusersoverride': "data-hideusers определяются так.",
+			'rcm-optionspanel-savewithcookie': "Сохранить изменения в Cookie",
+			// Modules
+			'rcm-module-diff-title' : "Предварительный просмотр изменений",
+			'rcm-module-diff-open' : "Показать изменения",
+			'rcm-module-diff-undo' : "Отменить изменения",
+			// Other
+			'rcm-unknownthreadname' : "тема",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": " ",
+					".": ","
+				},
+				"grammarForms": [],
+				"pluralRules": ["v = 0 and i % 10 = 1 and i % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …", "v = 0 and i % 10 = 2..4 and i % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, …", "v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, …"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
+		uk: { // Українська (UKRAINIAN) @author: Mix Gerder
+			// Errors
+			'rcm-error-linkformat' : "'$1' вказаний в невідповідному форматі. Будь ласка, не використовуйте елемент 'http://', не вставляйте нічого після нього і першого '/'.",
+			'rcm-error-loading-syntaxhang' : "Помилка при завантаженні [$1] (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
+			'rcm-error-loading-connection' : "Помилка при завантаженні [$1] (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
+			'rcm-error-trymoretimes' : "Спробуйте $1 раз(а)",
+			// Notifications
+			'rcm-loading' : "Завантаження/Сортування...",
+			'rcm-refresh' : "Оновити",
+			'rcm-download-timestamp' : "Останні зміни взяті з: $1",
+			'rcm-download-changesadded' : " - [$1 останніх доданих змін]",
+			// Basics
+			'rcm-wikisloaded' : "Завантажені вікі: ",
+			'rcm-previouslyloaded' : "Раніше завантажені:",
+			'rcm-nonewchanges' : "Немає нових змін",
+			'rcm-autorefresh' : "Автоматичне оновлення",
+			'rcm-autorefresh-tooltip' : "Автоматичне оновлення останніх змін кожні $1 секунд",
+			'rcm-footer' : "Версія $1, що створена $2",
+			// Options Panel
+			// 'rcm-optionspanel-hideusersoverride': "data-hideusers визначаються так.",
+			'rcm-optionspanel-savewithcookie': "Зберегти зміни в Cookie",
+			// Modules
+			'rcm-module-diff-title' : "Попередній перегляд змін",
+			'rcm-module-diff-open' : "Показати зміни",
+			'rcm-module-diff-undo' : "Скасувати зміни",
+			// Other
+			'rcm-unknownthreadname' : "тема",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": " ",
+					".": ","
+				},
+				"grammarForms": {
+					"genitive": {
+						"Вікіпедія": "Вікіпедії",
+						"Вікісловник": "Вікісловника",
+						"Вікісховище": "Вікісховища",
+						"Вікіпідручник": "Вікіпідручника",
+						"Вікіцитати": "Вікіцитат",
+						"Вікіджерела": "Вікіджерел",
+						"Вікіновини": "Вікіновин",
+						"Вікідані": "Вікіданих",
+						"Вікімандри": "Вікімандрів"
+					},
+					"dative": {
+						"Вікіпедія": "Вікіпедії",
+						"Вікісловник": "Вікісловнику",
+						"Вікісховище": "Вікісховищу",
+						"Вікіпідручник": "Вікіпідручнику",
+						"Вікіцитати": "Вікіцитатам",
+						"Вікіджерела": "Вікіджерелам",
+						"Вікіновини": "Вікіновинам",
+						"Вікідані": "Вікіданим",
+						"Вікімандри": "Вікімандрам"
+					},
+					"accusative": {
+						"Вікіпедія": "Вікіпедію",
+						"Вікісловник": "Вікісловник",
+						"Вікісховище": "Вікісховище",
+						"Вікіпідручник": "Вікіпідручник",
+						"Вікіцитати": "Вікіцитати",
+						"Вікіджерела": "Вікіджерела",
+						"Вікіновини": "Вікіновини",
+						"Вікідані": "Вікідані",
+						"Вікімандри": "Вікімандри"
+					},
+					"instrumental": {
+						"Вікіпедія": "Вікіпедією",
+						"Вікісловник": "Вікісловником",
+						"Вікісховище": "Вікісховищем",
+						"Вікіпідручник": "Вікіпідручником",
+						"Вікіцитати": "Вікіцитатами",
+						"Вікіджерела": "Вікіджерелами",
+						"Вікіновини": "Вікіновинами",
+						"Вікідані": "Вікіданими",
+						"Вікімандри": 
+						"Вікімандрами"
+					},
+					"locative": {
+						"Вікіпедія": "у Вікіпедії",
+						"Вікісловник": "у Вікісловнику",
+						"Вікісховище": "у Вікісховищі",
+						"Вікіпідручник": "у Вікіпідручнику",
+						"Вікіцитати": "у Вікіцитатах",
+						"Вікіджерела": "у Вікіджерелах",
+						"Вікіновини": "у Вікіновинах",
+						"Вікідані": "у Вікіданих",
+						"Вікімандри": "у Вікімандрах"
+					},
+					"vocative": {
+						"Вікіпедія": "Вікіпедіє",
+						"Вікісловник": "Вікісловнику",
+						"Вікісховище": "Вікісховище",
+						"Вікіпідручник": "Вікіпідручнику",
+						"Вікіцитати": "Вікіцитати",
+						"Вікіджерела": "Вікіджерела",
+						"Вікіновини": "Вікіновини",
+						"Вікідані": "Вікідані",
+						"Вікімандри": "Вікімандри"
+					}
+				},
+				"pluralRules": [
+				"v = 0 and i % 10 = 1 and i % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …", "v = 0 and i % 10 = 2..4 and i % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, …", "v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, …"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["ru", "en"]
+			},
+		},
 		val: { // Valencià (VALENCIAN) @author: Josep Maria Roca Peña
 			// Errors
-			'rcm-error-linkformat' : "$1'' és un format incorrecte. Per favor, no afiggues 'http://' o alguna cosa darrere del domini, incloent el primer '/'.",
+			'rcm-error-linkformat' : "'$1' és un format incorrecte. Per favor, no afiggues 'http://' o alguna cosa darrere del domini, incloent el primer '/'.",
 			'rcm-error-loading-syntaxhang' : "Error de càrrega [$1] ($2 intents). Per favor, corrig les tues sintaxis (o recarrega la tua script i intenta-ho un atre colp).",
 			'rcm-error-loading-connection' : "Error de càrrega [$1] ($2 intents). Per un error de conexió, tens que recarregar la tua script i intenta-ho un atre colp.",
 			'rcm-error-trymoretimes' : "Intenta-ho $1 més voltes",
 			// Notificacions
 			'rcm-loading' : "Carregant/Classificant…",
-			'rcm-refresh' : "Actualisació automàtica",
+			'rcm-refresh' : "Actualisació",
 			'rcm-download-timestamp' : "Canvis recents baixats a: ",
 			'rcm-download-changesadded' : " - [$1 Canvis recents afegits]",
 			// Bàsics

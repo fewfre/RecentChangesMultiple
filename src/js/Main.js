@@ -16,7 +16,7 @@
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 	
 	// Statics
-	module.version = "1.2.7b";
+	module.version = "1.2.7d";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -30,7 +30,6 @@
 	module.numLangLoadErrors = 0;
 	// Custom parameter defaults
 	module.loadDelay = 10; // In miliseconds
-	module.defaultLang = "en"; // See below
 	module.rcParamsURL = null; // See below
 	
 	// Should only be called once at the end of this script.
@@ -46,10 +45,7 @@
 		
 		var tDataset = tWrappers[0].dataset;
 		
-		// Set default lang for script
-		module.defaultLang = tDataset.lang ? tDataset.lang.toLowerCase() : mw.config.get('wgUserLanguage'); // {string}
-		i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[module.defaultLang]);
-		mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
+		i18n.init(tDataset.lang);
 		
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { module.loadDelay = tDataset.loaddelay; }
@@ -124,7 +120,7 @@
 		
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
-			var url = mw.config.get("wgServer") + mw.config.get('wgScriptPath') + "/api.php?action=query&format=json&meta=allmessages&amlang="+module.defaultLang+"&ammessages="+pMessages;
+			var url = mw.config.get("wgServer") + mw.config.get('wgScriptPath') + "/api.php?action=query&format=json&meta=allmessages&amlang="+i18n.defaultLang+"&ammessages="+pMessages;
 			if(module.debug) { console.log(url.replace("&format=json", "&format=jsonfm")); }
 			
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,

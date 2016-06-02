@@ -30,7 +30,6 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.rcParamsBase			= null; // {object} and object containing data about the RecentChange "params" sent in
 		this.rcParams				= null; // {object} Same as this.rcParamsBase as well as default values if not supplied.
 		
-		this.defaultLang			= null; // {string}
 		this.timezone				= null; // {string}
 		this.autoRefreshTimeoutNum	= null; // {int} number of milliseconds to wait before refreshing.
 		
