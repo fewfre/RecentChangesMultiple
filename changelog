@@ -1,3 +1,12 @@
+== V1.2.7f - 6 September 2016 ==
+- lang updated: it @author: Leviathan 89
+- Wikia updated "mediawiki.action.history.diff" and stylesheet updated to reflect it.
+
+
+== V1.2.7e - 4 July 2016 ==
+- lang: nl @author: Mainframe98
+
+
 == V1.2.7d - 1 June 2016 ==
 - lang: ja @author: [anonymous]
 - lang: pt-br updated
@@ -189,14 +198,14 @@
 - Major rewrite using MediaWiki API directly (instead of parsing RSS feed). Code now uses "code.2.js" for file.
 - Important notes:
 	- "&subdir" removed, and "&scriptdir" added (may be necessary for non-wikia wikis, see above). ex: &scriptdir=w/
-	- "data-params" now offers much more support. "days" and "limit" now work up to same amount as normal for each wiki on the list. As such this should be limited to a few days / a lower limit to avoid loading potentially thousands of changes. Individual wikis can have these limits modified using "&params" 
+	- "data-params" now offers much more support. "days" and "limit" now work up to same amount as normal for each wiki on the list. As such this should be limited to a few days / a lower limit to avoid loading potentially thousands of changes. Individual wikis can have these limits modified using "&params"
 - Changes:
 	- Changed translating to use the exact i18n info from Wikia's github for RC_TEXT. Loads RC_TEXT from the server based on your language.
 	- Boards/walls now also check for [ restore, delete, remove ] for "replies" instead of assuming it's the actual thread.
 	-  All (normal) RecentChanges params supported, except "hideenhanced", "from", and viewing a select namespace.
 	- Bot edits can now be shown (off by default), and "minor" edits are now marked.
 	- gApp instance turned into the RecentChangesMultiple class (to potentially run multiple for whatever reason, plus I prefer "traditional" OO class structures)
-		- As such, #rc-content-multiple id should now be a .rc-content-multiple class to allow for multiple instances (although using ids is still supported) 
+		- As such, #rc-content-multiple id should now be a .rc-content-multiple class to allow for multiple instances (although using ids is still supported)
 	- Additional Special:RecentChanges CSS classes used.
 	- Rewrote RC / RCList objects (to bring a little more inline with how it's structure in mw system)
 	- New "WikiData" class for storing wiki-specific data in a more understandable way, while also providing helper methods

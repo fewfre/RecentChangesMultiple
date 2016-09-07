@@ -575,7 +575,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		return i18n.wiki2html.apply(i18n, arguments);
 	}
 	i18n.defaultLang = "en";
-	
+
 	i18n.init = function(pLang/*optional*/) {
 		// Set default lang for script
 		i18n.defaultLang = pLang ? pLang.toLowerCase() : mw.config.get('wgUserLanguage'); // {string}
@@ -583,7 +583,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[i18n.defaultLang] || i18n.TEXT[i18n.defaultLang.split("-")[0]]);
 		mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 	}
-	
+
 	// Big thanks to wlb.wikia.com for translations.
 	i18n.TEXT = {
 		en: { // English (ENGLISH)
@@ -730,31 +730,31 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["en"]
 			},
 		},
-		de: { // Deutsch (German) @author: Cyanide3, Dragon Rainbow 
+		de: { // Deutsch (German) @author: Cyanide3, Dragon Rainbow
 			'rcm-error-linkformat' : "'$1' ist ein fehlerhaftes Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
 			'rcm-error-loading-syntaxhang' : "Ladefehler [$1] ($2 Versuche). Bitte korrigiere den Syntax (oder aktualisiere das Script, um es erneut zu versuchen).",
 			'rcm-error-loading-connection' : "Ladefehler [$1] ($2 Versuche). Höchstwahrscheinlich ein Verbindungsproblem; Lade das Script neu, um es erneut zu versuchen.",
 			'rcm-error-trymoretimes' : "Versuche $1 mehrmals",
-			
+
 			'rcm-loading' : "Lade/Sortiere...",
 			'rcm-refresh' : "Aktualisieren",
 			'rcm-download-timestamp' : "Letzte Veränderungen nach: $1",
 			'rcm-download-changesadded' : " - [$1 Letzte Änderungen, die hinzugefügt wurden]",
-			
+
 			'rcm-wikisloaded' : "Geladene Wikis: ",
 			'rcm-previouslyloaded' : "Bisher geladen:",
 			'rcm-nonewchanges' : "Keine neuen Veränderungen",
 			'rcm-autorefresh' : "Auto-Aktualisierung",
 			'rcm-autorefresh-tooltip' : "Aktualisiert automatisch die letzten Veränderungen jede $1 Sekunden",
 			'rcm-footer' : "Version $1 bis $2",
-			
+
 			'rcm-optionspanel-hideusersoverride': "data-hideusers überschreibt dies.",
 			'rcm-optionspanel-savewithcookie': "Speicher Veränderungen mit Cookie",
-			
+
 			'rcm-module-diff-title' : "Anderer Viewer",
 			'rcm-module-diff-open' : "Öffne Veränderung",
 			'rcm-module-diff-undo' : "Rückgängig",
-			
+
 			'rcm-unknownthreadname' : "Thread",
 			/***************************
 			 * mediawiki.language.data
@@ -852,33 +852,33 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["pt", "en"]
 			},
 		},
-		it: { // Italiano (ITALIAN) @author: Josep Maria Roca Peña
+		it: { // Italiano (ITALIAN) @author: Leviathan 89
 			// Errori
-			'rcm-errore-linkformat' : "'$1' è un formato incorretto. Ti prego di '''non''' includere 'http://' o qualsiasi cosa dopo, includendo le prime '/'.",
-			'rcm-Errore-loading-syntaxhang' : "Errore caricando [$1] ($2 intenti). Per favore, corregge la tua sintassi (o ricarica il tuo script per tentarlo un'altra volta).",
-			'rcm-Errore-loading-connection' : "Errore caricando [$1] ($2 intenti). Sicuramente sia un problema di connessione; recarga lo script per tentarlo un'altra volta.",
-			'rcm-Errore-trymoretimes' : "Tentare $1 volte più",
+			'rcm-errore-linkformat' : "'$1' non è in un formato corretto. Per favore, '''non''' includere 'http://' o qualsiasi altra cosa dopo il dominio, compreso la prima '/'.",
+			'rcm-Errore-loading-syntaxhang' : "Errore caricando [$1] ($2 tentativi). Per favore, correggi la tua sintassi (o ricarica il tuo script per riprovare).",
+			'rcm-Errore-loading-connection' : "Errore caricando [$1] ($2 tentativi). Quasi sicuramente si tratta di un problema di connessione; ricarica lo script per riprovare.",
+			'rcm-Errore-trymoretimes' : "Prova $1 volte ancora",
 			// Notifiche
-			'rcm-loading' : "Caricando/Classificando…",
-			'rcm-refresh' : "Ricaricare",
-			'rcm-download-timestamp' : "Cambi recenti scaricati in: $1",
-			'rcm-download-changesadded' : " - [$1 Cambi recenti aggiunti]",
-			// Basici
-			'rcm-wikisloaded' : "Le tue wiki caricate:",
-			'rcm-previouslyloaded' : "Previamente caricate:",
-			'rcm-nonewchanges' : "Non ci sono nuovi cambi",
+			'rcm-loading' : "Caricando / Ordinando...",
+			'rcm-refresh' : "Ricarica",
+			'rcm-download-timestamp' : "Ultime Modifiche scaricate in: $1",
+			'rcm-download-changesadded' : " - [$1 Ultime Modifiche aggiunte]",
+			// Base
+			'rcm-wikisloaded' : "Wiki caricate:",
+			'rcm-previouslyloaded' : "Precedentemente caricate:",
+			'rcm-nonewchanges' : "Non ci sono nuove modifiche",
 			'rcm-autorefresh' : "Aggiornamento automatico",
-			'rcm-autorefresh-tooltip' : "Ricaricare i cambi recenti automaticamente ogni $1 secondi",
-			'rcm-footer' : "Versione $1 da $2",
-			// Pannello di opzioni
-			'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
-			'rcm-optionspanel-savewithcookie': "Salvare i cambi dal cookie",
+			'rcm-autorefresh-tooltip' : "Ricarica automaticamente le Ultime Modifihce ogni $1 secondi",
+			'rcm-footer' : "Versione $1 ad opera di $2",
+			// Opzioni
+			'rcm-optionspanel-hideusersoverride': "data-hideusers sovrascrive questo.",
+			'rcm-optionspanel-savewithcookie': "Salvare modifiche con un cookie",
 			// Moduli
-			'rcm-module-diff-title' : "Visualizzatore di pagina",
-			'rcm-module-diff-open' : "Aprire pagina",
-			'rcm-module-diff-undo' : "Disfare edizione",
+			'rcm-module-diff-title' : "Visualizzazione cambiamenti",
+			'rcm-module-diff-open' : "Apri il confronto delle versioni",
+			'rcm-module-diff-undo' : "Annulla modifica",
 			// Altri
-			'rcm-unknownthreadname' : "conversazione",
+			'rcm-unknownthreadname' : "Conversazione",
 			/***************************
 			 * mediawiki.language.data
 			 ***************************/
@@ -899,26 +899,26 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			'rcm-error-loading-syntaxhang' : "($2回試しましたが) [$1]の読み込みに失敗しました。（再更新してみるか、）設定を修正してください。",
 			'rcm-error-loading-connection' : "($2回試しましたが) [$1]の読み込みに失敗しました。接続に失敗した可能性があります。再更新してください。",
 			'rcm-error-trymoretimes' : "もう$1回お試しください",
-			
+
 			'rcm-loading' : "読込・整列中...",
 			'rcm-refresh' : "更新",
 			'rcm-download-timestamp' : "$1時点の最近の更新を表示中",
 			'rcm-download-changesadded' : " - [$1件の最近の更新が追加されました]",
-			
+
 			'rcm-wikisloaded' : "対象のWikiaコミュニティ: ",
 			'rcm-previouslyloaded' : "前回との変更点:",
 			'rcm-nonewchanges' : "新しい変更はありません",
 			'rcm-autorefresh' : "自動更新",
 			'rcm-autorefresh-tooltip' : "$1秒おきに情報を自動更新します",
 			'rcm-footer' : "Version $1 (編集者は$2)",
-			
+
 			'rcm-optionspanel-hideusersoverride': "data-hideusersの設定によって無効にされています",
 			'rcm-optionspanel-savewithcookie': "クッキーに変更を保存する",
-			
+
 			'rcm-module-diff-title' : "差分を表示",
 			'rcm-module-diff-open' : "差分を別のページで表示",
-			'rcm-module-diff-undo' : "編集を取り消す", 
-			
+			'rcm-module-diff-undo' : "編集を取り消す",
+
 			'rcm-unknownthreadname' : "無題",
 			/***************************
 			 * mediawiki.language.data
@@ -929,6 +929,44 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"grammarForms": [],
 				"pluralRules": ["i = 1 and v = 0 @integer 1"],
 				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
+		nl: { // Nederlands (DUTCH) @author: Mainframe98
+			'rcm-error-linkformat' : "'$1' is een onjuist formaat. Gelieve '''niet''' 'http://' of iets anders na het domein, inclusief de eerste '/' bij te voegen.",
+			'rcm-error-loading-syntaxhang' : "Fout bij het laden van [$1] ($2 pogingen). Corrigeer de syntax (of ververs het script om opnieuw te proberen).",
+			'rcm-error-loading-connection' : "Fout bij het laden van [$1] ($2 pogingen). Hoogstwaarschijnlijk een verbindingsprobleem; ververs het script om opnieuw te proberen.",
+			'rcm-error-trymoretimes' : "Probeer het $1 keer meer",
+
+			'rcm-loading' : "Laden/Sorteren...",
+			'rcm-refresh' : "Verversen",
+			'rcm-download-timestamp' : "Recente Wijzigingen gedownload van: $1",
+			'rcm-download-changesadded' : " - [$1 Recente Wijzigingen toegevoegd]",
+
+			'rcm-wikisloaded' : "Wiki's geladen: ",
+			'rcm-previouslyloaded' : "Eerder geladen:",
+			'rcm-nonewchanges' : "Geen nieuwe wijzigingen",
+			'rcm-autorefresh' : "Auto Verversen",
+			'rcm-autorefresh-tooltip' : "Automatisch Recente Wijzigingen elke $1 seconden verversen",
+			'rcm-footer' : "Versie $1 door $2",
+
+			'rcm-optionspanel-hideusersoverride': "data-hideusers overschrijft dit.",
+			'rcm-optionspanel-savewithcookie': "Sla wijzigingen op met een cookie",
+
+			'rcm-module-diff-title' : "Toon wijz",
+			'rcm-module-diff-open' : "Open wijz",
+			'rcm-module-diff-undo' : "Bewerking ongedaan maken",
+
+			'rcm-unknownthreadname' : "draad",
+			/***************************
+			 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": { ",": ".", ".": "," },
+				"grammarForms": [],
+				"pluralRules": ["i = 1 and v = 0 @integer 1"],
+				"digitGroupingPattern": null,
 				"fallbackLanguages": ["en"]
 			},
 		},
@@ -1045,17 +1083,14 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 ***************************/
 			mwLanguageData: {
 				"digitTransformTable": null ,
-				"separatorTransformTable": {
-					",": " ",
-					".": ","
-				},
+				"separatorTransformTable": { ",": " ", ".": "," },
 				"grammarForms": [],
 				"pluralRules": ["n = 0..2 and n != 2 @integer 0, 1 @decimal 0.0, 1.0, 0.00, 1.00, 0.000, 1.000, 0.0000, 1.0000"],
 				"digitGroupingPattern": null ,
 				"fallbackLanguages": ["pt-br", "en"]
 			},
 		},
-		"pt-br": { // Português brasileiro (PORTUGUESE BRAZIL) @author: DannielaServer 
+		"pt-br": { // Português brasileiro (PORTUGUESE BRAZIL) @author: DannielaServer
 			// Erros
 			'rcm-error-linkformat' : "'$1' é um formato incorreto. Por favor, não inclua 'http://' ou alguma coisa depois do domínio, incluindo a primeira '/'.",
 			'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrija as suas sintaxes (ou recarregue o seu script para tentar novamente).",
@@ -1087,10 +1122,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 ***************************/
 			mwLanguageData: {
 				"digitTransformTable": null ,
-				"separatorTransformTable": {
-					",": " ",
-					".": ","
-				},
+				"separatorTransformTable": { ",": " ", ".": "," },
 				"grammarForms": [],
 				"pluralRules": ["n = 0..2 and n != 2 @integer 0, 1 @decimal 0.0, 1.0, 0.00, 1.00, 0.000, 1.000, 0.0000, 1.0000"],
 				"digitGroupingPattern": null ,
@@ -1129,10 +1161,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 ***************************/
 			mwLanguageData: {
 				"digitTransformTable": null ,
-				"separatorTransformTable": {
-					",": ".",
-					".": ","
-				},
+				"separatorTransformTable": { ",": ".", ".": "," },
 				"grammarForms": [],
 				"pluralRules": ["i = 1 and v = 0 @integer 1", "v != 0 or n = 0 or n != 1 and n % 100 = 1..19 @integer 0, 2~16, 101, 1001, … @decimal 0.0~1.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …"],
 				"digitGroupingPattern": null ,
@@ -1171,10 +1200,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 ***************************/
 			mwLanguageData: {
 				"digitTransformTable": null ,
-				"separatorTransformTable": {
-					",": " ",
-					".": ","
-				},
+				"separatorTransformTable": { ",": " ", ".": "," },
 				"grammarForms": [],
 				"pluralRules": ["v = 0 and i % 10 = 1 and i % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …", "v = 0 and i % 10 = 2..4 and i % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, …", "v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, …"],
 				"digitGroupingPattern": null ,
@@ -1213,10 +1239,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 ***************************/
 			mwLanguageData: {
 				"digitTransformTable": null ,
-				"separatorTransformTable": {
-					",": " ",
-					".": ","
-				},
+				"separatorTransformTable": { ",": " ", ".": "," },
 				"grammarForms": {
 					"genitive": {
 						"Вікіпедія": "Вікіпедії",
@@ -1260,7 +1283,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 						"Вікіджерела": "Вікіджерелами",
 						"Вікіновини": "Вікіновинами",
 						"Вікідані": "Вікіданими",
-						"Вікімандри": 
+						"Вікімандри":
 						"Вікімандрами"
 					},
 					"locative": {
@@ -1332,31 +1355,31 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			},
 		},
 		zh: { // 中文 (CHINESE) @author: TsukiYaksha
-			
+
 			'rcm-error-linkformat' : "「$1」为错误格式。请'''不要'''在网域后加入「http://」或任何文字，包括第一个「/」字符。",
 			'rcm-error-loading-syntaxhang' : "读取[$1]时发生错误（$2次尝试）。请更正语法（或刷新语法后再试一次）。",
 			'rcm-error-loading-connection' : "读取[$1]时发生错误（$2次尝试）。极可能为联机问题。请刷新语法后再试一次。",
 			'rcm-error-trymoretimes' : "请再试$1次",
-			
+
 			'rcm-loading' : "正在载入／整理中......",
 			'rcm-refresh' : "刷新",
 			'rcm-download-timestamp' : "最近更改于$1载入",
 			'rcm-download-changesadded' : " - [已添加$1个最近更改内容]",
-			
+
 			'rcm-wikisloaded' : "已载入的维基：",
 			'rcm-previouslyloaded' : "之前已加载：",
 			'rcm-nonewchanges' : "无新更动",
 			'rcm-autorefresh' : "自动刷新",
 			'rcm-autorefresh-tooltip' : "每隔$1秒自动更新最近更改",
 			'rcm-footer' : "由$2编辑的版本$1",
-			
+
 			'rcm-optionspanel-hideusersoverride': "以data-hideusers覆盖原有设定。",
 			'rcm-optionspanel-savewithcookie': "使用cookie储存变动",
-			
+
 			'rcm-module-diff-title' : "差异查看器",
 			'rcm-module-diff-open' : "开启差异",
-			'rcm-module-diff-undo' : "复原编辑", 
-			
+			'rcm-module-diff-undo' : "复原编辑",
+
 			'rcm-unknownthreadname' : "话题",
 			/***************************
 			 * mediawiki.language.data
@@ -1371,31 +1394,31 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			},
 		},
 		"zh-hant": { // 中文 (繁體) (CHINESE TRADITIONAL) @author: TsukiYaksha
-			
+
 			'rcm-error-linkformat' : "「$1」為錯誤格式。請'''不要'''在網域後加入「http://」或任何文字，包括第一個「/」字元。",
 			'rcm-error-loading-syntaxhang' : "讀取[$1]時發生錯誤（$2 次嘗試）。請更正語法（或重新載入語法後再試一次）。",
 			'rcm-error-loading-connection' : "讀取[$1]時發生錯誤（$2 次嘗試）。極可能為連線問題。請重新載入語法後再試一次。",
 			'rcm-error-trymoretimes' : "請再試$1次",
-			
+
 			'rcm-loading' : "正在載入／整理中......",
 			'rcm-refresh' : "重新整理",
 			'rcm-download-timestamp' : "近期變動於$1載入",
 			'rcm-download-changesadded' : " - [已新增$1個近期變動內容]",
-			
+
 			'rcm-wikisloaded' : "已載入的維基：",
 			'rcm-previouslyloaded' : "之前已載入：",
 			'rcm-nonewchanges' : "無新變更",
 			'rcm-autorefresh' : "自動重整",
 			'rcm-autorefresh-tooltip' : "每隔$1秒自動更新近期變動",
 			'rcm-footer' : "由$2編輯的版本$1",
-			
+
 			'rcm-optionspanel-hideusersoverride': "以data-hideusers覆蓋原有設定。",
 			'rcm-optionspanel-savewithcookie': "使用cookie儲存變動",
-			
+
 			'rcm-module-diff-title' : "差異檢視器",
 			'rcm-module-diff-open' : "開啟差異",
-			'rcm-module-diff-undo' : "復原編輯", 
-			
+			'rcm-module-diff-undo' : "復原編輯",
+
 			'rcm-unknownthreadname' : "討論串",
 			/***************************
 			 * mediawiki.language.data
@@ -1410,7 +1433,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			},
 		},
 	};
-	
+
 	/*******************************************************************************
 	 * DO NOT CHANGE THIS WHEN TRANSLATING
 	 * MESSAGES is all text that is retrieved from the Wikia servers for any supported language.
@@ -1482,7 +1505,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'specialvideos-btn-load-more' : 'Load More',
 		'flags-edit-modal-close-button-text' : 'Close',
 		'awc-metrics-images' : 'Images',
-		
+
 		/***************************
 		 * Log Names - wgLogHeaders
 		 ***************************/
@@ -1511,16 +1534,16 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		// ## Extensions ##
 		// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 		'abusefilter-log'					: 'Abuse filter log',
-		
+
 		/***************************
-		 * Log Actions - 
+		 * Log Actions -
 		 ***************************/
 		// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages/MessagesEn.php
 		// Block
 		'blocklogentry'                   : 'blocked [[$1]] with an expiry time of $2 $3',
 		'reblock-logentry'                : 'changed block settings for [[$1]] with an expiry time of $2 $3',
 		'unblocklogentry'                 : 'unblocked $1',
-		
+
 		'block-log-flags-anononly'        : 'anonymous users only',
 		'block-log-flags-nocreate'        : 'account creation disabled',
 		'block-log-flags-noautoblock'     : 'autoblock disabled',
@@ -1535,7 +1558,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'logentry-delete-revision'            : '$1 changed visibility of {{PLURAL:$5|a revision|$5 revisions}} on page $3: $4',
 		'logentry-delete-event-legacy'        : '$1 changed visibility of log events on $3',
 		'logentry-delete-revision-legacy'     : '$1 changed visibility of revisions on page $3',
-		
+
 		'revdelete-content-hid'               : 'content hidden',
 		'revdelete-summary-hid'               : 'edit summary hidden',
 		// Import
@@ -1573,7 +1596,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'userrenametool-success' : 'The user "$1" has been renamed to "$2".',
 		// ## Wiki Features ##
 		// Wiki Features - https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
-		
+
 		// Chat - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Chat2/Chat.i18n.php
 		'chat-chatbanadd-log-entry' : 'banned $1 from chat with an expiry time of $2, ends $3',
 		'chat-chatbanremove-log-entry' : 'unbanned $1 from chat',
@@ -1593,7 +1616,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		// Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 		"abusefilter-log-entry-modify" : "modified $1 ($2)",
 		"abusefilter-log-detailslink" : "details",
-		
+
 		/***************************
 		 * Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
 		 ***************************/
@@ -1609,7 +1632,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'wall-recentchanges-thread-group'			: '$1 on [[$2|$3\'s wall]]',
 		'wall-recentchanges-history-link'			: 'wall history',
 		'wall-recentchanges-thread-history-link'	: 'thread history',
-		
+
 		/***************************
 		 * Forum Boards - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Forum/Forum.i18n.php#L113
 		 ***************************/
@@ -1626,12 +1649,12 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'forum-recentchanges-closed-thread'			: 'closed thread "[[$1|$2]]" from [[$3|$4]]',
 		'forum-recentchanges-reopened-thread'		: 'reopened thread "[[$1|$2]]" from [[$3|$4]]',
 	};
-	
+
 	// http://download.remysharp.com/wiki2html.js
 	i18n.wiki2html = function(pText) {
 		if(pText == undefined) { console.log("ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string"); return pText; };
 		var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
-		
+
 		return pText
 			// bold
 			.replace(/'''(.*?)'''/g, function (m, l) {
@@ -1646,7 +1669,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				return '<a href="' + l + '">' + l + '</a>';
 			})
 			// format string by replacing wiki $1 string vars with text.
-			.replace(/\$(\d+)/g, function(match, number) { 
+			.replace(/\$(\d+)/g, function(match, number) {
 				return typeof args[number-1] != 'undefined' ? args[number-1]  : match ;
 			})
 			// internal link or image
@@ -1671,29 +1694,30 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			 * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.language
 			 *******************************************************************************/
 			// {{GENDER}} - cannot be checked by script, so just uses {{{1}}}/{{{2}}}
-			.replace(/{{GENDER:(.*?)}}/g, function(m, l) { 
+			.replace(/{{GENDER:(.*?)}}/g, function(m, l) {
 				var p = l.split("|");
 				var user = p.shift(); // Currently doesn't work, so this will just assume male.
 				return mw.language.gender(user, p);
 			})
 			// {{PLURAL}} - only does default support
-			.replace(/{{PLURAL:(.*?)}}/g, function(m, l) { 
+			.replace(/{{PLURAL:(.*?)}}/g, function(m, l) {
 				var p = l.split("|");
 				var num = p.shift();
 				return mw.language.convertPlural(num, p);
 			})
 			// {{GRAMMAR}}
-			.replace(/{{GRAMMAR:(.*?)}}/g, function(m, l) { 
+			.replace(/{{GRAMMAR:(.*?)}}/g, function(m, l) {
 				var p = l.split("|");
 				//var num = p.shift();
 				return mw.language.convertGrammar(p[1], p[0]);
 			})
 		;
 	};
-	
+
 	return i18n;
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple);
 //</syntaxhighlight>
+
 //<syntaxhighlight lang="javascript">
 
 //######################################
@@ -4300,18 +4324,18 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 //######################################
 (function($, document, mw, module, i18n, RCMManager, Utils){
 	"use strict";
-	
+
 	// Double check that script can run; should always be true due to loader, but check is here just encase.
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
-	
+
 	// Statics
-	module.version = "1.2.7d";
+	module.version = "1.2.7f";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
 	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie-" + mw.config.get("wgPageName");
 	module.LOADER_IMG = module.LOADER_IMG || "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
-	
+
 	module.rcmList = [];
 	module.uniqID = 0;
 	module.langLoaded = false;
@@ -4320,39 +4344,39 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	// Custom parameter defaults
 	module.loadDelay = 10; // In miliseconds
 	module.rcParamsURL = null; // See below
-	
+
 	// Should only be called once at the end of this script.
 	module.start = function() {
 		// Find module wrappers
 		var tWrappers = document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
-		
+
 		/***************************
 		 * Setup
 		 ***************************/
 		// Load the css for module
 		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
-		
+
 		var tDataset = tWrappers[0].dataset;
-		
+
 		i18n.init(tDataset.lang);
-		
+
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { module.loadDelay = tDataset.loaddelay; }
-		
+
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") {
 			document.querySelector("body").className += " rcm-hiderail";
 		}
-		
+
 		module.loadLangMessages();
-		
+
 		tDataset = null;
-		
+
 		/***************************
 		 * Get rcParams from url
 		 ***************************/
 		module.rcParamsURL = {};
-		
+
 		var tUrlVars = {}
 		var parts = window.location.href.split("#")[0].replace( /[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value){tUrlVars[key] = value;} );
 		for(var param in tUrlVars) {
@@ -4364,24 +4388,24 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			}
 			if(param == "debug") { module.debug = (tUrlVars[param]=="true"); }
 		}
-		
+
 		/***************************
 		 * Start App
 		 ***************************/
 		Utils.forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray){
 			module.rcmList.push( new RCMManager(pArray[pI], pI).init() );
 		});
-		
+
 		tWrappers = null;
-		
+
 		// This does things like allow "fieldset" to collapse in RCMOptions
 		mw.loader.load( 'mediawiki.special.recentchanges' );
-		
+
 		// // For Testing CSS
 		// Utils.newElement("style", { innerHTML:""
 		// 	+""
 		// +"" }, document.body);
-		
+
 		var refreshAllButton = document.querySelector(".rcm-refresh-all");
 		if(refreshAllButton) {
 			refreshAllButton.addEventListener("click", function(){
@@ -4391,7 +4415,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			});
 		}
 	}
-	
+
 	module.unload = function() {
 		for(i = 0; i < module.rcmList.length; i++) {
 			// Something on things seems to lag the page.
@@ -4401,17 +4425,17 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		module.rcmList = null;
 		i18n = null;
 	}
-	
+
 	// Replace all RC_TEXT with that of the language specified.
 	// TODO: Should probably have support to check if it ran into loading issues.
 	module.loadLangMessages = function() {
 		var tLangLoadAjaxPromises = [];
-		
+
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
 			var url = mw.config.get("wgServer") + mw.config.get('wgScriptPath') + "/api.php?action=query&format=json&meta=allmessages&amlang="+i18n.defaultLang+"&ammessages="+pMessages;
 			if(module.debug) { console.log(url.replace("&format=json", "&format=jsonfm")); }
-			
+
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
 				success: function(pData){
 					$.each( (pData.query || {}).allmessages, function( index, message ) {
@@ -4422,7 +4446,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				}
 			});
 		}
-		
+
 		// Loads messages in increments of 50.
 		var tMessages = "", tNumLoading = 0;
 		Object.keys(i18n.MESSAGES).forEach(function (key) {
@@ -4438,12 +4462,12 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		if(tMessages != "") {
 			tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
 		}
-		
+
 		// When loading of all translated messages is done (or one failed) do this.
 		$.when.apply($, tLangLoadAjaxPromises)
 		.done(function(pData){
 			module.langLoaded = true;
-			
+
 			for (var i = 0; i < module.onLangLoadCallbacks.length; i++) {
 				module.onLangLoadCallbacks[i]();
 			}

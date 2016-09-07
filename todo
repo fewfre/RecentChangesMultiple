@@ -6,6 +6,9 @@
 	* support "rtl" lang dir
 	* Add support for mwLanguageData.fallbackLanguages (on the few occasions were a translation may not have a word in it's normal section)
 	* uselang=oc breaks a little on options panel: "$3 cambiaments menors."
+* If nothing in list, don't just hang; give an error / acknowledge it.
+* If only one wiki is added to list, don't show background / icons on left?
+* Doesn't work in tabview. Add a delay check, or look for the container being added.
 
 
 ############################################
