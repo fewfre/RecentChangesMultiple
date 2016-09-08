@@ -1,3 +1,9 @@
+== V1.2.8 - 7 September 2016 ==
+- lang update: it
+- Error catching added for system message retreval. (Thanks Kopcap94)
+- "data-localSystemMessages" feature added for restricted wiki language support.
+
+
 == V1.2.7f - 6 September 2016 ==
 - lang updated: it @author: Leviathan 89
 - Wikia updated "mediawiki.action.history.diff" and stylesheet updated to reflect it.

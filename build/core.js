@@ -861,7 +861,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			// Notifiche
 			'rcm-loading' : "Caricando / Ordinando...",
 			'rcm-refresh' : "Ricarica",
-			'rcm-download-timestamp' : "Ultime Modifiche scaricate in: $1",
+			'rcm-download-timestamp' : "Ultime Modifiche scaricate alle: $1",
 			'rcm-download-changesadded' : " - [$1 Ultime Modifiche aggiunte]",
 			// Base
 			'rcm-wikisloaded' : "Wiki caricate:",
@@ -4329,7 +4329,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Statics
-	module.version = "1.2.7f";
+	module.version = "1.2.8";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -4342,6 +4342,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	module.onLangLoadCallbacks = [];
 	module.numLangLoadErrors = 0;
 	// Custom parameter defaults
+	module.useLocalSystemMessages = true; // In miliseconds
 	module.loadDelay = 10; // In miliseconds
 	module.rcParamsURL = null; // See below
 
@@ -4362,6 +4363,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { module.loadDelay = tDataset.loaddelay; }
+		if(tDataset.localsystemmessages === "false") { module.useLocalSystemMessages = false; }
 
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") {
@@ -4433,11 +4435,13 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
-			var url = mw.config.get("wgServer") + mw.config.get('wgScriptPath') + "/api.php?action=query&format=json&meta=allmessages&amlang="+i18n.defaultLang+"&ammessages="+pMessages;
+			var tScriptPath = module.useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
+			var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang="+i18n.defaultLang+"&ammessages="+pMessages;
 			if(module.debug) { console.log(url.replace("&format=json", "&format=jsonfm")); }
 
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
 				success: function(pData){
+					if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
 					$.each( (pData.query || {}).allmessages, function( index, message ) {
 						if( message.missing !== '' ) {
 							i18n.MESSAGES[message.name] = message['*'];

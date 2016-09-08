@@ -310,7 +310,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 			// Notifiche
 			'rcm-loading' : "Caricando / Ordinando...",
 			'rcm-refresh' : "Ricarica",
-			'rcm-download-timestamp' : "Ultime Modifiche scaricate in: $1",
+			'rcm-download-timestamp' : "Ultime Modifiche scaricate alle: $1",
 			'rcm-download-changesadded' : " - [$1 Ultime Modifiche aggiunte]",
 			// Base
 			'rcm-wikisloaded' : "Wiki caricate:",
