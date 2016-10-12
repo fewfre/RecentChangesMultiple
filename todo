@@ -9,6 +9,8 @@
 * If nothing in list, don't just hang; give an error / acknowledge it.
 * If only one wiki is added to list, don't show background / icons on left?
 * Doesn't work in tabview. Add a delay check, or look for the container being added.
+* Fix the rare times changes get missed by Notifactions / "previously loaded"
+	* Set lastLoadDateTime = this.recentChangesEntries[0].date?
 
 
 ############################################
@@ -33,7 +35,8 @@
 ############################################
 * Loading display rework.
 	A) Display wiki results as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
-	B) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
+	B) Only load changes older than current things and just add them to top of list. Make sure to also remove old items.
+	C) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
 		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
 		May add needless complexity while adding little to nothing.
 * Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script

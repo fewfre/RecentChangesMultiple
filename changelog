@@ -1,3 +1,10 @@
+== V1.2.9 - 12 October 2016 ==
+- Optional Notification system added to auto refresh when tab/window doesn't have focus. Browser prompts you to accept notifications on enabling auto refresh.
+- When auto refresh is enabled and when tab/window doesn't have focus, the tab / window title flashes the word "new".
+- When a modal (ajax diff / gallery) is open, auto refresh will wait until you close it to continue.
+- When auto refresh is enabled and when tab/window doesn't have focus, the "previously loaded" message appears at the last spot from when it had focus.
+
+
 == V1.2.8 - 7 September 2016 ==
 - lang update: it
 - Error catching added for system message retreval. (Thanks Kopcap94)

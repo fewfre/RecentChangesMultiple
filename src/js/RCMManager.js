@@ -59,6 +59,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.itemsToAddTotal		= null; // {int} Total number if items to add to the screen
 		
 		this.lastLoadDateTime		= null; // {Date} the last time everything was loaded.
+		this.lastLoadDateTimeActual	= null; // {Date} Even if lastLoadDateTime hasn't been updated (due to auto refresh), this always has the actual last loaded date
 	};
 	
 	RCMManager.prototype.dispose = function() {
@@ -383,6 +384,22 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
+		else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
+			if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
+				module.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"!");
+				var tNumNewChanges = 0;
+				for(var i = 0; i < this.recentChangesEntries.length; i++) {
+					if(this.recentChangesEntries[i].date > this.lastLoadDateTime) {
+						for(var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
+							if(this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) { tNumNewChanges++; } else { break; }
+						}
+					} else { break; }
+				}
+				if(Notification.permission === "granted") {
+					module.addNotification(new Notification( "RCM: "+i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.title ));
+				}
+			}
+		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
 	}
 	
@@ -413,7 +430,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		if(++pIndex < this.recentChangesEntries.length) {
 			document.querySelector(this.modID+" .rcm-content-loading-num").innerHTML = this.itemsAdded;
-			// Only do a timeout ever few changes (timeout to prevent browser potentially locking up, only every few to prevent it taking longer than necessary)
+			// Only do a timeout every few changes (timeout to prevent browser potentially locking up, only every few to prevent it taking longer than necessary)
 			if(pIndex%5 == 0) {
 				setTimeout(function(){ self.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID); });
 			} else {
@@ -427,7 +444,11 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		Utils.removeElement(document.querySelector(this.modID+" .rcm-content-loading"));
 		this.addRefreshButtonTo(this.statusNode);
 		this.addAutoRefreshInputTo(this.statusNode);
-		this.lastLoadDateTime = new Date();
+		// If auto-refresh is on and window doesn't have focus, then don't update the position of "previously loaded" message.
+		if (this.lastLoadDateTime == null || !this.isAutoRefreshEnabled() || document.hasFocus()) {
+			this.lastLoadDateTime = new Date();
+		}
+		this.lastLoadDateTimeActual = new Date();
 		
 		// Removing this all remove event handlers
 		// for (var i = 0; i < this.recentChangesEntries.length; i++) {
@@ -436,10 +457,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		// }
 		// this.recentChangesEntries = null;
 		
-		if(document.querySelector(this.modID+" .rcm-autoRefresh-checkbox").checked) {
-			var self = this;
-			this.autoRefreshTimeoutID = setTimeout(function(){ self.refresh(); }, this.autoRefreshTimeoutNum);
-		}
+		this.startAutoRefresh();
 		
 		//$( "#rc-content-multiple .mw-collapsible" ).each(function(){ $(this).makeCollapsible(); });
 		
@@ -451,6 +469,16 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 	};
 	
+	RCMManager.prototype.startAutoRefresh = function(pID) {
+		if(!this.isAutoRefreshEnabled()) { return; }
+		
+		var self = this;
+		this.autoRefreshTimeoutID = setTimeout(function(){
+			if(RCData.isModalOpen()) { self.startAutoRefresh(); return; }
+			self.refresh();
+		}, this.autoRefreshTimeoutNum);
+	};
+		
 	RCMManager.prototype.loadExtraInfo = function(pID) {
 		if(pID != this.ajaxID) { return; }
 		if(this.secondaryWikiData.length == 0) { if(module.debug){ console.log("[RCMManager](loadExtraInfo) All loading finished."); } return; }
@@ -500,12 +528,17 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
 				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);
 				self.refresh();
+				Notification.requestPermission();
 			} else {
 				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, false);
 				clearTimeout(self.autoRefreshTimeoutID);
 			}
 		});
 	};
+	
+	RCMManager.prototype.isAutoRefreshEnabled = function() {
+		return localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true";
+	}
 	
 	RCMManager.prototype.calcLoadPercent = function() {
 		return Math.round((this.totalWikisToLoad - this.wikisLeftToLoad) / this.totalWikisToLoad * 100);

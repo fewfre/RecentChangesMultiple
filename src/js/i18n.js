@@ -954,6 +954,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'specialvideos-btn-load-more' : 'Load More',
 		'flags-edit-modal-close-button-text' : 'Close',
 		'awc-metrics-images' : 'Images',
+		'wikifeatures-promotion-new' : 'New',
 
 		/***************************
 		 * Log Names - wgLogHeaders

@@ -16,7 +16,7 @@
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Statics
-	module.version = "1.2.8";
+	module.version = "1.2.9";
 	module.debug = module.debug != undefined ? module.debug : false;
 	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -106,13 +106,13 @@
 	}
 
 	module.unload = function() {
-		for(i = 0; i < module.rcmList.length; i++) {
-			// Something on things seems to lag the page.
-			// module.rcmList[i].dispose();
-			module.rcmList[i] = null;
-		}
-		module.rcmList = null;
-		i18n = null;
+		// for(i = 0; i < module.rcmList.length; i++) {
+		// 	// Something on things seems to lag the page.
+		// 	// module.rcmList[i].dispose();
+		// 	module.rcmList[i] = null;
+		// }
+		// module.rcmList = null;
+		// i18n = null;
 	}
 
 	// Replace all RC_TEXT with that of the language specified.
@@ -182,6 +182,43 @@
 		})
 		;
 	}
+	
+	var _blinkInterval, _originalTitle;
+	module.blinkWindowTitle = function(pTitle) {
+		module.cancelBlinkWindowTitle();
+		_originalTitle = document.title;
+		_blinkInterval = setInterval(function(){
+			document.title = document.title == _originalTitle ? (pTitle+" - "+_originalTitle) : _originalTitle;
+			if(document.hasFocus()) { module.cancelBlinkWindowTitle(); }
+		}, 1000);
+	}
+	module.cancelBlinkWindowTitle = function() {
+		if(!_blinkInterval) { return; }
+		clearInterval(_blinkInterval);
+		_blinkInterval = null;
+		document.title = _originalTitle;
+	}
+	
+	var _notifications = [];
+	module.addNotification = function(pNotification) {
+		_notifications.push(pNotification);
+		if(_notifications.length > 2) {
+			_notifications.shift().close();
+		}
+	}
+	
+	$(window).focus(function(){
+		// Remove all notifications
+		for(var i = 0; i < _notifications.length; i++) {
+			_notifications[i].close();
+		}
+		_notifications = [];
+		
+		// Update "previously loaded" messages
+		for(var i = 0; i < module.rcmList.length; i++) {
+			module.rcmList[i].lastLoadDateTime = module.rcmList[i].lastLoadDateTimeActual;
+		}
+	});
 
 	$(document).ready(module.start);
 	$(document).unload(module.unload);

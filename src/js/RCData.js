@@ -870,8 +870,12 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		}
 	}
 	
+	RCData.isModalOpen = function() {
+		return $('#rcm-DiffView').length != 0;
+	}
+	
 	RCData.closeModal = function() {
-		if($('#rcm-DiffView').length != 0) {
+		if(RCData.isModalOpen()) {
 			$('#rcm-diff-viewer').closeModal();
 		}
 	}
