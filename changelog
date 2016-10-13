@@ -1,3 +1,11 @@
+== V1.2.9b - 13 October 2016 ==
+- Notification icon added
+- Bug fix for auto-refresh time stamp.
+- Auto-refresh notifications now also include the wiki name.
+- Script now indicates there was a new version change for a few days.
+- Auto-refresh will now attempt "try again" if connection error happens.
+
+
 == V1.2.9 - 12 October 2016 ==
 - Optional Notification system added to auto refresh when tab/window doesn't have focus. Browser prompts you to accept notifications on enabling auto refresh.
 - When auto refresh is enabled and when tab/window doesn't have focus, the tab / window title flashes the word "new".

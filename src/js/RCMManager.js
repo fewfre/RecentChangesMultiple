@@ -148,7 +148,9 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		 * Setup
 		 ***************************/
 		// Footer never changes, so set here
-		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+module.version+"</a>", "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		var tEndNewMessageDate = new Date(module.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
+		var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("wikifeatures-promotion-new")+'</sup>' : "";
+		this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+module.version+"</a>"+tNewVersion, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		
@@ -238,20 +240,23 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
+			clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
 			this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n("rcm-error-loading-syntaxhang", "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-			Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click",
-				function tHandler(pData){
-					pData.target.removeEventListener("click", tHandler);
-					
-					self.erroredWikis.forEach(function(obj){
-						console.log(obj);
-						self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-					});
-					self.erroredWikis = [];
-					self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-				}
-			);
+			var tHandler = function(pData){
+				clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
+				if(pData) pData.target.removeEventListener("click", tHandler);
+				tHandler = null;
+				
+				self.erroredWikis.forEach(function(obj){
+					console.log(obj);
+					self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+				});
+				self.erroredWikis = [];
+				self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+			};
+			Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click", tHandler);
 			self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+			if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
@@ -261,22 +266,25 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				this.loadWiki(pWikiInfo, pTries, pID, 0);
 			} else {
 				if(this.erroredWikis.length === 0) {
+					clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
 					this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n((pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection"), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
 					this.addRefreshButtonTo(this.statusNode);
-					Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click",
-						function tHandler(pData){
-							self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
-							pData.target.removeEventListener("click", tHandler);
-							
-							self.erroredWikis.forEach(function(obj){
-								console.log(obj);
-								self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-							});
-							self.erroredWikis = [];
-							self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-						}
-					);
+					var tHandler = function(pData){
+						clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
+						self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
+						if(pData) pData.target.removeEventListener("click", tHandler);
+						tHandler = null;
+						
+						self.erroredWikis.forEach(function(obj){
+							console.log(obj);
+							self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+						});
+						self.erroredWikis = [];
+						self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+					};
+					Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click", tHandler);
 					self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+					if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
 				} else {
 					this.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
 					this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiInfo.servername;
@@ -381,7 +389,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		
 		// console.log(this.recentChangesEntries);
-		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date < this.lastLoadDateTime)) {
+		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
 		else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
@@ -395,9 +403,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 						}
 					} else { break; }
 				}
-				if(Notification.permission === "granted") {
-					module.addNotification(new Notification( "RCM: "+i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.title ));
-				}
+				module.addNotification("RCM: "+i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename );
 			}
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
@@ -420,7 +426,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			pContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", {  }, this.resultsNode) : Utils.newElement("ul", { className:"special" }, this.resultsNode);
 		}
 		// Show at what point new changes start at.
-		if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date < this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
+		if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
 			Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
 		}
 		
@@ -446,9 +452,9 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.addAutoRefreshInputTo(this.statusNode);
 		// If auto-refresh is on and window doesn't have focus, then don't update the position of "previously loaded" message.
 		if (this.lastLoadDateTime == null || !this.isAutoRefreshEnabled() || document.hasFocus()) {
-			this.lastLoadDateTime = new Date();
+			this.lastLoadDateTime = this.recentChangesEntries[0].date;//new Date();
 		}
-		this.lastLoadDateTimeActual = new Date();
+		this.lastLoadDateTimeActual = this.recentChangesEntries[0].date;//new Date();
 		
 		// Removing this all remove event handlers
 		// for (var i = 0; i < this.recentChangesEntries.length; i++) {

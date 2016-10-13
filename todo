@@ -9,8 +9,7 @@
 * If nothing in list, don't just hang; give an error / acknowledge it.
 * If only one wiki is added to list, don't show background / icons on left?
 * Doesn't work in tabview. Add a delay check, or look for the container being added.
-* Fix the rare times changes get missed by Notifactions / "previously loaded"
-	* Set lastLoadDateTime = this.recentChangesEntries[0].date?
+* get rid of "wikiInfo" data, and instead have "wikiID" which access a dictionary on the RCMManager. Less memory leak?
 
 
 ############################################

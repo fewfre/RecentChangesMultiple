@@ -15,13 +15,16 @@
 	// Double check that script can run; should always be true due to loader, but check is here just encase.
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
-	// Statics
-	module.version = "1.2.9";
+	// Storage
+	module.version = "1.2.9b";
+	module.lastVersionDateString = "Thu Oct 13 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	module.debug = module.debug != undefined ? module.debug : false;
-	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
+	
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
 	module.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie-" + mw.config.get("wgPageName");
+	module.FAVICON_BASE = module.FAVICON_BASE || "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	module.LOADER_IMG = module.LOADER_IMG || "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
+	module.NOTIFICATION_ICON = module.NOTIFICATION_ICON || "http://vignette1.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
 
 	module.rcmList = [];
 	module.uniqID = 0;
@@ -183,6 +186,9 @@
 		;
 	}
 	
+	/***************************
+	* Call to blink the window title (only while window doesn't have focus).
+	****************************/
 	var _blinkInterval, _originalTitle;
 	module.blinkWindowTitle = function(pTitle) {
 		module.cancelBlinkWindowTitle();
@@ -199,10 +205,16 @@
 		document.title = _originalTitle;
 	}
 	
+	/***************************
+	* Manage Notifications
+	****************************/
 	var _notifications = [];
-	module.addNotification = function(pNotification) {
-		_notifications.push(pNotification);
-		if(_notifications.length > 2) {
+	module.addNotification = function(pTitle, pOptions) {
+		if(Notification.permission !== "granted") { return; }
+		pOptions = pOptions || {};
+		pOptions.icon = pOptions.icon || module.NOTIFICATION_ICON;
+		_notifications.push(new Notification(pTitle, pOptions));
+		if(_notifications.length > 1) {
 			_notifications.shift().close();
 		}
 	}

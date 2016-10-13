@@ -29,6 +29,16 @@
 	border-top: 1px solid #999;
 	background: rgba(0, 0, 0, 0.15);
 }
+.rcm-footer .rcm-new-version {
+	color:white;
+	background:red;
+	margin-left:1px;
+	padding:0px 2px;
+	border-radius:5px;
+	border:2px dotted darkred;
+	font-size:80%;
+	font-weight: bold;
+}
 /*.rcm-results, #rcm-results { white-space: pre; }*/
 .rcm-content-loading, #rcm-content-loading {
 	font-size:80%;
