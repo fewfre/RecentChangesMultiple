@@ -87,7 +87,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * First line of choices (numbers)
 		 ***************************/
-		var tRow1Text = i18n('rclinks').split("<br />")[0].split(/\$1|\$2/);
+		var tRow1Text = i18n('rclinks').split("<br />")[0].split("$3")[0].split(/\$1|\$2/);
 		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);

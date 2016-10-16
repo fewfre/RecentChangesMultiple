@@ -5,7 +5,7 @@
 // * This is what actually parses a "rc-content-multiple" div, and loads the respective information.
 // * Uses RCList to actually format the RecentChanges info.
 //######################################
-window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module, RCData, RCList, WikiData, RCMOptions, RCMWikiPanel, Utils, i18n){
+window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module, RCData, RCList, WikiData, RCMOptions, RCMWikiPanel, Utils, i18n, RCMModal){
 	"use strict";
 
 	// Static Constants
@@ -43,6 +43,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxID					= 0;    // {int} A unique ID for all ajax data for a given "load" (used to prevent previously requested data from mixing with currently requested data after "Refresh" is hit after a script error)
 		this.autoRefreshTimeoutID	= null; // {int} ID for the auto refresh timeout.
 		this.autoRefreshEnabledDefault	= null; // {bool} Default value for auto refresh being enabled.
+		this.autoRefreshLocalStorageID = module.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
 		
 		this.recentChangesEntries	= null; // {array} Array of either RecentChange/RecentChangeList objects.
 		this.ajaxCallbacks			= null; // {array} Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
@@ -176,19 +177,26 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
-		this.totalWikisToLoad = 0;
-		Utils.forEach(this.chosenWikis, function(wikiInfo){
-			if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
-			self.totalWikisToLoad++;
-			self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
-		});
-		//this.totalWikisToLoad = this.chosenWikis.length;
-		this.wikisLeftToLoad = this.totalWikisToLoad;
-		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		if(this.chosenWikis.length > 0) {
+			this.totalWikisToLoad = 0;
+			Utils.forEach(this.chosenWikis, function(wikiInfo){
+				if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
+				self.totalWikisToLoad++;
+				self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
+			});
+			//this.totalWikisToLoad = this.chosenWikis.length;
+			this.wikisLeftToLoad = this.totalWikisToLoad;
+			this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		} else {
+			Utils.removeElement(this.statusNode);
+			Utils.removeElement(this.wikisNode.root);
+			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n("wikiacuratedcontent-content-empty-section")+"</div>";
+		}
 	};
 	
 	/* pUpdateParams : Bool - optional (default: false) */
 	RCMManager.prototype.refresh = function(pUpdateParams) {
+		if(this.chosenWikis.length == 0) { return; }
 		this.statusNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
 		this.wikisNode.clear();
@@ -203,7 +211,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
-		RCData.closeModal();
+		RCMModal.closeModal();
 		
 		this._start(pUpdateParams);
 	};
@@ -403,7 +411,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 						}
 					} else { break; }
 				}
-				module.addNotification("RCM: "+i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename );
+				module.addNotification(i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename, { body:this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.author });
 			}
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
@@ -480,7 +488,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		var self = this;
 		this.autoRefreshTimeoutID = setTimeout(function(){
-			if(RCData.isModalOpen()) { self.startAutoRefresh(); return; }
+			if(RCMModal.isModalOpen()) { self.startAutoRefresh(); return; }
 			self.refresh();
 		}, this.autoRefreshTimeoutNum);
 	};
@@ -528,22 +536,22 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		var autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
 		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n('rcm-autorefresh'), title:i18n('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
-		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
+		checkBox.checked = this.isAutoRefreshEnabled();
 		
 		checkBox.addEventListener("click", function tHandler(e){
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
-				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);
+				localStorage.setItem(self.autoRefreshLocalStorageID, true);
 				self.refresh();
 				Notification.requestPermission();
 			} else {
-				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, false);
+				localStorage.setItem(self.autoRefreshLocalStorageID, false);
 				clearTimeout(self.autoRefreshTimeoutID);
 			}
 		});
 	};
 	
 	RCMManager.prototype.isAutoRefreshEnabled = function() {
-		return localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true";
+		return localStorage.getItem(this.autoRefreshLocalStorageID) == "true" || this.autoRefreshEnabledDefault;
 	}
 	
 	RCMManager.prototype.calcLoadPercent = function() {
@@ -615,5 +623,6 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	, window.dev.RecentChangesMultiple.RCMWikiPanel
 	, window.dev.RecentChangesMultiple.Utils
 	, window.dev.RecentChangesMultiple.i18n
+	, window.dev.RecentChangesMultiple.RCMModal
 );
 //</syntaxhighlight>

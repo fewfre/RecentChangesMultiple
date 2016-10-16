@@ -5,7 +5,7 @@
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Utils, i18n){
+window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Utils, i18n, RCMModal){
 	"use strict";
 	
 	RCData.TYPE = Object.freeze({ NORMAL:"normalChange", LOG:"logChange", COMMENT:"commentType", WALL:"wallChange", BOARD:"boardChange", });
@@ -616,22 +616,17 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [];
 		tButtons.push({
-			defaultButton: true,
-			message: i18n('rcm-module-diff-open'),
-			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeModal(); }
+			value: i18n('rcm-module-diff-open'),
+			event: "diff",
+			callback: function(){ window.open(pDiffLink, '_blank'); },
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
-				defaultButton: true,
-				message: i18n('rcm-module-diff-undo'),
-				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeModal(); }
+				value: i18n('rcm-module-diff-undo'),
+				event: "undo",
+				callback: function(){ window.open(pUndoLink, '_blank'); },
 			});
 		}
-		tButtons.push({
-			defaultButton: false,
-			message: i18n('flags-edit-modal-close-button-text'),
-			handler: RCData.closeModal
-		});
 		
 		// Retrieve the diff table.
 		// TODO - error support?
@@ -639,61 +634,32 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			success: function(pData){
 				var tPage = pData.query.pages[pageID];
 				var tRevision = tPage.revisions[0];
-				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeModal();
 				
 				// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
 				// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
 				// 	tButtons.splice(tButtons.length-2, 0, {
-				// 		defaultButton: true,
-				// 		message: i18n('rollbacklink'),
-				// 		handler: function () { window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); RCData.closeModal(); }
+				// 		value: i18n('rollbacklink'),
+				// 		event: "rollback",
+				// 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
 				// 	});
 				// }
 				
-				var ajaxform = ''
-				+'<form method="" name="" class="WikiaForm">'
-					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">'
-						+"<table class='diff'>"
-							+"<colgroup>"
-								+"<col class='diff-marker'>"
-								+"<col class='diff-content'>"
-								+"<col class='diff-marker'>"
-								+"<col class='diff-content'>"
-							+"</colgroup>"
-							+tRevision.diff["*"]
-						+"</table>"
-					+'</div>'
-				+'</form>';
-				var tModule = $.showCustomModal(tTitle, ajaxform, {
-					id: 'rcm-diff-viewer',
-					width: 1000,
-					buttons: tButtons,
-					callbackBefore: function() {
-						/* Disable page scrolling */
-						if ($(document).height() > $(window).height()) {
-							$('html').addClass('rcm-noscroll');
-						}
-					},
-					onAfterClose: RCData.onModalClosed,
-				});
+				var tModalContent = ''
+				+"<div id='rcm-diff-view'>"
+				+"<table class='diff'>"
+					+"<colgroup>"
+						+"<col class='diff-marker'>"
+						+"<col class='diff-content'>"
+						+"<col class='diff-marker'>"
+						+"<col class='diff-content'>"
+					+"</colgroup>"
+					+tRevision.diff["*"]
+				+"</table>";
+				+"</div>";
+				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
 			},
 		});
-		
-		// While we are waiting for results, open diff window to acknowledge user's input
-		if ($('#rcm-DiffView').length == 0) {
-			var ajaxform = ''
-			+'<form method="" name="" class="WikiaForm">'
-				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
-					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
-				+'</div>'
-			+'</form>';
-			$.showCustomModal(tTitle, ajaxform, {
-				id: 'rcm-diff-viewer',
-				width: 1000,
-				buttons: tButtons
-			});
-		}
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
@@ -707,13 +673,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		
 		var tTitle = i18n("awc-metrics-images");
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-		var tButtons = [
-			{
-				defaultButton: false,
-				message: i18n('flags-edit-modal-close-button-text'),
-				handler: RCData.closeModal
-			}
-		];
+		var tButtons = [];
 		
 		var tGetGalleryItem = function (pPage) {
 			var tPage = pPage, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
@@ -792,7 +752,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tAddLoadMoreButton = function () {
 			if(tImagesInLog.length > 0) {
 				if(module.debug) { console.log("Over 50 images to display; Extra images must be loaded later."); }
-				var tModal = document.querySelector("#rcm-DiffView");
+				var tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
+				var tGallery = tModal.querySelector(".rcm-gallery");
 				var tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
 				var tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
 				
@@ -805,7 +766,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 						success: function(pData){
 							Utils.removeElement(tCont);
 							for(var key in pData.query.pages) {
-								tModal.innerHTML += tGetGalleryItem(pData.query.pages[key]);
+								tGallery.innerHTML += tGetGalleryItem(pData.query.pages[key]);
 							}
 							tAddLoadMoreButton();
 						},
@@ -818,73 +779,30 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 			success: function(pData){
-				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeModal();
-				var ajaxform = ''
+				var tModalContent = ''
 				+'<style>'
-					+'#rcm-diff-viewer .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
-					+'#rcm-diff-viewer .wikia-gallery-item { width: '+size+'px; }'
-					// +'#rcm-diff-viewer .wikia-gallery-item .lightbox { width: '+size+'px; }'
-					+'#rcm-diff-viewer .thumb { height: '+size+'px; }'
-					+'.image-no-lightbox { width: '+size+'px; }'
+					+'.rcm-gallery .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
+					+'.rcm-gallery .wikia-gallery-item { width: '+size+'px; }'
+					// +'.rcm-gallery .wikia-gallery-item .lightbox { width: '+size+'px; }'
+					+'.rcm-gallery .thumb { height: '+size+'px; }'
+					+'.rcm-gallery .image-no-lightbox { width: '+size+'px; }'
 				+'</style>'
-				+'<div class="wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
-					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">';
+				+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
 					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
 					for(var key in pData.query.pages) {
-						ajaxform += tGetGalleryItem(pData.query.pages[key]);
+						tModalContent += tGetGalleryItem(pData.query.pages[key]);
 					}
-				ajaxform += ''
-					+'</div>'
+				tModalContent += ''
 				+'</div>';
 				
-				var tModule = $.showCustomModal(tTitle, ajaxform, {
-					id: 'rcm-diff-viewer',
-					width: 1000,
-					buttons: tButtons,
-					callbackBefore: function() {
-						/* Disable page scrolling */
-						if ($(document).height() > $(window).height()) {
-							$('html').addClass('rcm-noscroll');
-						}
-					},
-					onAfterClose: RCData.onModalClosed,
-				});
-				setTimeout(function(){ tAddLoadMoreButton(); }, 100);
+				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
+				// setTimeout(function(){ tAddLoadMoreButton(); }, 100);
 			},
 		});
-		
-		// While we are waiting for results, open diff window to acknowledge user's input
-		if ($('#rcm-DiffView').length == 0) {
-			var ajaxform = ''
-			+'<form method="" name="" class="WikiaForm">'
-				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
-					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
-				+'</div>'
-			+'</form>';
-			$.showCustomModal(tTitle, ajaxform, {
-				id: 'rcm-diff-viewer',
-				width: 1000,
-				buttons: tButtons
-			});
-		}
-	}
-	
-	RCData.isModalOpen = function() {
-		return $('#rcm-DiffView').length != 0;
-	}
-	
-	RCData.closeModal = function() {
-		if(RCData.isModalOpen()) {
-			$('#rcm-diff-viewer').closeModal();
-		}
-	}
-	
-	RCData.onModalClosed = function() {
-		$("html").removeClass("rcm-noscroll");
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	return RCData;
 	
-})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
+})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n, window.dev.RecentChangesMultiple.RCMModal);
 //</syntaxhighlight>

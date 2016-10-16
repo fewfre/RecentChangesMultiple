@@ -560,7 +560,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
  * 			 Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
  * 			 POTENTIAL ISSUES:
  * 			 	* Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
-  * mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+  * mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
  */
 window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 	"use strict";
@@ -1354,6 +1354,47 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["en"]
 			},
 		},
+		vi: { // Vietnamese @author: Dai ca superman
+			'rcm-error-linkformat' : "'$1' không đúng định dạng. Xin đừng '''thêm''' 'http://' hay bất cứ ký tự gì trước tên miền trang, bao gồm dấu gạch chéo '/'.",
+			'rcm-error-loading-syntaxhang' : "Lỗi tải [$1] ($2 lần thử). Hãy sửa lại đúng cú pháp (hoặc làm mới lại trang để thử lại.).",
+			'rcm-error-loading-connection' : "Lỗi tải [$1] ($2 lần thử). Khả năng lớn đây là lỗi kết nối; làm mới lại trang để thử lại.",
+			'rcm-error-trymoretimes' : "Thử thêm $1 lần nữa",
+
+			'rcm-loading' : "Đang Tải/Đang Sắp Xếp...",
+			'rcm-refresh' : "Làm mới",
+			'rcm-download-timestamp' : "Thay Đổi Gần Đây đã được tải vào: $1",
+			'rcm-download-changesadded' : " - [$1 Thay Đổi Gần Đây đã được thêm vào]",
+
+			'rcm-wikisloaded' : "Các Wiki đã tải: ",
+			'rcm-previouslyloaded' : "Đã tải trước đó:",
+			'rcm-nonewchanges' : "Không có thay đổi nào mới",
+			'rcm-autorefresh' : "Tự Động Làm Mới",
+			'rcm-autorefresh-tooltip' : "Tự động làm mới trang Thay Đổi Gần Đây sau mỗi $1 giây",
+			'rcm-footer' : "Phiên bản $1 bởi $2",
+
+			'rcm-optionspanel-hideusersoverride': "data-hideusers đã loại trừ điều này.",
+			'rcm-optionspanel-savewithcookie': "Lưu lại thiết đặt bằng cookie",
+
+			'rcm-module-diff-title' : "Trình Xem Thay Đổi",
+			'rcm-module-diff-open' : "Mở xem khác",
+			'rcm-module-diff-undo' : "Lùi sửa",
+
+			'rcm-unknownthreadname' : "luồng",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": ".",
+					".": ","
+				},
+				"grammarForms": [],
+				"pluralRules": ["i = 1 and v = 0 @integer 1"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
 		zh: { // 中文 (CHINESE) @author: TsukiYaksha
 
 			'rcm-error-linkformat' : "「$1」为错误格式。请'''不要'''在网域后加入「http://」或任何文字，包括第一个「/」字符。",
@@ -1506,6 +1547,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'flags-edit-modal-close-button-text' : 'Close',
 		'awc-metrics-images' : 'Images',
 		'wikifeatures-promotion-new' : 'New',
+		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
 
 		/***************************
 		 * Log Names - wgLogHeaders
@@ -1808,7 +1850,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 		/***************************
 		 * First line of choices (numbers)
 		 ***************************/
-		var tRow1Text = i18n('rclinks').split("<br />")[0].split(/\$1|\$2/);
+		var tRow1Text = i18n('rclinks').split("<br />")[0].split("$3")[0].split(/\$1|\$2/);
 		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);
@@ -2042,6 +2084,7 @@ window.dev.RecentChangesMultiple.RCMOptions = (function($, document, mw, module,
 	
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
 //</syntaxhighlight>
+
 //<syntaxhighlight lang="javascript">
 
 //######################################
@@ -2200,11 +2243,116 @@ window.dev.RecentChangesMultiple.RCMWikiPanel = (function($, document, mw, modul
 //<syntaxhighlight lang="javascript">
 	
 //######################################
+// #### Modal Manager ####
+// This is a STATIC class. This is a helper class for using Wikia modals, as RCM has some specific requirements.
+//######################################
+window.dev.RecentChangesMultiple.RCMModal = (function($, document, mw, module, Utils, i18n){
+	"use strict";
+	
+	RCMModal.MODAL_ID = "rcm-modal";
+	RCMModal.MODAL_CONTENT_ID = "rcm-modal-content";
+	RCMModal.modal = null;
+	
+	// Constructor
+	function RCMModal(pWikiInfo, pManager) {}
+	
+	// pData = { title:String, content:String, rcm_buttons:Array<{ value:String, event:String, callback:Event->Void, closeOnClick:Boolean=true }>, rcm_onModalShown:Void->Void, vars:Object }
+	// 'vars' is same as `wikia.ui.factory` modal.
+	RCMModal.showModal = function(pData) {
+		// Re-open modal so that it gets re-positioned based on new content size.
+		RCMModal.closeModal();
+		
+		// Prepare content for modal
+		var tModalDataOptions = { type: "default", vars: $.extend({
+			id: RCMModal.MODAL_ID,
+			title: pData.title,
+			content: '<div id="'+RCMModal.MODAL_CONTENT_ID+'">'+pData.content+'</div>', // style="max-height:'+(($(window).height() - 220) + "px")+';"
+			size: 'auto',
+			buttons: [],
+		}, pData.vars) };
+		var tModalData = tModalDataOptions.vars;
+		
+		tModalData.buttons.unshift({vars:{
+			value: i18n('flags-edit-modal-close-button-text'),
+			data: { key:"event", value:"close_button" },
+		}});
+		if(pData.rcm_buttons) {
+			pData.rcm_buttons.forEach(function(o, i, a){
+				tModalData.buttons.push({vars:{
+					value: o.value,
+					classes: [ 'normal', 'primary' ],
+					data: { key:"event", value:o.event },
+				}});
+			});
+		}
+		
+		createModalComponent(tModalDataOptions, function(modal) {
+			// cancel - user clicked 'Cancel'
+			modal.bind("close_button", function(e) { modal.trigger("close"); });
+			if(pData.rcm_buttons) {
+				pData.rcm_buttons.forEach(function(o, i, a){
+					if(o.event && o.callback) {
+						modal.bind(o.event, function(e){
+							o.callback(e);
+							if(o.closeOnClick !== false) { modal.trigger("close"); }
+						});
+					}
+				});
+			}
+			
+			// show modal
+			modal.show();
+			if(pData.rcm_onModalShown) {
+				// setTimeout(pData.rcm_onModalShown, 100);
+				pData.rcm_onModalShown();
+			}
+		});
+	}
+	
+	function createModalComponent(pData, pCallback) {
+		require(['wikia.ui.factory'], function(ui) {
+			ui.init(['modal']).then(function(modal) {
+				modal.createComponent(pData, function(obj){
+					RCMModal.modal = obj;
+					obj.bind("close", function(e) { RCMModal.modal = null; });
+					pCallback(obj);
+				});
+			});
+		});
+	}
+	
+	// Give same title and buttons as showModal()
+	RCMModal.showLoadingModal = function(pData) {
+		// While we are waiting for results, open diff window to acknowledge user's input
+		if (!RCMModal.isModalOpen()) {
+			pData.content = "<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>";
+			RCMModal.showModal(pData);
+		}
+	}
+
+	RCMModal.isModalOpen = function() {
+		return !!RCMModal.modal;
+	}
+
+	RCMModal.closeModal = function() {
+		if(RCMModal.isModalOpen()) {
+			RCMModal.modal.trigger("close");
+		}
+	}
+	
+	return RCMModal;
+
+})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
+//</syntaxhighlight>
+
+//<syntaxhighlight lang="javascript">
+	
+//######################################
 // #### Recent Change Data ####
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Utils, i18n){
+window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Utils, i18n, RCMModal){
 	"use strict";
 	
 	RCData.TYPE = Object.freeze({ NORMAL:"normalChange", LOG:"logChange", COMMENT:"commentType", WALL:"wallChange", BOARD:"boardChange", });
@@ -2815,22 +2963,17 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [];
 		tButtons.push({
-			defaultButton: true,
-			message: i18n('rcm-module-diff-open'),
-			handler: function () { window.open(pDiffLink, '_blank'); RCData.closeModal(); }
+			value: i18n('rcm-module-diff-open'),
+			event: "diff",
+			callback: function(){ window.open(pDiffLink, '_blank'); },
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
-				defaultButton: true,
-				message: i18n('rcm-module-diff-undo'),
-				handler: function () { window.open(pUndoLink, '_blank'); RCData.closeModal(); }
+				value: i18n('rcm-module-diff-undo'),
+				event: "undo",
+				callback: function(){ window.open(pUndoLink, '_blank'); },
 			});
 		}
-		tButtons.push({
-			defaultButton: false,
-			message: i18n('flags-edit-modal-close-button-text'),
-			handler: RCData.closeModal
-		});
 		
 		// Retrieve the diff table.
 		// TODO - error support?
@@ -2838,61 +2981,32 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			success: function(pData){
 				var tPage = pData.query.pages[pageID];
 				var tRevision = tPage.revisions[0];
-				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeModal();
 				
 				// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
 				// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
 				// 	tButtons.splice(tButtons.length-2, 0, {
-				// 		defaultButton: true,
-				// 		message: i18n('rollbacklink'),
-				// 		handler: function () { window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); RCData.closeModal(); }
+				// 		value: i18n('rollbacklink'),
+				// 		event: "rollback",
+				// 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
 				// 	});
 				// }
 				
-				var ajaxform = ''
-				+'<form method="" name="" class="WikiaForm">'
-					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">'
-						+"<table class='diff'>"
-							+"<colgroup>"
-								+"<col class='diff-marker'>"
-								+"<col class='diff-content'>"
-								+"<col class='diff-marker'>"
-								+"<col class='diff-content'>"
-							+"</colgroup>"
-							+tRevision.diff["*"]
-						+"</table>"
-					+'</div>'
-				+'</form>';
-				var tModule = $.showCustomModal(tTitle, ajaxform, {
-					id: 'rcm-diff-viewer',
-					width: 1000,
-					buttons: tButtons,
-					callbackBefore: function() {
-						/* Disable page scrolling */
-						if ($(document).height() > $(window).height()) {
-							$('html').addClass('rcm-noscroll');
-						}
-					},
-					onAfterClose: RCData.onModalClosed,
-				});
+				var tModalContent = ''
+				+"<div id='rcm-diff-view'>"
+				+"<table class='diff'>"
+					+"<colgroup>"
+						+"<col class='diff-marker'>"
+						+"<col class='diff-content'>"
+						+"<col class='diff-marker'>"
+						+"<col class='diff-content'>"
+					+"</colgroup>"
+					+tRevision.diff["*"]
+				+"</table>";
+				+"</div>";
+				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
 			},
 		});
-		
-		// While we are waiting for results, open diff window to acknowledge user's input
-		if ($('#rcm-DiffView').length == 0) {
-			var ajaxform = ''
-			+'<form method="" name="" class="WikiaForm">'
-				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
-					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
-				+'</div>'
-			+'</form>';
-			$.showCustomModal(tTitle, ajaxform, {
-				id: 'rcm-diff-viewer',
-				width: 1000,
-				buttons: tButtons
-			});
-		}
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
@@ -2906,13 +3020,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		
 		var tTitle = i18n("awc-metrics-images");
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-		var tButtons = [
-			{
-				defaultButton: false,
-				message: i18n('flags-edit-modal-close-button-text'),
-				handler: RCData.closeModal
-			}
-		];
+		var tButtons = [];
 		
 		var tGetGalleryItem = function (pPage) {
 			var tPage = pPage, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
@@ -2991,7 +3099,8 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		var tAddLoadMoreButton = function () {
 			if(tImagesInLog.length > 0) {
 				if(module.debug) { console.log("Over 50 images to display; Extra images must be loaded later."); }
-				var tModal = document.querySelector("#rcm-DiffView");
+				var tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
+				var tGallery = tModal.querySelector(".rcm-gallery");
 				var tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
 				var tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
 				
@@ -3004,7 +3113,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 						success: function(pData){
 							Utils.removeElement(tCont);
 							for(var key in pData.query.pages) {
-								tModal.innerHTML += tGetGalleryItem(pData.query.pages[key]);
+								tGallery.innerHTML += tGetGalleryItem(pData.query.pages[key]);
 							}
 							tAddLoadMoreButton();
 						},
@@ -3017,75 +3126,32 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		// TODO - error support?
 		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 			success: function(pData){
-				// Re-open modal so that it gets re-positioned based on new content size.
-				RCData.closeModal();
-				var ajaxform = ''
+				var tModalContent = ''
 				+'<style>'
-					+'#rcm-diff-viewer .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
-					+'#rcm-diff-viewer .wikia-gallery-item { width: '+size+'px; }'
-					// +'#rcm-diff-viewer .wikia-gallery-item .lightbox { width: '+size+'px; }'
-					+'#rcm-diff-viewer .thumb { height: '+size+'px; }'
-					+'.image-no-lightbox { width: '+size+'px; }'
+					+'.rcm-gallery .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
+					+'.rcm-gallery .wikia-gallery-item { width: '+size+'px; }'
+					// +'.rcm-gallery .wikia-gallery-item .lightbox { width: '+size+'px; }'
+					+'.rcm-gallery .thumb { height: '+size+'px; }'
+					+'.rcm-gallery .image-no-lightbox { width: '+size+'px; }'
 				+'</style>'
-				+'<div class="wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
-					+'<div id="rcm-DiffView"  style="max-height:'+(($(window).height() - 220) + "px")+';">';
+				+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
 					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
 					for(var key in pData.query.pages) {
-						ajaxform += tGetGalleryItem(pData.query.pages[key]);
+						tModalContent += tGetGalleryItem(pData.query.pages[key]);
 					}
-				ajaxform += ''
-					+'</div>'
+				tModalContent += ''
 				+'</div>';
 				
-				var tModule = $.showCustomModal(tTitle, ajaxform, {
-					id: 'rcm-diff-viewer',
-					width: 1000,
-					buttons: tButtons,
-					callbackBefore: function() {
-						/* Disable page scrolling */
-						if ($(document).height() > $(window).height()) {
-							$('html').addClass('rcm-noscroll');
-						}
-					},
-					onAfterClose: RCData.onModalClosed,
-				});
-				setTimeout(function(){ tAddLoadMoreButton(); }, 100);
+				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
+				// setTimeout(function(){ tAddLoadMoreButton(); }, 100);
 			},
 		});
-		
-		// While we are waiting for results, open diff window to acknowledge user's input
-		if ($('#rcm-DiffView').length == 0) {
-			var ajaxform = ''
-			+'<form method="" name="" class="WikiaForm">'
-				+'<div id="rcm-DiffView" style="max-height:'+(($(window).height() - 220) + "px")+';">'
-					+"<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>"
-				+'</div>'
-			+'</form>';
-			$.showCustomModal(tTitle, ajaxform, {
-				id: 'rcm-diff-viewer',
-				width: 1000,
-				buttons: tButtons
-			});
-		}
-	}
-	
-	RCData.isModalOpen = function() {
-		return $('#rcm-DiffView').length != 0;
-	}
-	
-	RCData.closeModal = function() {
-		if(RCData.isModalOpen()) {
-			$('#rcm-diff-viewer').closeModal();
-		}
-	}
-	
-	RCData.onModalClosed = function() {
-		$("html").removeClass("rcm-noscroll");
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	return RCData;
 	
-})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
+})(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n, window.dev.RecentChangesMultiple.RCMModal);
 //</syntaxhighlight>
 
 //<syntaxhighlight lang="javascript">
@@ -3423,6 +3489,14 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		;
 	};
 	
+	RCList.prototype._showFavicon = function() {
+		return this.manager.chosenWikis.length > 1;
+	}
+	
+	RCList.prototype._getBackgroundClass = function() {
+		return this._showFavicon() ? "rcm-tiled-favicon" : "";
+	}
+	
 	// An RC that is NOT part of a "block" of related changes (logs, edits to same page, etc)
 	RCList.prototype._toHTMLSingle = function(pRC) {
 		if(this.list.length > 1) { return this._toHTMLBlock(); }
@@ -3471,9 +3545,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
-		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
-		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
+		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow); }
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+'<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
 			+this._getFlags(pRC, "&nbsp;")
@@ -3541,10 +3615,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += this._contributorsCountText();
 		
 		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
-		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
-		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
+		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow); }
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
 				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
@@ -3619,7 +3693,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tRow = Utils.newElement("tr", { style:"display: none;" });
-		Utils.newElement("td", {}, tRow); // Blank spot for where favicon would be on a normal table
+		if(this._showFavicon()) { Utils.newElement("td", {}, tRow); } // Blank spot for where favicon would be on a normal table
 		Utils.newElement("td", {}, tRow); // Blank spot for where collapsing arrow would be on the table
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+this._getFlags(pRC, "&nbsp;")
@@ -3684,8 +3758,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
-		Utils.newElement("div", { className:'rcm-tiled-favicon' }, tLi);;
-		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true);
+		Utils.newElement("div", { className:this._getBackgroundClass() }, tLi);;
+		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true); }
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
@@ -3737,6 +3811,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.RCData, window.dev.RecentChangesMultiple.Utils, window.dev.RecentChangesMultiple.i18n);
 //</syntaxhighlight>
+
 //<syntaxhighlight lang="javascript">
 
 //######################################
@@ -3744,7 +3819,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 // * This is what actually parses a "rc-content-multiple" div, and loads the respective information.
 // * Uses RCList to actually format the RecentChanges info.
 //######################################
-window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module, RCData, RCList, WikiData, RCMOptions, RCMWikiPanel, Utils, i18n){
+window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module, RCData, RCList, WikiData, RCMOptions, RCMWikiPanel, Utils, i18n, RCMModal){
 	"use strict";
 
 	// Static Constants
@@ -3782,6 +3857,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxID					= 0;    // {int} A unique ID for all ajax data for a given "load" (used to prevent previously requested data from mixing with currently requested data after "Refresh" is hit after a script error)
 		this.autoRefreshTimeoutID	= null; // {int} ID for the auto refresh timeout.
 		this.autoRefreshEnabledDefault	= null; // {bool} Default value for auto refresh being enabled.
+		this.autoRefreshLocalStorageID = module.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
 		
 		this.recentChangesEntries	= null; // {array} Array of either RecentChange/RecentChangeList objects.
 		this.ajaxCallbacks			= null; // {array} Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
@@ -3915,19 +3991,26 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
-		this.totalWikisToLoad = 0;
-		Utils.forEach(this.chosenWikis, function(wikiInfo){
-			if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
-			self.totalWikisToLoad++;
-			self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
-		});
-		//this.totalWikisToLoad = this.chosenWikis.length;
-		this.wikisLeftToLoad = this.totalWikisToLoad;
-		this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		if(this.chosenWikis.length > 0) {
+			this.totalWikisToLoad = 0;
+			Utils.forEach(this.chosenWikis, function(wikiInfo){
+				if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
+				self.totalWikisToLoad++;
+				self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * module.loadDelay);
+			});
+			//this.totalWikisToLoad = this.chosenWikis.length;
+			this.wikisLeftToLoad = this.totalWikisToLoad;
+			this.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		} else {
+			Utils.removeElement(this.statusNode);
+			Utils.removeElement(this.wikisNode.root);
+			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n("wikiacuratedcontent-content-empty-section")+"</div>";
+		}
 	};
 	
 	/* pUpdateParams : Bool - optional (default: false) */
 	RCMManager.prototype.refresh = function(pUpdateParams) {
+		if(this.chosenWikis.length == 0) { return; }
 		this.statusNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
 		this.wikisNode.clear();
@@ -3942,7 +4025,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
-		RCData.closeModal();
+		RCMModal.closeModal();
 		
 		this._start(pUpdateParams);
 	};
@@ -4142,7 +4225,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 						}
 					} else { break; }
 				}
-				module.addNotification("RCM: "+i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename );
+				module.addNotification(i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename, { body:this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.author });
 			}
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
@@ -4219,7 +4302,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		
 		var self = this;
 		this.autoRefreshTimeoutID = setTimeout(function(){
-			if(RCData.isModalOpen()) { self.startAutoRefresh(); return; }
+			if(RCMModal.isModalOpen()) { self.startAutoRefresh(); return; }
 			self.refresh();
 		}, this.autoRefreshTimeoutNum);
 	};
@@ -4267,22 +4350,22 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		var autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
 		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n('rcm-autorefresh'), title:i18n('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		var checkBox = Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
-		checkBox.checked = (localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true" || this.autoRefreshEnabledDefault);
+		checkBox.checked = this.isAutoRefreshEnabled();
 		
 		checkBox.addEventListener("click", function tHandler(e){
 			if(document.querySelector(self.modID+" .rcm-autoRefresh-checkbox").checked) {
-				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, true);
+				localStorage.setItem(self.autoRefreshLocalStorageID, true);
 				self.refresh();
 				Notification.requestPermission();
 			} else {
-				localStorage.setItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID, false);
+				localStorage.setItem(self.autoRefreshLocalStorageID, false);
 				clearTimeout(self.autoRefreshTimeoutID);
 			}
 		});
 	};
 	
 	RCMManager.prototype.isAutoRefreshEnabled = function() {
-		return localStorage.getItem(module.AUTO_REFRESH_LOCAL_STORAGE_ID) == "true";
+		return localStorage.getItem(this.autoRefreshLocalStorageID) == "true" || this.autoRefreshEnabledDefault;
 	}
 	
 	RCMManager.prototype.calcLoadPercent = function() {
@@ -4354,6 +4437,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	, window.dev.RecentChangesMultiple.RCMWikiPanel
 	, window.dev.RecentChangesMultiple.Utils
 	, window.dev.RecentChangesMultiple.i18n
+	, window.dev.RecentChangesMultiple.RCMModal
 );
 //</syntaxhighlight>
 
@@ -4375,8 +4459,8 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Storage
-	module.version = "1.2.9";
-	module.lastVersionDateString = "Thu Oct 13 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
+	module.version = "1.2.9c";
+	module.lastVersionDateString = "Thu Oct 15 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	module.debug = module.debug != undefined ? module.debug : false;
 	
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");

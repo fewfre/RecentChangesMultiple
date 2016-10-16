@@ -333,6 +333,14 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		;
 	};
 	
+	RCList.prototype._showFavicon = function() {
+		return this.manager.chosenWikis.length > 1;
+	}
+	
+	RCList.prototype._getBackgroundClass = function() {
+		return this._showFavicon() ? "rcm-tiled-favicon" : "";
+	}
+	
 	// An RC that is NOT part of a "block" of related changes (logs, edits to same page, etc)
 	RCList.prototype._toHTMLSingle = function(pRC) {
 		if(this.list.length > 1) { return this._toHTMLBlock(); }
@@ -381,9 +389,9 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
-		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
-		Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow);
+		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow); }
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+'<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
 			+this._getFlags(pRC, "&nbsp;")
@@ -451,10 +459,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		html += this._contributorsCountText();
 		
 		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
-		Utils.newElement("caption", { className:"rcm-tiled-favicon" }, tTable); // Needed for CSS background.
+		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
-		Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
+		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow); }
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
 				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
@@ -529,7 +537,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tRow = Utils.newElement("tr", { style:"display: none;" });
-		Utils.newElement("td", {}, tRow); // Blank spot for where favicon would be on a normal table
+		if(this._showFavicon()) { Utils.newElement("td", {}, tRow); } // Blank spot for where favicon would be on a normal table
 		Utils.newElement("td", {}, tRow); // Blank spot for where collapsing arrow would be on the table
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+this._getFlags(pRC, "&nbsp;")
@@ -594,8 +602,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		}
 		
 		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
-		Utils.newElement("div", { className:'rcm-tiled-favicon' }, tLi);;
-		tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true);
+		Utils.newElement("div", { className:this._getBackgroundClass() }, tLi);;
+		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true); }
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);

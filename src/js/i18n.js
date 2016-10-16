@@ -9,7 +9,7 @@
  * 			 Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
  * 			 POTENTIAL ISSUES:
  * 			 	* Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
-  * mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+  * mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
  */
 window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 	"use strict";
@@ -803,6 +803,47 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 				"fallbackLanguages": ["en"]
 			},
 		},
+		vi: { // Vietnamese @author: Dai ca superman
+			'rcm-error-linkformat' : "'$1' không đúng định dạng. Xin đừng '''thêm''' 'http://' hay bất cứ ký tự gì trước tên miền trang, bao gồm dấu gạch chéo '/'.",
+			'rcm-error-loading-syntaxhang' : "Lỗi tải [$1] ($2 lần thử). Hãy sửa lại đúng cú pháp (hoặc làm mới lại trang để thử lại.).",
+			'rcm-error-loading-connection' : "Lỗi tải [$1] ($2 lần thử). Khả năng lớn đây là lỗi kết nối; làm mới lại trang để thử lại.",
+			'rcm-error-trymoretimes' : "Thử thêm $1 lần nữa",
+
+			'rcm-loading' : "Đang Tải/Đang Sắp Xếp...",
+			'rcm-refresh' : "Làm mới",
+			'rcm-download-timestamp' : "Thay Đổi Gần Đây đã được tải vào: $1",
+			'rcm-download-changesadded' : " - [$1 Thay Đổi Gần Đây đã được thêm vào]",
+
+			'rcm-wikisloaded' : "Các Wiki đã tải: ",
+			'rcm-previouslyloaded' : "Đã tải trước đó:",
+			'rcm-nonewchanges' : "Không có thay đổi nào mới",
+			'rcm-autorefresh' : "Tự Động Làm Mới",
+			'rcm-autorefresh-tooltip' : "Tự động làm mới trang Thay Đổi Gần Đây sau mỗi $1 giây",
+			'rcm-footer' : "Phiên bản $1 bởi $2",
+
+			'rcm-optionspanel-hideusersoverride': "data-hideusers đã loại trừ điều này.",
+			'rcm-optionspanel-savewithcookie': "Lưu lại thiết đặt bằng cookie",
+
+			'rcm-module-diff-title' : "Trình Xem Thay Đổi",
+			'rcm-module-diff-open' : "Mở xem khác",
+			'rcm-module-diff-undo' : "Lùi sửa",
+
+			'rcm-unknownthreadname' : "luồng",
+			/***************************
+			 * mediawiki.language.data
+			 ***************************/
+			mwLanguageData: {
+				"digitTransformTable": null ,
+				"separatorTransformTable": {
+					",": ".",
+					".": ","
+				},
+				"grammarForms": [],
+				"pluralRules": ["i = 1 and v = 0 @integer 1"],
+				"digitGroupingPattern": null ,
+				"fallbackLanguages": ["en"]
+			},
+		},
 		zh: { // 中文 (CHINESE) @author: TsukiYaksha
 
 			'rcm-error-linkformat' : "「$1」为错误格式。请'''不要'''在网域后加入「http://」或任何文字，包括第一个「/」字符。",
@@ -955,6 +996,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'flags-edit-modal-close-button-text' : 'Close',
 		'awc-metrics-images' : 'Images',
 		'wikifeatures-promotion-new' : 'New',
+		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
 
 		/***************************
 		 * Log Names - wgLogHeaders

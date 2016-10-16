@@ -1,3 +1,14 @@
+== V1.2.9c - 15 October 2016 ==
+- lang: vi @author: Dai ca superman
+- Fixed small localization bug. I assumed all `rclinks` localizations had br tag. Ones that do not (oc, vi) show an unhandled "$3" string variable.
+- [Bug] Fixed the cookie for "auto refresh" being used for all RCMs on the page. Note: This fix will cause current auto-refresh cookies to no longer work.
+- Notifications now include editor's name
+- Modal rework - now has it's own class (RCMModal) and updated to use wikia.ui.factory method of modals. Modals are now also mobile-friendly.
+- RCMs with no wikis in the list no longer pretend to keep loading (no reason to ever be empty though).
+- If only 1 item is on the list, the background and icon on each item line is removed. The wiki panel at top of script is plenty of information in this case.
+- Project now uses Less-css (during compile-time)
+
+
 == V1.2.9b - 13 October 2016 ==
 - Notification icon added
 - Bug fix for auto-refresh time stamp.

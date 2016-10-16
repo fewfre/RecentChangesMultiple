@@ -16,8 +16,8 @@
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Storage
-	module.version = "1.2.9b";
-	module.lastVersionDateString = "Thu Oct 13 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
+	module.version = "1.2.9c";
+	module.lastVersionDateString = "Thu Oct 15 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	module.debug = module.debug != undefined ? module.debug : false;
 	
 	module.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
