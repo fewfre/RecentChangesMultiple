@@ -1557,6 +1557,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'prefs-files' : 'Files',
 		'awc-metrics-articles' : 'Articles',
 		'awc-metrics-edits' : 'Edits',
+		// Other
 		'filedelete-success' : "'''$1''' has been deleted.",
 		'shared_help_was_redirect' : 'This page is a redirect to $1',
 		'specialvideos-btn-load-more' : 'Load More',
@@ -1566,6 +1567,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
 		'myhome-feed-edited-by' : 'edited by $1',
 		'edit-summary' : 'Edit summary',
+		'revisionasof' : 'Revision as of $1',
 		
 		/***************************
 		 * Log Names - wgLogHeaders
@@ -2340,12 +2342,17 @@ window.dev.RecentChangesMultiple.RCMModal = (function($, document, mw, module, U
 	}
 	
 	// Give same title and buttons as showModal()
-	RCMModal.showLoadingModal = function(pData) {
+	RCMModal.showLoadingModal = function(pData, pOnModalShown) {
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if (!RCMModal.isModalOpen()) {
 			pData.content = "<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>";
+			pData.rcm_onModalShown = pOnModalShown;
 			RCMModal.showModal(pData);
 		}
+	}
+	
+	RCMModal.setModalContent = function(pHTML) {
+		document.querySelector("#"+RCMModal.MODAL_CONTENT_ID).innerHTML = pHTML;
 	}
 
 	RCMModal.isModalOpen = function() {
@@ -2458,12 +2465,13 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		this.logaction = pData.logaction;
 		this.newlen = pData.newlen;
 		this.oldlen = pData.oldlen;
-		if(pData.commenthidden != "") {
-			this.summary = pData.parsedcomment; // De-wikified.
-			this.summary = this.summary.replace("<a href=\"/", "<a href=\""+this.wikiInfo.server+"/"); // Make links point to correct wiki.
-		} else {
-			this.summary = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
-		}
+		// if(pData.commenthidden != "") {
+		// 	this.summary = pData.parsedcomment; // De-wikified.
+		// 	this.summary = this.summary.replace("<a href=\"/", "<a href=\""+this.wikiInfo.server+"/"); // Make links point to correct wiki.
+		// } else {
+		// 	this.summary = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
+		// }
+		this.summary = RCData.formatParsedComment(pData.parsedcomment, pData.commenthidden == "", this.wikiInfo);
 		
 		this.pageid = pData.pageid;
 		this.revid = pData.revid;
@@ -2690,13 +2698,26 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	};
 	
 	RCData.prototype.userDetails = function() {
-		if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
+		// if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
+		//
+		// var blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		// if(this.userEdited) {
+		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+		// } else {
+		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+		// }
+		return RCData.formatUserDetails(this.wikiInfo, this.author, this.userhidden, this.userEdited);
+	}
+	
+	// pData = { userhidden:Bool, userEdited:Bool }
+	RCData.formatUserDetails = function(pWikiInfo, pAuthor, pUserHidden, pUserEdited) {
+		if(pUserHidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		var blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
-		if(this.userEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+		var blockText = pWikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		if(pUserEdited) {
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
 		} else {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
 		}
 	}
 	
@@ -2728,14 +2749,46 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		return this.threadTitle ? this.threadTitle :  "<i>"+i18n('rcm-unknownthreadname')+"</i>";
 	}
 	
-	RCData.prototype.getSummary = function(pSummary) {
-		if(this.summary == "" || this.summary == undefined) {
+	RCData.prototype.getSummary = function() {
+		// if(this.summary == "" || this.summary == undefined) {
+		// 	return "";
+		// } else {
+		// 	this.summary = this.summary.trim();
+		// 	this.summary = this.summary.replace(/(\r\n|\n|\r)/gm, " ");
+		// 	return ' <span class="comment" dir="auto">('+this.summary+')</span>';
+		// }
+		return RCData.formatSummary(this.summary);
+	}
+	
+	RCData.formatSummary = function(pSummary) {
+		// if(this.summary == "" || this.summary == undefined) {
+		// 	return "";
+		// } else {
+		// 	this.summary = this.summary.trim();
+		// 	this.summary = this.summary.replace(/(\r\n|\n|\r)/gm, " ");
+		// 	return ' <span class="comment" dir="auto">('+this.summary+')</span>';
+		// }
+		if(pSummary == "" || pSummary == undefined) {
 			return "";
 		} else {
-			this.summary = this.summary.trim();
-			this.summary = this.summary.replace(/(\r\n|\n|\r)/gm, " ");
-			return ' <span class="comment" dir="auto">('+this.summary+')</span>';
+			return ' <span class="comment" dir="auto">('+pSummary+')</span>';
 		}
+	}
+	
+	RCData.formatParsedComment = function(pParsedComment, pDeleted, pWikiInfo) {
+		if(!pDeleted) {
+			pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+		} else {
+			pParsedComment = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
+		}
+		
+		if(pParsedComment == "" || pParsedComment == undefined) {
+			// pParsedComment = "";
+		} else {
+			pParsedComment = pParsedComment.trim();
+			pParsedComment = pParsedComment.replace(/(\r\n|\n|\r)/gm, " ");
+		}
+		return pParsedComment;
 	}
 	
 	// Returns text explaining what the log did. Also returns user details (since it's a part of some of their wiki text).
@@ -2963,18 +3016,29 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	}
 	
 	RCData.prototype.getLogTimeStamp = function(pDate) {
+		// return ""
+		// 	+ 			Utils.pad( Utils.getHours(pDate, this.manager.timezone), 2 )
+		// 	+ ":" +		Utils.pad( Utils.getMinutes(pDate, this.manager.timezone), 2 )
+		// 	+ ", " +	Utils.pad( Utils.getDate(pDate, this.manager.timezone), 2 )
+		// 	+ " " +		mw.config.get('wgMonthNames')[Utils.getMonth(pDate, this.manager.timezone)+1]
+		// 	+ " " +		Utils.getYear(pDate, this.manager.timezone)
+		// ;
+		return RCData.getFullTimeStamp(pDate, this.manager.timezone);
+	}
+	
+	RCData.getFullTimeStamp = function(pDate, pTimezone) {
 		return ""
-			+ 			Utils.pad( Utils.getHours(pDate, this.manager.timezone), 2 )
-			+ ":" +		Utils.pad( Utils.getMinutes(pDate, this.manager.timezone), 2 )
-			+ ", " +	Utils.pad( Utils.getDate(pDate, this.manager.timezone), 2 )
-			+ " " +		mw.config.get('wgMonthNames')[Utils.getMonth(pDate, this.manager.timezone)+1]
-			+ " " +		Utils.getYear(pDate, this.manager.timezone)
+			+ 			Utils.pad( Utils.getHours(pDate, pTimezone), 2 )
+			+ ":" +		Utils.pad( Utils.getMinutes(pDate, pTimezone), 2 )
+			+ ", " +	Utils.pad( Utils.getDate(pDate, pTimezone), 2 )
+			+ " " +		mw.config.get('wgMonthNames')[Utils.getMonth(pDate, pTimezone)+1]
+			+ " " +		Utils.getYear(pDate, pTimezone)
 		;
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
 	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
-	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink) {
+	RCData.previewDiff = function(pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink, pDiffTableInfo) {
 		if(module.debug) { console.log("http:"+pAjaxUrl); console.log(pDiffLink); console.log(pUndoLink); }
 		
 		var tTitle = pPageName+" - "+i18n('rcm-module-diff-title');
@@ -2993,38 +3057,57 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			});
 		}
 		
-		// Retrieve the diff table.
-		// TODO - error support?
-		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
-			success: function(pData){
-				var tPage = pData.query.pages[pageID];
-				var tRevision = tPage.revisions[0];
-				
-				// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
-				// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
-				// 	tButtons.splice(tButtons.length-2, 0, {
-				// 		value: i18n('rollbacklink'),
-				// 		event: "rollback",
-				// 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
-				// 	});
-				// }
-				
-				var tModalContent = ''
-				+"<div id='rcm-diff-view'>"
-				+"<table class='diff'>"
-					+"<colgroup>"
-						+"<col class='diff-marker'>"
-						+"<col class='diff-content'>"
-						+"<col class='diff-marker'>"
-						+"<col class='diff-content'>"
-					+"</colgroup>"
-					+tRevision.diff["*"]
-				+"</table>";
-				+"</div>";
-				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
-			},
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
+			// Retrieve the diff table.
+			// TODO - error support?
+			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+				success: function(pData){
+					var tPage = pData.query.pages[pageID];
+					var tRevision = tPage.revisions[0];
+					
+					// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
+					// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
+					// 	tButtons.splice(tButtons.length-2, 0, {
+					// 		value: i18n('rollbacklink'),
+					// 		event: "rollback",
+					// 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
+					// 	});
+					// }
+					
+					// TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message
+					var tModalContent = ''
+					+"<div id='rcm-diff-view'>"
+					+"<table class='diff'>"
+						+"<colgroup>"
+							+"<col class='diff-marker'>"
+							+"<col class='diff-content'>"
+							+"<col class='diff-marker'>"
+							+"<col class='diff-content'>"
+						+"</colgroup>"
+						+"<tbody>"
+							+"<tr class='diff-header' valign='top'>"
+								+"<td class='diff-otitle' colspan='2'>"
+									+"<div class='mw-diff-otitle1'><strong>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone))+"</strong></div>"
+									+"<div class='mw-diff-otitle2'>"+RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>"
+									+"<div class='mw-diff-otitle3'>"+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>"
+									// +"<div class='mw-diff-otitle4'></div>"
+								+"</td>"
+								+"<td class='diff-ntitle' colspan='2'>"
+									+"<div class='mw-diff-ntitle2'><strong>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.new.date, pDiffTableInfo.wikiInfo.manager.timezone))+"</strong></div>"
+									+"<div class='mw-diff-ntitle1'>"+pDiffTableInfo.new.user+"</div>"
+									+"<div class='mw-diff-ntitle3'>"+pDiffTableInfo.new.summary+"</div>"
+									// +"<div class='mw-diff-ntitle4'></div>"
+								+"</td>"
+							+"</tr>"
+							+tRevision.diff["*"]
+						+"</tbody>"
+					+"</table>";
+					+"</div>";
+					// RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
+					RCMModal.setModalContent(tModalContent);
+				},
+			});
 		});
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
@@ -3140,31 +3223,33 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 			}
 		}
 		
-		// Retrieve the diff table.
-		// TODO - error support?
-		$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
-			success: function(pData){
-				var tModalContent = ''
-				+'<style>'
-					+'.rcm-gallery .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
-					+'.rcm-gallery .wikia-gallery-item { width: '+size+'px; }'
-					// +'.rcm-gallery .wikia-gallery-item .lightbox { width: '+size+'px; }'
-					+'.rcm-gallery .thumb { height: '+size+'px; }'
-					+'.rcm-gallery .image-no-lightbox { width: '+size+'px; }'
-				+'</style>'
-				+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
-					var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
-					for(var key in pData.query.pages) {
-						tModalContent += tGetGalleryItem(pData.query.pages[key]);
-					}
-				tModalContent += ''
-				+'</div>';
-				
-				RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
-				// setTimeout(function(){ tAddLoadMoreButton(); }, 100);
-			},
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
+			// Retrieve the diff table.
+			// TODO - error support?
+			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
+				success: function(pData){
+					var tModalContent = ''
+					+'<style>'
+						+'.rcm-gallery .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
+						+'.rcm-gallery .wikia-gallery-item { width: '+size+'px; }'
+						// +'.rcm-gallery .wikia-gallery-item .lightbox { width: '+size+'px; }'
+						+'.rcm-gallery .thumb { height: '+size+'px; }'
+						+'.rcm-gallery .image-no-lightbox { width: '+size+'px; }'
+					+'</style>'
+					+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
+						var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
+						for(var key in pData.query.pages) {
+							tModalContent += tGetGalleryItem(pData.query.pages[key]);
+						}
+					tModalContent += ''
+					+'</div>';
+					
+					// RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
+					RCMModal.setModalContent(tModalContent);
+					tAddLoadMoreButton();
+				},
+			});
 		});
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons });
 	}
 	
 	return RCData;
@@ -3410,7 +3495,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// Initializing here since "rc" may be nulled by the time the event is triggered.
 			var pageName = pFromRC.title;
 			var pageID = pFromRC.pageid;
-			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions|info&rvprop=size&rvdiffto="+pToRC.revid+"&revids="+pFromRC.old_revid;
+			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp&rvdiffto="+pToRC.revid+"&revids="+pFromRC.old_revid;
 			var diffLink = Utils.formatString( "{0}curid={1}&diff={2}&oldid={3}", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			var undoLink = Utils.formatString( "{0}curid={1}&undo={2}&undoafter={3}&action=edit", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			// var rollbackLink = null;
@@ -3419,10 +3504,14 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// 	// Token provided upon results returned from ajaxLink.
 			// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
 			// }
+			var diffTableInfo = {
+				wikiInfo: pFromRC.wikiInfo,
+				new:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date },
+			};
 			
 			var tRCM_previewdiff = function(e) {
 				e.preventDefault();
-				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
+				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
 			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
@@ -4551,7 +4640,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Storage
-	module.version = "1.2.9d";
+	module.version = "1.2.9e";
 	module.lastVersionDateString = "Thu Oct 15 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	module.debug = module.debug != undefined ? module.debug : false;
 	

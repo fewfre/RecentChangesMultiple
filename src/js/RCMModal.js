@@ -80,12 +80,17 @@ window.dev.RecentChangesMultiple.RCMModal = (function($, document, mw, module, U
 	}
 	
 	// Give same title and buttons as showModal()
-	RCMModal.showLoadingModal = function(pData) {
+	RCMModal.showLoadingModal = function(pData, pOnModalShown) {
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if (!RCMModal.isModalOpen()) {
 			pData.content = "<div style='text-align:center; padding:10px;'><img src='"+module.LOADER_IMG+"'></div>";
+			pData.rcm_onModalShown = pOnModalShown;
 			RCMModal.showModal(pData);
 		}
+	}
+	
+	RCMModal.setModalContent = function(pHTML) {
+		document.querySelector("#"+RCMModal.MODAL_CONTENT_ID).innerHTML = pHTML;
 	}
 
 	RCMModal.isModalOpen = function() {

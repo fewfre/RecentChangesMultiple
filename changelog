@@ -1,3 +1,9 @@
+== V1.2.9e - 17 October 2016 ==
+- [Bug] Trying to view same diff twice would cause diff to never load.
+- Ajax diff now shows revision timestamp, user, and commit summary.
+- Increased modal font-size a bit.
+
+
 == V1.2.9d - 16 October 2016 ==
 - Added 3 new options for notifications as per request: data-notifications-hideusers=, &notifications_hideusers, &notifications_enabled. These control when notifications are sent out.
 - As per request, added a data-ajaxlinks= option. This will make the diff/upload log links behave same as icon when clicked.

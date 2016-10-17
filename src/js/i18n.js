@@ -990,6 +990,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'prefs-files' : 'Files',
 		'awc-metrics-articles' : 'Articles',
 		'awc-metrics-edits' : 'Edits',
+		// Other
 		'filedelete-success' : "'''$1''' has been deleted.",
 		'shared_help_was_redirect' : 'This page is a redirect to $1',
 		'specialvideos-btn-load-more' : 'Load More',
@@ -999,6 +1000,7 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
 		'myhome-feed-edited-by' : 'edited by $1',
 		'edit-summary' : 'Edit summary',
+		'revisionasof' : 'Revision as of $1',
 		
 		/***************************
 		 * Log Names - wgLogHeaders

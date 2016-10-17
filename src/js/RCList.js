@@ -236,7 +236,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// Initializing here since "rc" may be nulled by the time the event is triggered.
 			var pageName = pFromRC.title;
 			var pageID = pFromRC.pageid;
-			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions|info&rvprop=size&rvdiffto="+pToRC.revid+"&revids="+pFromRC.old_revid;
+			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp&rvdiffto="+pToRC.revid+"&revids="+pFromRC.old_revid;
 			var diffLink = Utils.formatString( "{0}curid={1}&diff={2}&oldid={3}", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			var undoLink = Utils.formatString( "{0}curid={1}&undo={2}&undoafter={3}&action=edit", pFromRC.hrefFS , pFromRC.pageid , pToRC.revid , pFromRC.old_revid );
 			// var rollbackLink = null;
@@ -245,10 +245,14 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// 	// Token provided upon results returned from ajaxLink.
 			// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
 			// }
+			var diffTableInfo = {
+				wikiInfo: pFromRC.wikiInfo,
+				new:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date },
+			};
 			
 			var tRCM_previewdiff = function(e) {
 				e.preventDefault();
-				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
+				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
 			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });

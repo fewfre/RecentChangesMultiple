@@ -8,7 +8,7 @@
 * Doesn't work in tabview. Add a delay check, or look for the container being added.
 * [idea] get rid of "wikiInfo" data, and instead have "wikiID" which access a dictionary on the RCMManager. Less memory leak?
 * Implement http://dev.wikia.com/wiki/Discussions_Feed
-* modify ajax diff to have date / editor. Add preview button (like AjaxDiff).
+* Add preview button (like AjaxDiff).
 
 
 ############################################
