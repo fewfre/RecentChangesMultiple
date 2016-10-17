@@ -441,7 +441,6 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				// Skip if user is hidden for whole script or specific wiki
 				var tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
 				if(!tDontNotify) {
-					module.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"!");
 					var tNumNewChanges = 0, tNumNewChangesWiki = 0;
 					for(var i = 0; i < this.recentChangesEntries.length; i++) {
 						if(this.recentChangesEntries[i].date > this.lastLoadDateTime) {
@@ -453,6 +452,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 							}
 						} else { break; }
 					}
+					module.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"! "+i18n("nchanges", tNumNewChanges));
 					var tEditSummary = !tMostRecentEntry.summary ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.summary;
 					module.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " ("+i18n("nchanges", tNumNewChangesWiki)+")" : ""), {
 						body:tMostRecentEntry.title+"\n"+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary

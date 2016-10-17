@@ -2,6 +2,7 @@
 - [Bug] Trying to view same diff twice would cause diff to never load.
 - Ajax diff now shows revision timestamp, user, and commit summary.
 - Increased modal font-size a bit.
+- Flashing "New" page title now also includes number of changes.
 
 
 == V1.2.9d - 16 October 2016 ==
