@@ -432,12 +432,10 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		
 		// console.log(this.recentChangesEntries);
-		console.log(this.recentChangesEntries[0].date , this.lastLoadDateTime);
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
 		else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
-			console.log(this.recentChangesEntries[0].date , this.lastLoadDateTimeActual);
 			if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
 				var tMostRecentEntry = this.recentChangesEntries[0].newest;
 				// Skip if user is hidden for whole script or specific wiki

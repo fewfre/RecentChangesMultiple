@@ -1,7 +1,7 @@
-== V1.2.9d - 16 OCtober 2016 ==
-- Added 3 new options for nitifcations as per request: data-notifications-hideusers=, &notifications_hideusers, &notifications_enabled. These control when notifications are sent out.
+== V1.2.9d - 16 October 2016 ==
+- Added 3 new options for notifications as per request: data-notifications-hideusers=, &notifications_hideusers, &notifications_enabled. These control when notifications are sent out.
 - As per request, added a data-ajaxlinks= option. This will make the diff/upload log links behave same as icon when clicked.
-- Notification now include edit summary, and have page title / editor / summary on seperate lines. Notifications now also say number of changes for last edited wiki as well as total.
+- Notification now include edit summary, and have page title / editor / summary on separate lines. Notifications now also say number of changes for last edited wiki as well as total.
 
 
 == V1.2.9c - 15 October 2016 ==
@@ -32,7 +32,7 @@
 
 == V1.2.8 - 7 September 2016 ==
 - lang update: it
-- Error catching added for system message retreval. (Thanks Kopcap94)
+- Error catching added for system message retrieval. (Thanks Kopcap94)
 - "data-localSystemMessages" feature added for restricted wiki language support.
 
 
