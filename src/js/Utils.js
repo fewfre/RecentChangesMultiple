@@ -20,9 +20,9 @@
 		// http://stackoverflow.com/a/4673436/1411473
 		formatString: function(format) {
 			var args = Array.prototype.slice.call(arguments, 1);
-			return format.replace(/{(\d+)}/g, function(match, number) { 
+			return format.replace(/{(\d+)}/g, function(match, number) {
 				return typeof args[number] != 'undefined'
-					? args[number] 
+					? args[number]
 					: match
 				;
 			});
@@ -97,6 +97,9 @@
 		escapeCharactersLink: function(pString) {
 			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
 		},
+		
+		// UpperCaseFirstLetter
+		ucfirst: function(s) { return s && s[0].toUpperCase() + s.slice(1); },
 		
 		// Assumes the file has already been checked to be in namespace 6
 		isFileAudio: function(pTitle) {

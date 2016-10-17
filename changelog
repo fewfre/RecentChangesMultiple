@@ -1,3 +1,9 @@
+== V1.2.9d - 16 OCtober 2016 ==
+- Added 3 new options for nitifcations as per request: data-notifications-hideusers=, &notifications_hideusers, &notifications_enabled. These control when notifications are sent out.
+- As per request, added a data-ajaxlinks= option. This will make the diff/upload log links behave same as icon when clicked.
+- Notification now include edit summary, and have page title / editor / summary on seperate lines. Notifications now also say number of changes for last edited wiki as well as total.
+
+
 == V1.2.9c - 15 October 2016 ==
 - lang: vi @author: Dai ca superman
 - Fixed small localization bug. I assumed all `rclinks` localizations had br tag. Ones that do not (oc, vi) show an unhandled "$3" string variable.

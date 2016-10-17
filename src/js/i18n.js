@@ -997,7 +997,9 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'awc-metrics-images' : 'Images',
 		'wikifeatures-promotion-new' : 'New',
 		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
-
+		'myhome-feed-edited-by' : 'edited by $1',
+		'edit-summary' : 'Edit summary',
+		
 		/***************************
 		 * Log Names - wgLogHeaders
 		 ***************************/

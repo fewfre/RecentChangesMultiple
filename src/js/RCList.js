@@ -87,12 +87,12 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype._diffHist = function(pRC) {
 		var diffLink = i18n('diff');
 		if(pRC.isNewPage == false) {
-			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
+			diffLink = "<a class='rc-diff-link' href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
 		}
 		if(this.type == RCData.TYPE.NORMAL && pRC.namespace == 6) {
 			diffLink += this.getAjaxImageButton();
 		}
-		return "("+diffLink+i18n("pipe-separator")+"<a href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
+		return "("+diffLink+i18n("pipe-separator")+"<a class='rc-hist-link' href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
 	};
 	
 	// Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
@@ -138,7 +138,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype._changesText = function() {
 		var returnText = i18n("nchanges", this.list.length);
 		if(this.type == RCData.TYPE.NORMAL && this.oldest.isNewPage == false) {
-			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
+			returnText = "<a class='rc-changes-link' href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
+		}
+		if(this.type == RCData.TYPE.NORMAL && this.newest.namespace == 6) {
+			returnText += this.getAjaxImageButton();
 		}
 		return returnText;
 	};
@@ -243,7 +246,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
 			// }
 			
-			var tRCM_previewdiff = function() {
+			var tRCM_previewdiff = function(e) {
+				e.preventDefault();
 				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
@@ -269,7 +273,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
 			var articlepath = this.wikiInfo.articlepath;
 			
-			var tRCM_previewdiff = function() {
+			var tRCM_previewdiff = function(e) {
+				e.preventDefault();
 				RCData.previewImages(ajaxLink, tImageNames, articlepath);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
@@ -403,6 +408,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link"), pRC);
+			if(tTable.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tTable.querySelector(".rc-log-link"), pRC);
+				this.addPreviewImageListener(tTable.querySelector(".rc-pagetitle"), pRC);
+			}
+		}
 		
 		return tTable;
 	};
@@ -430,7 +442,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 				break;
 			}
 			case RCData.TYPE.NORMAL: {
-				html += "<a href='"+this.newest.href+"'>"+this.newest.title+"</a>";
+				html += "<a class='rc-pagetitle' href='"+this.newest.href+"'>"+this.newest.title+"</a>";
 				html += " ("+this._changesText()+i18n("pipe-separator")+"<a href='"+this.newest.hrefFS+"action=history'>"+i18n("hist")+"</a>)";
 				html += SEP
 				html += this._diffSizeText(this.newest, this.oldest);
@@ -481,6 +493,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link, .rc-changes-link"), this.oldest, this.newest);
+			if(tTable.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tTable.querySelector(".rc-log-link"), this.list);
+				this.addPreviewImageListener(tTable.querySelector(".rc-pagetitle"), this.list);
+			}
+		}
 		
 		return tTable;
 	};
@@ -547,6 +566,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) { this.addPreviewDiffListener(tRow.querySelector(".rc-diff-link"), pRC); }
 		
 		return tRow;
 	};
@@ -608,6 +628,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tLi.querySelector(".rc-diff-link"), pRC);
+			if(tLi.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tLi.querySelector(".rc-log-link"), pRC);
+				this.addPreviewImageListener(tLi.querySelector(".rc-pagetitle"), pRC);
+			}
+		}
 		
 		return tLi;
 	};

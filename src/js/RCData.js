@@ -336,7 +336,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	}
 	
 	RCData.prototype.logTitleText = function() {
-		var logTemplate = "(<a href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
+		var logTemplate = "(<a class='rc-log-link' href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
 		switch(this.logtype) {
 			case "abusefilter"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("abusefilter-log")); }
 			case "block"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("blocklogpage")); }
@@ -564,7 +564,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		if(this.type == RCData.TYPE.COMMENT) {
 			return i18n("article-comments-rc-comment", this.href, this.titleNoNS);
 		} else {
-			return Utils.formatString("<a href='{0}'>{1}</a>", this.href, this.title);
+			return Utils.formatString("<a class='rc-pagetitle' href='{0}'>{1}</a>", this.href, this.title);
 		}
 	}
 	

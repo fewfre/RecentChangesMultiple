@@ -27,6 +27,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		this.hideusers			= null; // {array<string>} These users are to have their RCs hidden for only this wiki.
 		this.onlyshowusers		= null; // {array<string>} These users are to have ONLY their RCs shown for this wiki.
+		this.notificationsHideusers= null; // {array<string>} Don't send notifications when these users edit.
+		this.notificationsEnabled= true; // {bool} Don't send notifications for this wiki.
 		this.favicon			= null; // {string} full url of this wiki's favicon
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
@@ -105,12 +107,21 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 					}
 					case "hideusers": {
 						this.hideusers = tVal.replace("", " ").split(",");
-						this.hideusers.forEach(function(o,i){ self.hideusers[i] = self.hideusers[i].trim(); });
+						this.hideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
 						break;
 					}
 					case "onlyshowusers": {
 						this.onlyshowusers = tVal.replace("", " ").split(",");
-						this.onlyshowusers.forEach(function(o,i){ self.onlyshowusers[i] = self.onlyshowusers[i].trim(); });
+						this.onlyshowusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						break;
+					}
+					case "notifications_hideusers": {
+						this.notificationsHideusers = tVal.replace("", " ").split(",");
+						this.notificationsHideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						break;
+					}
+					case "notifications_enabled": {
+						this.notificationsEnabled = tVal !== "false";
 						break;
 					}
 					case "scriptdir": {
@@ -215,7 +226,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			this.canBlock = false;
 			this.canRollback = false;
 			this.needsUserData = false;
-			for(var i in pQuery.users[0].rights) { 
+			for(var i in pQuery.users[0].rights) {
 				if(pQuery.users[0].rights[i] == "block") { this.canBlock = true; }
 				else if(pQuery.users[0].rights[i] == "rollback") { this.canRollback = true; }
 			}
@@ -250,7 +261,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	// Don't pass in params with "default" values included, or the link will have them all specified.
 	WikiData.prototype.createRcParamsString = function(pParams) {
 		var tArray = [];
-		$.each( pParams, function( tKey, tVal ) { 
+		$.each( pParams, function( tKey, tVal ) {
 			if( tKey != "paramString" ) {
 				if(tVal === true) { tVal="1"; }
 				if(tVal === false) { tVal="0"; }

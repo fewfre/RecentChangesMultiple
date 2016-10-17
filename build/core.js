@@ -20,9 +20,9 @@
 		// http://stackoverflow.com/a/4673436/1411473
 		formatString: function(format) {
 			var args = Array.prototype.slice.call(arguments, 1);
-			return format.replace(/{(\d+)}/g, function(match, number) { 
+			return format.replace(/{(\d+)}/g, function(match, number) {
 				return typeof args[number] != 'undefined'
-					? args[number] 
+					? args[number]
 					: match
 				;
 			});
@@ -98,6 +98,9 @@
 			return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
 		},
 		
+		// UpperCaseFirstLetter
+		ucfirst: function(s) { return s && s[0].toUpperCase() + s.slice(1); },
+		
 		// Assumes the file has already been checked to be in namespace 6
 		isFileAudio: function(pTitle) {
 			var tExt = null, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia
@@ -166,6 +169,7 @@
 	};
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple);
 //</syntaxhighlight>
+
 //<syntaxhighlight lang="javascript">
 
 //######################################
@@ -195,6 +199,8 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 		
 		this.hideusers			= null; // {array<string>} These users are to have their RCs hidden for only this wiki.
 		this.onlyshowusers		= null; // {array<string>} These users are to have ONLY their RCs shown for this wiki.
+		this.notificationsHideusers= null; // {array<string>} Don't send notifications when these users edit.
+		this.notificationsEnabled= true; // {bool} Don't send notifications for this wiki.
 		this.favicon			= null; // {string} full url of this wiki's favicon
 		this.rcParamsBase		= null; // {object} Works the same as this.manager.rcParams but for only this wiki.
 		this.rcParams			= null; // {object} Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
@@ -273,12 +279,21 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 					}
 					case "hideusers": {
 						this.hideusers = tVal.replace("", " ").split(",");
-						this.hideusers.forEach(function(o,i){ self.hideusers[i] = self.hideusers[i].trim(); });
+						this.hideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
 						break;
 					}
 					case "onlyshowusers": {
 						this.onlyshowusers = tVal.replace("", " ").split(",");
-						this.onlyshowusers.forEach(function(o,i){ self.onlyshowusers[i] = self.onlyshowusers[i].trim(); });
+						this.onlyshowusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						break;
+					}
+					case "notifications_hideusers": {
+						this.notificationsHideusers = tVal.replace("", " ").split(",");
+						this.notificationsHideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						break;
+					}
+					case "notifications_enabled": {
+						this.notificationsEnabled = tVal !== "false";
 						break;
 					}
 					case "scriptdir": {
@@ -383,7 +398,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 			this.canBlock = false;
 			this.canRollback = false;
 			this.needsUserData = false;
-			for(var i in pQuery.users[0].rights) { 
+			for(var i in pQuery.users[0].rights) {
 				if(pQuery.users[0].rights[i] == "block") { this.canBlock = true; }
 				else if(pQuery.users[0].rights[i] == "rollback") { this.canRollback = true; }
 			}
@@ -418,7 +433,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	// Don't pass in params with "default" values included, or the link will have them all specified.
 	WikiData.prototype.createRcParamsString = function(pParams) {
 		var tArray = [];
-		$.each( pParams, function( tKey, tVal ) { 
+		$.each( pParams, function( tKey, tVal ) {
 			if( tKey != "paramString" ) {
 				if(tVal === true) { tVal="1"; }
 				if(tVal === false) { tVal="0"; }
@@ -549,6 +564,7 @@ window.dev.RecentChangesMultiple.WikiData = (function($, document, mw, module, U
 	
 })(window.jQuery, document, window.mediaWiki, window.dev.RecentChangesMultiple, window.dev.RecentChangesMultiple.Utils);
 //</syntaxhighlight>
+
 //<syntaxhighlight lang="javascript">
 /*
  *  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
@@ -1548,7 +1564,9 @@ window.dev.RecentChangesMultiple.i18n = (function($, document, mw, module){
 		'awc-metrics-images' : 'Images',
 		'wikifeatures-promotion-new' : 'New',
 		'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
-
+		'myhome-feed-edited-by' : 'edited by $1',
+		'edit-summary' : 'Edit summary',
+		
 		/***************************
 		 * Log Names - wgLogHeaders
 		 ***************************/
@@ -2683,7 +2701,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 	}
 	
 	RCData.prototype.logTitleText = function() {
-		var logTemplate = "(<a href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
+		var logTemplate = "(<a class='rc-log-link' href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
 		switch(this.logtype) {
 			case "abusefilter"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("abusefilter-log")); }
 			case "block"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("blocklogpage")); }
@@ -2911,7 +2929,7 @@ window.dev.RecentChangesMultiple.RCData = (function($, document, mw, module, Uti
 		if(this.type == RCData.TYPE.COMMENT) {
 			return i18n("article-comments-rc-comment", this.href, this.titleNoNS);
 		} else {
-			return Utils.formatString("<a href='{0}'>{1}</a>", this.href, this.title);
+			return Utils.formatString("<a class='rc-pagetitle' href='{0}'>{1}</a>", this.href, this.title);
 		}
 	}
 	
@@ -3243,12 +3261,12 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype._diffHist = function(pRC) {
 		var diffLink = i18n('diff');
 		if(pRC.isNewPage == false) {
-			diffLink = "<a href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
+			diffLink = "<a class='rc-diff-link' href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
 		}
 		if(this.type == RCData.TYPE.NORMAL && pRC.namespace == 6) {
 			diffLink += this.getAjaxImageButton();
 		}
-		return "("+diffLink+i18n("pipe-separator")+"<a href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
+		return "("+diffLink+i18n("pipe-separator")+"<a class='rc-hist-link' href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
 	};
 	
 	// Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
@@ -3294,7 +3312,10 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 	RCList.prototype._changesText = function() {
 		var returnText = i18n("nchanges", this.list.length);
 		if(this.type == RCData.TYPE.NORMAL && this.oldest.isNewPage == false) {
-			returnText = "<a href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
+			returnText = "<a class='rc-changes-link' href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
+		}
+		if(this.type == RCData.TYPE.NORMAL && this.newest.namespace == 6) {
+			returnText += this.getAjaxImageButton();
 		}
 		return returnText;
 	};
@@ -3399,7 +3420,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
 			// }
 			
-			var tRCM_previewdiff = function() {
+			var tRCM_previewdiff = function(e) {
+				e.preventDefault();
 				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
@@ -3425,7 +3447,8 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
 			var articlepath = this.wikiInfo.articlepath;
 			
-			var tRCM_previewdiff = function() {
+			var tRCM_previewdiff = function(e) {
+				e.preventDefault();
 				RCData.previewImages(ajaxLink, tImageNames, articlepath);
 			}
 			pElem.addEventListener("click", tRCM_previewdiff);
@@ -3559,6 +3582,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link"), pRC);
+			if(tTable.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tTable.querySelector(".rc-log-link"), pRC);
+				this.addPreviewImageListener(tTable.querySelector(".rc-pagetitle"), pRC);
+			}
+		}
 		
 		return tTable;
 	};
@@ -3586,7 +3616,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 				break;
 			}
 			case RCData.TYPE.NORMAL: {
-				html += "<a href='"+this.newest.href+"'>"+this.newest.title+"</a>";
+				html += "<a class='rc-pagetitle' href='"+this.newest.href+"'>"+this.newest.title+"</a>";
 				html += " ("+this._changesText()+i18n("pipe-separator")+"<a href='"+this.newest.hrefFS+"action=history'>"+i18n("hist")+"</a>)";
 				html += SEP
 				html += this._diffSizeText(this.newest, this.oldest);
@@ -3637,6 +3667,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link, .rc-changes-link"), this.oldest, this.newest);
+			if(tTable.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tTable.querySelector(".rc-log-link"), this.list);
+				this.addPreviewImageListener(tTable.querySelector(".rc-pagetitle"), this.list);
+			}
+		}
 		
 		return tTable;
 	};
@@ -3703,6 +3740,7 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) { this.addPreviewDiffListener(tRow.querySelector(".rc-diff-link"), pRC); }
 		
 		return tRow;
 	};
@@ -3764,6 +3802,13 @@ window.dev.RecentChangesMultiple.RCList = (function($, document, mw, module, RCD
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
+		if(this.manager.makeLinksAjax) {
+			this.addPreviewDiffListener(tLi.querySelector(".rc-diff-link"), pRC);
+			if(tLi.querySelector(".rcm-ajaxImage")) {
+				this.addPreviewImageListener(tLi.querySelector(".rc-log-link"), pRC);
+				this.addPreviewImageListener(tLi.querySelector(".rc-pagetitle"), pRC);
+			}
+		}
 		
 		return tLi;
 	};
@@ -3847,9 +3892,12 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		this.timezone				= null; // {string}
 		this.autoRefreshTimeoutNum	= null; // {int} number of milliseconds to wait before refreshing.
 		
+		this.chosenWikis			= null; // {array<WikiData>} Wikis for the script to load
 		this.hideusers				= null; // {array} List of users to hide across whole RCMManager
 		this.onlyshowusers			= null; // {array} Only show these users' edits across whole RCMManager
-		this.chosenWikis			= null; // {array<WikiData>} Wikis for the script to load
+		this.notificationsHideusers	= null; // {array} Don't send notifications when these users edit.
+		
+		this.makeLinksAjax			= false; // {bool} Make the diff/gallery link behave as the ajax icons do.
 		
 		/***************************
 		 * Storage
@@ -3924,14 +3972,19 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		// 	var tUsername = mw.config.get("wgUserName");
 		// 	if(tUsername) { this.hideusers.push(tUsername); }
 		// }
-		this.hideusers.forEach(function(o,i,a){ a[i] = a[i].trim(); });
+		this.hideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+		
+		this.notificationsHideusers = [];
+		if(tDataset.notificationsHideusers) { this.notificationsHideusers = tDataset.notificationsHideusers.replace(/_/g, " ").split(","); }
+		this.notificationsHideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
 		
 		// Only show these users' edits across whole RCMManager
 		this.onlyshowusers = []; // {array}
 		if(tDataset.onlyshowusers) { this.onlyshowusers = tDataset.onlyshowusers.replace(/_/g, " ").split(","); }
-		this.onlyshowusers.forEach(function(o,i,a){ a[i] = a[i].trim(); });
+		this.onlyshowusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
 		
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
+		this.makeLinksAjax = tDataset.ajaxlinks == "true" ? true : false;
 		
 		this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
 		// Wikis for the script to load
@@ -4062,23 +4115,25 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
-			clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-			this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n("rcm-error-loading-syntaxhang", "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-			var tHandler = function(pData){
-				clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
-				if(pData) pData.target.removeEventListener("click", tHandler);
-				tHandler = null;
-				
-				self.erroredWikis.forEach(function(obj){
-					console.log(obj);
-					self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-				});
-				self.erroredWikis = [];
-				self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-			};
-			Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click", tHandler);
-			self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
-			if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
+			this.handleWikiLoadError(pWikiInfo, pTries, pID, "rcm-error-loading-syntaxhang", 1);
+		
+			// clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
+			// this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n("rcm-error-loading-syntaxhang", "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+			// var tHandler = function(pData){
+			// 	clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
+			// 	if(pData) pData.target.removeEventListener("click", tHandler);
+			// 	tHandler = null;
+			//
+			// 	self.erroredWikis.forEach(function(obj){
+			// 		console.log(obj);
+			// 		self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+			// 	});
+			// 	self.erroredWikis = [];
+			// 	self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+			// };
+			// Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click", tHandler);
+			// self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+			// if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
@@ -4088,25 +4143,28 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 				this.loadWiki(pWikiInfo, pTries, pID, 0);
 			} else {
 				if(this.erroredWikis.length === 0) {
-					clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-					this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n((pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection"), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-					this.addRefreshButtonTo(this.statusNode);
-					var tHandler = function(pData){
-						clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
-						self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
-						if(pData) pData.target.removeEventListener("click", tHandler);
-						tHandler = null;
-						
-						self.erroredWikis.forEach(function(obj){
-							console.log(obj);
-							self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-						});
-						self.erroredWikis = [];
-						self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-					};
-					Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click", tHandler);
-					self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
-					if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
+					var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+					this.handleWikiLoadError(pWikiInfo, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
+					
+					// clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
+					// this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n((pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection"), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+					// this.addRefreshButtonTo(this.statusNode);
+					// var tHandler = function(pData){
+					// 	clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
+					// 	self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
+					// 	if(pData) pData.target.removeEventListener("click", tHandler);
+					// 	tHandler = null;
+					//
+					// 	self.erroredWikis.forEach(function(obj){
+					// 		console.log(obj);
+					// 		self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+					// 	});
+					// 	self.erroredWikis = [];
+					// 	self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+					// };
+					// Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click", tHandler);
+					// self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+					// if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
 				} else {
 					this.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
 					this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiInfo.servername;
@@ -4125,6 +4183,28 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 			self.parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiInfo, pTries);
 		});
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
+	};
+	
+	RCMManager.prototype.handleWikiLoadError = function(pWikiInfo, pTries, pID, pErrorMessage, pInc) {
+		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
+		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+		this.addRefreshButtonTo(this.statusNode);
+		var tHandler = function(pEvent){
+			clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
+			self.loadingErrorRetryNum += pInc;
+			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }
+			tHandler = null;
+			
+			self.erroredWikis.forEach(function(obj){
+				console.log(obj);
+				self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+			});
+			self.erroredWikis = [];
+			self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+		};
+		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
+		self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
 	};
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
@@ -4211,21 +4291,35 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 		}
 		
 		// console.log(this.recentChangesEntries);
+		console.log(this.recentChangesEntries[0].date , this.lastLoadDateTime);
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
 		else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
+			console.log(this.recentChangesEntries[0].date , this.lastLoadDateTimeActual);
 			if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
-				module.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"!");
-				var tNumNewChanges = 0;
-				for(var i = 0; i < this.recentChangesEntries.length; i++) {
-					if(this.recentChangesEntries[i].date > this.lastLoadDateTime) {
-						for(var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
-							if(this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) { tNumNewChanges++; } else { break; }
-						}
-					} else { break; }
+				var tMostRecentEntry = this.recentChangesEntries[0].newest;
+				// Skip if user is hidden for whole script or specific wiki
+				var tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
+				if(!tDontNotify) {
+					module.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"!");
+					var tNumNewChanges = 0, tNumNewChangesWiki = 0;
+					for(var i = 0; i < this.recentChangesEntries.length; i++) {
+						if(this.recentChangesEntries[i].date > this.lastLoadDateTime) {
+							for(var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
+								if(this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) {
+									tNumNewChanges++;
+									if(this.recentChangesEntries[i].wikiInfo.servername == tMostRecentEntry.wikiInfo.servername) { tNumNewChangesWiki++; }
+								} else { break; }
+							}
+						} else { break; }
+					}
+					var tEditSummary = !tMostRecentEntry.summary ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.summary;
+					module.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " ("+i18n("nchanges", tNumNewChangesWiki)+")" : ""), {
+						body:tMostRecentEntry.title+"\n"+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
+					});
 				}
-				module.addNotification(i18n("nchanges", tNumNewChanges)+" - "+this.recentChangesEntries[0].newest.wikiInfo.sitename, { body:this.recentChangesEntries[0].newest.title+" - "+this.recentChangesEntries[0].newest.author });
+				tMostRecentEntry = null;
 			}
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
@@ -4459,7 +4553,7 @@ window.dev.RecentChangesMultiple.RCMManager = (function($, document, mw, module,
 	if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] == undefined) { console.log("RecentChangesMultiple tried to run despite no data. Exiting."); return; }
 
 	// Storage
-	module.version = "1.2.9c";
+	module.version = "1.2.9d";
 	module.lastVersionDateString = "Thu Oct 15 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	module.debug = module.debug != undefined ? module.debug : false;
 	

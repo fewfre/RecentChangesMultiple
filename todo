@@ -8,20 +8,20 @@
 * Doesn't work in tabview. Add a delay check, or look for the container being added.
 * [idea] get rid of "wikiInfo" data, and instead have "wikiID" which access a dictionary on the RCMManager. Less memory leak?
 * Implement http://dev.wikia.com/wiki/Discussions_Feed
+* modify ajax diff to have date / editor. Add preview button (like AjaxDiff).
 
 
 ############################################
 ## SECONDARY
 ############################################
 * [Idea] Ajax Comment preview?
-* [Idea] single wiki RCM only show info panel (instead of "wikis loaded")
 * [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
 * Make sure Script resembles normal RC as closely as possible:
 	* uselang=qqx:
 		- walls (and probably forums) are a little different in "qqx". ex: wall-recentchanges-thread-group (RCM) vs wall-recentchanges-new-message (RC)
 	* Visual:
 		- Comment deletions go under "comments", not logs (same for when it's by itself?). I kinda prefer under deletion, but should be consistent.
-		- Don't forcefully style diff windows.
+		- Don't forcefully style diff windows (currently need to since need to load it in, and currently doing so via hard-coding).
 * [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
 	* Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
 * [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
@@ -32,7 +32,7 @@
 ############################################
 * Loading display rework.
 	A) Display wiki results as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
-	B) Only load changes older than current things and just add them to top of list. Make sure to also remove old items.
+	B) Only load changes older than current things and just add them to top of list. Make sure to also remove old items. -could mark changed RCLists as "Dirty", moving them up the list, or deleting if list ends up empty.
 	C) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
 		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
 		May add needless complexity while adding little to nothing.
