@@ -9,6 +9,8 @@
 * [idea] get rid of "wikiInfo" data, and instead have "wikiID" which access a dictionary on the RCMManager. Less memory leak?
 * Implement http://dev.wikia.com/wiki/Discussions_Feed
 * Add preview button (like AjaxDiff).
+* have diff timestamp link to diff (plus edit button)
+* mw.util.wikiUrlencode?
 
 
 ############################################

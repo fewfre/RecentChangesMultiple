@@ -1,0 +1,13 @@
+{
+	"compileOnSave": false,
+	"compilerOptions": {
+		"noImplicitAny": false,
+		"target": "es5"
+	},
+	"exclude": [
+		"node_modules"
+	],
+	"filesGlob": [
+		"src/js/*.ts"
+	]
+}

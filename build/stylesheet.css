@@ -84,7 +84,7 @@
 }
 .rcm-wiki-infotable {
   width: 95%;
-  width: calc(80%);
+  width: calc(100% - 20px);
 }
 .rcm-wiki-infotable td {
   padding: 2px;

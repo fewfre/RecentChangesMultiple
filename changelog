@@ -1,3 +1,14 @@
+== V2.0 - 29 October 2016 ==
+- Project converted to TypeScript.
+	- added RC_TYPE enum
+	- added RCParams interface
+	- start.ts is now the new starting point for core.js
+	- converted Main into a singleton class (called from start.ts)
+	- added a new class ConstantsApp, and moved various attribute from Main into it.
+- Small bug fixes
+- Updating version number to just use two numbers.
+
+
 == V1.2.9e - 17 October 2016 ==
 - [Bug] Trying to view same diff twice would cause diff to never load.
 - Ajax diff now shows revision timestamp, user, and commit summary.
