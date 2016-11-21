@@ -16,7 +16,7 @@ export default class WikiData
 {
 	// Static Constants
 	// What data is to be retrieved for each recent change.
-	static readonly RC_PROPS = ["user", "flags", "title", "ids", "sizes", "timestamp", "loginfo", "parsedcomment"].join("|"); // patrolled
+	static readonly RC_PROPS = ["user", "flags", "title", "ids", "sizes", "timestamp", "loginfo", "parsedcomment", "comment"].join("|"); // patrolled
 	
 	// Storage
 	manager					: RCMManager; // Keep track of what manager this data is attached to.

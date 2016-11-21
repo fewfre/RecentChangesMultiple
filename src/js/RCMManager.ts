@@ -22,7 +22,7 @@ let mw = (<any>window).mediaWiki;
 export default class RCMManager
 {
 	// Static Constants
-	static LOADING_ERROR_RETRY_NUM_INC = 5;
+	static LOADING_ERROR_RETRY_NUM_INC : number = 5;
 	
 	// Storage
 	/***************************
@@ -194,7 +194,7 @@ export default class RCMManager
 		return this;
 	};
 	
-	private _start(pUpdateParams:boolean=false) {
+	private _start(pUpdateParams:boolean=false) : void {
 		var self = this;
 		
 		clearTimeout(this.autoRefreshTimeoutID);
@@ -226,7 +226,7 @@ export default class RCMManager
 		}
 	};
 	
-	refresh(pUpdateParams:boolean=false) {
+	refresh(pUpdateParams:boolean=false) : void {
 		if(this.chosenWikis.length == 0) { return; }
 		this.statusNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
@@ -248,7 +248,7 @@ export default class RCMManager
 	};
 	
 	// Separate method so that it can be reused if the loading failed
-	loadWiki(pWikiInfo, pTries, pID, pDelayNum:number=0) {
+	loadWiki(pWikiInfo:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
 		var self = this;
 		
 		++pTries;
@@ -267,7 +267,7 @@ export default class RCMManager
 	};
 	
 	/* Called after a wiki is loaded; will add it to queue, and run it if no other callbacks running. */
-	onWikiLoaded(pData, pWikiInfo, pTries, pID, pFailStatus) {
+	onWikiLoaded(pData, pWikiInfo:WikiData, pTries:number, pID:number, pFailStatus) : void {
 		var self = this;
 		
 		// Make sure this isn't something loaded before the script was last refreshed.
@@ -349,7 +349,7 @@ export default class RCMManager
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
 	};
 	
-	handleWikiLoadError(pWikiInfo, pTries, pID, pErrorMessage, pInc) {
+	handleWikiLoadError(pWikiInfo:WikiData, pTries:number, pID:number, pErrorMessage, pInc:number) : void {
 		var self:RCMManager = this;
 		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
 		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
@@ -373,7 +373,7 @@ export default class RCMManager
 	};
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
-	parseWiki(pData, pLogData, pWikiInfo, pTries) {
+	parseWiki(pData, pLogData, pWikiInfo:WikiData, pTries:number) : void {
 		var self = this;
 		
 		// Check if wiki doesn't have any recent changes
@@ -396,7 +396,7 @@ export default class RCMManager
 			self.itemsToAddTotal++;
 			tNewRC = new RCData( pWikiInfo, self ).init(pRCData, pLogData);
 			tChangeAdded = false;
-			self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList, i){
+			self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList:RCList, i:number){
 				if(tNewRC.date > pRCList.date) {
 					self.recentChangesEntries.splice(i, 0, new RCList(self).addRC(tNewRC));
 					tChangeAdded = true;
@@ -417,7 +417,7 @@ export default class RCMManager
 	};
 	
 	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
-	onWikiParsingFinished(pWikiInfo) {
+	onWikiParsingFinished(pWikiInfo:WikiData) : void {
 		this.wikisLeftToLoad--;
 		this.wikisNode.addWiki(pWikiInfo);
 		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
@@ -436,8 +436,8 @@ export default class RCMManager
 	};
 	
 	// All wikis are loaded
-	rcmChunkStart() {
-		var tDate = new Date();
+	rcmChunkStart() : void {
+		var tDate:Date = new Date();
 		this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
 		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
 		this.resultsNode.innerHTML = "";
@@ -446,7 +446,7 @@ export default class RCMManager
 		if(!this.rcm_style_for_rc_bg_added) {
 			this.rcm_style_for_rc_bg_added = true;
 			var tCSS = "";
-			Utils.forEach(this.chosenWikis, function(wikiInfo){
+			Utils.forEach(this.chosenWikis, function(wikiInfo:WikiData){
 				// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
 				tCSS += "\n."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
 					+(wikiInfo.bgcolor != null ? "background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
@@ -477,7 +477,7 @@ export default class RCMManager
 						} else { break; }
 					}
 					Main.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"! "+i18n("nchanges", tNumNewChanges));
-					var tEditSummary = !tMostRecentEntry.summary ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.summary;
+					var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.unparsedComment;
 					Main.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " ("+i18n("nchanges", tNumNewChangesWiki)+")" : ""), {
 						body:tMostRecentEntry.title+"\n"+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
 					});
@@ -489,7 +489,7 @@ export default class RCMManager
 	}
 	
 	// Add a single change at a time, with a timeout before the next one to prevents script from locking up browser.
-	rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID) {
+	rcmChunk(pIndex:number, pLastDay:number, pLastMonth:number, pContainer:HTMLElement, pID:number) : void {
 		if(pID != this.ajaxID) { return; } // If the script is refreshed (by auto refresh) while entries are adding, stop adding old entries.
 		var self = this;
 		
@@ -525,7 +525,7 @@ export default class RCMManager
 		else { this.finishScript(); }
 	};
 	
-	finishScript() {
+	finishScript() : void {
 		Utils.removeElement(document.querySelector(this.modID+" .rcm-content-loading"));
 		this.addRefreshButtonTo(this.statusNode);
 		this.addAutoRefreshInputTo(this.statusNode);
@@ -554,7 +554,7 @@ export default class RCMManager
 		}
 	};
 	
-	startAutoRefresh() {
+	startAutoRefresh() : void {
 		if(!this.isAutoRefreshEnabled()) { return; }
 		
 		var self = this;
@@ -564,7 +564,7 @@ export default class RCMManager
 		}, this.autoRefreshTimeoutNum);
 	};
 		
-	loadExtraInfo(pID) {
+	loadExtraInfo(pID:number) : void {
 		if(pID != this.ajaxID) { return; }
 		if(this.secondaryWikiData.length == 0) { if(ConstantsApp.debug){ console.log("[RCMManager](loadExtraInfo) All loading finished."); } return; }
 		var self = this;
@@ -588,7 +588,7 @@ export default class RCMManager
 	//######################################
 	// Specific Helper Methods
 	//######################################
-	addRefreshButtonTo(pParent) {
+	addRefreshButtonTo(pParent:HTMLElement) : void {
 		var self = this;
 		
 		pParent.appendChild(document.createTextNode(" "));
@@ -599,7 +599,7 @@ export default class RCMManager
 		});
 	};
 	
-	addAutoRefreshInputTo(pParent) : void {
+	addAutoRefreshInputTo(pParent:HTMLElement) : void {
 		var self = this;
 		
 		pParent.appendChild(document.createTextNode(" "));

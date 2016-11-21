@@ -1,62 +1,59 @@
 ############################################
 ## PRIMARY
 ############################################
-* Translations
-	* Request Translations: http://wlb.wikia.com/wiki/Translate:Requests
-	* support "rtl" lang dir
-	* Add support for mwLanguageData.fallbackLanguages (on the few occasions were a translation may not have a word in it's normal section)
-* Doesn't work in tabview. Add a delay check, or look for the container being added.
-* [idea] get rid of "wikiInfo" data, and instead have "wikiID" which access a dictionary on the RCMManager. Less memory leak?
-* Implement http://dev.wikia.com/wiki/Discussions_Feed
-* Add preview button (like AjaxDiff).
-* have diff timestamp link to diff (plus edit button)
-* mw.util.wikiUrlencode?
+- [Bug] Doesn't work in tabview. Add a delay check, or look for the container being added.
+- Page preview needs a way to load all css / js.
+- Figure out how to load local diff page css.
 
 
 ############################################
 ## SECONDARY
 ############################################
-* [Idea] Ajax Comment preview?
-* [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
-* Make sure Script resembles normal RC as closely as possible:
-	* uselang=qqx:
+- [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
+- Make sure Script resembles normal RC as closely as possible:
+	- uselang=qqx:
 		- walls (and probably forums) are a little different in "qqx". ex: wall-recentchanges-thread-group (RCM) vs wall-recentchanges-new-message (RC)
-	* Visual:
+	- Visual:
 		- Comment deletions go under "comments", not logs (same for when it's by itself?). I kinda prefer under deletion, but should be consistent.
 		- Don't forcefully style diff windows (currently need to since need to load it in, and currently doing so via hard-coding).
-* [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
-	* Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
-* [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
+- [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
+	- Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
+- [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
+- mw.util.wikiUrlencode? (instead of custom version in Utils)
+- Translations: support "rtl" lang dir
+- Implement http://dev.wikia.com/wiki/Discussions_Feed
+- Option to turn off auto refresh if page has focus.
 
 
 ############################################
 ## TERTIARY (other / maybe?)
 ############################################
-* Loading display rework.
+- Loading display rework.
 	A) Display wiki results as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
 	B) Only load changes older than current things and just add them to top of list. Make sure to also remove old items. -could mark changed RCLists as "Dirty", moving them up the list, or deleting if list ends up empty.
 	C) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
 		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
 		May add needless complexity while adding little to nothing.
-* Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script
-* Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
-* [Idea] Update wiki-specific params to use sub-lists for data. ex: *test.wikia.com \n **hideusers=name \n **params= \n ***param-also-using-sublist \n *next.wikia.com
+	- Also add option to temporarily only show edits for a wiki (hide all the rest). Button would appear to show them all again.
+- Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script
+- Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
+- [Idea] Update wiki-specific params to use sub-lists for data. ex: *test.wikia.com \n **hideusers=name \n **params= \n ***param-also-using-sublist \n *next.wikia.com
 
 
 ############################################
 ## NOT REALLY FEASIBLE (at this time at least)
 ############################################
-* Show if a RC has been patrolled -- Not possible since it needs to know you are logged in (cross domain issue), and if no patrol right is found, whole request is invalid.
-* [Not possible to access user setting?] Date format should follow preferences
-* [Not possible to access user setting?] Display times using timezone set in preferences ("local" time option should be sufficient?)
-* bold if watched. Requires user to be logged in to get that info?
-* Rollback support
-	* rollback tokens cannot be accessed cross-domain.
-	* Most recent version only
+- [cross domain / login issue] Show if a RC has been patrolled -- Not possible since it needs to know you are logged in (cross domain issue), and if no patrol right is found, whole request is invalid.
+- [Not possible to access user setting?] Date format should follow preferences
+- [Not possible to access user setting?] Display times using timezone set in preferences ("local" time option should be sufficient?)
+- [cross domain / login issue] bold if watched. Requires user to be logged in to get that info?
+- [cross domain / login issue] Rollback support
+	- rollback tokens cannot be accessed cross-domain.
+	- Most recent version only
 		- Need to figure out if listed RC is most recent version (before adding link). Iffy to do without lots of extra loading calls; expensive
 		- "rctoponly" - will still most likely require 2nd call, but can get them all in 1 call up to last one retrieved.
 			- But would require a small rewrite since all the RCData would have to be looped-through / modified again. Or some kinda fancy custom event system added.
 				- If this WAS done, then Board/Thread titles should use same rework to cut down on necessary calls.
-	* Getting Rollback Token
+	- Getting Rollback Token
 		- Get token on click via ajax request? https://www.mediawiki.org/wiki/API:Rollback#Token
 		- Or maybe get all tokens at once (in a THIRD request) and add them using the rewrite mentioned above

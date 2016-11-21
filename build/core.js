@@ -21,7 +21,7 @@ var ConstantsApp = (function () {
         ConstantsApp.LOADER_IMG = pScriptConfig.LOADER_IMG || ConstantsApp.LOADER_IMG;
         ConstantsApp.NOTIFICATION_ICON = pScriptConfig.NOTIFICATION_ICON || ConstantsApp.NOTIFICATION_ICON;
     };
-    ConstantsApp.version = "1.2.10";
+    ConstantsApp.version = "2.1";
     ConstantsApp.lastVersionDateString = "Thu Oct 29 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.debug = false;
     ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -221,10 +221,11 @@ var Main = (function () {
     Main.prototype.blinkWindowTitle = function (pTitle) {
         this.cancelBlinkWindowTitle();
         this._originalTitle = document.title;
-        this._blinkInterval = setInterval(function () {
-            document.title = document.title == this._originalTitle ? (pTitle + " - " + this._originalTitle) : this._originalTitle;
+        var self = this;
+        this._blinkInterval = setTimeout(function () {
+            document.title = document.title == self._originalTitle ? (pTitle + " - " + self._originalTitle) : self._originalTitle;
             if (document.hasFocus()) {
-                this.cancelBlinkWindowTitle();
+                self.cancelBlinkWindowTitle();
             }
         }, 1000);
     };
@@ -307,6 +308,7 @@ var RCData = (function () {
         // 	this.summary = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
         // }
         this.summary = RCData.formatParsedComment(pData.parsedcomment, pData.commenthidden == "", this.wikiInfo);
+        this.unparsedComment = pData.comment;
         this.pageid = pData.pageid;
         this.revid = pData.revid;
         this.old_revid = pData.old_revid;
@@ -339,7 +341,7 @@ var RCData = (function () {
                 this.type = RC_TYPE_1.default.COMMENT;
             }
             if (this.type == RC_TYPE_1.default.BOARD || this.type == RC_TYPE_1.default.WALL) {
-                this.uniqueID = this.title + "/@comment" + pData.title.split("/@comment")[1]; // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
+                this.uniqueID = Utils_1.default.escapeCharactersLink(pData.title.split("/@comment")[0] + "/@comment" + pData.title.split("/@comment")[1]); // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
                 // var tAcMetaDataCheck = "&lt;ac_metadata title=\"";
                 // var tAcMetaDataPos = this.summary.lastIndexOf(tAcMetaDataCheck);
                 // if(tAcMetaDataPos > -1) { // Check for last encase some has a "ac_metadata" tag as part of their post for some reason
@@ -945,7 +947,9 @@ var RCData = (function () {
                     // 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
                     // 	});
                     // }
-                    // TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message
+                    var tOMinor = tRevision.minor == "" ? "<abbr class=\"minoredit\">" + i18n_1.default('minoreditletter') + "</abbr> " : "";
+                    var tNMinor = pDiffTableInfo.newRev.minor ? "<abbr class=\"minoredit\">" + i18n_1.default('minoreditletter') + "</abbr> " : "";
+                    // TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
                     var tModalContent = ''
                         + "<div id='rcm-diff-view'>"
                         + "<table class='diff'>"
@@ -958,14 +962,31 @@ var RCData = (function () {
                         + "<tbody>"
                         + "<tr class='diff-header' valign='top'>"
                         + "<td class='diff-otitle' colspan='2'>"
-                        + "<div class='mw-diff-otitle1'><strong>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone)) + "</strong></div>"
+                        + "<div class='mw-diff-otitle1'>"
+                        + "<strong>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "' data-action='revision-link-before'>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
+                        + " <span class='mw-rev-head-action'>"
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "&action=edit\" data-action=\"edit-revision-before\">" + i18n_1.default('editold') + "</a>)")
+                        + "</span>"
+                        + "</strong>"
+                        + "</div>"
                         + "<div class='mw-diff-otitle2'>" + RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "") + "</div>"
-                        + "<div class='mw-diff-otitle3'>" + RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo)) + "</div>"
+                        + "<div class='mw-diff-otitle3'>" + tOMinor + RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo)) + "</div>"
                         + "</td>"
                         + "<td class='diff-ntitle' colspan='2'>"
-                        + "<div class='mw-diff-ntitle2'><strong>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone)) + "</strong></div>"
-                        + "<div class='mw-diff-ntitle1'>" + pDiffTableInfo.newRev.user + "</div>"
-                        + "<div class='mw-diff-ntitle3'>" + pDiffTableInfo.newRev.summary + "</div>"
+                        + "<div class='mw-diff-ntitle1'>"
+                        + "<strong>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "' data-action='revision-link-after'>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
+                        + " <span class='mw-rev-head-action'>"
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "&action=edit\" data-action=\"edit-revision-after\">" + i18n_1.default('editold') + "</a>)")
+                        + "</span>"
+                        + "<span class='mw-rev-head-action'>"
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "action=edit&undoafter=" + tRevision.diff.to + "&undo=" + tRevision.diff.to + "\" data-action=\"undo\">" + i18n_1.default('editundo') + "</a>)")
+                        + "</span>"
+                        + "</strong>"
+                        + "</div>"
+                        + "<div class='mw-diff-ntitle2'>" + pDiffTableInfo.newRev.user + "</div>"
+                        + "<div class='mw-diff-ntitle3'>" + tNMinor + pDiffTableInfo.newRev.summary + "</div>"
                         + "</td>"
                         + "</tr>"
                         + tRevision.diff["*"]
@@ -1115,6 +1136,62 @@ var RCData = (function () {
                     // RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
                     RCMModal_1.default.setModalContent(tModalContent);
                     tAddLoadMoreButton();
+                },
+            });
+        });
+    };
+    RCData.previewPage = function (pAjaxUrl, pPageName, pPageHref, pServerLink) {
+        if (ConstantsApp_1.default.debug) {
+            console.log("http:" + pAjaxUrl);
+        }
+        var tTitle = "" + pPageName;
+        // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+        var tButtons = [];
+        tButtons.push({
+            value: i18n_1.default('wikiaPhotoGallery-conflict-view'),
+            event: "diff",
+            callback: function () { window.open(pPageHref, '_blank'); },
+        });
+        RCMModal_1.default.showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
+            // Retrieve the diff table.
+            // TODO - error support?
+            $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+                success: function (pData) {
+                    var tContentText = pData.parse.text["*"];
+                    var tModalContent = ''
+                        + "<div class='ArticlePreview'>"
+                        + "<div class='ArticlePreviewInner'>"
+                        + "<div class='WikiaArticle'>"
+                        + "<div id='mw-content-text'>"
+                        + tContentText
+                        + "</div>"
+                        + "</div>"
+                        + "</div>"
+                        + "</div>";
+                    RCMModal_1.default.setModalContent(tModalContent);
+                    var tCont = document.querySelector("#" + RCMModal_1.default.MODAL_CONTENT_ID + " #mw-content-text");
+                    if (tCont.attachShadow) {
+                        var shadowRoot_1 = tCont.attachShadow({ mode: "open" });
+                        var tPreviewHead = Utils_1.default.newElement("div", { innerHTML: pData.parse.headhtml["*"] });
+                        var tCurPageHead = document.querySelector("head").cloneNode(true);
+                        Utils_1.default.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            shadowRoot_1.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        });
+                        // Prevent warnings from poping up about shadow dom not supporting <link>.
+                        Utils_1.default.forEach(tPreviewHead.querySelectorAll("link"), function (o, i, a) { Utils_1.default.removeElement(o); });
+                        // Also do it for current head
+                        Utils_1.default.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            shadowRoot_1.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        });
+                        Utils_1.default.forEach(tCurPageHead.querySelectorAll("link"), function (o, i, a) { Utils_1.default.removeElement(o); });
+                        shadowRoot_1.innerHTML += tCurPageHead.innerHTML;
+                        shadowRoot_1.innerHTML += tPreviewHead.innerHTML;
+                        shadowRoot_1.innerHTML += tContentText;
+                        tCont = shadowRoot_1;
+                    }
+                    Utils_1.default.forEach(tCont.querySelectorAll("a[href^='/']"), function (o, i, a) {
+                        o.href = pServerLink + o.getAttribute("href");
+                    });
                 },
             });
         });
@@ -1304,8 +1381,9 @@ var RCList = (function () {
                 callback: function (data) {
                     var tSpan = document.querySelector("#" + tElemID);
                     for (var tPageIndex in data.query.pages)
-                        tSpan.parentNode.href = self.wikiInfo.articlepath + "Thread:" + data.query.pages[tPageIndex].pageid;
-                    var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(data.query.pages[tPageIndex].revisions[0]["*"]);
+                        var tPage = data.query.pages[tPageIndex];
+                    tSpan.parentNode.href = self.wikiInfo.articlepath + "Thread:" + tPage.pageid;
+                    var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
                     if (tTitleData != null) {
                         tSpan.innerHTML = tTitleData[1];
                     }
@@ -1331,6 +1409,12 @@ var RCList = (function () {
         return "" +
             " <span class=\"rcm-ajaxIcon rcm-ajaxImage\">\n\t\t\t<svg width=\"15px\" height=\"15px\" version=\"1.1\" id=\"Capa_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 548.176 548.176\" style=\"enable-background:new 0 0 548.176 548.176;\" xml:space=\"preserve\">\n\t\t\t\t<g>\n\t\t\t\t\t<path style=\"fill:currentColor\" d=\"M534.75,68.238c-8.945-8.945-19.694-13.417-32.261-13.417H45.681c-12.562,0-23.313,4.471-32.264,13.417 C4.471,77.185,0,87.936,0,100.499v347.173c0,12.566,4.471,23.318,13.417,32.264c8.951,8.946,19.702,13.419,32.264,13.419h456.815 c12.56,0,23.312-4.473,32.258-13.419c8.945-8.945,13.422-19.697,13.422-32.264V100.499 C548.176,87.936,543.699,77.185,534.75,68.238z M511.623,447.672c0,2.478-0.899,4.613-2.707,6.427 c-1.81,1.8-3.952,2.703-6.427,2.703H45.681c-2.473,0-4.615-0.903-6.423-2.703c-1.807-1.813-2.712-3.949-2.712-6.427V100.495 c0-2.474,0.902-4.611,2.712-6.423c1.809-1.803,3.951-2.708,6.423-2.708h456.815c2.471,0,4.613,0.905,6.42,2.708 c1.801,1.812,2.707,3.949,2.707,6.423V447.672L511.623,447.672z\"/>\n\t\t\t\t\t<path style=\"fill:currentColor\" d=\"M127.91,237.541c15.229,0,28.171-5.327,38.831-15.987c10.657-10.66,15.987-23.601,15.987-38.826 c0-15.23-5.333-28.171-15.987-38.832c-10.66-10.656-23.603-15.986-38.831-15.986c-15.227,0-28.168,5.33-38.828,15.986 c-10.656,10.66-15.986,23.601-15.986,38.832c0,15.225,5.327,28.169,15.986,38.826C99.742,232.211,112.683,237.541,127.91,237.541z\"/>\n\t\t\t\t\t<polygon style=\"fill:currentColor\" points=\"210.134,319.765 164.452,274.088 73.092,365.447 73.092,420.267 475.085,420.267 475.085,292.36 356.315,173.587\"/>\n\t\t\t\t</g>\n\t\t\t</svg>\n\t\t</span>";
     };
+    RCList.prototype.getAjaxPagePreviewButton = function () {
+        // <div>Icons made by <a href="http://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+        // inline SVG allows icon to use font color.
+        return "" +
+            " <span class=\"rcm-ajaxIcon rcm-ajaxPage\">\n\t\t\t<svg width=\"15px\" height=\"15px\" version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 480.606 480.606\" style=\"enable-background:new 0 0 480.606 480.606;\" xml:space=\"preserve\">\n\t\t\t\t<g>\n\t\t\t\t\t<rect x=\"85.285\" y=\"192.5\" width=\"200\" height=\"30\"/>\n\t\t\t\t\t<path style=\"fill:currentColor\" d=\"M439.108,480.606l21.213-21.213l-71.349-71.349c12.528-16.886,19.949-37.777,19.949-60.371\n\t\t\t\t\t\tc0-40.664-24.032-75.814-58.637-92.012V108.787L241.499,0H20.285v445h330v-25.313c6.188-2.897,12.04-6.396,17.475-10.429\n\t\t\t\t\t\tL439.108,480.606z M250.285,51.213L299.072,100h-48.787V51.213z M50.285,30h170v100h100v96.957\n\t\t\t\t\t\tc-4.224-0.538-8.529-0.815-12.896-0.815c-31.197,0-59.148,14.147-77.788,36.358H85.285v30h126.856\n\t\t\t\t\t\tc-4.062,10.965-6.285,22.814-6.285,35.174c0,1.618,0.042,3.226,0.117,4.826H85.285v30H212.01\n\t\t\t\t\t\tc8.095,22.101,23.669,40.624,43.636,52.5H50.285V30z M307.389,399.208c-39.443,0-71.533-32.09-71.533-71.533\n\t\t\t\t\t\ts32.089-71.533,71.533-71.533s71.533,32.089,71.533,71.533S346.832,399.208,307.389,399.208z\"/>\n\t\t\t\t</g>\n\t\t\t</svg>\n\t\t</span>";
+    };
     // https://www.mediawiki.org/wiki/API:Revisions
     RCList.prototype.addPreviewDiffListener = function (pElem, pFromRC, pToRC) {
         if (pElem) {
@@ -1341,7 +1425,7 @@ var RCList = (function () {
             // Initializing here since "rc" may be nulled by the time the event is triggered.
             var pageName = pFromRC.title;
             var pageID = pFromRC.pageid;
-            var ajaxLink = this.wikiInfo.scriptpath + "/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp&rvdiffto=" + pToRC.revid + "&revids=" + pFromRC.old_revid;
+            var ajaxLink = this.wikiInfo.scriptpath + ("/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp|flags&rvdiffto=" + pToRC.revid + "&revids=" + pFromRC.old_revid);
             var diffLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&diff=" + pToRC.revid + "&oldid=" + pFromRC.old_revid;
             var undoLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&undo=" + pToRC.revid + "&undoafter=" + pFromRC.old_revid + "&action=edit";
             // var rollbackLink = null;
@@ -1352,7 +1436,8 @@ var RCList = (function () {
             // }
             var diffTableInfo = {
                 wikiInfo: pFromRC.wikiInfo,
-                newRev: { user: pToRC.userDetails(), summary: pToRC.getSummary(), date: pToRC.date },
+                hrefFS: pFromRC.hrefFS,
+                newRev: { user: pToRC.userDetails(), summary: pToRC.getSummary(), date: pToRC.date, minor: pToRC.isMinorEdit },
             };
             var tRCM_previewdiff = function (e) {
                 e.preventDefault();
@@ -1380,14 +1465,35 @@ var RCList = (function () {
             }
             var ajaxLink = this.wikiInfo.scriptpath + "/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
             var articlepath = this.wikiInfo.articlepath;
-            var tRCM_previewdiff = function (e) {
+            var tRCM_previewimage = function (e) {
                 e.preventDefault();
                 RCData_1.default.previewImages(ajaxLink, tImageNames, articlepath);
             };
-            pElem.addEventListener("click", tRCM_previewdiff);
-            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewdiff); });
+            pElem.addEventListener("click", tRCM_previewimage);
+            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewimage); });
             // tImageNames = null;
             pImageRCs = null;
+        }
+    };
+    // https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
+    RCList.prototype.addPreviewPageListener = function (pElem, pRC) {
+        if (pElem) {
+            pElem = pElem;
+            // Initializing here since "rc" may be nulled by the time the event is triggered.
+            var ajaxLink_1 = this.wikiInfo.scriptpath + ("/api.php?action=parse&format=json&pageid=" + pRC.pageid + "&prop=text|headhtml&disabletoc=true");
+            var pageName = pRC.title;
+            var pageHref_1 = pRC.href;
+            if (pRC.type == RC_TYPE_1.default.WALL || pRC.type == RC_TYPE_1.default.BOARD || pRC.type == RC_TYPE_1.default.COMMENT) {
+                // TODO: This isn't -exactly- true, but it gives better results than just linking to the href (as of writing this).
+                pageHref_1 = this.wikiInfo.articlepath + "Thread:" + pRC.pageid;
+            }
+            var serverLink_1 = this.wikiInfo.server;
+            var tRCM_previewpage_1 = function (e) {
+                e.preventDefault();
+                RCData_1.default.previewPage(ajaxLink_1, pageName, pageHref_1, serverLink_1);
+            };
+            pElem.addEventListener("click", tRCM_previewpage_1);
+            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewpage_1); });
         }
     };
     // private _addRollbackLink(pRC) {
@@ -1485,6 +1591,7 @@ var RCList = (function () {
                 }
                 else {
                     html += pRC.wallBoardTitleText(this.getThreadTitle());
+                    html += this.getAjaxPagePreviewButton();
                     html += " " + this._diffHist(pRC);
                     html += RCList.SEP;
                     html += this._diffSizeText(pRC);
@@ -1498,6 +1605,7 @@ var RCList = (function () {
             case RC_TYPE_1.default.NORMAL:
             default: {
                 html += pRC.pageTitleTextLink();
+                html += this.getAjaxPagePreviewButton();
                 html += " " + this._diffHist(pRC);
                 html += RCList.SEP;
                 html += this._diffSizeText(pRC);
@@ -1526,6 +1634,7 @@ var RCList = (function () {
         Utils_1.default.newElement("td", { innerHTML: html }, tRow);
         this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
         this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
+        this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), pRC);
         if (this.manager.makeLinksAjax) {
             this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link"), pRC);
             if (tTable.querySelector(".rcm-ajaxImage")) {
@@ -1563,6 +1672,7 @@ var RCList = (function () {
             }
             case RC_TYPE_1.default.NORMAL: {
                 html += "<a class='rc-pagetitle' href='" + this.newest.href + "'>" + this.newest.title + "</a>";
+                html += this.getAjaxPagePreviewButton();
                 html += " (" + this._changesText() + i18n_1.default("pipe-separator") + "<a href='" + this.newest.hrefFS + "action=history'>" + i18n_1.default("hist") + "</a>)";
                 html += RCList.SEP;
                 html += this._diffSizeText(this.newest, this.oldest);
@@ -1613,6 +1723,7 @@ var RCList = (function () {
         Utils_1.default.newElement("td", { innerHTML: html }, tRow);
         this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
         this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
+        this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), this.newest);
         if (this.manager.makeLinksAjax) {
             this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link, .rc-changes-link"), this.oldest, this.newest);
             if (tTable.querySelector(".rcm-ajaxImage")) {
@@ -1646,6 +1757,7 @@ var RCList = (function () {
                 else {
                     html += "<span class='mw-enhanced-rc-time'><a href='" + pRC.href + "' title='" + pRC.title + "'>" + pRC.time() + "</a></span>";
                     html += " (<a href='" + pRC.href + "'>" + i18n_1.default("cur") + "</a>";
+                    html += this.getAjaxPagePreviewButton();
                     if (pRC.isNewPage == false) {
                         html += i18n_1.default("pipe-separator") + "<a href='" + this.getDiffLink(pRC, pRC) + "'>" + i18n_1.default("last") + "</a>" + this.getAjaxDiffButton();
                     }
@@ -1662,6 +1774,9 @@ var RCList = (function () {
             case RC_TYPE_1.default.NORMAL: {
                 html += "<span class='mw-enhanced-rc-time'><a href='" + this.getLink(pRC, null, pRC.revid) + "' title='" + pRC.title + "'>" + pRC.time() + "</a></span>";
                 html += " (<a href='" + this.getLink(pRC, 0, pRC.revid) + "'>" + i18n_1.default("cur") + "</a>";
+                if (pRC.type == RC_TYPE_1.default.COMMENT) {
+                    html += this.getAjaxPagePreviewButton();
+                }
                 if (pRC.isNewPage == false) {
                     html += i18n_1.default("pipe-separator") + "<a href='" + this.getLink(pRC, pRC.revid, pRC.old_revid) + "'>" + i18n_1.default("last") + "</a>" + this.getAjaxDiffButton();
                 }
@@ -1686,6 +1801,7 @@ var RCList = (function () {
         Utils_1.default.newElement("td", { className: "mw-enhanced-rc-nested", innerHTML: html }, tRow);
         this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
         this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
+        this.addPreviewPageListener(tRow.querySelector(".rcm-ajaxPage"), pRC);
         if (this.manager.makeLinksAjax) {
             this.addPreviewDiffListener(tRow.querySelector(".rc-diff-link"), pRC);
         }
@@ -1718,6 +1834,7 @@ var RCList = (function () {
                     html += RCList.SEP;
                     html += this._getFlags(pRC, "") + " ";
                     html += pRC.wallBoardTitleText();
+                    html += this.getAjaxPagePreviewButton();
                     html += i18n_1.default("semicolon-separator") + pRC.time();
                     html += RCList.SEP;
                     html += this._diffSizeText(pRC);
@@ -1734,6 +1851,7 @@ var RCList = (function () {
                 html += RCList.SEP;
                 html += this._getFlags(pRC, "") + " ";
                 html += pRC.pageTitleTextLink();
+                html += this.getAjaxPagePreviewButton();
                 html += i18n_1.default("semicolon-separator") + pRC.time();
                 html += RCList.SEP;
                 html += this._diffSizeText(pRC);
@@ -1752,6 +1870,7 @@ var RCList = (function () {
         tLi.innerHTML += html;
         this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
         this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
+        this.addPreviewPageListener(tLi.querySelector(".rcm-ajaxPage"), pRC);
         if (this.manager.makeLinksAjax) {
             this.addPreviewDiffListener(tLi.querySelector(".rc-diff-link"), pRC);
             if (tLi.querySelector(".rcm-ajaxImage")) {
@@ -2191,7 +2310,7 @@ var RCMManager = (function () {
                         }
                     }
                     Main_1.default.blinkWindowTitle(i18n_1.default("wikifeatures-promotion-new") + "! " + i18n_1.default("nchanges", tNumNewChanges));
-                    var tEditSummary = !tMostRecentEntry.summary ? "" : "\n" + i18n_1.default("edit-summary") + ": " + tMostRecentEntry.summary;
+                    var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n" + i18n_1.default("edit-summary") + ": " + tMostRecentEntry.unparsedComment;
                     Main_1.default.addNotification(i18n_1.default("nchanges", tNumNewChanges) + " - " + tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " (" + i18n_1.default("nchanges", tNumNewChangesWiki) + ")" : ""), {
                         body: tMostRecentEntry.title + "\n" + Utils_1.default.ucfirst(i18n_1.default("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
                     });
@@ -2800,7 +2919,7 @@ var RCMWikiPanel = (function () {
     RCMWikiPanel.prototype.addWiki = function (pWikiInfo) {
         if (this.singleWiki) {
             if (!this.infoNode.innerHTML)
-                this.onIconClick(pWikiInfo, {});
+                this.onIconClick(pWikiInfo, null);
         }
         else {
             // this.listNode.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
@@ -2814,7 +2933,7 @@ var RCMWikiPanel = (function () {
     RCMWikiPanel.prototype.onIconClick = function (pWikiInfo, e) {
         var infoBanner = this.infoNode.querySelector(".banner-notification");
         // If already open for that wiki, then close it.
-        if (infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername && (e.screenX != 0 && e.screenY != 0)) {
+        if (infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername && e && (e.screenX != 0 && e.screenY != 0)) {
             this.closeInfo();
         }
         else {
@@ -3000,7 +3119,7 @@ var Utils = (function () {
         return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
     };
     Utils.escapeCharactersLink = function (pString) {
-        return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
+        return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\&/g, '%26').replace(/\+/g, '%2B') : pString;
     };
     // UpperCaseFirstLetter
     Utils.ucfirst = function (s) { return s && s[0].toUpperCase() + s.slice(1); };
@@ -3451,7 +3570,7 @@ var WikiData = (function () {
     };
     // Static Constants
     // What data is to be retrieved for each recent change.
-    WikiData.RC_PROPS = ["user", "flags", "title", "ids", "sizes", "timestamp", "loginfo", "parsedcomment"].join("|"); // patrolled
+    WikiData.RC_PROPS = ["user", "flags", "title", "ids", "sizes", "timestamp", "loginfo", "parsedcomment", "comment"].join("|"); // patrolled
     return WikiData;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3461,19 +3580,6 @@ exports.default = WikiData;
 "use strict";
 var $ = window.jQuery;
 var mw = window.mediaWiki;
-/*
- *  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
- * 			This i18n is set depending on your local language (en if not available).
- * MESSAGES - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
- * 			Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
- * NOTES:
- *		Common messages: https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
- * 		Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
- *		mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
- * POTENTIAL ISSUES:
- * 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
- */
-// Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 var i18n = function (pKey) {
     var pArgs = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -4428,7 +4534,13 @@ i18n.MESSAGES = {
     'wikiacuratedcontent-content-empty-section': 'This section needs some items',
     'myhome-feed-edited-by': 'edited by $1',
     'edit-summary': 'Edit summary',
+    'wikiaPhotoGallery-conflict-view': 'View the current page',
+    /***************************
+     * Diff Modal
+     ***************************/
     'revisionasof': 'Revision as of $1',
+    'editold': 'edit',
+    'editundo': 'undo',
     /***************************
      * Log Names - wgLogHeaders
      ***************************/

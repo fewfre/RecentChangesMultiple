@@ -70,7 +70,7 @@ export default class RCMWikiPanel
 	// Clear panel (on refresh).
 	addWiki(pWikiInfo:WikiData) : void {
 		if(this.singleWiki) {
-			if(!this.infoNode.innerHTML) this.onIconClick(pWikiInfo, {});
+			if(!this.infoNode.innerHTML) this.onIconClick(pWikiInfo, null);
 		} else {
 			// this.listNode.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
 			var favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
@@ -82,10 +82,10 @@ export default class RCMWikiPanel
 		}
 	}
 	
-	onIconClick(pWikiInfo:WikiData, e) : void {
+	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
 		var infoBanner = <HTMLElement>this.infoNode.querySelector(".banner-notification");
 		// If already open for that wiki, then close it.
-		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/(e.screenX != 0 && e.screenY != 0)) {
+		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
 			this.closeInfo();
 		} else {
 			// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
@@ -145,11 +145,11 @@ export default class RCMWikiPanel
 		});
 	}
 	
-	goToAndOpenInfo(e) : void {
+	goToAndOpenInfo(e:Event) : void {
 		// console.log(e, e.currentTarget);
 		// console.log(e.currentTarget.dataset.infoid);
 		
-		var btn = <HTMLElement>document.querySelector("#"+e.currentTarget.dataset.infoid);
+		var btn = <HTMLElement>document.querySelector("#"+(<any>(<HTMLElement>e.currentTarget).dataset).infoid);
 		if(btn) {
 			if(!Utils.elemIsVisible(btn)) {
 				var tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;

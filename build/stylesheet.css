@@ -164,8 +164,11 @@ table.mw-enhanced-rc td:last-child {
 /* Style the RCM module */
 #rcm-modal-content {
   min-width: 600px;
-  max-width: 1000px;
+  max-width: 1220px;
   font-size: 14px;
+}
+#rcm-modal-content #toc {
+  display: none;
 }
 @media (max-width: 500px) {
   #rcm-modal-content {

@@ -99,7 +99,7 @@ export default class Utils
 	}
 	
 	static escapeCharactersLink(pString:string) : string {
-		return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\+/g, '%2B') : pString;
+		return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\&/g, '%26').replace(/\+/g, '%2B') : pString;
 	}
 	
 	// UpperCaseFirstLetter

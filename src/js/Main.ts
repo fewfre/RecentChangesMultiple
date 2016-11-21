@@ -29,7 +29,7 @@ class Main
 	}
 	
 	// Should only be called once.
-	init(pScriptConfig:any) {
+	init(pScriptConfig:any) : void {
 		ConstantsApp.init(pScriptConfig);
 		
 		$(document).ready($.proxy(this._ready, this));
@@ -39,7 +39,7 @@ class Main
 	}
 	
 	// Once all neccisary content is loaded, start the script.
-	private _ready() {
+	private _ready() : void {
 		// Find module wrappers
 		var tWrappers = <HTMLScriptElement[]><any>document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
 
@@ -112,7 +112,7 @@ class Main
 		}
 	}
 
-	private _unload() {
+	private _unload() : void {
 		// for(i = 0; i < Main.rcmList.length; i++) {
 		// 	// Something on things seems to lag the page.
 		// 	// Main.rcmList[i].dispose();
@@ -125,7 +125,7 @@ class Main
 	/***************************
 	* Events
 	****************************/
-	private _onFocus() {
+	private _onFocus() : void {
 		this.clearNotifications();
 	}
 	
@@ -134,7 +134,7 @@ class Main
 	****************************/
 	// Replace all RC_TEXT with that of the language specified.
 	// TODO: Should probably have support to check if it ran into loading issues.
-	private _loadLangMessages() {
+	private _loadLangMessages() : void {
 		var tLangLoadAjaxPromises = [];
 
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
@@ -207,12 +207,13 @@ class Main
 	private _blinkInterval:number;
 	private _originalTitle:string;
 	
-	blinkWindowTitle(pTitle) : void {
+	blinkWindowTitle(pTitle:string) : void {
 		this.cancelBlinkWindowTitle();
 		this._originalTitle = document.title;
-		this._blinkInterval = setInterval(function(){
-			document.title = document.title == this._originalTitle ? (pTitle+" - "+this._originalTitle) : this._originalTitle;
-			if(document.hasFocus()) { this.cancelBlinkWindowTitle(); }
+		let self = this;
+		this._blinkInterval = setTimeout(function(){
+			document.title = document.title == self._originalTitle ? (pTitle+" - "+self._originalTitle) : self._originalTitle;
+			if(document.hasFocus()) { self.cancelBlinkWindowTitle(); }
 		}, 1000);
 	}
 	cancelBlinkWindowTitle() : void {
@@ -227,7 +228,7 @@ class Main
 	****************************/
 	private _notifications = [];
 	
-	addNotification(pTitle, pOptions) {
+	addNotification(pTitle:string, pOptions:{ icon?:string, body?:string }) : void {
 		if(Notification.permission !== "granted") { return; }
 		pOptions = pOptions || {};
 		pOptions.icon = pOptions.icon || ConstantsApp.NOTIFICATION_ICON;
@@ -236,7 +237,7 @@ class Main
 			this._notifications.shift().close();
 		}
 	}
-	clearNotifications() {
+	clearNotifications() : void {
 		// Remove all notifications
 		for(var i = 0; i < this._notifications.length; i++) {
 			this._notifications[i].close();

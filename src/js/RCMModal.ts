@@ -4,7 +4,15 @@ import i18n from "./i18n";
 
 let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
-	
+
+interface ModalProp {
+	title?:string,
+	content?:string,
+	vars?:any,
+	rcm_buttons?:{ value:string, event:string, closeOnClick?:boolean, callback?:(any)=>void }[],
+	rcm_onModalShown?:()=>void,
+}
+
 //######################################
 // #### Modal Manager ####
 // This is a STATIC class. This is a helper class for using Wikia modals, as RCM has some specific requirements.
@@ -17,7 +25,7 @@ export default class RCMModal
 	
 	// pData = { title:String, content:String, rcm_buttons:Array<{ value:String, event:String, callback:Event->Void, closeOnClick:Boolean=true }>, rcm_onModalShown:Void->Void, vars:Object }
 	// 'vars' is same as `wikia.ui.factory` modal.
-	static showModal(pData) {
+	static showModal(pData:ModalProp) : void {
 		// Re-open modal so that it gets re-positioned based on new content size.
 		RCMModal.closeModal();
 		
@@ -68,7 +76,7 @@ export default class RCMModal
 		});
 	}
 	
-	private static createModalComponent(pData, pCallback) {
+	private static createModalComponent(pData:any, pCallback:(any)=>void) : void {
 		(<any>window).require(['wikia.ui.factory'], function(ui) {
 			ui.init(['modal']).then(function(modal) {
 				modal.createComponent(pData, function(obj){
@@ -81,7 +89,7 @@ export default class RCMModal
 	}
 	
 	// Give same title and buttons as showModal()
-	static showLoadingModal(pData, pOnModalShown) {
+	static showLoadingModal(pData:ModalProp, pOnModalShown:()=>void) : void {
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if (!RCMModal.isModalOpen()) {
 			pData.content = "<div style='text-align:center; padding:10px;'><img src='"+ConstantsApp.LOADER_IMG+"'></div>";
@@ -90,15 +98,15 @@ export default class RCMModal
 		}
 	}
 	
-	static setModalContent(pHTML) {
+	static setModalContent(pHTML:string) : void {
 		document.querySelector("#"+RCMModal.MODAL_CONTENT_ID).innerHTML = pHTML;
 	}
 
-	static isModalOpen() {
+	static isModalOpen() : boolean {
 		return !!RCMModal.modal;
 	}
 
-	static closeModal() {
+	static closeModal() : void {
 		if(RCMModal.isModalOpen()) {
 			RCMModal.modal.trigger("close");
 		}

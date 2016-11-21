@@ -14,7 +14,15 @@ let mw = (<any>window).mediaWiki;
  * 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
  */
 // Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
-var i18n:any = function(pKey:string, ...pArgs:(string|number)[]) : string {
+interface i18nInterface {
+	(string, ...pArgs:(string|number)[]):string;
+	defaultLang: string,
+	init: (string) => void,
+	TEXT: any,
+	MESSAGES: any,
+	wiki2html: (string, ...pArgs:(string|number)[]) => string
+}
+var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
 	arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
 	if(arguments[0] == undefined) {
 		console.log(`[RecentChangesMultiple.i18n]() ${pKey} is undefined.`);
@@ -1000,7 +1008,14 @@ i18n.MESSAGES = {
 	'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
 	'myhome-feed-edited-by' : 'edited by $1',
 	'edit-summary' : 'Edit summary',
+	'wikiaPhotoGallery-conflict-view': 'View the current page',
+	
+	/***************************
+	 * Diff Modal
+	 ***************************/
 	'revisionasof' : 'Revision as of $1',
+	'editold' : 'edit',
+	'editundo' : 'undo',
 	
 	/***************************
 	 * Log Names - wgLogHeaders

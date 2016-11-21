@@ -239,54 +239,54 @@ export default class RCMOptions
 	/***************************
 	 * Events
 	 ***************************/
-	private _onChange_limit(pEvent) : void {
-		this.afterChangeNumber("limit", parseInt(pEvent.target.value));
+	private _onChange_limit(pEvent:Event) : void {
+		this.afterChangeNumber("limit", parseInt((<HTMLInputElement>pEvent.target).value));
 	}
 	
-	private _onChange_days(pEvent) : void {
-		this.afterChangeNumber("days", parseInt(pEvent.target.value));
+	private _onChange_days(pEvent:Event) : void {
+		this.afterChangeNumber("days", parseInt((<HTMLInputElement>pEvent.target).value));
 	}
 	
-	private _onChange_hideminor(pEvent) : void {
-		this.afterChangeBoolean("hideminor", !pEvent.target.checked);
+	private _onChange_hideminor(pEvent:Event) : void {
+		this.afterChangeBoolean("hideminor", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidebots(pEvent) : void {
-		this.afterChangeBoolean("hidebots", !pEvent.target.checked);
+	private _onChange_hidebots(pEvent:Event) : void {
+		this.afterChangeBoolean("hidebots", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideanons(pEvent) : void {
+	private _onChange_hideanons(pEvent:Event) : void {
 		// Both "hideanons" and "hideliu" cannot be true
-		if(pEvent.target.checked == false && this.usersCheckbox.checked == false) {
+		if((<HTMLInputElement>pEvent.target).checked == false && this.usersCheckbox.checked == false) {
 			this.manager.rcParams["hideliu"] = false;
 			this.usersCheckbox.checked = true;
 		}
-		this.afterChangeBoolean("hideanons", !pEvent.target.checked);
+		this.afterChangeBoolean("hideanons", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideliu(pEvent) : void {
+	private _onChange_hideliu(pEvent:Event) : void {
 		// Both "hideanons" and "hideliu" cannot be true
-		if(pEvent.target.checked == false && this.anonsCheckbox.checked == false) {
+		if((<HTMLInputElement>pEvent.target).checked == false && this.anonsCheckbox.checked == false) {
 			this.manager.rcParams["hideanons"] = false;
 			this.anonsCheckbox.checked = true;
 		}
-		this.afterChangeBoolean("hideliu", !pEvent.target.checked);
+		this.afterChangeBoolean("hideliu", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidemyself(pEvent) : void {
-		this.afterChangeBoolean("hidemyself", !pEvent.target.checked);
+	private _onChange_hidemyself(pEvent:Event) : void {
+		this.afterChangeBoolean("hidemyself", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideenhanced(pEvent) : void {
-		this.afterChangeBoolean("hideenhanced", !pEvent.target.checked);
+	private _onChange_hideenhanced(pEvent:Event) : void {
+		this.afterChangeBoolean("hideenhanced", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidelogs(pEvent) : void {
-		this.afterChangeBoolean("hidelogs", !pEvent.target.checked);
+	private _onChange_hidelogs(pEvent:Event) : void {
+		this.afterChangeBoolean("hidelogs", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_settingsSaveCookie(pEvent) : void {
-		if(pEvent.target.checked) {
+	private _onChange_settingsSaveCookie(pEvent:Event) : void {
+		if((<HTMLInputElement>pEvent.target).checked) {
 			this.save();
 		} else {
 			localStorage.removeItem(this.localStorageID);

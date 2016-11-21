@@ -5,7 +5,7 @@ let mw = (<any>window).mediaWiki;
 //###########################################################
 export default class ConstantsApp
 {
-	static readonly version					: string = "2.0";
+	static readonly version					: string = "2.1";
 	static readonly lastVersionDateString	: string = "Thu Oct 29 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
 	static debug							: boolean = false;
 	

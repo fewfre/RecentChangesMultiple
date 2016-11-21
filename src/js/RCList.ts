@@ -185,9 +185,10 @@ export default class RCList
 				callback: function(data){
 					var tSpan = document.querySelector("#"+tElemID);
 					for(var tPageIndex in data.query.pages)
+					var tPage = data.query.pages[tPageIndex];
 					
-					(<HTMLAnchorElement>tSpan.parentNode).href = self.wikiInfo.articlepath + "Thread:" + data.query.pages[tPageIndex].pageid;
-					var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(data.query.pages[tPageIndex].revisions[0]["*"]);
+					(<HTMLAnchorElement>tSpan.parentNode).href = self.wikiInfo.articlepath + "Thread:" + tPage.pageid;
+					var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
 					if(tTitleData != null) {
 						tSpan.innerHTML = tTitleData[1];
 					}
@@ -240,6 +241,26 @@ export default class RCList
 		</span>`;
 	}
 	
+	getAjaxPagePreviewButton() : string {
+		// <div>Icons made by <a href="http://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+		// inline SVG allows icon to use font color.
+		return ""+
+		` <span class="rcm-ajaxIcon rcm-ajaxPage">
+			<svg width="15px" height="15px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 480.606 480.606" style="enable-background:new 0 0 480.606 480.606;" xml:space="preserve">
+				<g>
+					<rect x="85.285" y="192.5" width="200" height="30"/>
+					<path style="fill:currentColor" d="M439.108,480.606l21.213-21.213l-71.349-71.349c12.528-16.886,19.949-37.777,19.949-60.371
+						c0-40.664-24.032-75.814-58.637-92.012V108.787L241.499,0H20.285v445h330v-25.313c6.188-2.897,12.04-6.396,17.475-10.429
+						L439.108,480.606z M250.285,51.213L299.072,100h-48.787V51.213z M50.285,30h170v100h100v96.957
+						c-4.224-0.538-8.529-0.815-12.896-0.815c-31.197,0-59.148,14.147-77.788,36.358H85.285v30h126.856
+						c-4.062,10.965-6.285,22.814-6.285,35.174c0,1.618,0.042,3.226,0.117,4.826H85.285v30H212.01
+						c8.095,22.101,23.669,40.624,43.636,52.5H50.285V30z M307.389,399.208c-39.443,0-71.533-32.09-71.533-71.533
+						s32.089-71.533,71.533-71.533s71.533,32.089,71.533,71.533S346.832,399.208,307.389,399.208z"/>
+				</g>
+			</svg>
+		</span>`;
+	}
+	
 	// https://www.mediawiki.org/wiki/API:Revisions
 	addPreviewDiffListener(pElem:HTMLElement|Element, pFromRC:RCData, pToRC?:RCData) : void {
 		if(pElem) {
@@ -248,7 +269,7 @@ export default class RCList
 			// Initializing here since "rc" may be nulled by the time the event is triggered.
 			var pageName = pFromRC.title;
 			var pageID = pFromRC.pageid;
-			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp&rvdiffto="+pToRC.revid+"&revids="+pFromRC.old_revid;
+			var ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=query&format=json&prop=revisions|info&rvprop=size|user|parsedcomment|timestamp|flags&rvdiffto=${pToRC.revid}&revids=${pFromRC.old_revid}`;
 			var diffLink = `${pFromRC.hrefFS}curid=${pFromRC.pageid}&diff=${pToRC.revid}&oldid=${pFromRC.old_revid}`;
 			var undoLink = `${pFromRC.hrefFS}curid=${pFromRC.pageid}&undo=${pToRC.revid}&undoafter=${pFromRC.old_revid}&action=edit`;
 			// var rollbackLink = null;
@@ -259,7 +280,8 @@ export default class RCList
 			// }
 			var diffTableInfo = {
 				wikiInfo: pFromRC.wikiInfo,
-				newRev:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date },
+				hrefFS: pFromRC.hrefFS,
+				newRev:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date, minor:pToRC.isMinorEdit },
 			};
 			
 			var tRCM_previewdiff = function(e) {
@@ -291,15 +313,38 @@ export default class RCList
 			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
 			var articlepath = this.wikiInfo.articlepath;
 			
-			var tRCM_previewdiff = function(e) {
+			var tRCM_previewimage = function(e) {
 				e.preventDefault();
 				RCData.previewImages(ajaxLink, tImageNames, articlepath);
 			}
-			pElem.addEventListener("click", tRCM_previewdiff);
-			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
+			pElem.addEventListener("click", tRCM_previewimage);
+			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewimage); });
 			
 			// tImageNames = null;
 			pImageRCs = null;
+		}
+	}
+	
+	// https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
+	addPreviewPageListener(pElem:HTMLElement|Element, pRC:RCData) : void {
+		if(pElem) {
+			pElem = <HTMLElement>pElem;
+			// Initializing here since "rc" may be nulled by the time the event is triggered.
+			let ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=parse&format=json&pageid=${pRC.pageid}&prop=text|headhtml&disabletoc=true`;
+			var pageName = pRC.title;
+			let pageHref = pRC.href;
+			if(pRC.type == RC_TYPE.WALL || pRC.type == RC_TYPE.BOARD || pRC.type == RC_TYPE.COMMENT) {
+				// TODO: This isn't -exactly- true, but it gives better results than just linking to the href (as of writing this).
+				pageHref = this.wikiInfo.articlepath + "Thread:" + pRC.pageid
+			}
+			let serverLink = this.wikiInfo.server;
+			
+			let tRCM_previewpage = function(e) {
+				e.preventDefault();
+				RCData.previewPage(ajaxLink, pageName, pageHref, serverLink);
+			}
+			pElem.addEventListener("click", tRCM_previewpage);
+			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewpage); });
 		}
 	}
 	
@@ -385,6 +430,7 @@ export default class RCList
 					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
 				} else {
 					html += pRC.wallBoardTitleText( this.getThreadTitle() );
+					html += this.getAjaxPagePreviewButton();
 					html += " "+this._diffHist(pRC);
 					html += RCList.SEP;
 					html += this._diffSizeText(pRC);
@@ -398,6 +444,7 @@ export default class RCList
 			case RC_TYPE.NORMAL:
 			default: {
 				html += pRC.pageTitleTextLink();
+				html += this.getAjaxPagePreviewButton();
 				html += " "+this._diffHist(pRC);
 				html += RCList.SEP;
 				html += this._diffSizeText(pRC);
@@ -426,6 +473,7 @@ export default class RCList
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
+		this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), pRC);
 		if(this.manager.makeLinksAjax) {
 			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link"), pRC);
 			if(tTable.querySelector(".rcm-ajaxImage")) {
@@ -461,6 +509,7 @@ export default class RCList
 			}
 			case RC_TYPE.NORMAL: {
 				html += "<a class='rc-pagetitle' href='"+this.newest.href+"'>"+this.newest.title+"</a>";
+				html += this.getAjaxPagePreviewButton();
 				html += " ("+this._changesText()+i18n("pipe-separator")+"<a href='"+this.newest.hrefFS+"action=history'>"+i18n("hist")+"</a>)";
 				html += RCList.SEP
 				html += this._diffSizeText(this.newest, this.oldest);
@@ -511,6 +560,7 @@ export default class RCList
 		
 		this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
 		this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
+		this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), this.newest);
 		if(this.manager.makeLinksAjax) {
 			this.addPreviewDiffListener(tTable.querySelector(".rc-diff-link, .rc-changes-link"), this.oldest, this.newest);
 			if(tTable.querySelector(".rcm-ajaxImage")) {
@@ -544,6 +594,7 @@ export default class RCList
 				} else {
 					html += "<span class='mw-enhanced-rc-time'><a href='"+pRC.href+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>";
 					html += " (<a href='"+pRC.href+"'>"+i18n("cur")+"</a>";
+					html += this.getAjaxPagePreviewButton();
 					if(pRC.isNewPage == false) {
 						html += i18n("pipe-separator")+"<a href='"+this.getDiffLink(pRC, pRC)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
 					}
@@ -560,6 +611,9 @@ export default class RCList
 			case RC_TYPE.NORMAL: {
 				html += "<span class='mw-enhanced-rc-time'><a href='"+this.getLink(pRC, null, pRC.revid)+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>"
 				html += " (<a href='"+this.getLink(pRC, 0, pRC.revid)+"'>"+i18n("cur")+"</a>";
+				if(pRC.type == RC_TYPE.COMMENT) {
+					html += this.getAjaxPagePreviewButton();
+				}
 				if(pRC.isNewPage == false) {
 					html += i18n("pipe-separator")+"<a href='"+this.getLink(pRC, pRC.revid, pRC.old_revid)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
 				}
@@ -584,6 +638,7 @@ export default class RCList
 		
 		this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
+		this.addPreviewPageListener(tRow.querySelector(".rcm-ajaxPage"), pRC);
 		if(this.manager.makeLinksAjax) { this.addPreviewDiffListener(tRow.querySelector(".rc-diff-link"), pRC); }
 		
 		return <HTMLElement>tRow;
@@ -613,6 +668,7 @@ export default class RCList
 					html += RCList.SEP;
 					html += this._getFlags(pRC, "")+" ";
 					html += pRC.wallBoardTitleText();
+					html += this.getAjaxPagePreviewButton();
 					html += i18n("semicolon-separator")+pRC.time();
 					html += RCList.SEP;
 					html += this._diffSizeText(pRC);
@@ -629,6 +685,7 @@ export default class RCList
 				html += RCList.SEP;
 				html += this._getFlags(pRC, "")+" ";
 				html += pRC.pageTitleTextLink();
+				html += this.getAjaxPagePreviewButton();
 				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
 				html += this._diffSizeText(pRC);
@@ -646,6 +703,7 @@ export default class RCList
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);
 		this.addPreviewImageListener(tLi.querySelector(".rcm-ajaxImage"), pRC);
+		this.addPreviewPageListener(tLi.querySelector(".rcm-ajaxPage"), pRC);
 		if(this.manager.makeLinksAjax) {
 			this.addPreviewDiffListener(tLi.querySelector(".rc-diff-link"), pRC);
 			if(tLi.querySelector(".rcm-ajaxImage")) {

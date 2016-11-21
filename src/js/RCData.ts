@@ -16,8 +16,6 @@ let mw = (<any>window).mediaWiki;
 //######################################
 export default class RCData
 {
-	// static readonly TYPE = Object.freeze({ NORMAL:"normalChange", LOG:"logChange", COMMENT:"commentType", WALL:"wallChange", BOARD:"boardChange", });
-	
 	// Storage
 	readonly manager	: RCMManager; // Keep track of what manager this data is attached to.
 	readonly wikiInfo	: WikiData; // Keep track of what Wiki this data belongs to.
@@ -36,6 +34,7 @@ export default class RCData
 	newlen				: number; // New file size after edit
 	oldlen				: number; // Previous file size before edit
 	summary				: string; // Submit comment for the edit.
+	unparsedComment		: string; // Submit comment for the edit without HTML tags.
 	
 	pageid				: number; // rc_cur_id - https://www.mediawiki.org/wiki/Manual:Recentchanges_table#rc_cur_id
 	revid				: number; // rc_this_oldid - https://www.mediawiki.org/wiki/Manual:Recentchanges_table#rc_this_oldid
@@ -52,7 +51,7 @@ export default class RCData
 	titleNoNS			: string; // Same as this.title, but with the namespace removed (if there is one)
 	uniqueID			: string; // A unique ID is primarily important for boards/walls, since they group by the first "/@comment" in the page name.
 	hrefTitle			: string; // Title of page, escaped for url (neccisary if page name as passed along an ajax call)
-	href				: string; // link the the page (no "&diff", etc) ex: http://test.wikia.com/wiki/Test
+	href				: string; // link to the page (no "&diff", etc) ex: http://test.wikia.com/wiki/Test
 	hrefBasic			: string; // Same as this.href, but with nos "/@comment"s either.
 	hrefFS				: string; // Same as this.href, but followed by this.wikiInfo.firstSeperator.
 	
@@ -112,6 +111,7 @@ export default class RCData
 		// 	this.summary = '<span class="history-deleted">'+i18n("rev-deleted-comment")+'</span>';
 		// }
 		this.summary = RCData.formatParsedComment(pData.parsedcomment, pData.commenthidden == "", this.wikiInfo);
+		this.unparsedComment = pData.comment;
 		
 		this.pageid = pData.pageid;
 		this.revid = pData.revid;
@@ -143,7 +143,7 @@ export default class RCData
 			else { this.type = TYPE.COMMENT; }
 			
 			if(this.type == TYPE.BOARD || this.type == TYPE.WALL) {
-				this.uniqueID = this.title + "/@comment" + pData.title.split("/@comment")[1]; // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
+				this.uniqueID = Utils.escapeCharactersLink( pData.title.split("/@comment")[0] + "/@comment" + pData.title.split("/@comment")[1] ); // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
 				// var tAcMetaDataCheck = "&lt;ac_metadata title=\"";
 				// var tAcMetaDataPos = this.summary.lastIndexOf(tAcMetaDataCheck);
 				// if(tAcMetaDataPos > -1) { // Check for last encase some has a "ac_metadata" tag as part of their post for some reason
@@ -707,7 +707,9 @@ export default class RCData
 					// 	});
 					// }
 					
-					// TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message
+					var tOMinor = tRevision.minor == "" ? `<abbr class="minoredit">${i18n('minoreditletter')}</abbr> ` : "";
+					var tNMinor = pDiffTableInfo.newRev.minor ? `<abbr class="minoredit">${i18n('minoreditletter')}</abbr> ` : "";
+					// TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
 					var tModalContent = ''
 					+"<div id='rcm-diff-view'>"
 					+"<table class='diff'>"
@@ -720,15 +722,32 @@ export default class RCData
 						+"<tbody>"
 							+"<tr class='diff-header' valign='top'>"
 								+"<td class='diff-otitle' colspan='2'>"
-									+"<div class='mw-diff-otitle1'><strong>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone))+"</strong></div>"
+									+"<div class='mw-diff-otitle1'>"
+										+"<strong>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone))+"</a>"
+											+" <span class='mw-rev-head-action'>"
+												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`
+											+"</span>"
+										+"</strong>"
+									+"</div>"
 									+"<div class='mw-diff-otitle2'>"+RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>"
-									+"<div class='mw-diff-otitle3'>"+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>"
+									+"<div class='mw-diff-otitle3'>"+tOMinor+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>"
 									// +"<div class='mw-diff-otitle4'></div>"
 								+"</td>"
 								+"<td class='diff-ntitle' colspan='2'>"
-									+"<div class='mw-diff-ntitle2'><strong>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone))+"</strong></div>"
-									+"<div class='mw-diff-ntitle1'>"+pDiffTableInfo.newRev.user+"</div>"
-									+"<div class='mw-diff-ntitle3'>"+pDiffTableInfo.newRev.summary+"</div>"
+									+"<div class='mw-diff-ntitle1'>"
+										+"<strong>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone))+"</a>"
+											+" <span class='mw-rev-head-action'>"
+												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`
+											+"</span>"
+											+"<span class='mw-rev-head-action'>"
+												+`(<a href="${pDiffTableInfo.hrefFS}action=edit&undoafter=${tRevision.diff.to}&undo=${tRevision.diff.to}" data-action="undo">${i18n('editundo')}</a>)`
+											+"</span>"
+										+"</strong>"
+									+"</div>"
+									+"<div class='mw-diff-ntitle2'>"+pDiffTableInfo.newRev.user+"</div>"
+									+"<div class='mw-diff-ntitle3'>"+tNMinor+pDiffTableInfo.newRev.summary+"</div>"
 									// +"<div class='mw-diff-ntitle4'></div>"
 								+"</td>"
 							+"</tr>"
@@ -744,7 +763,7 @@ export default class RCData
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
-	static previewImages(pAjaxUrl, pImageNames, pArticlePath) : void {
+	static previewImages(pAjaxUrl:string, pImageNames:string[], pArticlePath:string) : void {
 		var tImagesInLog = pImageNames.slice();
 		var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
 		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
@@ -880,6 +899,66 @@ export default class RCData
 					// RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
 					RCMModal.setModalContent(tModalContent);
 					tAddLoadMoreButton();
+				},
+			});
+		});
+	}
+	
+	static previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServerLink:string) : void {
+		if(ConstantsApp.debug) { console.log(`http:${pAjaxUrl}`); }
+		
+		var tTitle = `${pPageName}`;
+		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
+		var tButtons = [];
+		tButtons.push({
+			value: i18n('wikiaPhotoGallery-conflict-view'),
+			event: "diff",
+			callback: function(){ window.open(pPageHref, '_blank'); },
+		});
+		
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
+			// Retrieve the diff table.
+			// TODO - error support?
+			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
+				success: function(pData){
+					var tContentText = pData.parse.text["*"];
+					
+					var tModalContent = ''
+					+"<div class='ArticlePreview'>"
+					+"<div class='ArticlePreviewInner'>"
+					+"<div class='WikiaArticle'>"
+					+"<div id='mw-content-text'>"
+						+ tContentText
+					+"</div>"
+					+"</div>"
+					+"</div>"
+					+"</div>";
+					RCMModal.setModalContent(tModalContent);
+					let tCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID+" #mw-content-text");
+					if((<any>tCont).attachShadow) {
+						let shadowRoot = (<any>tCont).attachShadow({ mode:"open" });
+						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
+						let tCurPageHead = <HTMLElement>document.querySelector("head").cloneNode(true);
+						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
+							shadowRoot.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+						});
+						// Prevent warnings from poping up about shadow dom not supporting <link>.
+						Utils.forEach(tPreviewHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
+						
+						// Also do it for current head
+						Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
+							shadowRoot.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+						});
+						Utils.forEach(tCurPageHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
+						
+						shadowRoot.innerHTML += tCurPageHead.innerHTML;
+						shadowRoot.innerHTML += tPreviewHead.innerHTML;
+						shadowRoot.innerHTML += tContentText;
+						tCont = shadowRoot;
+					}
+					Utils.forEach(tCont.querySelectorAll("a[href^='/']"), function(o, i, a){
+						o.href = pServerLink + o.getAttribute("href");
+					});
 				},
 			});
 		});

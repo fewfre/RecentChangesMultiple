@@ -1,3 +1,12 @@
+== V2.1 - 20 November 2016 ==
+- Ajax diff timestamps now link to diff as well as have edit buttons next to them (and the new edit has an undo button). Added to mirror normal diff behavior.
+- Ajax diff also shows the "m" minor icon. Added to mirror normal diff behavior.
+- [Bug] Fixed issue with retrieving thread names that had specific special characters in them due to being escaped for html rather than urls.
+- [Bug] Notifications showed HTML (like when a →‎ icon was shown from a section edit)
+- Added ajax page preview button. Currently works on articles, and single edits of comments/walls/boards (not whole conversations).
+	- This feature is very unpolished. Not all CSS is loaded, not all scripts run, etc.
+
+
 == V2.0 - 29 October 2016 ==
 - Project converted to TypeScript.
 	- added RC_TYPE enum
