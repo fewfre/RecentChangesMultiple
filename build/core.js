@@ -36,7 +36,7 @@ var ConstantsApp = (function () {
     return ConstantsApp;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ConstantsApp;
+exports["default"] = ConstantsApp;
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -64,7 +64,7 @@ var Main = (function () {
     }
     // Should only be called once.
     Main.prototype.init = function (pScriptConfig) {
-        ConstantsApp_1.default.init(pScriptConfig);
+        ConstantsApp_1["default"].init(pScriptConfig);
         $(document).ready($.proxy(this._ready, this));
         $(document).unload($.proxy(this._unload, this));
         $(window).focus($.proxy(this._onFocus, this));
@@ -77,15 +77,15 @@ var Main = (function () {
          * Setup
          ***************************/
         // Load the css for module
-        Utils_1.default.newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
         var tDataset = tWrappers[0].dataset;
-        i18n_1.default.init(tDataset.lang);
+        i18n_1["default"].init(tDataset.lang);
         // Set load delay (needed for scripts that load large numbers of wikis)
         if (tDataset.loaddelay) {
-            ConstantsApp_1.default.loadDelay = tDataset.loaddelay;
+            ConstantsApp_1["default"].loadDelay = tDataset.loaddelay;
         }
         if (tDataset.localsystemmessages === "false") {
-            ConstantsApp_1.default.useLocalSystemMessages = false;
+            ConstantsApp_1["default"].useLocalSystemMessages = false;
         }
         // Unless specified, hide the rail to better replicate Special:RecentChanges
         if (tDataset.hiderail !== "false") {
@@ -107,15 +107,15 @@ var Main = (function () {
                 this.rcParamsURL[param] = tUrlVars[param] == "1";
             }
             if (param == "debug") {
-                ConstantsApp_1.default.debug = (tUrlVars[param] == "true");
+                ConstantsApp_1["default"].debug = (tUrlVars[param] == "true");
             }
         }
         /***************************
          * Start App
          ***************************/
         var self = this;
-        Utils_1.default.forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray) {
-            self.rcmList.push(new RCMManager_1.default(pNode, pI).init());
+        Utils_1["default"].forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray) {
+            self.rcmList.push(new RCMManager_1["default"](pNode, pI).init());
         });
         tWrappers = null;
         // This does things like allow "fieldset" to collapse in RCMOptions
@@ -158,9 +158,9 @@ var Main = (function () {
         var tLangLoadAjaxPromises = [];
         // Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
         function tRCM_loadLangMessage(pMessages) {
-            var tScriptPath = ConstantsApp_1.default.useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
-            var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang=" + i18n_1.default.defaultLang + "&ammessages=" + pMessages;
-            if (ConstantsApp_1.default.debug) {
+            var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
+            var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang=" + i18n_1["default"].defaultLang + "&ammessages=" + pMessages;
+            if (ConstantsApp_1["default"].debug) {
                 console.log(url.replace("&format=json", "&format=jsonfm"));
             }
             return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
@@ -169,7 +169,7 @@ var Main = (function () {
                         return; // Catch for wikis that restrict api access.
                     $.each((pData.query || {}).allmessages, function (index, message) {
                         if (message.missing !== '') {
-                            i18n_1.default.MESSAGES[message.name] = message['*'];
+                            i18n_1["default"].MESSAGES[message.name] = message['*'];
                         }
                     });
                 }
@@ -177,7 +177,7 @@ var Main = (function () {
         }
         // Loads messages in increments of 50.
         var tMessages = "", tNumLoading = 0;
-        Object.keys(i18n_1.default.MESSAGES).forEach(function (key) {
+        Object.keys(i18n_1["default"].MESSAGES).forEach(function (key) {
             tMessages += (tNumLoading > 0 ? "|" : "") + key;
             tNumLoading++;
             if (tNumLoading >= 50) {
@@ -242,7 +242,7 @@ var Main = (function () {
             return;
         }
         pOptions = pOptions || {};
-        pOptions.icon = pOptions.icon || ConstantsApp_1.default.NOTIFICATION_ICON;
+        pOptions.icon = pOptions.icon || ConstantsApp_1["default"].NOTIFICATION_ICON;
         this._notifications.push(new Notification(pTitle, pOptions));
         if (this._notifications.length > 1) {
             this._notifications.shift().close();
@@ -262,7 +262,7 @@ var Main = (function () {
     return Main;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = new Main();
+exports["default"] = new Main();
 
 },{"./ConstantsApp":1,"./RCMManager":5,"./Utils":10,"./i18n":12}],3:[function(require,module,exports){
 "use strict";
@@ -295,7 +295,7 @@ var RCData = (function () {
         this.userEdited = pData.user != "" && pData.anon != "";
         this.author = this.userEdited ? pData.user : (pData.anon ? pData.anon : pData.user);
         this.userhidden = pData.userhidden == "";
-        this.title = Utils_1.default.escapeCharacters(pData.title.split("/@comment")[0]);
+        this.title = Utils_1["default"].escapeCharacters(pData.title.split("/@comment")[0]);
         this.namespace = pData.ns;
         this.logtype = pData.logtype;
         this.logaction = pData.logaction;
@@ -318,13 +318,13 @@ var RCData = (function () {
         this.isPatrolled = pData.patrolled == "";
         this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
         this.uniqueID = this.title; // By default; make change based on this.type.
-        this.hrefTitle = Utils_1.default.escapeCharactersLink(pData.title);
+        this.hrefTitle = Utils_1["default"].escapeCharactersLink(pData.title);
         this.href = this.wikiInfo.articlepath + this.hrefTitle;
         this.hrefBasic = this.href.split("/@comment")[0];
         this.hrefFS = this.href + this.wikiInfo.firstSeperator;
         // Figure out the type of edit this is.
         if (this.logtype && this.logtype != "0") {
-            this.type = RC_TYPE_1.default.LOG;
+            this.type = RC_TYPE_1["default"].LOG;
             this.log_info_0 = pData["0"];
             this.actionhidden = pData.actionhidden == "";
             this._initLog(pData, pLogDataArray);
@@ -332,16 +332,16 @@ var RCData = (function () {
         else if (pData.title.indexOf("/@comment") > -1) {
             this.isSubComment = pData.title.indexOf("/@comment") != pData.title.lastIndexOf("/@comment"); // Check if it has more than one "/@comment"s
             if (this.namespace == 2001) {
-                this.type = RC_TYPE_1.default.BOARD;
+                this.type = RC_TYPE_1["default"].BOARD;
             }
             else if (this.namespace == 1201) {
-                this.type = RC_TYPE_1.default.WALL;
+                this.type = RC_TYPE_1["default"].WALL;
             }
             else {
-                this.type = RC_TYPE_1.default.COMMENT;
+                this.type = RC_TYPE_1["default"].COMMENT;
             }
-            if (this.type == RC_TYPE_1.default.BOARD || this.type == RC_TYPE_1.default.WALL) {
-                this.uniqueID = Utils_1.default.escapeCharactersLink(pData.title.split("/@comment")[0] + "/@comment" + pData.title.split("/@comment")[1]); // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
+            if (this.type == RC_TYPE_1["default"].BOARD || this.type == RC_TYPE_1["default"].WALL) {
+                this.uniqueID = Utils_1["default"].escapeCharactersLink(pData.title.split("/@comment")[0] + "/@comment" + pData.title.split("/@comment")[1]); // Walls/boards can have 2 /@comments, the first one is what we care about for lists.
                 // var tAcMetaDataCheck = "&lt;ac_metadata title=\"";
                 // var tAcMetaDataPos = this.summary.lastIndexOf(tAcMetaDataCheck);
                 // if(tAcMetaDataPos > -1) { // Check for last encase some has a "ac_metadata" tag as part of their post for some reason
@@ -365,12 +365,12 @@ var RCData = (function () {
                 this.isWallBoardAction = this.logtype == "0";
                 // If a wall / board was edited, display a message saying so.
                 if (this.isWallBoardAction == false && this.isNewPage == false && this.summary == "") {
-                    this.summary = this.type == RC_TYPE_1.default.BOARD ? i18n_1.default("forum-recentchanges-edit") : i18n_1.default("wall-recentchanges-edit");
+                    this.summary = this.type == RC_TYPE_1["default"].BOARD ? i18n_1["default"]("forum-recentchanges-edit") : i18n_1["default"]("wall-recentchanges-edit");
                 }
             }
         }
         else {
-            this.type = RC_TYPE_1.default.NORMAL;
+            this.type = RC_TYPE_1["default"].NORMAL;
         }
         return this; // Return self for chaining or whatnot.
     };
@@ -408,14 +408,14 @@ var RCData = (function () {
                 var is_log_move_noredirect = false;
                 if (this.wikiInfo.useOutdatedLogSystem == false) {
                     if (tLogParams) {
-                        this.log_move_newTitle = Utils_1.default.escapeCharacters(tLogParams.target_title);
+                        this.log_move_newTitle = Utils_1["default"].escapeCharacters(tLogParams.target_title);
                         is_log_move_noredirect = tLogParams.suppressredirect == "";
                     }
                 }
                 else {
                     tLogParams = tLogParams.move;
                     if (tLogParams) {
-                        this.log_move_newTitle = Utils_1.default.escapeCharacters(tLogParams.new_title);
+                        this.log_move_newTitle = Utils_1["default"].escapeCharacters(tLogParams.new_title);
                         is_log_move_noredirect = tLogParams.suppressedredirect == "";
                     }
                 }
@@ -428,15 +428,15 @@ var RCData = (function () {
                 this.log_rights_newgroups = "?";
                 if (this.wikiInfo.useOutdatedLogSystem == false) {
                     if (tLogParams) {
-                        this.log_rights_oldgroups = tLogParams.oldgroups.length == 0 ? i18n_1.default("rightsnone") : tLogParams.oldgroups.join(", ");
-                        this.log_rights_newgroups = tLogParams.newgroups.length == 0 ? i18n_1.default("rightsnone") : tLogParams.newgroups.join(", ");
+                        this.log_rights_oldgroups = tLogParams.oldgroups.length == 0 ? i18n_1["default"]("rightsnone") : tLogParams.oldgroups.join(", ");
+                        this.log_rights_newgroups = tLogParams.newgroups.length == 0 ? i18n_1["default"]("rightsnone") : tLogParams.newgroups.join(", ");
                     }
                 }
                 else {
                     tLogParams = tLogParams.rights;
                     if (tLogParams) {
-                        this.log_rights_oldgroups = tLogParams.old == "" ? i18n_1.default("rightsnone") : tLogParams.old;
-                        this.log_rights_newgroups = tLogParams["new"] == "" ? i18n_1.default("rightsnone") : tLogParams["new"];
+                        this.log_rights_oldgroups = tLogParams.old == "" ? i18n_1["default"]("rightsnone") : tLogParams.old;
+                        this.log_rights_newgroups = tLogParams["new"] == "" ? i18n_1["default"]("rightsnone") : tLogParams["new"];
                     }
                 }
                 break;
@@ -460,8 +460,8 @@ var RCData = (function () {
                 }
                 for (var i = 0; i < log_block_flags_arr.length; i++) {
                     // If we have a translation for flag, use it. otherwise, leave the flag id alone.
-                    if (i18n_1.default("block-log-flags-" + log_block_flags_arr[i])) {
-                        log_block_flags_arr[i] = i18n_1.default("block-log-flags-" + log_block_flags_arr[i]);
+                    if (i18n_1["default"]("block-log-flags-" + log_block_flags_arr[i])) {
+                        log_block_flags_arr[i] = i18n_1["default"]("block-log-flags-" + log_block_flags_arr[i]);
                     }
                 }
                 this.log_block_flags = "(" + log_block_flags_arr.join(", ") + ")";
@@ -488,15 +488,15 @@ var RCData = (function () {
                 }
                 switch (log_delete_new_bitmask_id) {
                     case 1: {
-                        this.log_delete_new_bitmask = i18n_1.default("revdelete-content-hid");
+                        this.log_delete_new_bitmask = i18n_1["default"]("revdelete-content-hid");
                         break;
                     }
                     case 2: {
-                        this.log_delete_new_bitmask = i18n_1.default("revdelete-summary-hid"); // I'm assuming; couldn't actually find what "2" was.
+                        this.log_delete_new_bitmask = i18n_1["default"]("revdelete-summary-hid"); // I'm assuming; couldn't actually find what "2" was.
                         break;
                     }
                     case 3: {
-                        this.log_delete_new_bitmask = i18n_1.default("revdelete-content-hid") + i18n_1.default("and") + " " + i18n_1.default("revdelete-summary-hid");
+                        this.log_delete_new_bitmask = i18n_1["default"]("revdelete-content-hid") + i18n_1["default"]("and") + " " + i18n_1["default"]("revdelete-summary-hid");
                         break;
                     }
                 }
@@ -507,7 +507,7 @@ var RCData = (function () {
                 this.log_merge_mergepoint = "0";
                 if (this.wikiInfo.useOutdatedLogSystem == false) {
                     if (tLogParams) {
-                        this.log_merge_destination = Utils_1.default.escapeCharacters(tLogParams.dest_title);
+                        this.log_merge_destination = Utils_1["default"].escapeCharacters(tLogParams.dest_title);
                         this.log_merge_mergepoint = tLogParams.mergepoint;
                     }
                 }
@@ -516,8 +516,8 @@ var RCData = (function () {
                     // if(tLogParams) {
                     // }
                     if (this.log_info_0 && pRCData["1"]) {
-                        this.log_merge_destination = Utils_1.default.escapeCharacters(this.log_info_0);
-                        this.log_merge_mergepoint = Utils_1.default.getTimestampForYYYYMMDDhhmmSS(pRCData["1"]);
+                        this.log_merge_destination = Utils_1["default"].escapeCharacters(this.log_info_0);
+                        this.log_merge_mergepoint = Utils_1["default"].getTimestampForYYYYMMDDhhmmSS(pRCData["1"]);
                     }
                 }
                 break;
@@ -526,7 +526,7 @@ var RCData = (function () {
         tLogParams = null;
     };
     RCData.prototype.time = function () {
-        return Utils_1.default.pad(Utils_1.default.getHours(this.date, this.manager.timezone), 2) + ":" + Utils_1.default.pad(Utils_1.default.getMinutes(this.date, this.manager.timezone), 2);
+        return Utils_1["default"].pad(Utils_1["default"].getHours(this.date, this.manager.timezone), 2) + ":" + Utils_1["default"].pad(Utils_1["default"].getMinutes(this.date, this.manager.timezone), 2);
     };
     RCData.prototype.userDetails = function () {
         // if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
@@ -541,73 +541,73 @@ var RCData = (function () {
     };
     RCData.formatUserDetails = function (pWikiInfo, pAuthor, pUserHidden, pUserEdited) {
         if (pUserHidden) {
-            return '<span class="history-deleted">' + i18n_1.default("rev-deleted-user") + '</span>';
+            return '<span class="history-deleted">' + i18n_1["default"]("rev-deleted-user") + '</span>';
         }
-        var blockText = pWikiInfo.canBlock ? i18n_1.default("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1.default("blocklink") + "</a>" : "";
+        var blockText = pWikiInfo.canBlock ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         if (pUserEdited) {
-            return Utils_1.default.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1.default("talkpagelinktext") + "</a>" + i18n_1.default("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1.default("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1.default.escapeCharactersLink(pAuthor), pAuthor);
+            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1["default"]("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
         else {
-            return Utils_1.default.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1.default("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1.default.escapeCharactersLink(pAuthor), pAuthor);
+            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
     };
     RCData.prototype.logTitleText = function () {
         var logTemplate = "(<a class='rc-log-link' href='" + this.wikiInfo.articlepath + "Special:Log/{0}'>{1}</a>)";
         switch (this.logtype) {
             case "abusefilter": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("abusefilter-log"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("abusefilter-log"));
             }
             case "block": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("blocklogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("blocklogpage"));
             }
             case "chatban": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("chat-chatban-log"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("chat-chatban-log"));
             }
             case "delete": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("dellogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("dellogpage"));
             }
             case "import": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("importlogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("importlogpage"));
             }
             case "maps": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("wikia-interactive-maps-log-name"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("wikia-interactive-maps-log-name"));
             }
             case "merge": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("mergelog"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("mergelog"));
             }
             case "move": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("movelogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("movelogpage"));
             }
             case "protect": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("protectlogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("protectlogpage"));
             }
             case "upload": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("uploadlogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("uploadlogpage"));
             }
             case "useravatar": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("useravatar-log"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("useravatar-log"));
             }
             case "newusers": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("newuserlogpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("newuserlogpage"));
             }
             case "renameuser": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("userrenametool-logpage"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("userrenametool-logpage"));
             }
             case "rights": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("rightslog"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("rightslog"));
             }
             case "wikifeatures": {
-                return Utils_1.default.formatString(logTemplate, this.logtype, i18n_1.default("wikifeatures-log-name"));
+                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("wikifeatures-log-name"));
             }
             default: {
-                return Utils_1.default.formatString(logTemplate, this.logtype, this.logtype);
+                return Utils_1["default"].formatString(logTemplate, this.logtype, this.logtype);
             } // At least display it as a log.
         }
         // return "";
     };
     // Check each entry for "threadTitle", else return default text.
     RCData.prototype.getThreadTitle = function () {
-        return this.threadTitle ? this.threadTitle : "<i>" + i18n_1.default('rcm-unknownthreadname') + "</i>";
+        return this.threadTitle ? this.threadTitle : "<i>" + i18n_1["default"]('rcm-unknownthreadname') + "</i>";
     };
     RCData.prototype.getSummary = function () {
         // if(this.summary == "" || this.summary == undefined) {
@@ -632,7 +632,7 @@ var RCData = (function () {
             pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\"" + pWikiInfo.server + "/"); // Make links point to correct wiki.
         }
         else {
-            pParsedComment = "<span class=\"history-deleted\">" + i18n_1.default("rev-deleted-comment") + "</span>";
+            pParsedComment = "<span class=\"history-deleted\">" + i18n_1["default"]("rev-deleted-comment") + "</span>";
         }
         if (pParsedComment == "" || pParsedComment == undefined) {
         }
@@ -647,7 +647,7 @@ var RCData = (function () {
     RCData.prototype.logActionText = function () {
         var tLogMessage = "";
         if (this.actionhidden) {
-            tLogMessage = "<span class=\"history-deleted\">" + i18n_1.default("rev-deleted-event") + "</span>";
+            tLogMessage = "<span class=\"history-deleted\">" + i18n_1["default"]("rev-deleted-event") + "</span>";
             tLogMessage += this.getSummary();
         }
         switch (this.logtype) {
@@ -655,15 +655,15 @@ var RCData = (function () {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "block": {
-                        tLogMessage += i18n_1.default("blocklogentry", this.href + "|" + this.titleNoNS, this.log_block_duration, this.log_block_flags);
+                        tLogMessage += i18n_1["default"]("blocklogentry", this.href + "|" + this.titleNoNS, this.log_block_duration, this.log_block_flags);
                         break;
                     }
                     case "reblock": {
-                        tLogMessage += i18n_1.default("reblock-logentry", this.href + "|" + this.titleNoNS, this.log_block_duration, this.log_block_flags);
+                        tLogMessage += i18n_1["default"]("reblock-logentry", this.href + "|" + this.titleNoNS, this.log_block_duration, this.log_block_flags);
                         break;
                     }
                     case "unblock": {
-                        tLogMessage += i18n_1.default("unblocklogentry", this.titleNoNS);
+                        tLogMessage += i18n_1["default"]("unblocklogentry", this.titleNoNS);
                         break;
                     }
                 }
@@ -671,7 +671,7 @@ var RCData = (function () {
             }
             case "delete": {
                 // logactions assumed: delete, restore, event, revision, event-legacy, revision-legacy
-                tLogMessage += i18n_1.default("logentry-delete-" + this.logaction, this.userDetails(), undefined, // Cannot know gender of edit user
+                tLogMessage += i18n_1["default"]("logentry-delete-" + this.logaction, this.userDetails(), undefined, // Cannot know gender of edit user
                 "<a href='" + this.href + "'>" + this.title + "</a>", this.log_delete_new_bitmask, this.log_delete_revisions_num);
                 break;
             }
@@ -679,11 +679,11 @@ var RCData = (function () {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "upload": {
-                        tLogMessage += i18n_1.default("import-logentry-upload", this.href + "|" + this.title);
+                        tLogMessage += i18n_1["default"]("import-logentry-upload", this.href + "|" + this.title);
                         break;
                     }
                     case "interwiki": {
-                        tLogMessage += i18n_1.default("import-logentry-interwiki", this.title);
+                        tLogMessage += i18n_1["default"]("import-logentry-interwiki", this.title);
                         break;
                     }
                 }
@@ -692,13 +692,13 @@ var RCData = (function () {
             case "merge": {
                 tLogMessage += this.userDetails() + " ";
                 // merged [[$1]] into [[$2]] (revisions up to $3)
-                tLogMessage += i18n_1.default("import-logentry-upload", this.href + "|" + this.title, this.wikiInfo.articlepath + this.log_merge_destination + "|" + this.log_merge_destination, this.getLogTimeStamp(new Date(this.log_merge_mergepoint)));
+                tLogMessage += i18n_1["default"]("import-logentry-upload", this.href + "|" + this.title, this.wikiInfo.articlepath + this.log_merge_destination + "|" + this.log_merge_destination, this.getLogTimeStamp(new Date(this.log_merge_mergepoint)));
                 break;
             }
             case "move": {
                 // logactions assumed: move, move-noredirect, move_redir, move_redir-noredirect
-                tLogMessage += i18n_1.default("logentry-move-" + this.logaction + (this.log_move_noredirect || "" /*band-aid fix*/), this.userDetails(), undefined, // Don't know if male / female.
-                "<a href='" + this.hrefFS + "redirect=no'>" + this.title + "</a>", "<a href='" + (this.wikiInfo.articlepath + Utils_1.default.escapeCharactersLink(this.log_move_newTitle)) + "'>" + this.log_move_newTitle + "</a>");
+                tLogMessage += i18n_1["default"]("logentry-move-" + this.logaction + (this.log_move_noredirect || "" /*band-aid fix*/), this.userDetails(), undefined, // Don't know if male / female.
+                "<a href='" + this.hrefFS + "redirect=no'>" + this.title + "</a>", "<a href='" + (this.wikiInfo.articlepath + Utils_1["default"].escapeCharactersLink(this.log_move_newTitle)) + "'>" + this.log_move_newTitle + "</a>");
                 break;
             }
             case "protect": {
@@ -706,19 +706,19 @@ var RCData = (function () {
                 var t$1 = this.href + "|" + this.title;
                 switch (this.logaction) {
                     case "protect": {
-                        tLogMessage += i18n_1.default("protectedarticle", t$1) + " " + this.log_info_0;
+                        tLogMessage += i18n_1["default"]("protectedarticle", t$1) + " " + this.log_info_0;
                         break;
                     }
                     case "modify": {
-                        tLogMessage += i18n_1.default("modifiedarticleprotection", t$1) + " " + this.log_info_0;
+                        tLogMessage += i18n_1["default"]("modifiedarticleprotection", t$1) + " " + this.log_info_0;
                         break;
                     }
                     case "unprotect": {
-                        tLogMessage += i18n_1.default("unprotectedarticle", t$1);
+                        tLogMessage += i18n_1["default"]("unprotectedarticle", t$1);
                         break;
                     }
                     case "move_prot": {
-                        tLogMessage += i18n_1.default.wiki2html(i18n_1.default.MESSAGES["movedarticleprotection"].replace("[[$2]]", this.log_info_0), t$1);
+                        tLogMessage += i18n_1["default"].wiki2html(i18n_1["default"].MESSAGES["movedarticleprotection"].replace("[[$2]]", this.log_info_0), t$1);
                         break;
                     }
                 }
@@ -728,11 +728,11 @@ var RCData = (function () {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "upload": {
-                        tLogMessage += i18n_1.default("uploadedimage", this.href + "|" + this.title);
+                        tLogMessage += i18n_1["default"]("uploadedimage", this.href + "|" + this.title);
                         break;
                     }
                     case "overwrite": {
-                        tLogMessage += i18n_1.default("overwroteimage", this.href + "|" + this.title);
+                        tLogMessage += i18n_1["default"]("overwroteimage", this.href + "|" + this.title);
                         break;
                     }
                 }
@@ -740,14 +740,14 @@ var RCData = (function () {
             }
             case "newusers": {
                 // logactions assumed: newusers, create, create2, autocreate (kinda sorta maybe)
-                tLogMessage += i18n_1.default("logentry-newusers-" + this.logaction, this.userDetails(), undefined, "");
+                tLogMessage += i18n_1["default"]("logentry-newusers-" + this.logaction, this.userDetails(), undefined, "");
                 break;
             }
             case "rights": {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "rights": {
-                        tLogMessage += i18n_1.default("rightslogentry", "<a href='" + this.href + "'>" + this.title + "</a>", this.log_rights_oldgroups, this.log_rights_newgroups);
+                        tLogMessage += i18n_1["default"]("rightslogentry", "<a href='" + this.href + "'>" + this.title + "</a>", this.log_rights_oldgroups, this.log_rights_newgroups);
                         break;
                     }
                 }
@@ -757,11 +757,11 @@ var RCData = (function () {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "avatar_chn": {
-                        tLogMessage += i18n_1.default("blog-avatar-changed-log");
+                        tLogMessage += i18n_1["default"]("blog-avatar-changed-log");
                         break;
                     } // 'Added or changed avatar'
                     case "avatar_rem": {
-                        tLogMessage += i18n_1.default("blog-avatar-removed-log", "<a href='" + this.href + "'>" + this.title + "</a>");
+                        tLogMessage += i18n_1["default"]("blog-avatar-removed-log", "<a href='" + this.href + "'>" + this.title + "</a>");
                         break;
                     } // "Removed $1's avatars"
                 }
@@ -783,7 +783,7 @@ var RCData = (function () {
                 }
                 tLogMessage += this.userDetails() + " ";
                 // logaction assumed: chatbanadd, chatbanremove, chatbanchange
-                tLogMessage += i18n_1.default("chat-" + this.logaction + "-log-entry", "<a href='" + this.href + "'>" + this.titleNoNS + "</a>", tChatData[2], t$3);
+                tLogMessage += i18n_1["default"]("chat-" + this.logaction + "-log-entry", "<a href='" + this.href + "'>" + this.titleNoNS + "</a>", tChatData[2], t$3);
                 tChatData = null;
                 break;
             }
@@ -791,7 +791,7 @@ var RCData = (function () {
                 // logactions assumed: create_map, update_map, delete_map, undelete_map
                 //						create_pin_type, update_pin_type, delete_pin_type
                 //						create_pin, update_pin, delete_pin
-                tLogMessage += i18n_1.default("logentry-maps-" + this.logaction, this.userDetails(), undefined, this.title);
+                tLogMessage += i18n_1["default"]("logentry-maps-" + this.logaction, this.userDetails(), undefined, this.title);
                 break;
             }
             case "abusefilter": {
@@ -800,7 +800,7 @@ var RCData = (function () {
                 tLogMessage += this.userDetails() + " ";
                 switch (this.logaction) {
                     case "modify": {
-                        tLogMessage += i18n_1.default("abusefilter-log-entry-modify", "<a href='" + this.href + "'>" + this.title + "</a>", "<a href='" + this.wikiInfo.articlepath + "Special:AbuseFilter/history/" + tAbusePage + "/diff/prev/" + tAbuseItem + "'>" + i18n_1.default("abusefilter-log-detailslink") + "</a>");
+                        tLogMessage += i18n_1["default"]("abusefilter-log-entry-modify", "<a href='" + this.href + "'>" + this.title + "</a>", "<a href='" + this.wikiInfo.articlepath + "Special:AbuseFilter/history/" + tAbusePage + "/diff/prev/" + tAbuseItem + "'>" + i18n_1["default"]("abusefilter-log-detailslink") + "</a>");
                         break;
                     }
                 }
@@ -817,7 +817,7 @@ var RCData = (function () {
     RCData.prototype.wallBoardActionMessageWithSummary = function (pThreadTitle) {
         var tThreadTitle = pThreadTitle || this.getThreadTitle(); // Title is passed in due to it being found via ajax.
         var tLocalizedActionMessage = "";
-        var tPrefix = this.type == RC_TYPE_1.default.BOARD ? "forum-recentchanges" : "wall-recentchanges";
+        var tPrefix = this.type == RC_TYPE_1["default"].BOARD ? "forum-recentchanges" : "wall-recentchanges";
         var tMsgType = this.isSubComment ? "reply" : "thread";
         switch (this.logaction) {
             case "wall_remove":
@@ -837,21 +837,21 @@ var RCData = (function () {
                 break;
         }
         if (tLocalizedActionMessage != "") {
-            return " " + i18n_1.default(tLocalizedActionMessage, this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
+            return " " + i18n_1["default"](tLocalizedActionMessage, this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
         }
         else {
             return this.getSummary(); // Else not a wall/board action
         }
     };
     RCData.prototype.getBoardWallParentTitleWithNamespace = function () {
-        if (this.type == RC_TYPE_1.default.BOARD) {
+        if (this.type == RC_TYPE_1["default"].BOARD) {
             return "Board:" + this.titleNoNS;
         }
-        else if (this.type == RC_TYPE_1.default.WALL) {
+        else if (this.type == RC_TYPE_1["default"].WALL) {
             return "Message_Wall:" + this.titleNoNS;
         }
         else {
-            if (ConstantsApp_1.default.debug) {
+            if (ConstantsApp_1["default"].debug) {
                 console.log("This should not happen in getBoardWallParent()");
             }
             return this.title;
@@ -861,8 +861,8 @@ var RCData = (function () {
         return this.wikiInfo.articlepath + this.getBoardWallParentTitleWithNamespace();
     };
     RCData.prototype.pageTitleTextLink = function () {
-        if (this.type == RC_TYPE_1.default.COMMENT) {
-            return i18n_1.default("article-comments-rc-comment", this.href, this.titleNoNS);
+        if (this.type == RC_TYPE_1["default"].COMMENT) {
+            return i18n_1["default"]("article-comments-rc-comment", this.href, this.titleNoNS);
         }
         else {
             return "<a class='rc-pagetitle' href='" + this.href + "'>" + this.title + "</a>";
@@ -872,24 +872,24 @@ var RCData = (function () {
         if (pThreadTitle == undefined) {
             pThreadTitle = this.getThreadTitle();
         }
-        if (this.type == RC_TYPE_1.default.WALL) {
-            return i18n_1.default("wall-recentchanges-thread-group", "<a href='" + this.href + "'>" + pThreadTitle + "</a>", this.getBoardWallParentLink(), this.titleNoNS);
+        if (this.type == RC_TYPE_1["default"].WALL) {
+            return i18n_1["default"]("wall-recentchanges-thread-group", "<a href='" + this.href + "'>" + pThreadTitle + "</a>", this.getBoardWallParentLink(), this.titleNoNS);
         }
         else {
-            return i18n_1.default("forum-recentchanges-thread-group", "<a href='" + this.href + "'>" + pThreadTitle + "</a>", this.getBoardWallParentLink(), this.titleNoNS);
+            return i18n_1["default"]("forum-recentchanges-thread-group", "<a href='" + this.href + "'>" + pThreadTitle + "</a>", this.getBoardWallParentLink(), this.titleNoNS);
         }
     };
     RCData.prototype.wallBoardHistoryLink = function () {
         var tLink = "", tText = "";
-        if (this.type == RC_TYPE_1.default.WALL) {
-            tLink = this.wikiInfo.articlepath + Utils_1.default.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
+        if (this.type == RC_TYPE_1["default"].WALL) {
+            tLink = this.wikiInfo.articlepath + Utils_1["default"].escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
             tText = this.isSubComment ? "wall-recentchanges-thread-history-link" : "wall-recentchanges-history-link";
         }
         else {
-            tLink = this.wikiInfo.articlepath + Utils_1.default.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
+            tLink = this.wikiInfo.articlepath + Utils_1["default"].escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
             tText = this.isSubComment ? "forum-recentchanges-thread-history-link" : "forum-recentchanges-history-link";
         }
-        return "(<a href='" + tLink + "'>" + i18n_1.default(tText) + "</a>)";
+        return "(<a href='" + tLink + "'>" + i18n_1["default"](tText) + "</a>)";
     };
     RCData.prototype.getLogTimeStamp = function (pDate) {
         // return ""
@@ -903,36 +903,36 @@ var RCData = (function () {
     };
     RCData.getFullTimeStamp = function (pDate, pTimezone) {
         return ""
-            + Utils_1.default.pad(Utils_1.default.getHours(pDate, pTimezone), 2)
-            + ":" + Utils_1.default.pad(Utils_1.default.getMinutes(pDate, pTimezone), 2)
-            + ", " + Utils_1.default.pad(Utils_1.default.getDate(pDate, pTimezone), 2)
-            + " " + mw.config.get('wgMonthNames')[Utils_1.default.getMonth(pDate, pTimezone) + 1]
-            + " " + Utils_1.default.getYear(pDate, pTimezone);
+            + Utils_1["default"].pad(Utils_1["default"].getHours(pDate, pTimezone), 2)
+            + ":" + Utils_1["default"].pad(Utils_1["default"].getMinutes(pDate, pTimezone), 2)
+            + ", " + Utils_1["default"].pad(Utils_1["default"].getDate(pDate, pTimezone), 2)
+            + " " + mw.config.get('wgMonthNames')[Utils_1["default"].getMonth(pDate, pTimezone) + 1]
+            + " " + Utils_1["default"].getYear(pDate, pTimezone);
     };
     // STATIC - https://www.mediawiki.org/wiki/API:Revisions
     // Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
     RCData.previewDiff = function (pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink, pDiffTableInfo) {
-        if (ConstantsApp_1.default.debug) {
+        if (ConstantsApp_1["default"].debug) {
             console.log("http:" + pAjaxUrl);
             console.log(pDiffLink);
             console.log(pUndoLink);
         }
-        var tTitle = pPageName + " - " + i18n_1.default('rcm-module-diff-title');
+        var tTitle = pPageName + " - " + i18n_1["default"]('rcm-module-diff-title');
         // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
         var tButtons = [];
         tButtons.push({
-            value: i18n_1.default('rcm-module-diff-open'),
+            value: i18n_1["default"]('rcm-module-diff-open'),
             event: "diff",
             callback: function () { window.open(pDiffLink, '_blank'); },
         });
         if (pUndoLink != null) {
             tButtons.push({
-                value: i18n_1.default('rcm-module-diff-undo'),
+                value: i18n_1["default"]('rcm-module-diff-undo'),
                 event: "undo",
                 callback: function () { window.open(pUndoLink, '_blank'); },
             });
         }
-        RCMModal_1.default.showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
+        RCMModal_1["default"].showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
             // Retrieve the diff table.
             // TODO - error support?
             $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
@@ -947,8 +947,8 @@ var RCData = (function () {
                     // 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
                     // 	});
                     // }
-                    var tOMinor = tRevision.minor == "" ? "<abbr class=\"minoredit\">" + i18n_1.default('minoreditletter') + "</abbr> " : "";
-                    var tNMinor = pDiffTableInfo.newRev.minor ? "<abbr class=\"minoredit\">" + i18n_1.default('minoreditletter') + "</abbr> " : "";
+                    var tOMinor = tRevision.minor == "" ? "<abbr class=\"minoredit\">" + i18n_1["default"]('minoreditletter') + "</abbr> " : "";
+                    var tNMinor = pDiffTableInfo.newRev.minor ? "<abbr class=\"minoredit\">" + i18n_1["default"]('minoreditletter') + "</abbr> " : "";
                     // TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
                     var tModalContent = ''
                         + "<div id='rcm-diff-view'>"
@@ -964,9 +964,9 @@ var RCData = (function () {
                         + "<td class='diff-otitle' colspan='2'>"
                         + "<div class='mw-diff-otitle1'>"
                         + "<strong>"
-                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "' data-action='revision-link-before'>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "' data-action='revision-link-before'>" + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
                         + " <span class='mw-rev-head-action'>"
-                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "&action=edit\" data-action=\"edit-revision-before\">" + i18n_1.default('editold') + "</a>)")
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "&action=edit\" data-action=\"edit-revision-before\">" + i18n_1["default"]('editold') + "</a>)")
                         + "</span>"
                         + "</strong>"
                         + "</div>"
@@ -976,12 +976,12 @@ var RCData = (function () {
                         + "<td class='diff-ntitle' colspan='2'>"
                         + "<div class='mw-diff-ntitle1'>"
                         + "<strong>"
-                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "' data-action='revision-link-after'>" + i18n_1.default('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "' data-action='revision-link-after'>" + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone)) + "</a>"
                         + " <span class='mw-rev-head-action'>"
-                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "&action=edit\" data-action=\"edit-revision-after\">" + i18n_1.default('editold') + "</a>)")
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "&action=edit\" data-action=\"edit-revision-after\">" + i18n_1["default"]('editold') + "</a>)")
                         + "</span>"
                         + "<span class='mw-rev-head-action'>"
-                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "action=edit&undoafter=" + tRevision.diff.to + "&undo=" + tRevision.diff.to + "\" data-action=\"undo\">" + i18n_1.default('editundo') + "</a>)")
+                        + ("(<a href=\"" + pDiffTableInfo.hrefFS + "action=edit&undoafter=" + tRevision.diff.to + "&undo=" + tRevision.diff.to + "\" data-action=\"undo\">" + i18n_1["default"]('editundo') + "</a>)")
                         + "</span>"
                         + "</strong>"
                         + "</div>"
@@ -994,7 +994,7 @@ var RCData = (function () {
                         + "</table>";
                     +"</div>";
                     // RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
-                    RCMModal_1.default.setModalContent(tModalContent);
+                    RCMModal_1["default"].setModalContent(tModalContent);
                 },
             });
         });
@@ -1005,10 +1005,10 @@ var RCData = (function () {
         var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
         pAjaxUrl += "&iiurlwidth=" + size + "&iiurlheight=" + size;
         var tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
-        if (ConstantsApp_1.default.debug) {
+        if (ConstantsApp_1["default"].debug) {
             console.log("http:" + tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames);
         }
-        var tTitle = i18n_1.default("awc-metrics-images");
+        var tTitle = i18n_1["default"]("awc-metrics-images");
         // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
         var tButtons = [];
         var tGetGalleryItem = function (pPage) {
@@ -1020,19 +1020,19 @@ var RCData = (function () {
             tInvalidImage = false;
             if (tPage.missing == "") {
                 tInvalidImage = {
-                    thumbHref: pArticlePath + Utils_1.default.escapeCharactersLink(tPage.title),
-                    thumbText: i18n_1.default('filedelete-success', tPage.title),
+                    thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tPage.title),
+                    thumbText: i18n_1["default"]('filedelete-success', tPage.title),
                     caption: tPageTitleNoNS
                 };
             }
             else if (tImage == null) {
                 tInvalidImage = {
-                    thumbHref: pArticlePath + Utils_1.default.escapeCharactersLink(tPage.title),
-                    thumbText: i18n_1.default('shared_help_was_redirect', tPage.title),
+                    thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tPage.title),
+                    thumbText: i18n_1["default"]('shared_help_was_redirect', tPage.title),
                     caption: tPageTitleNoNS
                 };
             }
-            else if (Utils_1.default.isFileAudio(tPage.title)) {
+            else if (Utils_1["default"].isFileAudio(tPage.title)) {
                 tInvalidImage = {
                     thumbHref: tImage.url,
                     thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />' + tPage.title,
@@ -1089,22 +1089,22 @@ var RCData = (function () {
         };
         var tAddLoadMoreButton = function () {
             if (tImagesInLog.length > 0) {
-                if (ConstantsApp_1.default.debug) {
+                if (ConstantsApp_1["default"].debug) {
                     console.log("Over 50 images to display; Extra images must be loaded later.");
                 }
-                var tModal = document.querySelector("#" + RCMModal_1.default.MODAL_CONTENT_ID);
+                var tModal = document.querySelector("#" + RCMModal_1["default"].MODAL_CONTENT_ID);
                 var tGallery = tModal.querySelector(".rcm-gallery");
-                var tCont = Utils_1.default.newElement("center", { style: 'margin-bottom: 8px;' }, tModal);
-                var tButton = Utils_1.default.newElement("button", { innerHTML: i18n_1.default('specialvideos-btn-load-more') }, tCont);
+                var tCont = Utils_1["default"].newElement("center", { style: 'margin-bottom: 8px;' }, tModal);
+                var tButton = Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]('specialvideos-btn-load-more') }, tCont);
                 tButton.addEventListener("click", function () {
                     tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
-                    if (ConstantsApp_1.default.debug) {
+                    if (ConstantsApp_1["default"].debug) {
                         console.log("http:" + tCurAjaxUrl.replace("&format=json", "&format=jsonfm"));
                     }
-                    tCont.innerHTML = "<img src='" + ConstantsApp_1.default.LOADER_IMG + "' />";
+                    tCont.innerHTML = "<img src='" + ConstantsApp_1["default"].LOADER_IMG + "' />";
                     $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
                         success: function (pData) {
-                            Utils_1.default.removeElement(tCont);
+                            Utils_1["default"].removeElement(tCont);
                             for (var key in pData.query.pages) {
                                 tGallery.innerHTML += tGetGalleryItem(pData.query.pages[key]);
                             }
@@ -1114,7 +1114,7 @@ var RCData = (function () {
                 });
             }
         };
-        RCMModal_1.default.showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
+        RCMModal_1["default"].showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
             // Retrieve the diff table.
             // TODO - error support?
             $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
@@ -1134,25 +1134,25 @@ var RCData = (function () {
                     tModalContent += ''
                         + '</div>';
                     // RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
-                    RCMModal_1.default.setModalContent(tModalContent);
+                    RCMModal_1["default"].setModalContent(tModalContent);
                     tAddLoadMoreButton();
                 },
             });
         });
     };
     RCData.previewPage = function (pAjaxUrl, pPageName, pPageHref, pServerLink) {
-        if (ConstantsApp_1.default.debug) {
+        if (ConstantsApp_1["default"].debug) {
             console.log("http:" + pAjaxUrl);
         }
         var tTitle = "" + pPageName;
         // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
         var tButtons = [];
         tButtons.push({
-            value: i18n_1.default('wikiaPhotoGallery-conflict-view'),
+            value: i18n_1["default"]('wikiaPhotoGallery-conflict-view'),
             event: "diff",
             callback: function () { window.open(pPageHref, '_blank'); },
         });
-        RCMModal_1.default.showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
+        RCMModal_1["default"].showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
             // Retrieve the diff table.
             // TODO - error support?
             $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
@@ -1168,28 +1168,33 @@ var RCData = (function () {
                         + "</div>"
                         + "</div>"
                         + "</div>";
-                    RCMModal_1.default.setModalContent(tModalContent);
-                    var tCont = document.querySelector("#" + RCMModal_1.default.MODAL_CONTENT_ID + " #mw-content-text");
+                    RCMModal_1["default"].setModalContent(tModalContent);
+                    var tCont = document.querySelector("#" + RCMModal_1["default"].MODAL_CONTENT_ID + " #mw-content-text");
                     if (tCont.attachShadow) {
-                        var shadowRoot_1 = tCont.attachShadow({ mode: "open" });
-                        var tPreviewHead = Utils_1.default.newElement("div", { innerHTML: pData.parse.headhtml["*"] });
+                        tCont = tCont.attachShadow({ mode: "open" });
+                        var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
                         var tCurPageHead = document.querySelector("head").cloneNode(true);
-                        Utils_1.default.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
-                            shadowRoot_1.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
                         });
                         // Prevent warnings from poping up about shadow dom not supporting <link>.
-                        Utils_1.default.forEach(tPreviewHead.querySelectorAll("link"), function (o, i, a) { Utils_1.default.removeElement(o); });
+                        Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link"), function (o, i, a) { Utils_1["default"].removeElement(o); });
                         // Also do it for current head
-                        Utils_1.default.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
-                            shadowRoot_1.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
                         });
-                        Utils_1.default.forEach(tCurPageHead.querySelectorAll("link"), function (o, i, a) { Utils_1.default.removeElement(o); });
-                        shadowRoot_1.innerHTML += tCurPageHead.innerHTML;
-                        shadowRoot_1.innerHTML += tPreviewHead.innerHTML;
-                        shadowRoot_1.innerHTML += tContentText;
-                        tCont = shadowRoot_1;
+                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link"), function (o, i, a) { Utils_1["default"].removeElement(o); });
+                        tCont.innerHTML += tCurPageHead.innerHTML;
+                        tCont.innerHTML += tPreviewHead.innerHTML;
+                        tCont.innerHTML += tContentText;
                     }
-                    Utils_1.default.forEach(tCont.querySelectorAll("a[href^='/']"), function (o, i, a) {
+                    else if ("scoped" in document.createElement("style")) {
+                        var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
+                        Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        });
+                    }
+                    Utils_1["default"].forEach(tCont.querySelectorAll("a[href^='/']"), function (o, i, a) {
                         o.href = pServerLink + o.getAttribute("href");
                     });
                 },
@@ -1199,7 +1204,7 @@ var RCData = (function () {
     return RCData;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCData;
+exports["default"] = RCData;
 
 },{"./ConstantsApp":1,"./RCMModal":6,"./RC_TYPE":9,"./Utils":10,"./i18n":12}],4:[function(require,module,exports){
 "use strict";
@@ -1267,10 +1272,10 @@ var RCList = (function () {
     RCList.prototype.shouldGroupWith = function (pRC) {
         if (this.wikiInfo.servername == pRC.wikiInfo.servername
             && this.type == pRC.type
-            && Utils_1.default.getMonth(this.date, this.manager.timezone) == Utils_1.default.getMonth(pRC.date, pRC.manager.timezone)
-            && Utils_1.default.getDate(this.date, this.manager.timezone) == Utils_1.default.getDate(pRC.date, pRC.manager.timezone)) {
+            && Utils_1["default"].getMonth(this.date, this.manager.timezone) == Utils_1["default"].getMonth(pRC.date, pRC.manager.timezone)
+            && Utils_1["default"].getDate(this.date, this.manager.timezone) == Utils_1["default"].getDate(pRC.date, pRC.manager.timezone)) {
             switch (this.type) {
-                case RC_TYPE_1.default.LOG: {
+                case RC_TYPE_1["default"].LOG: {
                     if (this.newest.logtype == pRC.logtype) {
                         return true;
                     }
@@ -1297,14 +1302,14 @@ var RCList = (function () {
         return pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&diff=" + (pToRC ? pToRC.revid : 0) + "&oldid=" + pFromRC.old_revid;
     };
     RCList.prototype._diffHist = function (pRC) {
-        var diffLink = i18n_1.default('diff');
+        var diffLink = i18n_1["default"]('diff');
         if (pRC.isNewPage == false) {
             diffLink = "<a class='rc-diff-link' href='" + this.getDiffLink(pRC, pRC) + "'>" + diffLink + "</a>" + this.getAjaxDiffButton();
         }
-        if (this.type == RC_TYPE_1.default.NORMAL && pRC.namespace == 6) {
+        if (this.type == RC_TYPE_1["default"].NORMAL && pRC.namespace == 6) {
             diffLink += this.getAjaxImageButton();
         }
-        return "(" + diffLink + i18n_1.default("pipe-separator") + "<a class='rc-hist-link' href='" + pRC.hrefFS + "action=history'>" + i18n_1.default('hist') + "</a>)";
+        return "(" + diffLink + i18n_1["default"]("pipe-separator") + "<a class='rc-hist-link' href='" + pRC.hrefFS + "action=history'>" + i18n_1["default"]('hist') + "</a>)";
     };
     // Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
     RCList.prototype._diffSizeText = function (pToRC, pFromRC) {
@@ -1313,13 +1318,13 @@ var RCList = (function () {
         // var html = "<strong class='{0}'>({1}{2})</strong>";
         var html = "<strong class='{0}'>{1}</strong>";
         if (tDiffSize > 0) {
-            return Utils_1.default.formatString(html, "mw-plusminus-pos", i18n_1.default('parentheses', "+" + tDiffSizeText));
+            return Utils_1["default"].formatString(html, "mw-plusminus-pos", i18n_1["default"]('parentheses', "+" + tDiffSizeText));
         }
         else if (tDiffSize < 0) {
-            return Utils_1.default.formatString(html, "mw-plusminus-neg", i18n_1.default('parentheses', tDiffSizeText));
+            return Utils_1["default"].formatString(html, "mw-plusminus-neg", i18n_1["default"]('parentheses', tDiffSizeText));
         }
         else {
-            return Utils_1.default.formatString(html, "mw-plusminus-null", i18n_1.default('parentheses', tDiffSizeText));
+            return Utils_1["default"].formatString(html, "mw-plusminus-null", i18n_1["default"]('parentheses', tDiffSizeText));
         }
         // return html;
     };
@@ -1345,21 +1350,21 @@ var RCList = (function () {
     };
     // For use with comments / normal pages
     RCList.prototype._changesText = function () {
-        var returnText = i18n_1.default("nchanges", this.list.length);
-        if (this.type == RC_TYPE_1.default.NORMAL && this.oldest.isNewPage == false) {
+        var returnText = i18n_1["default"]("nchanges", this.list.length);
+        if (this.type == RC_TYPE_1["default"].NORMAL && this.oldest.isNewPage == false) {
             returnText = "<a class='rc-changes-link' href='" + this.getDiffLink(this.oldest, this.newest) + "'>" + returnText + "</a>" + this.getAjaxDiffButton();
         }
-        if (this.type == RC_TYPE_1.default.NORMAL && this.newest.namespace == 6) {
+        if (this.type == RC_TYPE_1["default"].NORMAL && this.newest.namespace == 6) {
             returnText += this.getAjaxImageButton();
         }
         return returnText;
     };
     RCList.prototype._userPageLink = function (pUsername, pUserEdited) {
         if (pUserEdited) {
-            return "<a href='" + this.wikiInfo.articlepath + "User:" + Utils_1.default.escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
+            return "<a href='" + this.wikiInfo.articlepath + "User:" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
         }
         else {
-            return "<a href='" + this.wikiInfo.articlepath + "Special:Contributions/" + Utils_1.default.escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
+            return "<a href='" + this.wikiInfo.articlepath + "Special:Contributions/" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
         }
     };
     // Check each entry for "threadTitle", else return default text.
@@ -1373,8 +1378,8 @@ var RCList = (function () {
             return false;
         });
         if (this.manager.extraLoadingEnabled) {
-            var tElemID = Utils_1.default.uniqID();
-            tTitle = "<span id='" + tElemID + "'><i>" + (tTitle ? tTitle : i18n_1.default('rcm-unknownthreadname')) + "</i></span>";
+            var tElemID = Utils_1["default"].uniqID();
+            tTitle = "<span id='" + tElemID + "'><i>" + (tTitle ? tTitle : i18n_1["default"]('rcm-unknownthreadname')) + "</i></span>";
             var self = this;
             this.manager.secondaryWikiData.push({
                 url: self.wikiInfo.scriptpath + "/api.php?action=query&format=json&prop=revisions&titles=" + this.newest.uniqueID + "&rvprop=content",
@@ -1392,7 +1397,7 @@ var RCList = (function () {
         }
         else {
             if (tTitle == null) {
-                tTitle = "<i>" + i18n_1.default('rcm-unknownthreadname') + "</i>";
+                tTitle = "<i>" + i18n_1["default"]('rcm-unknownthreadname') + "</i>";
             }
         }
         return tTitle;
@@ -1441,7 +1446,7 @@ var RCList = (function () {
             };
             var tRCM_previewdiff = function (e) {
                 e.preventDefault();
-                RCData_1.default.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
+                RCData_1["default"].previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
             };
             pElem.addEventListener("click", tRCM_previewdiff);
             this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewdiff); });
@@ -1467,7 +1472,7 @@ var RCList = (function () {
             var articlepath = this.wikiInfo.articlepath;
             var tRCM_previewimage = function (e) {
                 e.preventDefault();
-                RCData_1.default.previewImages(ajaxLink, tImageNames, articlepath);
+                RCData_1["default"].previewImages(ajaxLink, tImageNames, articlepath);
             };
             pElem.addEventListener("click", tRCM_previewimage);
             this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewimage); });
@@ -1483,14 +1488,14 @@ var RCList = (function () {
             var ajaxLink_1 = this.wikiInfo.scriptpath + ("/api.php?action=parse&format=json&pageid=" + pRC.pageid + "&prop=text|headhtml&disabletoc=true");
             var pageName = pRC.title;
             var pageHref_1 = pRC.href;
-            if (pRC.type == RC_TYPE_1.default.WALL || pRC.type == RC_TYPE_1.default.BOARD || pRC.type == RC_TYPE_1.default.COMMENT) {
+            if (pRC.type == RC_TYPE_1["default"].WALL || pRC.type == RC_TYPE_1["default"].BOARD || pRC.type == RC_TYPE_1["default"].COMMENT) {
                 // TODO: This isn't -exactly- true, but it gives better results than just linking to the href (as of writing this).
                 pageHref_1 = this.wikiInfo.articlepath + "Thread:" + pRC.pageid;
             }
             var serverLink_1 = this.wikiInfo.server;
             var tRCM_previewpage_1 = function (e) {
                 e.preventDefault();
-                RCData_1.default.previewPage(ajaxLink_1, pageName, pageHref_1, serverLink_1);
+                RCData_1["default"].previewPage(ajaxLink_1, pageName, pageHref_1, serverLink_1);
             };
             pElem.addEventListener("click", tRCM_previewpage_1);
             this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewpage_1); });
@@ -1548,7 +1553,7 @@ var RCList = (function () {
             return pEmpty;
         }
         else {
-            return "<abbr class=\"" + pFlag + "\" title=\"" + i18n_1.default(tI18nTooltip) + "\">" + i18n_1.default(tI18nLetter) + "</abbr>";
+            return "<abbr class=\"" + pFlag + "\" title=\"" + i18n_1["default"](tI18nTooltip) + "\">" + i18n_1["default"](tI18nLetter) + "</abbr>";
         }
     };
     RCList.prototype._getFlags = function (pRC, pEmpty, pData) {
@@ -1573,7 +1578,7 @@ var RCList = (function () {
         }
         var html = "";
         switch (pRC.type) {
-            case RC_TYPE_1.default.LOG: {
+            case RC_TYPE_1["default"].LOG: {
                 html += pRC.logTitleText();
                 if (pRC.logtype == "upload") {
                     html += this.getAjaxImageButton();
@@ -1582,8 +1587,8 @@ var RCList = (function () {
                 html += pRC.logActionText();
                 break;
             }
-            case RC_TYPE_1.default.WALL:
-            case RC_TYPE_1.default.BOARD: {
+            case RC_TYPE_1["default"].WALL:
+            case RC_TYPE_1["default"].BOARD: {
                 if (pRC.isWallBoardAction) {
                     html += RCList.SEP;
                     html += pRC.userDetails();
@@ -1601,8 +1606,8 @@ var RCList = (function () {
                 }
                 break;
             }
-            case RC_TYPE_1.default.COMMENT:
-            case RC_TYPE_1.default.NORMAL:
+            case RC_TYPE_1["default"].COMMENT:
+            case RC_TYPE_1["default"].NORMAL:
             default: {
                 html += pRC.pageTitleTextLink();
                 html += this.getAjaxPagePreviewButton();
@@ -1618,20 +1623,20 @@ var RCList = (function () {
                 break;
             }
         }
-        var tTable = Utils_1.default.newElement("table", { className: "mw-enhanced-rc " + pRC.wikiInfo.rcClass });
-        Utils_1.default.newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
-        var tRow = Utils_1.default.newElement("tr", {}, tTable);
+        var tTable = Utils_1["default"].newElement("table", { className: "mw-enhanced-rc " + pRC.wikiInfo.rcClass });
+        Utils_1["default"].newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
+        var tRow = Utils_1["default"].newElement("tr", {}, tTable);
         if (this._showFavicon()) {
-            Utils_1.default.newElement("td", { innerHTML: pRC.wikiInfo.getFaviconHTML(true) }, tRow);
+            Utils_1["default"].newElement("td", { innerHTML: pRC.wikiInfo.getFaviconHTML(true) }, tRow);
         }
-        Utils_1.default.newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
+        Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
                 + '<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
                 + this._getFlags(pRC, "&nbsp;")
                 + "&nbsp;"
                 + pRC.time()
                 + "&nbsp;"
         }, tRow);
-        Utils_1.default.newElement("td", { innerHTML: html }, tRow);
+        Utils_1["default"].newElement("td", { innerHTML: html }, tRow);
         this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), pRC);
         this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), pRC);
         this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), pRC);
@@ -1663,34 +1668,34 @@ var RCList = (function () {
     RCList.prototype._toHTMLBlockHead = function () {
         var html = "";
         switch (this.type) {
-            case RC_TYPE_1.default.LOG: {
+            case RC_TYPE_1["default"].LOG: {
                 html += this.newest.logTitleText();
                 if (this.newest.logtype == "upload") {
                     html += this.getAjaxImageButton();
                 }
                 break;
             }
-            case RC_TYPE_1.default.NORMAL: {
+            case RC_TYPE_1["default"].NORMAL: {
                 html += "<a class='rc-pagetitle' href='" + this.newest.href + "'>" + this.newest.title + "</a>";
                 html += this.getAjaxPagePreviewButton();
-                html += " (" + this._changesText() + i18n_1.default("pipe-separator") + "<a href='" + this.newest.hrefFS + "action=history'>" + i18n_1.default("hist") + "</a>)";
+                html += " (" + this._changesText() + i18n_1["default"]("pipe-separator") + "<a href='" + this.newest.hrefFS + "action=history'>" + i18n_1["default"]("hist") + "</a>)";
                 html += RCList.SEP;
                 html += this._diffSizeText(this.newest, this.oldest);
                 break;
             }
-            case RC_TYPE_1.default.WALL: {
+            case RC_TYPE_1["default"].WALL: {
                 html += this.newest.wallBoardTitleText(this.getThreadTitle());
                 html += " (" + this._changesText() + ")";
                 break;
             }
-            case RC_TYPE_1.default.BOARD: {
+            case RC_TYPE_1["default"].BOARD: {
                 html += this.newest.wallBoardTitleText(this.getThreadTitle());
                 html += " (" + this._changesText() + ")";
                 break;
             }
-            case RC_TYPE_1.default.COMMENT: {
+            case RC_TYPE_1["default"].COMMENT: {
                 // Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
-                html += i18n_1.default.wiki2html(i18n_1.default.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + (this.newest.namespace == 1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace - 1)]["*"] + ":") + this.newest.titleNoNS + "#WikiaArticleComments");
+                html += i18n_1["default"].wiki2html(i18n_1["default"].MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + (this.newest.namespace == 1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace - 1)]["*"] + ":") + this.newest.titleNoNS + "#WikiaArticleComments");
                 html += " (" + this._changesText() + ")";
                 // html += SEP
                 // html += this._diffSizeText(this.newest, this.oldest);
@@ -1699,28 +1704,28 @@ var RCList = (function () {
         }
         html += RCList.SEP;
         html += this._contributorsCountText();
-        var tTable = Utils_1.default.newElement("table", { className: "mw-collapsible mw-enhanced-rc mw-collapsed " + this.newest.wikiInfo.rcClass }); // mw-made-collapsible
-        Utils_1.default.newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
-        var tTbody = Utils_1.default.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
-        var tRow = Utils_1.default.newElement("tr", {}, tTbody);
+        var tTable = Utils_1["default"].newElement("table", { className: "mw-collapsible mw-enhanced-rc mw-collapsed " + this.newest.wikiInfo.rcClass }); // mw-made-collapsible
+        Utils_1["default"].newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
+        var tTbody = Utils_1["default"].newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
+        var tRow = Utils_1["default"].newElement("tr", {}, tTbody);
         if (this._showFavicon()) {
-            Utils_1.default.newElement("td", { innerHTML: this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
+            Utils_1["default"].newElement("td", { innerHTML: this.newest.wikiInfo.getFaviconHTML(true) }, tRow);
         }
-        var td1 = Utils_1.default.newElement("td", {}, tRow);
-        Utils_1.default.newElement("span", { className: "mw-collapsible-toggle", innerHTML: ''
-                + '<span class="mw-rc-openarrow"><a title="' + i18n_1.default("rc-enhanced-expand") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1.default("rc-enhanced-expand") + '" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+        var td1 = Utils_1["default"].newElement("td", {}, tRow);
+        Utils_1["default"].newElement("span", { className: "mw-collapsible-toggle", innerHTML: ''
+                + '<span class="mw-rc-openarrow"><a title="' + i18n_1["default"]("rc-enhanced-expand") + '">' // href="#"
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-expand") + '" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
                 + '</a></span>'
-                + '<span class="mw-rc-closearrow"><a title="' + i18n_1.default("rc-enhanced-hide") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1.default("rc-enhanced-hide") + '" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+                + '<span class="mw-rc-closearrow"><a title="' + i18n_1["default"]("rc-enhanced-hide") + '">' // href="#"
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-hide") + '" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
                 + '</a></span>' }, td1);
-        Utils_1.default.newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
+        Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
                 + this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit: true })
                 + "&nbsp;"
                 + this.newest.time()
                 + "&nbsp;"
         }, tRow);
-        Utils_1.default.newElement("td", { innerHTML: html }, tRow);
+        Utils_1["default"].newElement("td", { innerHTML: html }, tRow);
         this.addPreviewDiffListener(tTable.querySelector(".rcm-ajaxDiff"), this.oldest, this.newest);
         this.addPreviewImageListener(tTable.querySelector(".rcm-ajaxImage"), this.list);
         this.addPreviewPageListener(tTable.querySelector(".rcm-ajaxPage"), this.newest);
@@ -1737,7 +1742,7 @@ var RCList = (function () {
     RCList.prototype._toHTMLBlockLine = function (pRC) {
         var html = "";
         switch (pRC.type) {
-            case RC_TYPE_1.default.LOG: {
+            case RC_TYPE_1["default"].LOG: {
                 html += "<span class='mw-enhanced-rc-time'>" + pRC.time() + "</span>";
                 if (pRC.logtype == "upload") {
                     html += this.getAjaxImageButton();
@@ -1746,8 +1751,8 @@ var RCList = (function () {
                 html += pRC.logActionText();
                 break;
             }
-            case RC_TYPE_1.default.WALL:
-            case RC_TYPE_1.default.BOARD: {
+            case RC_TYPE_1["default"].WALL:
+            case RC_TYPE_1["default"].BOARD: {
                 if (pRC.isWallBoardAction) {
                     html += "<span class='mw-enhanced-rc-time'>" + pRC.time() + "</span>";
                     html += RCList.SEP;
@@ -1756,10 +1761,10 @@ var RCList = (function () {
                 }
                 else {
                     html += "<span class='mw-enhanced-rc-time'><a href='" + pRC.href + "' title='" + pRC.title + "'>" + pRC.time() + "</a></span>";
-                    html += " (<a href='" + pRC.href + "'>" + i18n_1.default("cur") + "</a>";
+                    html += " (<a href='" + pRC.href + "'>" + i18n_1["default"]("cur") + "</a>";
                     html += this.getAjaxPagePreviewButton();
                     if (pRC.isNewPage == false) {
-                        html += i18n_1.default("pipe-separator") + "<a href='" + this.getDiffLink(pRC, pRC) + "'>" + i18n_1.default("last") + "</a>" + this.getAjaxDiffButton();
+                        html += i18n_1["default"]("pipe-separator") + "<a href='" + this.getDiffLink(pRC, pRC) + "'>" + i18n_1["default"]("last") + "</a>" + this.getAjaxDiffButton();
                     }
                     html += ")";
                     html += RCList.SEP;
@@ -1770,15 +1775,15 @@ var RCList = (function () {
                 }
                 break;
             }
-            case RC_TYPE_1.default.COMMENT:
-            case RC_TYPE_1.default.NORMAL: {
+            case RC_TYPE_1["default"].COMMENT:
+            case RC_TYPE_1["default"].NORMAL: {
                 html += "<span class='mw-enhanced-rc-time'><a href='" + this.getLink(pRC, null, pRC.revid) + "' title='" + pRC.title + "'>" + pRC.time() + "</a></span>";
-                html += " (<a href='" + this.getLink(pRC, 0, pRC.revid) + "'>" + i18n_1.default("cur") + "</a>";
-                if (pRC.type == RC_TYPE_1.default.COMMENT) {
+                html += " (<a href='" + this.getLink(pRC, 0, pRC.revid) + "'>" + i18n_1["default"]("cur") + "</a>";
+                if (pRC.type == RC_TYPE_1["default"].COMMENT) {
                     html += this.getAjaxPagePreviewButton();
                 }
                 if (pRC.isNewPage == false) {
-                    html += i18n_1.default("pipe-separator") + "<a href='" + this.getLink(pRC, pRC.revid, pRC.old_revid) + "'>" + i18n_1.default("last") + "</a>" + this.getAjaxDiffButton();
+                    html += i18n_1["default"]("pipe-separator") + "<a href='" + this.getLink(pRC, pRC.revid, pRC.old_revid) + "'>" + i18n_1["default"]("last") + "</a>" + this.getAjaxDiffButton();
                 }
                 html += ")";
                 html += RCList.SEP;
@@ -1789,16 +1794,16 @@ var RCList = (function () {
                 break;
             }
         }
-        var tRow = Utils_1.default.newElement("tr", { style: "display: none;" });
+        var tRow = Utils_1["default"].newElement("tr", { style: "display: none;" });
         if (this._showFavicon()) {
-            Utils_1.default.newElement("td", {}, tRow);
+            Utils_1["default"].newElement("td", {}, tRow);
         } // Blank spot for where favicon would be on a normal table
-        Utils_1.default.newElement("td", {}, tRow); // Blank spot for where collapsing arrow would be on the table
-        Utils_1.default.newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
+        Utils_1["default"].newElement("td", {}, tRow); // Blank spot for where collapsing arrow would be on the table
+        Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
                 + this._getFlags(pRC, "&nbsp;")
                 + "&nbsp;"
         }, tRow);
-        Utils_1.default.newElement("td", { className: "mw-enhanced-rc-nested", innerHTML: html }, tRow);
+        Utils_1["default"].newElement("td", { className: "mw-enhanced-rc-nested", innerHTML: html }, tRow);
         this.addPreviewDiffListener(tRow.querySelector(".rcm-ajaxDiff"), pRC);
         this.addPreviewImageListener(tRow.querySelector(".rcm-ajaxImage"), pRC);
         this.addPreviewPageListener(tRow.querySelector(".rcm-ajaxPage"), pRC);
@@ -1810,21 +1815,21 @@ var RCList = (function () {
     RCList.prototype._toHTMLNonEnhanced = function (pRC, pIndex) {
         var html = "";
         switch (pRC.type) {
-            case RC_TYPE_1.default.LOG: {
+            case RC_TYPE_1["default"].LOG: {
                 html += pRC.logTitleText();
                 if (pRC.logtype == "upload") {
                     html += this.getAjaxImageButton();
                 }
-                html += i18n_1.default("semicolon-separator") + pRC.time();
+                html += i18n_1["default"]("semicolon-separator") + pRC.time();
                 html += RCList.SEP;
                 html += pRC.logActionText();
                 break;
             }
-            case RC_TYPE_1.default.WALL:
-            case RC_TYPE_1.default.BOARD: {
+            case RC_TYPE_1["default"].WALL:
+            case RC_TYPE_1["default"].BOARD: {
                 if (pRC.isWallBoardAction) {
                     html += pRC.wallBoardHistoryLink();
-                    html += i18n_1.default("semicolon-separator") + pRC.time();
+                    html += i18n_1["default"]("semicolon-separator") + pRC.time();
                     html += RCList.SEP;
                     html += pRC.userDetails();
                     html += pRC.wallBoardActionMessageWithSummary(this.getThreadTitle());
@@ -1835,7 +1840,7 @@ var RCList = (function () {
                     html += this._getFlags(pRC, "") + " ";
                     html += pRC.wallBoardTitleText();
                     html += this.getAjaxPagePreviewButton();
-                    html += i18n_1.default("semicolon-separator") + pRC.time();
+                    html += i18n_1["default"]("semicolon-separator") + pRC.time();
                     html += RCList.SEP;
                     html += this._diffSizeText(pRC);
                     html += RCList.SEP;
@@ -1844,15 +1849,15 @@ var RCList = (function () {
                 }
                 break;
             }
-            case RC_TYPE_1.default.COMMENT:
-            case RC_TYPE_1.default.NORMAL:
+            case RC_TYPE_1["default"].COMMENT:
+            case RC_TYPE_1["default"].NORMAL:
             default: {
                 html += this._diffHist(pRC);
                 html += RCList.SEP;
                 html += this._getFlags(pRC, "") + " ";
                 html += pRC.pageTitleTextLink();
                 html += this.getAjaxPagePreviewButton();
-                html += i18n_1.default("semicolon-separator") + pRC.time();
+                html += i18n_1["default"]("semicolon-separator") + pRC.time();
                 html += RCList.SEP;
                 html += this._diffSizeText(pRC);
                 html += RCList.SEP;
@@ -1861,8 +1866,8 @@ var RCList = (function () {
                 break;
             }
         }
-        var tLi = Utils_1.default.newElement("li", { className: (pIndex % 2 == 0 ? "mw-line-even" : "mw-line-odd") + " " + pRC.wikiInfo.rcClass });
-        Utils_1.default.newElement("div", { className: this._getBackgroundClass() }, tLi);
+        var tLi = Utils_1["default"].newElement("li", { className: (pIndex % 2 == 0 ? "mw-line-even" : "mw-line-odd") + " " + pRC.wikiInfo.rcClass });
+        Utils_1["default"].newElement("div", { className: this._getBackgroundClass() }, tLi);
         ;
         if (this._showFavicon()) {
             tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true);
@@ -1898,7 +1903,7 @@ var RCList = (function () {
     return RCList;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCList;
+exports["default"] = RCList;
 
 },{"./RCData":3,"./RC_TYPE":9,"./Utils":10,"./i18n":12}],5:[function(require,module,exports){
 "use strict";
@@ -1927,7 +1932,7 @@ var RCMManager = (function () {
         this.resultCont = pWrapper;
         this.makeLinksAjax = false;
         this.ajaxID = 0;
-        this.autoRefreshLocalStorageID = ConstantsApp_1.default.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
+        this.autoRefreshLocalStorageID = ConstantsApp_1["default"].AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
         this.extraLoadingEnabled = true;
         this.rcm_style_for_rc_bg_added = false;
     }
@@ -1961,7 +1966,7 @@ var RCMManager = (function () {
          * Data provided to script
          ***************************/
         var tDataset = this.resultCont.dataset;
-        this.rcParamsBase = $.extend({}, Main_1.default.rcParamsURL, this.parseRCParams(tDataset.params, "&", "="));
+        this.rcParamsBase = $.extend({}, Main_1["default"].rcParamsURL, this.parseRCParams(tDataset.params, "&", "="));
         this.rcParams = $.extend(this.getDefaultRCParams(), this.rcParamsBase);
         this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
         this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
@@ -1974,18 +1979,18 @@ var RCMManager = (function () {
         // 	var tUsername = mw.config.get("wgUserName");
         // 	if(tUsername) { this.hideusers.push(tUsername); }
         // }
-        this.hideusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+        this.hideusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
         this.notificationsHideusers = [];
         if (tDataset.notificationsHideusers) {
             this.notificationsHideusers = tDataset.notificationsHideusers.replace(/_/g, " ").split(",");
         }
-        this.notificationsHideusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+        this.notificationsHideusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
         // Only show these users' edits across whole RCMManager
         this.onlyshowusers = []; // {array}
         if (tDataset.onlyshowusers) {
             this.onlyshowusers = tDataset.onlyshowusers.replace(/_/g, " ").split(",");
         }
-        this.onlyshowusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+        this.onlyshowusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
         this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
         this.makeLinksAjax = tDataset.ajaxlinks == "true" ? true : false;
         this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
@@ -1993,11 +1998,11 @@ var RCMManager = (function () {
         this.chosenWikis = []; // {array}
         var self = this;
         //Utils.forEach(this.resultCont.querySelectorAll("li"), function(pNode){ self.setupWikiData(pNode, self) });
-        Utils_1.default.forEach(this.resultCont.querySelectorAll("li"), function (pNode) {
-            self.chosenWikis.push(new WikiData_1.default(self).initListData(pNode));
+        Utils_1["default"].forEach(this.resultCont.querySelectorAll("li"), function (pNode) {
+            self.chosenWikis.push(new WikiData_1["default"](self).initListData(pNode));
         });
         // Remove duplicates
-        this.chosenWikis = Utils_1.default.uniq_fast_key(this.chosenWikis, "servername");
+        this.chosenWikis = Utils_1["default"].uniq_fast_key(this.chosenWikis, "servername");
         tDataset = null;
         /***************************
          * HTML Elements/Nodes
@@ -2005,19 +2010,19 @@ var RCMManager = (function () {
         this.resultCont.className += " " + this.modID;
         this.modID = "." + this.modID;
         this.resultCont.innerHTML = "";
-        this.optionsNode = new RCMOptions_1.default(this).init(Utils_1.default.newElement("div", { className: "rcm-options" }, this.resultCont));
-        this.statusNode = Utils_1.default.newElement("div", { className: "rcm-status" }, this.resultCont);
-        this.wikisNode = new RCMWikiPanel_1.default(this).init(Utils_1.default.newElement("div", { className: "rcm-wikis" }, this.resultCont));
-        this.resultsNode = Utils_1.default.newElement("div", { className: "rcm-results rc-conntent" }, this.resultCont);
-        this.footerNode = Utils_1.default.newElement("div", { className: "rcm-footer" }, this.resultCont);
+        this.optionsNode = new RCMOptions_1["default"](this).init(Utils_1["default"].newElement("div", { className: "rcm-options" }, this.resultCont));
+        this.statusNode = Utils_1["default"].newElement("div", { className: "rcm-status" }, this.resultCont);
+        this.wikisNode = new RCMWikiPanel_1["default"](this).init(Utils_1["default"].newElement("div", { className: "rcm-wikis" }, this.resultCont));
+        this.resultsNode = Utils_1["default"].newElement("div", { className: "rcm-results rc-conntent" }, this.resultCont);
+        this.footerNode = Utils_1["default"].newElement("div", { className: "rcm-footer" }, this.resultCont);
         /***************************
          * Setup
          ***************************/
         // Footer never changes, so set here
-        var tEndNewMessageDate = new Date(ConstantsApp_1.default.lastVersionDateString);
+        var tEndNewMessageDate = new Date(ConstantsApp_1["default"].lastVersionDateString);
         tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
-        var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1.default("wikifeatures-promotion-new") + '</sup>' : "";
-        this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1.default('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1.default.version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+        var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1["default"]("wikifeatures-promotion-new") + '</sup>' : "";
+        this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
         this._start(true);
@@ -2038,21 +2043,21 @@ var RCMManager = (function () {
         this.itemsAdded = this.itemsToAddTotal = 0;
         if (this.chosenWikis.length > 0) {
             this.totalWikisToLoad = 0;
-            Utils_1.default.forEach(this.chosenWikis, function (wikiInfo) {
+            Utils_1["default"].forEach(this.chosenWikis, function (wikiInfo) {
                 if (pUpdateParams) {
                     wikiInfo.setupRcParams();
                 } // Encase it was changed via RCMOptions
                 self.totalWikisToLoad++;
-                self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * ConstantsApp_1.default.loadDelay);
+                self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * ConstantsApp_1["default"].loadDelay);
             });
             //this.totalWikisToLoad = this.chosenWikis.length;
             this.wikisLeftToLoad = this.totalWikisToLoad;
-            this.statusNode.innerHTML = "<img src='" + ConstantsApp_1.default.LOADER_IMG + "' /> " + i18n_1.default('rcm-loading') + " (<span class='rcm-load-perc'>0%</span>)";
+            this.statusNode.innerHTML = "<img src='" + ConstantsApp_1["default"].LOADER_IMG + "' /> " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>0%</span>)";
         }
         else {
-            Utils_1.default.removeElement(this.statusNode);
-            Utils_1.default.removeElement(this.wikisNode.root);
-            this.resultsNode.innerHTML = "<div class='banner-notification error center'>" + i18n_1.default("wikiacuratedcontent-content-empty-section") + "</div>";
+            Utils_1["default"].removeElement(this.statusNode);
+            Utils_1["default"].removeElement(this.wikisNode.root);
+            this.resultsNode.innerHTML = "<div class='banner-notification error center'>" + i18n_1["default"]("wikiacuratedcontent-content-empty-section") + "</div>";
         }
     };
     ;
@@ -2073,7 +2078,7 @@ var RCMManager = (function () {
         }
         this.ajaxCallbacks = null;
         this.secondaryWikiData = null;
-        RCMModal_1.default.closeModal();
+        RCMModal_1["default"].closeModal();
         this._start(pUpdateParams);
     };
     ;
@@ -2163,7 +2168,7 @@ var RCMManager = (function () {
         var self = this;
         clearTimeout(this.loadErrorTimeoutID);
         this.loadErrorTimeoutID = null;
-        this.statusNode.innerHTML = "<div class='rcm-error'>" + i18n_1.default(pErrorMessage, "<span class='errored-wiki'>" + pWikiInfo.servername + "</span>", pTries) + "</div>";
+        this.statusNode.innerHTML = "<div class='rcm-error'>" + i18n_1["default"](pErrorMessage, "<span class='errored-wiki'>" + pWikiInfo.servername + "</span>", pTries) + "</div>";
         this.addRefreshButtonTo(this.statusNode);
         var tHandler = function (pEvent) {
             clearTimeout(self.loadErrorTimeoutID);
@@ -2178,9 +2183,9 @@ var RCMManager = (function () {
                 self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
             });
             self.erroredWikis = [];
-            self.statusNode.innerHTML = "<img src='" + ConstantsApp_1.default.LOADER_IMG + "' /> " + i18n_1.default('rcm-loading') + " (<span class='rcm-load-perc'>" + self.calcLoadPercent() + "%</span>)";
+            self.statusNode.innerHTML = "<img src='" + ConstantsApp_1["default"].LOADER_IMG + "' /> " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>" + self.calcLoadPercent() + "%</span>)";
         };
-        Utils_1.default.newElement("button", { innerHTML: i18n_1.default("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
+        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
         self.erroredWikis.push({ wikiInfo: pWikiInfo, tries: pTries, id: pID });
         if (this.isAutoRefreshEnabled()) {
             this.loadErrorTimeoutID = setTimeout(function () { if (tHandler) {
@@ -2197,7 +2202,7 @@ var RCMManager = (function () {
             this.onWikiParsingFinished(pWikiInfo);
             return;
         }
-        if (ConstantsApp_1.default.debug) {
+        if (ConstantsApp_1["default"].debug) {
             console.log(pWikiInfo.servername, pData);
         }
         var tNewRC, tDate, tChangeAdded;
@@ -2215,11 +2220,11 @@ var RCMManager = (function () {
                 return;
             }
             self.itemsToAddTotal++;
-            tNewRC = new RCData_1.default(pWikiInfo, self).init(pRCData, pLogData);
+            tNewRC = new RCData_1["default"](pWikiInfo, self).init(pRCData, pLogData);
             tChangeAdded = false;
             self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList, i) {
                 if (tNewRC.date > pRCList.date) {
-                    self.recentChangesEntries.splice(i, 0, new RCList_1.default(self).addRC(tNewRC));
+                    self.recentChangesEntries.splice(i, 0, new RCList_1["default"](self).addRC(tNewRC));
                     tChangeAdded = true;
                     return false;
                 }
@@ -2233,7 +2238,7 @@ var RCMManager = (function () {
                 return true;
             });
             if (!tChangeAdded || self.recentChangesEntries.length == 0) {
-                self.recentChangesEntries.push(new RCList_1.default(self).addRC(tNewRC));
+                self.recentChangesEntries.push(new RCList_1["default"](self).addRC(tNewRC));
             }
         });
         this.onWikiParsingFinished(pWikiInfo);
@@ -2252,12 +2257,12 @@ var RCMManager = (function () {
             }
         }
         else {
-            if (Main_1.default.langLoaded) {
+            if (Main_1["default"].langLoaded) {
                 this.rcmChunkStart();
             }
             else {
                 var self = this;
-                Main_1.default.onLangLoadCallbacks.push(function () { self.rcmChunkStart(); });
+                Main_1["default"].onLangLoadCallbacks.push(function () { self.rcmChunkStart(); });
             }
         }
     };
@@ -2265,14 +2270,14 @@ var RCMManager = (function () {
     // All wikis are loaded
     RCMManager.prototype.rcmChunkStart = function () {
         var tDate = new Date();
-        this.statusNode.innerHTML = i18n_1.default('rcm-download-timestamp', "<b><tt>" + Utils_1.default.pad(Utils_1.default.getHours(tDate, this.timezone), 2) + ":" + Utils_1.default.pad(Utils_1.default.getMinutes(tDate, this.timezone), 2) + "</tt></b>");
-        this.statusNode.innerHTML += "<span class='rcm-content-loading'>" + i18n_1.default('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / " + this.itemsToAddTotal) + "</span>";
+        this.statusNode.innerHTML = i18n_1["default"]('rcm-download-timestamp', "<b><tt>" + Utils_1["default"].pad(Utils_1["default"].getHours(tDate, this.timezone), 2) + ":" + Utils_1["default"].pad(Utils_1["default"].getMinutes(tDate, this.timezone), 2) + "</tt></b>");
+        this.statusNode.innerHTML += "<span class='rcm-content-loading'>" + i18n_1["default"]('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / " + this.itemsToAddTotal) + "</span>";
         this.resultsNode.innerHTML = "";
         // Add some run-time CSS classes
         if (!this.rcm_style_for_rc_bg_added) {
             this.rcm_style_for_rc_bg_added = true;
             var tCSS = "";
-            Utils_1.default.forEach(this.chosenWikis, function (wikiInfo) {
+            Utils_1["default"].forEach(this.chosenWikis, function (wikiInfo) {
                 // bgcolor should be used if specified, otherwise tile favicon as background. But not both.
                 tCSS += "\n." + wikiInfo.rcClass + " .rcm-tiled-favicon {"
                     + (wikiInfo.bgcolor != null ? "background: " + wikiInfo.bgcolor + ";" : "background-image: url(" + wikiInfo.favicon + ");")
@@ -2282,7 +2287,7 @@ var RCMManager = (function () {
         }
         // console.log(this.recentChangesEntries);
         if (this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
-            Utils_1.default.newElement("div", { className: "rcm-noNewChanges", innerHTML: "<strong>" + i18n_1.default('rcm-nonewchanges') + "</strong>" }, this.resultsNode);
+            Utils_1["default"].newElement("div", { className: "rcm-noNewChanges", innerHTML: "<strong>" + i18n_1["default"]('rcm-nonewchanges') + "</strong>" }, this.resultsNode);
         }
         else if (this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
             if (this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
@@ -2309,10 +2314,10 @@ var RCMManager = (function () {
                             break;
                         }
                     }
-                    Main_1.default.blinkWindowTitle(i18n_1.default("wikifeatures-promotion-new") + "! " + i18n_1.default("nchanges", tNumNewChanges));
-                    var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n" + i18n_1.default("edit-summary") + ": " + tMostRecentEntry.unparsedComment;
-                    Main_1.default.addNotification(i18n_1.default("nchanges", tNumNewChanges) + " - " + tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " (" + i18n_1.default("nchanges", tNumNewChangesWiki) + ")" : ""), {
-                        body: tMostRecentEntry.title + "\n" + Utils_1.default.ucfirst(i18n_1.default("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
+                    Main_1["default"].blinkWindowTitle(i18n_1["default"]("wikifeatures-promotion-new") + "! " + i18n_1["default"]("nchanges", tNumNewChanges));
+                    var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n" + i18n_1["default"]("edit-summary") + ": " + tMostRecentEntry.unparsedComment;
+                    Main_1["default"].addNotification(i18n_1["default"]("nchanges", tNumNewChanges) + " - " + tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " (" + i18n_1["default"]("nchanges", tNumNewChangesWiki) + ")" : ""), {
+                        body: tMostRecentEntry.title + "\n" + Utils_1["default"].ucfirst(i18n_1["default"]("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
                     });
                 }
                 tMostRecentEntry = null;
@@ -2332,15 +2337,15 @@ var RCMManager = (function () {
         }
         var date = this.recentChangesEntries[pIndex].date;
         // Add new date grouping if necessary.
-        if (Utils_1.default.getDate(date, this.timezone) != pLastDay || Utils_1.default.getMonth(date, this.timezone) != pLastMonth) {
-            pLastDay = Utils_1.default.getDate(date, this.timezone);
-            pLastMonth = Utils_1.default.getMonth(date, this.timezone);
-            Utils_1.default.newElement("h4", { innerHTML: pLastDay + " " + mw.config.get('wgMonthNames')[pLastMonth + 1] + " " + Utils_1.default.getYear(date, this.timezone) }, this.resultsNode);
-            pContainer = this.rcParams.hideenhanced == false ? Utils_1.default.newElement("div", {}, this.resultsNode) : Utils_1.default.newElement("ul", { className: "special" }, this.resultsNode);
+        if (Utils_1["default"].getDate(date, this.timezone) != pLastDay || Utils_1["default"].getMonth(date, this.timezone) != pLastMonth) {
+            pLastDay = Utils_1["default"].getDate(date, this.timezone);
+            pLastMonth = Utils_1["default"].getMonth(date, this.timezone);
+            Utils_1["default"].newElement("h4", { innerHTML: pLastDay + " " + mw.config.get('wgMonthNames')[pLastMonth + 1] + " " + Utils_1["default"].getYear(date, this.timezone) }, this.resultsNode);
+            pContainer = this.rcParams.hideenhanced == false ? Utils_1["default"].newElement("div", {}, this.resultsNode) : Utils_1["default"].newElement("ul", { className: "special" }, this.resultsNode);
         }
         // Show at what point new changes start at.
         if (this.lastLoadDateTime != null && pIndex - 1 >= 0 && date <= this.lastLoadDateTime && this.recentChangesEntries[pIndex - 1].date > this.lastLoadDateTime) {
-            Utils_1.default.newElement("div", { className: "rcm-previouslyLoaded", innerHTML: "<strong>" + i18n_1.default('rcm-previouslyloaded') + "</strong>" }, pContainer);
+            Utils_1["default"].newElement("div", { className: "rcm-previouslyLoaded", innerHTML: "<strong>" + i18n_1["default"]('rcm-previouslyloaded') + "</strong>" }, pContainer);
         }
         // Add to page
         pContainer.appendChild(this.recentChangesEntries[pIndex].toHTML(pIndex));
@@ -2361,7 +2366,7 @@ var RCMManager = (function () {
     };
     ;
     RCMManager.prototype.finishScript = function () {
-        Utils_1.default.removeElement(document.querySelector(this.modID + " .rcm-content-loading"));
+        Utils_1["default"].removeElement(document.querySelector(this.modID + " .rcm-content-loading"));
         this.addRefreshButtonTo(this.statusNode);
         this.addAutoRefreshInputTo(this.statusNode);
         // If auto-refresh is on and window doesn't have focus, then don't update the position of "previously loaded" message.
@@ -2390,7 +2395,7 @@ var RCMManager = (function () {
         }
         var self = this;
         this.autoRefreshTimeoutID = setTimeout(function () {
-            if (RCMModal_1.default.isModalOpen()) {
+            if (RCMModal_1["default"].isModalOpen()) {
                 self.startAutoRefresh();
                 return;
             }
@@ -2403,7 +2408,7 @@ var RCMManager = (function () {
             return;
         }
         if (this.secondaryWikiData.length == 0) {
-            if (ConstantsApp_1.default.debug) {
+            if (ConstantsApp_1["default"].debug) {
                 console.log("[RCMManager](loadExtraInfo) All loading finished.");
             }
             return;
@@ -2421,7 +2426,7 @@ var RCMManager = (function () {
                 return;
             } tCallback.apply(this, arguments); },
         });
-        setTimeout(function () { self.loadExtraInfo(pID); }, ConstantsApp_1.default.loadDelay);
+        setTimeout(function () { self.loadExtraInfo(pID); }, ConstantsApp_1["default"].loadDelay);
     };
     //######################################
     // Specific Helper Methods
@@ -2429,7 +2434,7 @@ var RCMManager = (function () {
     RCMManager.prototype.addRefreshButtonTo = function (pParent) {
         var self = this;
         pParent.appendChild(document.createTextNode(" "));
-        Utils_1.default.newElement("button", { innerHTML: i18n_1.default('rcm-refresh') }, pParent).addEventListener("click", function tHandler(e) {
+        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]('rcm-refresh') }, pParent).addEventListener("click", function tHandler(e) {
             e.target.removeEventListener("click", tHandler);
             self.refresh();
         });
@@ -2438,9 +2443,9 @@ var RCMManager = (function () {
     RCMManager.prototype.addAutoRefreshInputTo = function (pParent) {
         var self = this;
         pParent.appendChild(document.createTextNode(" "));
-        var autoRefresh = Utils_1.default.newElement("span", { className: "rcm-autoRefresh" }, pParent);
-        Utils_1.default.newElement("label", { htmlFor: "rcm-autoRefresh-checkbox", innerHTML: i18n_1.default('rcm-autorefresh'), title: i18n_1.default('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum / 1000)) }, autoRefresh);
-        var checkBox = Utils_1.default.newElement("input", { className: "rcm-autoRefresh-checkbox", type: "checkbox" }, autoRefresh);
+        var autoRefresh = Utils_1["default"].newElement("span", { className: "rcm-autoRefresh" }, pParent);
+        Utils_1["default"].newElement("label", { htmlFor: "rcm-autoRefresh-checkbox", innerHTML: i18n_1["default"]('rcm-autorefresh'), title: i18n_1["default"]('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum / 1000)) }, autoRefresh);
+        var checkBox = Utils_1["default"].newElement("input", { className: "rcm-autoRefresh-checkbox", type: "checkbox" }, autoRefresh);
         checkBox.checked = this.isAutoRefreshEnabled();
         checkBox.addEventListener("click", function tHandler(e) {
             if (document.querySelector(self.modID + " .rcm-autoRefresh-checkbox").checked) {
@@ -2514,7 +2519,7 @@ var RCMManager = (function () {
     return RCMManager;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCMManager;
+exports["default"] = RCMManager;
 
 },{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./Utils":10,"./WikiData":11,"./i18n":12}],6:[function(require,module,exports){
 "use strict";
@@ -2544,7 +2549,7 @@ var RCMModal = (function () {
             }, pData.vars) };
         var tModalData = tModalDataOptions.vars;
         tModalData.buttons.unshift({ vars: {
-                value: i18n_1.default('flags-edit-modal-close-button-text'),
+                value: i18n_1["default"]('flags-edit-modal-close-button-text'),
                 data: { key: "event", value: "close_button" },
             } });
         if (pData.rcm_buttons) {
@@ -2594,7 +2599,7 @@ var RCMModal = (function () {
     RCMModal.showLoadingModal = function (pData, pOnModalShown) {
         // While we are waiting for results, open diff window to acknowledge user's input
         if (!RCMModal.isModalOpen()) {
-            pData.content = "<div style='text-align:center; padding:10px;'><img src='" + ConstantsApp_1.default.LOADER_IMG + "'></div>";
+            pData.content = "<div style='text-align:center; padding:10px;'><img src='" + ConstantsApp_1["default"].LOADER_IMG + "'></div>";
             pData.rcm_onModalShown = pOnModalShown;
             RCMModal.showModal(pData);
         }
@@ -2616,7 +2621,7 @@ var RCMModal = (function () {
     return RCMModal;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCMModal;
+exports["default"] = RCMModal;
 
 },{"./ConstantsApp":1,"./i18n":12}],7:[function(require,module,exports){
 "use strict";
@@ -2634,7 +2639,7 @@ var RCMOptions = (function () {
     // Constructor
     function RCMOptions(pManager) {
         this.manager = pManager;
-        this.localStorageID = ConstantsApp_1.default.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", "");
+        this.localStorageID = ConstantsApp_1["default"].OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", "");
     }
     RCMOptions.prototype.dispose = function () {
         this.removeEventListeners();
@@ -2655,67 +2660,67 @@ var RCMOptions = (function () {
         this.root = pElem;
         this.rcParams = this.getSave(); //$.extend({}, this.manager.rcParamsBase);
         this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
-        if (Main_1.default.langLoaded) {
+        if (Main_1["default"].langLoaded) {
             this._addElements();
         }
         else {
             var self = this;
-            Main_1.default.onLangLoadCallbacks.push(function () { self._addElements(); });
+            Main_1["default"].onLangLoadCallbacks.push(function () { self._addElements(); });
         }
         return this;
     };
     RCMOptions.prototype._addElements = function () {
-        var tFieldset = Utils_1.default.newElement("fieldset", { className: "rcoptions collapsible" }, this.root);
-        Utils_1.default.newElement("legend", { innerHTML: i18n_1.default('recentchanges-legend') }, tFieldset);
-        var tContent = Utils_1.default.newElement("div", { className: "rc-fieldset-content" }, tFieldset);
+        var tFieldset = Utils_1["default"].newElement("fieldset", { className: "rcoptions collapsible" }, this.root);
+        Utils_1["default"].newElement("legend", { innerHTML: i18n_1["default"]('recentchanges-legend') }, tFieldset);
+        var tContent = Utils_1["default"].newElement("div", { className: "rc-fieldset-content" }, tFieldset);
         /***************************
          * RCMOptions settings
          ***************************/
-        var tSettingsPanel = Utils_1.default.newElement("aside", { className: "rcm-options-settings" }, tContent);
+        var tSettingsPanel = Utils_1["default"].newElement("aside", { className: "rcm-options-settings" }, tContent);
         tSettingsPanel.innerHTML = '<svg style="height:19px; vertical-align: top;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z" fill="currentColor" /></svg>';
-        this.settingsSaveCookieCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tSettingsPanel);
-        Utils_1.default.addTextTo(i18n_1.default('rcm-optionspanel-savewithcookie'), tSettingsPanel);
+        this.settingsSaveCookieCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tSettingsPanel);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcm-optionspanel-savewithcookie'), tSettingsPanel);
         this.settingsSaveCookieCheckbox.checked = this.isSaveEnabled(); //!$.isEmptyObject(this.rcParams);
         /***************************
          * First line of choices (numbers)
          ***************************/
-        var tRow1Text = i18n_1.default('rclinks').split("<br />")[0].split("$3")[0].split(/\$1|\$2/);
-        var tRow1 = Utils_1.default.newElement("div", {}, tContent);
-        Utils_1.default.addTextTo(tRow1Text[0], tRow1);
-        this.limitField = Utils_1.default.newElement("select", {}, tRow1);
-        Utils_1.default.addTextTo(tRow1Text[1], tRow1);
-        this.daysField = Utils_1.default.newElement("select", {}, tRow1);
-        Utils_1.default.addTextTo(tRow1Text[2] || "", tRow1);
+        var tRow1Text = i18n_1["default"]('rclinks').split("<br />")[0].split("$3")[0].split(/\$1|\$2/);
+        var tRow1 = Utils_1["default"].newElement("div", {}, tContent);
+        Utils_1["default"].addTextTo(tRow1Text[0], tRow1);
+        this.limitField = Utils_1["default"].newElement("select", {}, tRow1);
+        Utils_1["default"].addTextTo(tRow1Text[1], tRow1);
+        this.daysField = Utils_1["default"].newElement("select", {}, tRow1);
+        Utils_1["default"].addTextTo(tRow1Text[2] || "", tRow1);
         /***************************
          * Second line of choices (checkboxes)
          ***************************/
-        var tRow2 = Utils_1.default.newElement("div", {}, tContent);
+        var tRow2 = Utils_1["default"].newElement("div", {}, tContent);
         var t1Text = ""; //i18n('show');
-        this.minorEditsCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhideminor', t1Text), tRow2);
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.botsCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhidebots', t1Text), tRow2);
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.anonsCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhideanons', t1Text), tRow2);
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.usersCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhideliu', t1Text), tRow2);
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.myEditsCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhidemine', t1Text), tRow2);
+        this.minorEditsCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhideminor', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.botsCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhidebots', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.anonsCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhideanons', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.usersCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhideliu', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.myEditsCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhidemine', t1Text), tRow2);
         if (mw.config.get("wgUserName") && this.manager.hideusers.indexOf(mw.config.get("wgUserName")) != -1) {
             this.myEditsCheckbox.disabled = true;
             this.myEditsCheckbox.checked = false;
-            this.myEditsCheckbox.title = i18n_1.default('rcm-optionspanel-hideusersoverride');
+            this.myEditsCheckbox.title = i18n_1["default"]('rcm-optionspanel-hideusersoverride');
         }
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.groupedChangesCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhideenhanced', t1Text), tRow2);
-        Utils_1.default.addTextTo(" | ", tRow2);
-        this.logsCheckbox = Utils_1.default.newElement("input", { type: "checkbox" }, tRow2);
-        Utils_1.default.addTextTo(i18n_1.default('rcshowhidelogs', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.groupedChangesCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhideenhanced', t1Text), tRow2);
+        Utils_1["default"].addTextTo(" | ", tRow2);
+        this.logsCheckbox = Utils_1["default"].newElement("input", { type: "checkbox" }, tRow2);
+        Utils_1["default"].addTextTo(i18n_1["default"]('rcshowhidelogs', t1Text), tRow2);
         /***************************
          * Finish - make this work!
          ***************************/
@@ -2733,12 +2738,12 @@ var RCMOptions = (function () {
         var tLimitValues = [25, 50, 75, 100, 200, 350, 500];
         for (var i = 0; i < tLimitValues.length; i++) {
             if (tLimit != tLimitValues[i] && tLimit < tLimitValues[i] && (i > 0 && tLimit > tLimitValues[i - 1])) {
-                Utils_1.default.newElement("option", { value: tLimit, innerHTML: tLimit, selected: "selected" }, this.limitField);
+                Utils_1["default"].newElement("option", { value: tLimit, innerHTML: tLimit, selected: "selected" }, this.limitField);
             }
-            Utils_1.default.newElement("option", { value: tLimitValues[i], innerHTML: tLimitValues[i], selected: (tLimit == tLimitValues[i] ? "selected" : undefined) }, this.limitField);
+            Utils_1["default"].newElement("option", { value: tLimitValues[i], innerHTML: tLimitValues[i], selected: (tLimit == tLimitValues[i] ? "selected" : undefined) }, this.limitField);
         }
         if (tLimit > tLimitValues[tLimitValues.length - 1]) {
-            Utils_1.default.newElement("option", { value: tLimit, innerHTML: tLimit, selected: "selected" }, this.limitField);
+            Utils_1["default"].newElement("option", { value: tLimit, innerHTML: tLimit, selected: "selected" }, this.limitField);
         }
         /***************************
          * Days - max changes returned up to _ days before
@@ -2748,12 +2753,12 @@ var RCMOptions = (function () {
         var tDayValues = [1, 3, 7, 14, 30];
         for (var i = 0; i < tDayValues.length; i++) {
             if (tDays != tDayValues[i] && tDays < tDayValues[i] && (i > 0 && tDays > tDayValues[i - 1])) {
-                Utils_1.default.newElement("option", { value: tDays, innerHTML: tDays, selected: "selected" }, this.daysField);
+                Utils_1["default"].newElement("option", { value: tDays, innerHTML: tDays, selected: "selected" }, this.daysField);
             }
-            Utils_1.default.newElement("option", { value: tDayValues[i], innerHTML: tDayValues[i], selected: (tDays == tDayValues[i] ? "selected" : undefined) }, this.daysField);
+            Utils_1["default"].newElement("option", { value: tDayValues[i], innerHTML: tDayValues[i], selected: (tDays == tDayValues[i] ? "selected" : undefined) }, this.daysField);
         }
         if (tDays > tDayValues[tDayValues.length - 1]) {
-            Utils_1.default.newElement("option", { value: tDays, innerHTML: tDays, selected: "selected" }, this.daysField);
+            Utils_1["default"].newElement("option", { value: tDays, innerHTML: tDays, selected: "selected" }, this.daysField);
         }
         /***************************
          * Checkboxes
@@ -2870,7 +2875,7 @@ var RCMOptions = (function () {
     return RCMOptions;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCMOptions;
+exports["default"] = RCMOptions;
 
 },{"./ConstantsApp":1,"./Main":2,"./Utils":10,"./i18n":12}],8:[function(require,module,exports){
 "use strict";
@@ -2898,14 +2903,14 @@ var RCMWikiPanel = (function () {
     RCMWikiPanel.prototype.init = function (pElem) {
         this.root = pElem;
         if (!this.singleWiki)
-            this.listNode = Utils_1.default.newElement("span", { className: "rcm-wikis-list" }, this.root);
-        this.infoNode = Utils_1.default.newElement("div", { className: "rcm-wikis-info" }, this.root);
+            this.listNode = Utils_1["default"].newElement("span", { className: "rcm-wikis-list" }, this.root);
+        this.infoNode = Utils_1["default"].newElement("div", { className: "rcm-wikis-info" }, this.root);
         return this;
     };
     // Clear panel (on refresh).
     RCMWikiPanel.prototype.populate = function () {
         if (!this.singleWiki) {
-            this.listNode.innerHTML = i18n_1.default('rcm-wikisloaded');
+            this.listNode.innerHTML = i18n_1["default"]('rcm-wikisloaded');
         }
     };
     // Clear panel (on refresh).
@@ -2923,10 +2928,10 @@ var RCMWikiPanel = (function () {
         }
         else {
             // this.listNode.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
-            var favicon = Utils_1.default.newElement("span", { id: pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
+            var favicon = Utils_1["default"].newElement("span", { id: pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
             favicon.addEventListener("click", this.onIconClick.bind(this, pWikiInfo));
             if (this.manager.wikisLeftToLoad > 0) {
-                Utils_1.default.addTextTo(":", this.listNode);
+                Utils_1["default"].addTextTo(":", this.listNode);
             }
         }
     };
@@ -2947,31 +2952,31 @@ var RCMWikiPanel = (function () {
                 + "<td rowspan='2' class='rcm-title-cell'>"
                 + pWikiInfo.getFaviconHTML()
                 + " "
-                + "<b><a href='" + pWikiInfo.articlepath + Utils_1.default.escapeCharactersLink(pWikiInfo.mainpage) + "'>" + pWikiInfo.sitename + "</a></b>"
+                + "<b><a href='" + pWikiInfo.articlepath + Utils_1["default"].escapeCharactersLink(pWikiInfo.mainpage) + "'>" + pWikiInfo.sitename + "</a></b>"
                 + " : "
                 + "</td>"
                 + "<td>"
-                + "<a href='" + pWikiInfo.articlepath + "Special:RecentChanges" + pWikiInfo.firstSeperator + pWikiInfo.rcParams.paramString + "'>" + i18n_1.default("recentchanges") + "</a>"
+                + "<a href='" + pWikiInfo.articlepath + "Special:RecentChanges" + pWikiInfo.firstSeperator + pWikiInfo.rcParams.paramString + "'>" + i18n_1["default"]("recentchanges") + "</a>"
                 + " - "
-                + "<a href='" + pWikiInfo.articlepath + "Special:NewPages'>" + i18n_1.default("newpages") + "</a>"
+                + "<a href='" + pWikiInfo.articlepath + "Special:NewPages'>" + i18n_1["default"]("newpages") + "</a>"
                 + " - "
-                + "<a href='" + pWikiInfo.articlepath + "Special:NewFiles'>" + i18n_1.default("newimages") + "</a>"
+                + "<a href='" + pWikiInfo.articlepath + "Special:NewFiles'>" + i18n_1["default"]("newimages") + "</a>"
                 + " - "
-                + "<a href='" + pWikiInfo.articlepath + "Special:Log'>" + i18n_1.default("log") + "</a>"
-                + (pWikiInfo.isWikiaWiki ? " - <a href='" + pWikiInfo.articlepath + "Special:Insights'>" + i18n_1.default("insights") + "</a>" : "")
+                + "<a href='" + pWikiInfo.articlepath + "Special:Log'>" + i18n_1["default"]("log") + "</a>"
+                + (pWikiInfo.isWikiaWiki ? " - <a href='" + pWikiInfo.articlepath + "Special:Insights'>" + i18n_1["default"]("insights") + "</a>" : "")
                 + " - "
-                + "<a href='" + pWikiInfo.articlepath + "Special:Random'>" + i18n_1.default("randompage") + "</a>"
+                + "<a href='" + pWikiInfo.articlepath + "Special:Random'>" + i18n_1["default"]("randompage") + "</a>"
                 + "</td>"
                 + "</tr>"
                 + "<tr>"
                 + "<td>"
                 + "<table class='wikitable center statisticstable' style='margin: 0;'>"
                 + "<tr>"
-                + "<td><a href='" + pWikiInfo.articlepath + "Special:AllPages'>" + i18n_1.default("awc-metrics-articles") + "</a>: <b>" + pWikiInfo.statistics.articles + "</b></td>"
-                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListFiles'>" + i18n_1.default("prefs-files") + "</a>: <b>" + pWikiInfo.statistics.images + "</b></td>"
-                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListUsers'>" + i18n_1.default("group-user") + "</a>: <b>" + pWikiInfo.statistics.activeusers + "</b></td>"
-                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListAdmins'>" + i18n_1.default("group-sysop") + "</a>: <b>" + pWikiInfo.statistics.admins + "</b></td>"
-                + "<td><a href='" + pWikiInfo.articlepath + "Special:Statistics'>" + i18n_1.default("awc-metrics-edits") + "</a>: <b>" + pWikiInfo.statistics.edits + "</b></td>"
+                + "<td><a href='" + pWikiInfo.articlepath + "Special:AllPages'>" + i18n_1["default"]("awc-metrics-articles") + "</a>: <b>" + pWikiInfo.statistics.articles + "</b></td>"
+                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListFiles'>" + i18n_1["default"]("prefs-files") + "</a>: <b>" + pWikiInfo.statistics.images + "</b></td>"
+                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListUsers'>" + i18n_1["default"]("group-user") + "</a>: <b>" + pWikiInfo.statistics.activeusers + "</b></td>"
+                + "<td><a href='" + pWikiInfo.articlepath + "Special:ListAdmins'>" + i18n_1["default"]("group-sysop") + "</a>: <b>" + pWikiInfo.statistics.admins + "</b></td>"
+                + "<td><a href='" + pWikiInfo.articlepath + "Special:Statistics'>" + i18n_1["default"]("awc-metrics-edits") + "</a>: <b>" + pWikiInfo.statistics.edits + "</b></td>"
                 + "</tr>"
                 + "</table>"
                 + "</td>"
@@ -2995,7 +3000,7 @@ var RCMWikiPanel = (function () {
         // console.log(e.currentTarget.dataset.infoid);
         var btn = document.querySelector("#" + e.currentTarget.dataset.infoid);
         if (btn) {
-            if (!Utils_1.default.elemIsVisible(btn)) {
+            if (!Utils_1["default"].elemIsVisible(btn)) {
                 var tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;
                 // $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
                 $('html, body').scrollTop($(btn).offset().top + tScrollOffset - 6);
@@ -3006,7 +3011,7 @@ var RCMWikiPanel = (function () {
     return RCMWikiPanel;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RCMWikiPanel;
+exports["default"] = RCMWikiPanel;
 
 },{"./Utils":10,"./i18n":12}],9:[function(require,module,exports){
 "use strict";
@@ -3019,7 +3024,7 @@ var RC_TYPE;
     RC_TYPE[RC_TYPE["BOARD"] = 4] = "BOARD";
 })(RC_TYPE || (RC_TYPE = {}));
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RC_TYPE;
+exports["default"] = RC_TYPE;
 
 },{}],10:[function(require,module,exports){
 "use strict";
@@ -3101,7 +3106,7 @@ var Utils = (function () {
         return out;
     };
     Utils.uniqID = function () {
-        return "id" + (++ConstantsApp_1.default.uniqID);
+        return "id" + (++ConstantsApp_1["default"].uniqID);
     };
     Utils.getMinutes = function (pDate, timeZone) { return timeZone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); };
     Utils.getHours = function (pDate, timeZone) { return timeZone == "utc" ? pDate.getUTCHours() : pDate.getHours(); };
@@ -3152,9 +3157,9 @@ var Utils = (function () {
         //        returns 3: -1
         //        example 4: version_compare('4.1.0.52','4.01.0.51');
         //        returns 4: 1
-        var i = 0, x = 0, compare = 0, 
+        var i = 0, x = 0, compare = 0,
         // Leave as negatives so they can come before numerical versions
-        vm = { 'dev': -6, 'alpha': -5, 'a': -5, 'beta': -4, 'b': -4, 'RC': -3, 'rc': -3, '#': -2, 'p': 1, 'pl': 1 }, 
+        vm = { 'dev': -6, 'alpha': -5, 'a': -5, 'beta': -4, 'b': -4, 'RC': -3, 'rc': -3, '#': -2, 'p': 1, 'pl': 1 },
         // Format version string to remove oddities.
         prepVersion = function (v) {
             v = ('' + v)
@@ -3222,7 +3227,7 @@ var Utils = (function () {
     return Utils;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Utils;
+exports["default"] = Utils;
 
 },{"./ConstantsApp":1}],11:[function(require,module,exports){
 "use strict";
@@ -3269,7 +3274,7 @@ var WikiData = (function () {
         this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
         this.useOutdatedLogSystem = this.isWikiaWiki;
         if (this.servername.indexOf("/") > -1) {
-            this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>" + i18n_1.default("rcm-error-linkformat", this.servername) + "</div>";
+            this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>" + i18n_1["default"]("rcm-error-linkformat", this.servername) + "</div>";
             throw "Incorrect format";
         }
         var tWikiDataSplit, tKey, tVal; // Split of raw data
@@ -3285,17 +3290,17 @@ var WikiData = (function () {
                     }
                     case "hideusers": {
                         this.hideusers = tVal.replace("", " ").split(",");
-                        this.hideusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+                        this.hideusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
                         break;
                     }
                     case "onlyshowusers": {
                         this.onlyshowusers = tVal.replace("", " ").split(",");
-                        this.onlyshowusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+                        this.onlyshowusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
                         break;
                     }
                     case "notifications_hideusers": {
                         this.notificationsHideusers = tVal.replace("", " ").split(",");
-                        this.notificationsHideusers.forEach(function (o, i, a) { a[i] = Utils_1.default.ucfirst(a[i].trim()); });
+                        this.notificationsHideusers.forEach(function (o, i, a) { a[i] = Utils_1["default"].ucfirst(a[i].trim()); });
                         break;
                     }
                     case "notifications_enabled": {
@@ -3409,7 +3414,7 @@ var WikiData = (function () {
          * Favicon fallback - may not be needed now with "pQuery.pages" backup.
          ***************************/
         if (this.favicon == null) {
-            this.favicon = ConstantsApp_1.default.FAVICON_BASE + this.servername;
+            this.favicon = ConstantsApp_1["default"].FAVICON_BASE + this.servername;
         }
         return this;
     };
@@ -3563,7 +3568,7 @@ var WikiData = (function () {
         tMetaList = null;
         tPropList = null;
         tEndDate = null;
-        if (ConstantsApp_1.default.debug) {
+        if (ConstantsApp_1["default"].debug) {
             console.log("http:" + tReturnText.replace("&format=json", "&format=jsonfm"));
         }
         return tReturnText;
@@ -3574,7 +3579,7 @@ var WikiData = (function () {
     return WikiData;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = WikiData;
+exports["default"] = WikiData;
 
 },{"./ConstantsApp":1,"./Utils":10,"./i18n":12}],12:[function(require,module,exports){
 "use strict";
@@ -4735,7 +4740,7 @@ i18n.wiki2html = function (pText) {
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i18n;
+exports["default"] = i18n;
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -4746,8 +4751,8 @@ if (document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] =
     console.log("RecentChangesMultiple tried to run despite no data. Exiting.");
 }
 else {
-    Main_1.default.init(module);
-    window.dev.RecentChangesMultiple = Main_1.default;
+    Main_1["default"].init(module);
+    window.dev.RecentChangesMultiple = Main_1["default"];
 }
 
 },{"./Main":2}]},{},[13]);

@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var insert = require('gulp-insert');
+var replace = require('gulp-replace');
 // var jshint = require('gulp-jshint');
 var less = require('gulp-less');
 var path = require('path');
@@ -35,6 +36,9 @@ gulp.task('core', function() {
 
 gulp.task('core_comments', ['core'], function() {
 	return gulp.src('build/core.js', {base: './'})
+	// This is needed for the script to validate on Wikia
+	.pipe(replace(/\.default(\W)/g, '["default"]$1'))
+	// Surround code with comments
 	.pipe(insert.prepend(
 	`//<syntaxhighlight lang="javascript">
 /*

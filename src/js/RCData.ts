@@ -936,25 +936,30 @@ export default class RCData
 					RCMModal.setModalContent(tModalContent);
 					let tCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID+" #mw-content-text");
 					if((<any>tCont).attachShadow) {
-						let shadowRoot = (<any>tCont).attachShadow({ mode:"open" });
+						tCont = (<any>tCont).attachShadow({ mode:"open" });
 						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
 						let tCurPageHead = <HTMLElement>document.querySelector("head").cloneNode(true);
 						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
-							shadowRoot.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 						});
 						// Prevent warnings from poping up about shadow dom not supporting <link>.
 						Utils.forEach(tPreviewHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
 						
 						// Also do it for current head
 						Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
-							shadowRoot.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 						});
 						Utils.forEach(tCurPageHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
 						
-						shadowRoot.innerHTML += tCurPageHead.innerHTML;
-						shadowRoot.innerHTML += tPreviewHead.innerHTML;
-						shadowRoot.innerHTML += tContentText;
-						tCont = shadowRoot;
+						tCont.innerHTML += tCurPageHead.innerHTML;
+						tCont.innerHTML += tPreviewHead.innerHTML;
+						tCont.innerHTML += tContentText;
+					}
+					else if("scoped" in document.createElement("style")) {
+						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
+						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
+							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+						});
 					}
 					Utils.forEach(tCont.querySelectorAll("a[href^='/']"), function(o, i, a){
 						o.href = pServerLink + o.getAttribute("href");
