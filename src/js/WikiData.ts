@@ -56,6 +56,10 @@ export default class WikiData
 	mwversion				: string; // MW version number. ex: MediaWiki 1.24.1
 	namespaces				: any[]; // A data object with all namespaces on the wiki by number = { "1":{ -data- } }
 	statistics				: any; // A data object with statistics about number of articles / files / users there are on the wiki.
+	wikiaCityID				: string; // wgCityId - used to retrieve Wikia Disccusion changes.
+	
+	// TODO: Once all Wikia wikis have this, set it to true as soon as wikiaCityID is found.
+	usesWikiaDiscussions	: boolean; // To save on pointless requests that would timeout, if the first fetch fails then don't fetch them again. Undefined means it's not known yet.
 	
 	/***************************
 	 * User Data
@@ -176,11 +180,11 @@ export default class WikiData
 			}
 		}
 		
-		if(!this.username && this.isWikiaWiki && mw.config.get("wgUserName")) {
-			this.username = mw.config.get("wgUserName");
+		if(!this.username && this.isWikiaWiki && ConstantsApp.username) {
+			this.username = ConstantsApp.username;
 		}
 		
-		this.scriptpath =  "//"+this.servername+this.scriptdir;
+		this.scriptpath =  `//${this.servername}${this.scriptdir}`;
 		
 		this.infoID = "wiki-"+this.htmlName;
 		this.rcClass = "rc-entry-"+this.htmlName;
@@ -235,6 +239,16 @@ export default class WikiData
 			
 			this.namespaces = pQuery.namespaces || {};
 			this.statistics = pQuery.statistics || {};
+			
+			if(!!pQuery.variables) {
+				// This is only for Wikia wikis. Other wikis can ignore this.
+				let wgCityIdObj = $.grep(pQuery.variables, function(o){ return o.id === "wgCityId" })[0];
+				if(wgCityIdObj) {
+					this.wikiaCityID = wgCityIdObj["*"];
+				} else {
+					this.usesWikiaDiscussions = false;
+				}
+			}
 		}
 		
 		/***************************
@@ -298,6 +312,60 @@ export default class WikiData
 		return html;
 	}
 	
+	getEndDate() : Date {
+		let tDate = new Date();//this.rcParams.from ? new Date(this.rcParams.from) : new Date();
+		tDate.setDate( tDate.getDate() - this.rcParams.days );
+		return tDate;
+	}
+	
+	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
+	getWikiDataApiUrl() : string {
+		if(!this.needsSiteinfoData || !this.needsUserData) { return null; }
+		var tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
+		var tUrlList = [];
+		var tMetaList = [];
+		var tPropList = [];
+		
+		/***************************
+		* Siteinfo Data - https://www.mediawiki.org/wiki/API:Siteinfo
+		* Get the site info (Once per RCMManager)
+		***************************/
+		tMetaList.push("siteinfo");
+		tReturnText += "&siprop=" + ["general", "namespaces", "statistics", "variables"].join("|");
+		
+		/***************************
+		* Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
+		* Get favicon url for wiki (needed for wikis below V1.23 [Added to siteinfo at that point]) (Once per RCMManager)
+		***************************/
+		tPropList.push("imageinfo");
+		tReturnText += "&iiprop=url&titles=File:Favicon.ico";
+		
+		/***************************
+		* User Data - https://www.mediawiki.org/wiki/API:Users
+		* If user logged in / set, get info for this wiki (Once per RCMManager)
+		***************************/
+		if(this.username) {
+			tUrlList.push("users");
+			tReturnText += "&ususers="+this.username+"&usprop=rights";
+		} else {
+			this.needsUserData = false;
+		}
+		
+		/***************************
+		* Finish building url
+		***************************/
+		if(tUrlList.length > 0){ tReturnText += "&list="+tUrlList.join("|"); }
+		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
+		if(tPropList.length > 0){ tReturnText += "&prop="+tPropList.join("|"); }
+		tReturnText.replace(/ /g, "_");
+		
+		tMetaList = null;
+		tPropList = null;
+		
+		if(ConstantsApp.debug) { console.log("[WikiData](getWikiDataApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
+		return tReturnText;
+	}
+	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
 	// https://www.mediawiki.org/wiki/API:RecentChanges
 	getApiUrl() : string {
@@ -307,12 +375,11 @@ export default class WikiData
 		var tPropList = [];
 		
 		// Get results up to this time stamp.
-		var tEndDate = new Date();//this.rcParams.from ? new Date(this.rcParams.from) : new Date();
-		tEndDate.setDate( tEndDate.getDate() - this.rcParams.days );
+		var tEndDate = this.getEndDate();
 		
 		/***************************
-		 * Recent Changes Data - https://www.mediawiki.org/wiki/API:RecentChanges
-		 ***************************/
+		* Recent Changes Data - https://www.mediawiki.org/wiki/API:RecentChanges
+		***************************/
 		tUrlList.push("recentchanges");
 		tReturnText += "&rcprop="+WikiData.RC_PROPS; // What data to retrieve.
 		
@@ -349,10 +416,10 @@ export default class WikiData
 		}
 		
 		/***************************
-		 * Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
-		 * Get info for logs that don't return all necessary info through "Recent Changes" api.
-		 * To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
-		 ***************************/
+		* Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
+		* Get info for logs that don't return all necessary info through "Recent Changes" api.
+		* To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
+		***************************/
 		if(this.useOutdatedLogSystem) {
 			tUrlList.push("logevents");
 			tReturnText += "&leprop=" + ["details", "user", "title", "timestamp", "type", "ids"].join("|");
@@ -364,36 +431,8 @@ export default class WikiData
 		}
 		
 		/***************************
-		 * Siteinfo Data - https://www.mediawiki.org/wiki/API:Siteinfo
-		 * Get the site info (Once per RCMManager)
-		 ***************************/
-		if(this.needsSiteinfoData) {
-			tMetaList.push("siteinfo");
-			tReturnText += "&siprop=" + ["general", "namespaces", "statistics"].join("|");
-			
-			/***************************
-			 * Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
-			 * Get favicon url for wiki (needed for wikis below V1.23 [Added to siteinfo]) (Once per RCMManager)
-			 ***************************/
-			tPropList.push("imageinfo");
-			tReturnText += "&iiprop=url&titles=File:Favicon.ico";
-		}
-		
-		/***************************
-		 * User Data - https://www.mediawiki.org/wiki/API:Users
-		 * If user logged in / set, get info for this wiki (Once per RCMManager)
-		 ***************************/
-		if(this.needsUserData && this.username) {
-			tUrlList.push("users");
-			tReturnText += "&ususers="+this.username+"&usprop=rights";
-		}
-		else if(this.needsUserData) {
-			this.needsUserData = false;
-		}
-		
-		/***************************
-		 * Finish building url
-		 ***************************/
+		* Finish building url
+		***************************/
 		tReturnText += "&list="+tUrlList.join("|");
 		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
 		if(tPropList.length > 0){ tReturnText += "&prop="+tPropList.join("|"); }
@@ -404,7 +443,7 @@ export default class WikiData
 		tPropList = null;
 		tEndDate = null;
 		
-		if(ConstantsApp.debug) { console.log("http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
+		if(ConstantsApp.debug) { console.log("[WikiData](getApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
 		return tReturnText;
 	}
 }

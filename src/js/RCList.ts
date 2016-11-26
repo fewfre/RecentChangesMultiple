@@ -4,6 +4,8 @@ import WikiData from "./WikiData";
 import Utils from "./Utils";
 import i18n from "./i18n";
 import RC_TYPE from "./RC_TYPE";
+import ConstantsApp from "./ConstantsApp";
+import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
 
 let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
@@ -133,12 +135,13 @@ export default class RCList
 				contribs[rc.author].count++;
 			} else {
 				contribs[rc.author] = { count:1, userEdited:rc.userEdited };
+				contribs[rc.author].avatar = (rc.type == RC_TYPE.DISCUSSION ? (<RCMWikiaDiscussionData>rc).getAvatarImg() : "");
 			}
 		});
 		
 		var returnText = "[", total = 0, tLength = this.list.length;
 		Object.keys(contribs).forEach(function (key) {
-			returnText += this._userPageLink(key, contribs[key].userEdited) + (contribs[key].count > 1 ? " ("+contribs[key].count+"&times;)" : "");
+			returnText += this._userPageLink(key, contribs[key].userEdited, contribs[key].avatar) + (contribs[key].count > 1 ? " ("+contribs[key].count+"&times;)" : "");
 			total += contribs[key].count;
 			if(total < tLength) { returnText += "; "; }
 		}, this);
@@ -157,9 +160,9 @@ export default class RCList
 		return returnText;
 	}
 	
-	private _userPageLink(pUsername:string, pUserEdited:boolean) : string {
+	private _userPageLink(pUsername:string, pUserEdited:boolean, pAvatar:string) : string {
 		if(pUserEdited) {
-			return `<a href='${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
+			return `${pAvatar}<a href='${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
 		} else {
 			return `<a href='${this.wikiInfo.articlepath}Special:Contributions/${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
 		}
@@ -175,90 +178,67 @@ export default class RCList
 			}
 			return false;
 		});
+		let tReturnText = tTitle;
 		if(this.manager.extraLoadingEnabled) {
 			var tElemID = Utils.uniqID();
-			tTitle = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n('rcm-unknownthreadname'))+"</i></span>";
+			tReturnText = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n('rcm-unknownthreadname'))+"</i></span>";
 			
-			var self = this;
-			this.manager.secondaryWikiData.push({
-				url: self.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
-				callback: function(data){
-					var tSpan = document.querySelector("#"+tElemID);
-					for(var tPageIndex in data.query.pages)
-					var tPage = data.query.pages[tPageIndex];
-					
-					(<HTMLAnchorElement>tSpan.parentNode).href = self.wikiInfo.articlepath + "Thread:" + tPage.pageid;
-					var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
-					if(tTitleData != null) {
-						tSpan.innerHTML = tTitleData[1];
+			let self = this;
+			// These ajax requests are done here to condense number of requests; title is only needed per list, not per RCData.
+			if(this.type != RC_TYPE.DISCUSSION) {
+				this.manager.secondaryWikiData.push({
+					url: self.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
+					callback: function(data){
+						let tSpan = document.querySelector("#"+tElemID);
+						for(var tPageIndex in data.query.pages)
+						var tPage = data.query.pages[tPageIndex];
+						
+						(<HTMLAnchorElement>tSpan.parentNode).href = self.wikiInfo.articlepath + "Thread:" + tPage.pageid;
+						let tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
+						if(tTitleData != null) {
+							tSpan.innerHTML = tTitleData[1];
+						}
 					}
+				});
+			} else {
+				if(tTitle == null) {
+					var tRC = <RCMWikiaDiscussionData>this.newest;
+					this.manager.secondaryWikiData.push({
+						// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
+						url: `https://services.wikia.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
+						dataType: "json",
+						callback: function(data){
+							let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
+							tSpan.innerHTML = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
+							let tIcons = "";
+							if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
+							if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
+							if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
+						}
+					});
+				} else {
+					tReturnText = tTitle;
 				}
-			});
+			}
 		} else {
-			if(tTitle == null) {
-				tTitle = "<i>"+i18n('rcm-unknownthreadname')+"</i>";
+			if(tReturnText == null) {
+				tReturnText = "<i>"+i18n('rcm-unknownthreadname')+"</i>";
 			}
 		}
 		
-		return tTitle;
+		return tReturnText;
 	}
 	
 	getAjaxDiffButton() : string {
-		// https://commons.wikimedia.org/wiki/File:Columns_font_awesome.svg
-		// inline SVG allows icon to use font color.
-		return ""+
-		` <span class="rcm-ajaxIcon rcm-ajaxDiff">
-			<svg width="15px" height="15px" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 -256 1792 1792" id="svg2" version="1.1" inkscape:version="0.48.3.1 r9886" sodipodi:docname="columns_font_awesome.svg">
-				<metadata id="metadata12">
-					<rdf:rdf>
-						<cc:work rdf:about="">
-							<dc:format>image/svg+xml</dc:format>
-							<dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
-						</cc:work>
-					</rdf:rdf>
-				</metadata>
-				<defs id="defs10"></defs>
-				<sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="640" inkscape:window-height="480" id="namedview8" showgrid="false" inkscape:zoom="0.13169643" inkscape:cx="896" inkscape:cy="896" inkscape:window-x="0" inkscape:window-y="25" inkscape:window-maximized="0" inkscape:current-layer="svg2"></sodipodi:namedview>
-				<g transform="matrix(1,0,0,-1,68.338983,1277.8305)" id="g4">
-					<path d="M 160,0 H 768 V 1152 H 128 V 32 Q 128,19 137.5,9.5 147,0 160,0 z M 1536,32 V 1152 H 896 V 0 h 608 q 13,0 22.5,9.5 9.5,9.5 9.5,22.5 z m 128,1216 V 32 q 0,-66 -47,-113 -47,-47 -113,-47 H 160 Q 94,-128 47,-81 0,-34 0,32 v 1216 q 0,66 47,113 47,47 113,47 h 1344 q 66,0 113,-47 47,-47 47,-113 z" id="path6" inkscape:connector-curvature="0" style="fill:currentColor"></path>
-				</g>
-			</svg>
-		</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxDiff">${ConstantsApp.getSymbol("rcm-columns")}</span>`;
 	}
 	
 	getAjaxImageButton() : string {
-		// <div>Icons made by <a href="http://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
-		// inline SVG allows icon to use font color.
-		return ""+
-		` <span class="rcm-ajaxIcon rcm-ajaxImage">
-			<svg width="15px" height="15px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 548.176 548.176" style="enable-background:new 0 0 548.176 548.176;" xml:space="preserve">
-				<g>
-					<path style="fill:currentColor" d="M534.75,68.238c-8.945-8.945-19.694-13.417-32.261-13.417H45.681c-12.562,0-23.313,4.471-32.264,13.417 C4.471,77.185,0,87.936,0,100.499v347.173c0,12.566,4.471,23.318,13.417,32.264c8.951,8.946,19.702,13.419,32.264,13.419h456.815 c12.56,0,23.312-4.473,32.258-13.419c8.945-8.945,13.422-19.697,13.422-32.264V100.499 C548.176,87.936,543.699,77.185,534.75,68.238z M511.623,447.672c0,2.478-0.899,4.613-2.707,6.427 c-1.81,1.8-3.952,2.703-6.427,2.703H45.681c-2.473,0-4.615-0.903-6.423-2.703c-1.807-1.813-2.712-3.949-2.712-6.427V100.495 c0-2.474,0.902-4.611,2.712-6.423c1.809-1.803,3.951-2.708,6.423-2.708h456.815c2.471,0,4.613,0.905,6.42,2.708 c1.801,1.812,2.707,3.949,2.707,6.423V447.672L511.623,447.672z"/>
-					<path style="fill:currentColor" d="M127.91,237.541c15.229,0,28.171-5.327,38.831-15.987c10.657-10.66,15.987-23.601,15.987-38.826 c0-15.23-5.333-28.171-15.987-38.832c-10.66-10.656-23.603-15.986-38.831-15.986c-15.227,0-28.168,5.33-38.828,15.986 c-10.656,10.66-15.986,23.601-15.986,38.832c0,15.225,5.327,28.169,15.986,38.826C99.742,232.211,112.683,237.541,127.91,237.541z"/>
-					<polygon style="fill:currentColor" points="210.134,319.765 164.452,274.088 73.092,365.447 73.092,420.267 475.085,420.267 475.085,292.36 356.315,173.587"/>
-				</g>
-			</svg>
-		</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxImage">${ConstantsApp.getSymbol("rcm-picture")}</span>`;
 	}
 	
 	getAjaxPagePreviewButton() : string {
-		// <div>Icons made by <a href="http://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
-		// inline SVG allows icon to use font color.
-		return ""+
-		` <span class="rcm-ajaxIcon rcm-ajaxPage">
-			<svg width="15px" height="15px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 480.606 480.606" style="enable-background:new 0 0 480.606 480.606;" xml:space="preserve">
-				<g>
-					<rect x="85.285" y="192.5" width="200" height="30"/>
-					<path style="fill:currentColor" d="M439.108,480.606l21.213-21.213l-71.349-71.349c12.528-16.886,19.949-37.777,19.949-60.371
-						c0-40.664-24.032-75.814-58.637-92.012V108.787L241.499,0H20.285v445h330v-25.313c6.188-2.897,12.04-6.396,17.475-10.429
-						L439.108,480.606z M250.285,51.213L299.072,100h-48.787V51.213z M50.285,30h170v100h100v96.957
-						c-4.224-0.538-8.529-0.815-12.896-0.815c-31.197,0-59.148,14.147-77.788,36.358H85.285v30h126.856
-						c-4.062,10.965-6.285,22.814-6.285,35.174c0,1.618,0.042,3.226,0.117,4.826H85.285v30H212.01
-						c8.095,22.101,23.669,40.624,43.636,52.5H50.285V30z M307.389,399.208c-39.443,0-71.533-32.09-71.533-71.533
-						s32.089-71.533,71.533-71.533s71.533,32.089,71.533,71.533S346.832,399.208,307.389,399.208z"/>
-				</g>
-			</svg>
-		</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxPage">${ConstantsApp.getSymbol("rcm-preview")}</span>`;
 	}
 	
 	// https://www.mediawiki.org/wiki/API:Revisions
@@ -440,6 +420,15 @@ export default class RCList
 				}
 				break;
 			}
+			case RC_TYPE.DISCUSSION: {
+				let tRC = <RCMWikiaDiscussionData>pRC;
+				html += tRC.getThreadStatusIcons();
+				html += tRC.discusssionTitleText( this.getThreadTitle() );
+				html += RCList.SEP;
+				html += tRC.userDetails();
+				html += tRC.getSummary();
+				break;
+			}
 			case RC_TYPE.COMMENT:
 			case RC_TYPE.NORMAL:
 			default: {
@@ -525,6 +514,11 @@ export default class RCList
 				html += " ("+this._changesText()+")";
 				break;
 			}
+			case RC_TYPE.DISCUSSION: {
+				html += (<RCMWikiaDiscussionData>this.newest).discusssionTitleText( this.getThreadTitle(), true );
+				html += " ("+this._changesText()+")";
+				break;
+			}
 			case RC_TYPE.COMMENT: {
 				// Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
 				html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath+(this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":")+this.newest.titleNoNS+"#WikiaArticleComments" );
@@ -607,6 +601,16 @@ export default class RCList
 				}
 				break;
 			}
+			case RC_TYPE.DISCUSSION: {
+				let tRC = <RCMWikiaDiscussionData>pRC;
+				html += "<span class='mw-enhanced-rc-time'><a href='"+tRC.href+"' title='"+tRC.title+"'>"+tRC.time()+"</a></span>";
+				html += tRC.getThreadStatusIcons();
+				html += tRC.getUpvoteCount();
+				html += RCList.SEP;
+				html += pRC.userDetails();
+				html += pRC.getSummary();
+				break;
+			}
 			case RC_TYPE.COMMENT:
 			case RC_TYPE.NORMAL: {
 				html += "<span class='mw-enhanced-rc-time'><a href='"+this.getLink(pRC, null, pRC.revid)+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>"
@@ -667,7 +671,7 @@ export default class RCList
 					html += this._diffHist(pRC);
 					html += RCList.SEP;
 					html += this._getFlags(pRC, "")+" ";
-					html += pRC.wallBoardTitleText();
+					html += pRC.wallBoardTitleText( this.getThreadTitle() );
 					html += this.getAjaxPagePreviewButton();
 					html += i18n("semicolon-separator")+pRC.time();
 					html += RCList.SEP;
@@ -676,6 +680,15 @@ export default class RCList
 					html += pRC.userDetails();
 					html += pRC.getSummary();
 				}
+				break;
+			}
+			case RC_TYPE.DISCUSSION: {
+				let tRC = <RCMWikiaDiscussionData>pRC;
+				html += tRC.getThreadStatusIcons();
+				html += tRC.discusssionTitleText();
+				html += RCList.SEP;
+				html += tRC.userDetails();
+				html += tRC.getSummary();
 				break;
 			}
 			case RC_TYPE.COMMENT:
@@ -698,7 +711,7 @@ export default class RCList
 		
 		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
 		Utils.newElement("div", { className:this._getBackgroundClass() }, tLi);;
-		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true); }
+		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true)+" "; }
 		tLi.innerHTML += html;
 		
 		this.addPreviewDiffListener(tLi.querySelector(".rcm-ajaxDiff"), pRC);

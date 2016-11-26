@@ -54,7 +54,7 @@
 .rcm-options .rcoptions legend {
   padding-top: 0;
 }
-.rcm-options .rcm-options-settings {
+.rcm-options-settings {
   position: absolute;
   top: 1em;
   right: 0px;
@@ -64,6 +64,12 @@
   background: #333;
   border: 1px solid #555;
   vertical-align: middle;
+}
+.rcm-options-settings-cont {
+  display: inline-block;
+}
+.rcm-options-settings-cont label {
+  display: block;
 }
 .rcm-autoRefresh {
   font-size: xx-small;
@@ -130,14 +136,14 @@
   border-bottom: 1px solid #777;
   line-height: 1;
 }
-.rcm-ajaxDiff {
-  vertical-align: top;
-}
 .rcm-ajaxIcon {
   cursor: pointer;
 }
 .rcm-ajaxIcon svg:hover {
   box-shadow: 0 0 5px 0 currentColor;
+}
+.rcm-svg-icon {
+  vertical-align: middle;
 }
 /* Style results */
 table.mw-enhanced-rc {
@@ -272,111 +278,5 @@ table.mw-enhanced-rc td.mw-enhanced-rc-nested {
 .mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-collapsed .mw-rc-openarrow,
 .mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-expanded .mw-rc-closearrow {
   display: inline;
-}
-/**************************
- * ## Diff table CSS doesn't seem to be on all namespaces, so duplicating it here. ##
- **************************/
-#rcm-diff-view {
-  /* mediawiki.action.history.diff */
-  /* Need to show white background so the color scheme matches community central. This is needed since parts of the color scheme are hard-coded into the CSS.  */
-}
-#rcm-diff-view table.diff {
-  border: none;
-  border-spacing: 4px;
-  margin: 0;
-  width: 100%;
-  table-layout: fixed;
-}
-#rcm-diff-view table.diff td {
-  padding: 0.33em 0.5em;
-}
-#rcm-diff-view table.diff td.diff-marker {
-  padding: 0.25em;
-}
-#rcm-diff-view table.diff col.diff-marker {
-  width: 2%;
-}
-#rcm-diff-view table.diff col.diff-content {
-  width: 48%;
-}
-#rcm-diff-view table.diff td div {
-  word-wrap: break-word;
-}
-#rcm-diff-view td.diff-otitle,
-#rcm-diff-view td.diff-ntitle {
-  text-align: center;
-}
-#rcm-diff-view td.diff-lineno {
-  font-weight: bold;
-}
-#rcm-diff-view td.diff-marker {
-  text-align: right;
-  font-weight: bold;
-  font-size: 1.25em;
-  line-height: 1.2;
-}
-#rcm-diff-view td.diff-addedline,
-#rcm-diff-view td.diff-deletedline,
-#rcm-diff-view td.diff-context {
-  font-size: 88%;
-  line-height: 1.6;
-  vertical-align: top;
-  white-space: -moz-pre-wrap;
-  white-space: pre-wrap;
-  border-style: solid;
-  border-width: 1px 1px 1px 4px;
-  border-radius: 0.33em;
-}
-#rcm-diff-view td.diff-addedline {
-  border-color: #a3d3ff;
-}
-#rcm-diff-view td.diff-deletedline {
-  border-color: #ffe49c;
-}
-#rcm-diff-view td.diff-context {
-  background: #f9f9f9;
-  border-color: #e6e6e6;
-  color: #333;
-}
-#rcm-diff-view .diffchange {
-  font-weight: bold;
-  text-decoration: none;
-}
-#rcm-diff-view td.diff-addedline .diffchange,
-#rcm-diff-view td.diff-deletedline .diffchange {
-  border-radius: 0.33em;
-  padding: 0.25em 0;
-}
-#rcm-diff-view td.diff-addedline .diffchange {
-  background: #d8ecff;
-}
-#rcm-diff-view td.diff-deletedline .diffchange {
-  background: #feeec8;
-}
-#rcm-diff-view .diff-currentversion-title,
-#rcm-diff-view .diff {
-  direction: ltr;
-  unicode-bidi: embed;
-}
-#rcm-diff-view .diff-contentalign-right td {
-  direction: rtl;
-  unicode-bidi: embed;
-}
-#rcm-diff-view .diff-contentalign-left td {
-  direction: ltr;
-  unicode-bidi: embed;
-}
-#rcm-diff-view .diff-multi,
-#rcm-diff-view .diff-otitle,
-#rcm-diff-view .diff-ntitle,
-#rcm-diff-view .diff-lineno {
-  direction: ltr !important;
-  unicode-bidi: embed;
-}
-#rcm-diff-view table.diff,
-#rcm-diff-view td.diff-otitle,
-#rcm-diff-view td.diff-ntitle {
-  background-color: white;
-  color: #3A3A3A;
 }
 /* </syntaxhighlight> */

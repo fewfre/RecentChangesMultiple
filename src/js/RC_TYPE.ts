@@ -4,5 +4,6 @@ enum RC_TYPE {
 	COMMENT,
 	WALL,
 	BOARD,
+	DISCUSSION,
 }
 export default RC_TYPE;

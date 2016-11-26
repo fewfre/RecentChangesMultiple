@@ -5,6 +5,7 @@ import ConstantsApp from "./ConstantsApp";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
 import RCData from "./RCData";
+import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
 import RCList from "./RCList";
 import RCParams from "./RCParams";
 import Utils from "./Utils";
@@ -51,6 +52,7 @@ export default class RCMManager
 	notificationsHideusers	: string[]; // Don't send notifications when these users edit.
 	
 	makeLinksAjax			: boolean; // Make the diff/gallery link behave as the ajax icons do.
+	discussionsEnabled		: boolean; // Whether to load Wikia discussions
 	
 	/***************************
 	 * Storage
@@ -66,10 +68,10 @@ export default class RCMManager
 	
 	extraLoadingEnabled			: boolean; // Turns extra loading on/off
 	// { url:String, callback:function }
-	secondaryWikiData			: any[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
+	secondaryWikiData			: { url:string, callback:(any)=>void, dataType?:string }[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
 	
+	totalItemsToLoad			: number; // Total number of wikis to load.
 	wikisLeftToLoad				: number; // Wikis left to load via ajax
-	totalWikisToLoad			: number; // Total wikis there are to load (use for "% left")
 	loadingErrorRetryNum		: number; // Number of tries to load a wiki before complaining (encase it's due to server, not invalid link)
 	loadErrorTimeoutID			: number;
 	itemsAdded					: number; // Number off items added to screen AFTER load.
@@ -89,6 +91,8 @@ export default class RCMManager
 		this.autoRefreshLocalStorageID	= ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
 		this.extraLoadingEnabled		= true;
 		this.rcm_style_for_rc_bg_added	= false;
+		
+		this._parseWikiList();
 	}
 	
 	dispose() : void {
@@ -118,11 +122,11 @@ export default class RCMManager
 		this.lastLoadDateTime	= null;
 	};
 	
-	// Should only be called once per object.
-	init() : RCMManager {
+	// Should only be called once per RCMManager.
+	private _parseWikiList() : void {
 		/***************************
-		 * Data provided to script
-		 ***************************/
+		* Data provided to script
+		***************************/
 		var tDataset = <any>this.resultCont.dataset;
 		
 		this.rcParamsBase = $.extend( {}, Main.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
@@ -131,11 +135,13 @@ export default class RCMManager
 		this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
 		this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
 		
+		this.discussionsEnabled = tDataset.discussionsEnabled === "true";
+		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
 		if(tDataset.hideusers) { this.hideusers = tDataset.hideusers.replace(/_/g, " ").split(","); }
 		// if(this.rcParams.hidemyself) {
-		// 	var tUsername = mw.config.get("wgUserName");
+		// 	var tUsername = ConstantsApp.username;
 		// 	if(tUsername) { this.hideusers.push(tUsername); }
 		// }
 		this.hideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
@@ -165,13 +171,18 @@ export default class RCMManager
 		this.chosenWikis = Utils.uniq_fast_key(this.chosenWikis, "servername");
 		
 		tDataset = null;
-		
-		/***************************
-		 * HTML Elements/Nodes
-		 ***************************/
+		this.resultCont.innerHTML = "";
+	}
+	
+	// Adds core elements. Should only be called once per RCMManager.
+	init() : RCMManager {
+		this.resultCont.innerHTML = "";
 		this.resultCont.className += " "+this.modID;
 		this.modID = "."+this.modID;
-		this.resultCont.innerHTML = "";
+		
+		/***************************
+		* HTML Elements/Nodes
+		***************************/
 		this.optionsNode	= new RCMOptions(this).init(Utils.newElement("div", { className:"rcm-options" }, this.resultCont));
 		this.statusNode		= Utils.newElement("div", { className:"rcm-status" }, this.resultCont);
 		this.wikisNode		= new RCMWikiPanel(this).init(Utils.newElement("div", { className:"rcm-wikis" }, this.resultCont));
@@ -179,8 +190,8 @@ export default class RCMManager
 		this.footerNode		= Utils.newElement("div", { className:"rcm-footer" }, this.resultCont);
 		
 		/***************************
-		 * Setup
-		 ***************************/
+		* Setup
+		***************************/
 		// Footer never changes, so set here
 		var tEndNewMessageDate = new Date(ConstantsApp.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
 		var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("wikifeatures-promotion-new")+'</sup>' : "";
@@ -189,11 +200,264 @@ export default class RCMManager
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		
 		// Now start the app
-		this._start(true);
+		// this._start(true);
+		this._startWikiDataLoad();
 		
 		return this;
 	};
 	
+	/***************************
+	* Setup WikiData classes - Various wiki data needs to be loaded before the script can properly run.
+	***************************/
+	private _startWikiDataLoad() : void {
+		var self = this;
+		
+		this.erroredWikis = [];
+		
+		this.ajaxID++;
+		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
+		
+		if(this.chosenWikis.length > 0) {
+			Utils.forEach(this.chosenWikis, function(tWikiData:WikiData, i:number){
+				self._loadWikiData(tWikiData, 0, self.ajaxID, (i+1) * ConstantsApp.loadDelay);
+			});
+			this.totalItemsToLoad = this.chosenWikis.length;
+			this.wikisLeftToLoad = this.totalItemsToLoad;
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('app-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		} else {
+			// If the RCM has no wikis listed, there is nothing to run, and the user should be informed.
+			Utils.removeElement(this.statusNode);
+			Utils.removeElement(this.wikisNode.root);
+			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n("wikiacuratedcontent-content-empty-section")+"</div>";
+		}
+	}
+	
+	private _loadWikiData(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
+		var self = this;
+		
+		++pTries;
+		
+		// A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
+		// A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
+		setTimeout(function(){
+			$.ajax({
+				type: 'GET',
+				dataType: 'jsonp',
+				data: {},
+				timeout: 15000, // Error out after 15s
+				url: pWikiData.getWikiDataApiUrl(),
+				success: function(data){ self._onWikiDataLoaded(data, pWikiData, pTries, pID, null); },
+				error: function(data, status){ self._onWikiDataLoaded(null, pWikiData, pTries, pID, status); },
+			});
+		}, pDelayNum);
+	}
+	
+	private _onWikiDataLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
+		var self = this;
+		
+		// Make sure this isn't something loaded before the script was last refreshed.
+		if(pID != this.ajaxID) { return; }
+		
+		// Make sure results are valid
+		if(!!pData && pData.error && pData.query == null) {
+			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
+			throw "Wiki returned error";
+		}
+		else if(pFailStatus == "timeout") {
+			this._handleWikiDataLoadError(pWikiData, pTries, pID, "rcm-error-loading-syntaxhang", 1);
+			return;
+		}
+		else if(pData == null || pData.query == null || pData.query.general == null) {
+			console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+			//console.log(pData);
+			if(pTries < this.loadingErrorRetryNum) {
+				this._loadWikiData(pWikiData, pTries, pID, 0);
+			} else {
+				if(this.erroredWikis.length === 0) {
+					var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+					this._handleWikiDataLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
+				} else {
+					this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
+					this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
+				}
+			}
+			return;
+		}
+		
+		if(pData && pData.warning) { console.log("WARNING: ", pData.warning); }
+		
+		// Store wiki-data retrieved that's needed before wiki parsing
+		pWikiData.initAfterLoad(pData.query);
+		
+		this.wikisLeftToLoad--;
+		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
+		if(this.wikisLeftToLoad <= 0) {
+			this._start(true);
+		}
+	}
+	
+	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
+		var self = this;
+		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
+		var tHandler = function(pEvent){
+			self.loadingErrorRetryNum += pInc;
+			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }
+			tHandler = null;
+			
+			self.erroredWikis.forEach(function(obj){
+				// console.log(obj);
+				self._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
+			});
+			self.erroredWikis = [];
+			self.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+		};
+		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
+		self.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
+	}
+	
+	/***************************
+	* Discussion Loading
+	***************************/
+	private _startDiscussionLoading(pID:number) : void {
+		if(!this.discussionsEnabled) { return; }
+		var self = this;
+		
+		this.ajaxCallbacks = [];
+		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
+		
+		this.totalItemsToLoad = 0;
+		Utils.forEach(this.chosenWikis, function(tWikiData:WikiData, i:number){
+			if(tWikiData.usesWikiaDiscussions !== false) {
+				self.totalItemsToLoad++;
+				self._loadWikiaDiscussions(tWikiData, 0, pID, self.totalItemsToLoad * ConstantsApp.loadDelay);
+			}
+		});
+		// If no discussions are being loaded, skip it and tell manager to not even bother in the future.
+		if(this.totalItemsToLoad <= 0) {
+			this.discussionsEnabled = false;
+			this.rcmChunkStart();
+			return;
+		}
+		this.wikisLeftToLoad = this.totalItemsToLoad;
+		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('embeddable-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+	}
+	
+	private _loadWikiaDiscussions(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
+		var self = this;
+		++pTries;
+		
+		var tLimit = pWikiData.rcParams.limit < 50 ? pWikiData.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
+		// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
+		var tURL = `https://services.wikia.com/discussion/${pWikiData.wikiaCityID}/posts?limit=${tLimit}&page=0&responseGroup=small&reported=false&viewableOnly=${!pWikiData.canBlock}`;
+		if(ConstantsApp.debug) { console.log("[RCMManager](_loadWikiaDiscussions) "+tURL); }
+		$.ajax({ type: 'GET', dataType: 'json', data: {},
+			timeout: 15000, // Error out after 15s
+			url: tURL,
+			success: function(data){ self._onWikiDiscussionLoaded(data, pWikiData, pTries, pID, null); },
+			error: function(data, status){ self._onWikiDiscussionLoaded(data, pWikiData, pTries, pID, status); },
+		});
+	}
+	
+	private _onWikiDiscussionLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
+		let self = this;
+		// Make sure this isn't something loaded before the script was last refreshed.
+		if(pID != this.ajaxID) { return; }
+		
+		if(pFailStatus == null && pData && pData["_embedded"] && pData["_embedded"]["doc:posts"]) {
+			pWikiData.usesWikiaDiscussions = true;
+			this.ajaxCallbacks.push(function(){
+				self._parseWikiDiscussions(pData["_embedded"]["doc:posts"], pWikiData);
+			});
+			if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
+		} else {
+			if(pWikiData.usesWikiaDiscussions === true) {
+				console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+				//console.log(pData);
+				if(pTries < this.loadingErrorRetryNum && pFailStatus == "timeout") {
+					this._loadWikiaDiscussions(pWikiData, pTries, pID, 0);
+					return;
+				} else {
+					// Don't do any fancy error catching. just fail.
+					this._onDiscussionParsingFinished(pWikiData);
+				}
+			} else {
+				if(pFailStatus != "timeout") {
+					if(ConstantsApp.debug) { console.log("[RCMManager](loadWikiDiscussions) "+pWikiData.servername+" has no discussions."); }
+					pWikiData.usesWikiaDiscussions = false;
+				}
+				this._onDiscussionParsingFinished(pWikiData);
+			}
+		}
+	}
+	
+	private _parseWikiDiscussions(pData, pWikiData:WikiData) : void {
+		var self = this;
+		
+		// Check if wiki doesn't have any recent changes
+		if(pData.length <= 0) {
+			this._onDiscussionParsingFinished(pWikiData);
+			return;
+		}
+		
+		// A sort is needed since they are sorted by creation, not last edit.
+		pData.sort(function(a, b){
+			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
+		});
+		var tNewRC, tDate, tChangeAdded;
+		// Add each entry from the wiki to the list in a sorted order
+		pData.forEach(function tRCM_parseWiki_parseRCData(pRCData){
+			let tUser = pRCData.createdBy.name;
+			// Skip if user is hidden for whole script or specific wiki
+			if(tUser && self.hideusers.indexOf(tUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(tUser) > -1)) { return; }
+			// Skip if user is NOT a specified user to show for whole script or specific wiki
+			if(tUser && (self.onlyshowusers.length != 0 && self.onlyshowusers.indexOf(tUser) == -1)) { return; }
+			if(tUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(tUser) == -1)) { return; }
+			// If hideself set
+			if(pWikiData.rcParams.hidemyself && ConstantsApp.username == tUser) { return; }
+			// Skip if goes past the RC "changes in last _ days" value.
+			if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
+			
+			self.itemsToAddTotal++;
+			tNewRC = new RCMWikiaDiscussionData( pWikiData, self );
+			tNewRC.init(pRCData);
+			tChangeAdded = false;
+			self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList:RCList, i:number){
+				if(tNewRC.date > pRCList.date) {
+					self.recentChangesEntries.splice(i, 0, new RCList(self).addRC(tNewRC));
+					tChangeAdded = true;
+					return false;
+				} else {
+					if(self.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+						pRCList.addRC(tNewRC);
+						tChangeAdded = true;
+						return false;
+					}
+				}
+				return true;
+			});
+			if(!tChangeAdded || self.recentChangesEntries.length == 0) { self.recentChangesEntries.push( new RCList(self).addRC(tNewRC) ); }
+		});
+		
+		if(ConstantsApp.debug) { console.log("Discussions:", pWikiData.servername, pData); }
+		
+		this._onDiscussionParsingFinished(pWikiData);
+	}
+	
+	private _onDiscussionParsingFinished(pWikiData:WikiData) : void {
+		this.wikisLeftToLoad--;
+		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
+		if(this.wikisLeftToLoad > 0) {
+			// Parse / wait for next wiki
+			this.ajaxCallbacks.shift();
+			if(this.ajaxCallbacks.length > 0){ this.ajaxCallbacks[0](); }
+		} else {
+			this.rcmChunkStart();
+		}
+	}
+	
+	/***************************
+	* Main RecentChanges loading methods
+	***************************/
 	private _start(pUpdateParams:boolean=false) : void {
 		var self = this;
 		
@@ -209,21 +473,13 @@ export default class RCMManager
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
-		if(this.chosenWikis.length > 0) {
-			this.totalWikisToLoad = 0;
-			Utils.forEach(this.chosenWikis, function(wikiInfo){
-				if(pUpdateParams) { wikiInfo.setupRcParams(); } // Encase it was changed via RCMOptions
-				self.totalWikisToLoad++;
-				self.loadWiki(wikiInfo, 0, self.ajaxID, self.totalWikisToLoad * ConstantsApp.loadDelay);
-			});
-			//this.totalWikisToLoad = this.chosenWikis.length;
-			this.wikisLeftToLoad = this.totalWikisToLoad;
-			this.statusNode.innerHTML = "<img src='"+ConstantsApp.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
-		} else {
-			Utils.removeElement(this.statusNode);
-			Utils.removeElement(this.wikisNode.root);
-			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n("wikiacuratedcontent-content-empty-section")+"</div>";
-		}
+		Utils.forEach(this.chosenWikis, function(tWikiData:WikiData, i:number){
+			if(pUpdateParams) { tWikiData.setupRcParams(); } // Encase it was changed via RCMOptions
+			self._loadWiki(tWikiData, 0, self.ajaxID, (i+1) * ConstantsApp.loadDelay);
+		});
+		this.totalItemsToLoad = this.chosenWikis.length;
+		this.wikisLeftToLoad = this.totalItemsToLoad;
+		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 	};
 	
 	refresh(pUpdateParams:boolean=false) : void {
@@ -248,26 +504,24 @@ export default class RCMManager
 	};
 	
 	// Separate method so that it can be reused if the loading failed
-	loadWiki(pWikiInfo:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
+	private _loadWiki(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
 		var self = this;
-		
 		++pTries;
 		
+		// A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
+		// A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
 		setTimeout(function(){
-			$.ajax({
-				type: 'GET',
-				dataType: 'jsonp',
-				data: {},
+			$.ajax({ type: 'GET', dataType: 'jsonp', data: {},
 				timeout: 15000, // Error out after 15s
-				url: pWikiInfo.getApiUrl(),
-				success: function(data){ self.onWikiLoaded(data, pWikiInfo, pTries, pID, null); },
-				error: function(data, status){ self.onWikiLoaded(null, pWikiInfo, pTries, pID, status); },
+				url: pWikiData.getApiUrl(),
+				success: function(data){ self._onWikiLoaded(data, pWikiData, pTries, pID, null); },
+				error: function(data, status){ self._onWikiLoaded(null, pWikiData, pTries, pID, status); },
 			});
 		}, pDelayNum);
 	};
 	
 	/* Called after a wiki is loaded; will add it to queue, and run it if no other callbacks running. */
-	onWikiLoaded(pData, pWikiInfo:WikiData, pTries:number, pID:number, pFailStatus) : void {
+	private _onWikiLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
 		var self = this;
 		
 		// Make sure this isn't something loaded before the script was last refreshed.
@@ -275,63 +529,25 @@ export default class RCMManager
 		
 		// Make sure results are valid
 		if(!!pData && pData.error && pData.query == null) {
-			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiInfo.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
+			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
-			this.handleWikiLoadError(pWikiInfo, pTries, pID, "rcm-error-loading-syntaxhang", 1);
-		
-			// clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-			// this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n("rcm-error-loading-syntaxhang", "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-			// var tHandler = function(pData){
-			// 	clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
-			// 	if(pData) pData.target.removeEventListener("click", tHandler);
-			// 	tHandler = null;
-			//
-			// 	self.erroredWikis.forEach(function(obj){
-			// 		console.log(obj);
-			// 		self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-			// 	});
-			// 	self.erroredWikis = [];
-			// 	self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-			// };
-			// Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", 1) }, self.statusNode).addEventListener("click", tHandler);
-			// self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
-			// if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
+			this._handleWikiLoadError(pWikiData, pTries, pID, "rcm-error-loading-syntaxhang", 1);
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
-			console.log("Error loading "+pWikiInfo.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+			console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
 			//console.log(pData);
 			if(pTries < this.loadingErrorRetryNum) {
-				this.loadWiki(pWikiInfo, pTries, pID, 0);
+				this._loadWiki(pWikiData, pTries, pID, 0);
 			} else {
 				if(this.erroredWikis.length === 0) {
 					var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
-					this.handleWikiLoadError(pWikiInfo, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-					
-					// clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-					// this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n((pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection"), "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
-					// this.addRefreshButtonTo(this.statusNode);
-					// var tHandler = function(pData){
-					// 	clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
-					// 	self.loadingErrorRetryNum += RCMManager.LOADING_ERROR_RETRY_NUM_INC;
-					// 	if(pData) pData.target.removeEventListener("click", tHandler);
-					// 	tHandler = null;
-					//
-					// 	self.erroredWikis.forEach(function(obj){
-					// 		console.log(obj);
-					// 		self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
-					// 	});
-					// 	self.erroredWikis = [];
-					// 	self.statusNode.innerHTML = "<img src='"+module.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
-					// };
-					// Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", RCMManager.LOADING_ERROR_RETRY_NUM_INC) }, self.statusNode).addEventListener("click", tHandler);
-					// self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
-					// if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(); } }, 20000); }
+					this._handleWikiLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
 				} else {
-					this.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
-					this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiInfo.servername;
+					this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
+					this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
 				}
 				//throw "Refresh";
 			}
@@ -341,18 +557,18 @@ export default class RCMManager
 		if(pData && pData.warning) { console.log("WARNING: ", pData.warning); }
 		
 		// Store wiki-data retrieved that's needed before wiki parsing
-		pWikiInfo.initAfterLoad(pData.query);
+		// pWikiData.initAfterLoad(pData.query);
 		
 		this.ajaxCallbacks.push(function(){
-			self.parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiInfo, pTries);
+			self._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
 		});
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
 	};
 	
-	handleWikiLoadError(pWikiInfo:WikiData, pTries:number, pID:number, pErrorMessage, pInc:number) : void {
-		var self:RCMManager = this;
+	private _handleWikiLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
+		var self = this;
 		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiInfo.servername+"</span>", pTries)+"</div>";
+		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
 		this.addRefreshButtonTo(this.statusNode);
 		var tHandler = function(pEvent){
 			clearTimeout(self.loadErrorTimeoutID); self.loadErrorTimeoutID = null;
@@ -361,40 +577,40 @@ export default class RCMManager
 			tHandler = null;
 			
 			self.erroredWikis.forEach(function(obj){
-				console.log(obj);
-				self.loadWiki(obj.wikiInfo, obj.tries, obj.id);
+				// console.log(obj);
+				self._loadWiki(obj.wikiInfo, obj.tries, obj.id);
 			});
 			self.erroredWikis = [];
-			self.statusNode.innerHTML = "<img src='"+ConstantsApp.LOADER_IMG+"' /> "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
+			self.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+self.calcLoadPercent()+"%</span>)";
 		};
 		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
-		self.erroredWikis.push({wikiInfo:pWikiInfo, tries:pTries, id:pID});
+		self.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(function(){ if(tHandler) { tHandler(null); } }, 20000); }
 	};
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
-	parseWiki(pData, pLogData, pWikiInfo:WikiData, pTries:number) : void {
+	private _parseWiki(pData, pLogData, pWikiData:WikiData) : void {
 		var self = this;
 		
 		// Check if wiki doesn't have any recent changes
-		if(pData.length < 0) {
-			this.onWikiParsingFinished(pWikiInfo);
+		if(pData.length <= 0) {
+			this._onWikiParsingFinished(pWikiData);
 			return;
 		}
 		
-		if(ConstantsApp.debug) { console.log(pWikiInfo.servername, pData); }
+		if(ConstantsApp.debug) { console.log(pWikiData.servername, pData); }
 		
 		var tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach(function tRCM_parseWiki_parseRCData(pRCData){
 			// Skip if user is hidden for whole script or specific wiki
-			if(pRCData.user && self.hideusers.indexOf(pRCData.user) > -1 || (pWikiInfo.hideusers && pWikiInfo.hideusers.indexOf(pRCData.user) > -1)) { return; }
+			if(pRCData.user && self.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) { return; }
 			// Skip if user is NOT a specified user to show for whole script or specific wiki
 			if(pRCData.user && (self.onlyshowusers.length != 0 && self.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
-			if(pRCData.user && (pWikiInfo.onlyshowusers != undefined && pWikiInfo.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
+			if(pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
 			
 			self.itemsToAddTotal++;
-			tNewRC = new RCData( pWikiInfo, self ).init(pRCData, pLogData);
+			tNewRC = new RCData( pWikiData, self ).init(pRCData, pLogData);
 			tChangeAdded = false;
 			self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList:RCList, i:number){
 				if(tNewRC.date > pRCList.date) {
@@ -413,28 +629,30 @@ export default class RCMManager
 			if(!tChangeAdded || self.recentChangesEntries.length == 0) { self.recentChangesEntries.push( new RCList(self).addRC(tNewRC) ); }
 		});
 		
-		this.onWikiParsingFinished(pWikiInfo);
+		this._onWikiParsingFinished(pWikiData);
 	};
 	
 	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
-	onWikiParsingFinished(pWikiInfo:WikiData) : void {
+	private _onWikiParsingFinished(pWikiData:WikiData) : void {
 		this.wikisLeftToLoad--;
-		this.wikisNode.addWiki(pWikiInfo);
+		this.wikisNode.addWiki(pWikiData);
 		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
 		if(this.wikisLeftToLoad > 0) {
 			// Parse / wait for next wiki
 			this.ajaxCallbacks.shift();
 			if(this.ajaxCallbacks.length > 0){ this.ajaxCallbacks[0](); }
 		} else {
-			if(Main.langLoaded) {
-				this.rcmChunkStart();
+			if(this.discussionsEnabled) {
+				this._startDiscussionLoading(this.ajaxID);
 			} else {
-				var self = this;
-				Main.onLangLoadCallbacks.push(function(){ self.rcmChunkStart(); });
+				this.rcmChunkStart();
 			}
 		}
 	};
 	
+	/***************************
+	* Display Results
+	***************************/
 	// All wikis are loaded
 	rcmChunkStart() : void {
 		var tDate:Date = new Date();
@@ -550,7 +768,7 @@ export default class RCMManager
 		
 		// Secondary info
 		if(this.extraLoadingEnabled) {
-			this.loadExtraInfo(this.ajaxID);
+			this._loadExtraInfo(this.ajaxID);
 		}
 	};
 	
@@ -564,30 +782,31 @@ export default class RCMManager
 		}, this.autoRefreshTimeoutNum);
 	};
 		
-	loadExtraInfo(pID:number) : void {
+	private _loadExtraInfo(pID:number) : void {
 		if(pID != this.ajaxID) { return; }
-		if(this.secondaryWikiData.length == 0) { if(ConstantsApp.debug){ console.log("[RCMManager](loadExtraInfo) All loading finished."); } return; }
+		if(this.secondaryWikiData.length == 0) { if(ConstantsApp.debug){ console.log("[RCMManager](_loadExtraInfo) All loading finished."); } return; }
 		var self = this;
 		
 		var tUrl = this.secondaryWikiData[0].url;
 		var tCallback = this.secondaryWikiData[0].callback;
+		var tDataType = this.secondaryWikiData[0].dataType || "jsonp";
 		this.secondaryWikiData.splice(0, 1);
 		
 		$.ajax({
 			type: 'GET',
-			dataType: 'jsonp',
+			dataType: tDataType,
 			data: {},
 			url: tUrl,
 			success: function(){ if(pID != self.ajaxID) { return; } tCallback.apply(this, arguments); },//tCallback,
-			// error: function(data){ self.onWikiLoaded(null, pWikiInfo, pTries, pID, true); },
+			// error: function(data){ self.onWikiLoaded(null, pWikiData, pTries, pID, true); },
 		});
 		
-		setTimeout(function(){ self.loadExtraInfo(pID); }, ConstantsApp.loadDelay);
+		setTimeout(function(){ self._loadExtraInfo(pID); }, ConstantsApp.loadDelay);
 	}
 	
-	//######################################
-	// Specific Helper Methods
-	//######################################
+	/***************************
+	* Specific Helper Methods
+	***************************/
 	addRefreshButtonTo(pParent:HTMLElement) : void {
 		var self = this;
 		
@@ -626,7 +845,7 @@ export default class RCMManager
 	}
 	
 	calcLoadPercent() : number {
-		return Math.round((this.totalWikisToLoad - this.wikisLeftToLoad) / this.totalWikisToLoad * 100);
+		return Math.round((this.totalItemsToLoad - this.wikisLeftToLoad) / this.totalItemsToLoad * 100);
 	};
 	
 	// take a "&" seperated list of RC params, and returns a Object with settings.

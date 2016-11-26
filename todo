@@ -3,8 +3,9 @@
 ############################################
 - [Bug] Doesn't work in tabview. Add a delay check, or look for the container being added.
 - Page preview needs a way to load all css / js.
-- Figure out how to load local diff page css.
-
+- [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
+- [Idea] Make an SVG class instead of using ConstantsApp. Also, potentially trying using template strings with variables instead of "getSymbol()" method call?
+	- remove SVG_SYMBOLS array after svg object is created?
 
 ############################################
 ## SECONDARY
@@ -21,7 +22,6 @@
 - [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 - mw.util.wikiUrlencode? (instead of custom version in Utils)
 - Translations: support "rtl" lang dir
-- Implement http://dev.wikia.com/wiki/Discussions_Feed
 - Option to turn off auto refresh if page has focus.
 
 

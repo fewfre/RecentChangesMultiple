@@ -22,11 +22,13 @@ export default class RCMOptions
 	 * Data
 	 ***************************/
 	rcParams			: any;
+	discussionsEnabled	: boolean;
 	
 	/***************************
 	 * Fields
 	 ***************************/
 	settingsSaveCookieCheckbox	: HTMLInputElement;
+	settingsShowDiscussionsCheckbox	: HTMLInputElement;
 	
 	limitField					: HTMLSelectElement;
 	daysField					: HTMLSelectElement;
@@ -52,29 +54,34 @@ export default class RCMOptions
 		this.root = null;
 		
 		this.rcParams = null;
-		this.limitField				= null;
-		this.daysField				= null;
 		
-		this.minorEditsCheckbox		= null;
-		this.botsCheckbox			= null;
-		this.anonsCheckbox			= null;
-		this.usersCheckbox			= null;
-		this.myEditsCheckbox		= null;
-		this.groupedChangesCheckbox	= null;
-		this.logsCheckbox			= null;
+		this.settingsSaveCookieCheckbox	= null;
+		this.settingsShowDiscussionsCheckbox= null;
+		
+		this.limitField					= null;
+		this.daysField					= null;
+		
+		this.minorEditsCheckbox			= null;
+		this.botsCheckbox				= null;
+		this.anonsCheckbox				= null;
+		this.usersCheckbox				= null;
+		this.myEditsCheckbox			= null;
+		this.groupedChangesCheckbox		= null;
+		this.logsCheckbox				= null;
 	}
 	
 	init(pElem:HTMLElement|Element) : RCMOptions {
 		this.root = <HTMLElement>pElem;
-		this.rcParams = this.getSave();//$.extend({}, this.manager.rcParamsBase);
-		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
-		if(Main.langLoaded) {
-			this._addElements();
-		} else {
-			var self = this;
-			Main.onLangLoadCallbacks.push(function(){ self._addElements(); });
+		let tSave = this.getSave();
+		this.rcParams = tSave.options || {};//$.extend({}, this.manager.rcParamsBase);
+		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
+		this.discussionsEnabled = tSave.discussionsEnabled;
+		if(this.discussionsEnabled != null) {
+			this.manager.discussionsEnabled = this.discussionsEnabled;
 		}
+		
+		this._addElements();
 		
 		return this;
 	}
@@ -88,12 +95,11 @@ export default class RCMOptions
 		 * RCMOptions settings
 		 ***************************/
 		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
-		tSettingsPanel.innerHTML = '<svg style="height:19px; vertical-align: top;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z" fill="currentColor" /></svg>';
+		tSettingsPanel.innerHTML = ConstantsApp.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
+		var tSettingsPanelContent = <HTMLInputElement>Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
 		
-		this.settingsSaveCookieCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tSettingsPanel);
-		Utils.addTextTo(i18n('rcm-optionspanel-savewithcookie'), tSettingsPanel);
-		
-		this.settingsSaveCookieCheckbox.checked = this.isSaveEnabled();//!$.isEmptyObject(this.rcParams);
+		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('rcm-optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
+		this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tSettingsPanelContent);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -113,43 +119,30 @@ export default class RCMOptions
 		var tRow2 = Utils.newElement("div", {  }, tContent);
 		var t1Text = "";//i18n('show');
 		
-		this.minorEditsCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhideminor', t1Text), tRow2);
+		this.minorEditsCheckbox = this._newCheckbox(i18n('rcshowhideminor', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.botsCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhidebots', t1Text), tRow2);
+		this.botsCheckbox = this._newCheckbox(i18n('rcshowhidebots', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.anonsCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhideanons', t1Text), tRow2);
+		this.anonsCheckbox = this._newCheckbox(i18n('rcshowhideanons', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.usersCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhideliu', t1Text), tRow2);
+		this.usersCheckbox = this._newCheckbox(i18n('rcshowhideliu', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.myEditsCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhidemine', t1Text), tRow2);
-		if(mw.config.get("wgUserName") && this.manager.hideusers.indexOf(mw.config.get("wgUserName")) != -1) {
+		this.myEditsCheckbox = this._newCheckbox(i18n('rcshowhidemine', t1Text), tRow2);
+		if(ConstantsApp.username && this.manager.hideusers.indexOf(ConstantsApp.username) != -1) {
 			this.myEditsCheckbox.disabled = true;
 			this.myEditsCheckbox.checked = false;
 			this.myEditsCheckbox.title = i18n('rcm-optionspanel-hideusersoverride');
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.groupedChangesCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhideenhanced', t1Text), tRow2);
+		this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', t1Text), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		
-		this.logsCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tRow2);
-		Utils.addTextTo(i18n('rcshowhidelogs', t1Text), tRow2);
+		this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', t1Text), tRow2);
 		
 		/***************************
 		 * Finish - make this work!
@@ -158,6 +151,19 @@ export default class RCMOptions
 		
 		this.refresh();
 		return this;
+	}
+	
+	private _newCheckbox(pText:string, pParent:HTMLElement) : HTMLInputElement {
+		let tLabel = Utils.newElement("label", null, pParent);
+		let tCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tLabel);
+		Utils.addTextTo(pText, tLabel);
+		return tCheckbox;
+	}
+	
+	private _createNewSettingsOption(pText:string, pChecked:boolean, pParent:HTMLElement) : HTMLInputElement {
+		let tCheckbox = this._newCheckbox(pText, pParent);
+		tCheckbox.checked = pChecked;
+		return tCheckbox;
 	}
 	
 	// Add / set the values of the fields.
@@ -208,6 +214,7 @@ export default class RCMOptions
 	
 	addEventListeners() : void {
 		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		this.settingsShowDiscussionsCheckbox.addEventListener("change", this._onChange_settingsShowDiscussions.bind(this));
 		
 		this.limitField.addEventListener("change", this._onChange_limit.bind(this));
 		this.daysField.addEventListener("change", this._onChange_days.bind(this));
@@ -223,6 +230,7 @@ export default class RCMOptions
 	
 	removeEventListeners() : void {
 		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie.bind(this));
+		this.settingsShowDiscussionsCheckbox.removeEventListener("change", this._onChange_settingsShowDiscussions.bind(this));
 		
 		this.limitField.removeEventListener("change", this._onChange_limit);
 		this.daysField.removeEventListener("change", this._onChange_days);
@@ -293,6 +301,13 @@ export default class RCMOptions
 		}
 	}
 	
+	private _onChange_settingsShowDiscussions(pEvent:Event) : void {
+		this.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
+		this.manager.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
+		this.manager.refresh(true);
+		this.save();
+	}
+	
 	/***************************
 	 * Helper Methods
 	 ***************************/
@@ -313,11 +328,11 @@ export default class RCMOptions
 	
 	save() : void {
 		if(this.settingsSaveCookieCheckbox.checked) {
-			localStorage.setItem(this.localStorageID, JSON.stringify(this.rcParams));
+			localStorage.setItem(this.localStorageID, JSON.stringify({ options:this.rcParams, discussionsEnabled:this.discussionsEnabled }));
 		}
 	}
 	
-	getSave() : void {
+	getSave() : any {
 		return localStorage.getItem(this.localStorageID)
 			? JSON.parse(localStorage.getItem(this.localStorageID))
 			: {}

@@ -8,7 +8,7 @@ let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
 
 //######################################
-// Main - Start script and store static values.
+// Main (instance class) - Start script and store values.
 //######################################
 class Main
 {
@@ -62,13 +62,28 @@ class Main
 			document.querySelector("body").className += " rcm-hiderail";
 		}
 
-		this._loadLangMessages();
-
 		tDataset = null;
 
 		/***************************
-		 * Get rcParams from url
-		 ***************************/
+		* Load Translations
+		***************************/
+		this._loadLangMessages();
+		
+		/***************************
+		* Setup SVG symbols
+		***************************/
+		// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
+		// Due to how symbols work, this only needs to be injected once per script.
+		var tSVG = '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" style="height: 0px; width: 0px; position: absolute; overflow: hidden;">'
+		for(let i = 0; i < ConstantsApp.SVG_SYMBOLS.length; i++) {
+			tSVG += ConstantsApp.SVG_SYMBOLS[i];
+		}
+		tSVG += `</svg>`;
+		$("body").append($(tSVG));
+
+		/***************************
+		* Get rcParams from url
+		***************************/
 		this.rcParamsURL = {};
 
 		var tUrlVars = {}
@@ -84,31 +99,43 @@ class Main
 		}
 
 		/***************************
-		 * Start App
-		 ***************************/
+		* Start App
+		***************************/
 		let self = this;
 		Utils.forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray){
-			self.rcmList.push( new RCMManager(pNode, pI).init() );
+			let tRCMManager = new RCMManager(pNode, pI);
+			self.rcmList.push( tRCMManager );
+			// Don't init managers until all translation info is loaded.
+			if(self.langLoaded) {
+				tRCMManager.init();
+			} else {
+				tRCMManager.resultCont.innerHTML = `<center>${ConstantsApp.getLoaderLarge()}</center>`;
+				self.onLangLoadCallbacks.push(function(){ tRCMManager.init(); tRCMManager = null; });
+			}
 		});
 
-		tWrappers = null;
-
-		// This does things like allow "fieldset" to collapse in RCMOptions
-		mw.loader.load( 'mediawiki.special.recentchanges' );
+		var refreshAllButton = document.querySelector(".rcm-refresh-all");
+		if(refreshAllButton) {
+			refreshAllButton.addEventListener("click", function(){ self._refreshAllManagers(); });
+		}
+		
+		/***************************
+		* Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
+		***************************/
+		mw.loader.load( 'mediawiki.special.recentchanges' ); // This does things like allow "fieldset" to collapse in RCMOptions
+		mw.loader.load( 'mediawiki.action.history.diff' ); // AjaxDiff css
 
 		// // For Testing CSS
 		// Utils.newElement("style", { innerHTML:""
 		// 	+""
 		// +"" }, document.body);
-
-		var refreshAllButton = document.querySelector(".rcm-refresh-all");
-		if(refreshAllButton) {
-			let self = this;
-			refreshAllButton.addEventListener("click", function(){
-				for(var i = 0; i < self.rcmList.length; i++) {
-					self.rcmList[i].refresh();
-				}
-			});
+		
+		tWrappers = null;
+	}
+	
+	private _refreshAllManagers() : void {
+		for(let i = 0; i < this.rcmList.length; i++) {
+			this.rcmList[i].refresh();
 		}
 	}
 
@@ -177,7 +204,7 @@ class Main
 		.done(function(pData){
 			self.langLoaded = true;
 
-			for (var i = 0; i < self.onLangLoadCallbacks.length; i++) {
+			for (let i = 0; i < self.onLangLoadCallbacks.length; i++) {
 				self.onLangLoadCallbacks[i]();
 			}
 			self.onLangLoadCallbacks = [];
@@ -250,4 +277,5 @@ class Main
 		}
 	}
 }
+// We want Main to be an instance class.
 export default new Main();

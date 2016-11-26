@@ -92,7 +92,7 @@ export default class RCMModal
 	static showLoadingModal(pData:ModalProp, pOnModalShown:()=>void) : void {
 		// While we are waiting for results, open diff window to acknowledge user's input
 		if (!RCMModal.isModalOpen()) {
-			pData.content = "<div style='text-align:center; padding:10px;'><img src='"+ConstantsApp.LOADER_IMG+"'></div>";
+			pData.content = "<div style='text-align:center; padding:10px;'>"+ConstantsApp.getLoaderLarge()+"</div>";
 			pData.rcm_onModalShown = pOnModalShown;
 			RCMModal.showModal(pData);
 		}

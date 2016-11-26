@@ -1,3 +1,16 @@
+== V2.2 - 26 November 2016 ==
+- Reworked loading:
+	- Translations must be loaded before managers are initialized.
+	- siteinfo and other 1-off info must be loaded before rc data (necessary for discussions).
+- Ajax diff now loads local css (instead of hardcoding style which required a white background).
+- SVGs reworked to use <symbol> and <use> tags.
+- Wikia Discussion system added to script.
+	- Currently only grabs up to limit of 50. Will use RC options if less than 50 (potentially doubling total results).
+	- Discussions display avatar for users (since the api returns the links).
+	- Can be turned on with data-discussions-enabled attribute.
+	- Added a toggle option to turn discussions on/off.
+
+
 == V2.1 - 20 November 2016 ==
 - Ajax diff timestamps now link to diff as well as have edit buttons next to them (and the new edit has an undo button). Added to mirror normal diff behavior.
 - Ajax diff also shows the "m" minor icon. Added to mirror normal diff behavior.

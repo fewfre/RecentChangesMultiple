@@ -860,7 +860,7 @@ export default class RCData
 				tButton.addEventListener("click", function(){
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 					if(ConstantsApp.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm")); }
-					tCont.innerHTML = "<img src='"+ConstantsApp.LOADER_IMG+"' />";
+					tCont.innerHTML = ConstantsApp.getLoader(25);
 					
 					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 						success: function(pData){

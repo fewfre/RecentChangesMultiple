@@ -2,17 +2,17 @@ let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
 
 /*
- *  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
- * 			This i18n is set depending on your local language (en if not available).
- * MESSAGES - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
- * 			Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
- * NOTES:
- *		Common messages: https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
- * 		Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
- *		mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
- * POTENTIAL ISSUES:
- * 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
- */
+*  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
+* 			This i18n is set depending on your local language (en if not available).
+* MESSAGES - This contains words used in the actual RC page. Only the English information is listed below, because the script prompts the server for those translations by looping through the IDs list in RC_TEXT.
+* 			Since some languages depend on the English defaults for things (like "minoreditletter"), it's values are default (to avoid having to load english first).
+* NOTES:
+*		Common messages: https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
+* 		Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
+*		mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+* POTENTIAL ISSUES:
+* 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
+*/
 // Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 interface i18nInterface {
 	(string, ...pArgs:(string|number)[]):string;
@@ -63,7 +63,7 @@ i18n.TEXT = {
 		'rcm-footer' : "Version $1 by $2",
 		// Options Panel
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
-		'rcm-optionspanel-savewithcookie': "Save changes with cookie",
+		'rcm-optionspanel-savewithcookie': "Save options with cookie",
 		// Modules
 		'rcm-module-diff-title' : "Diff Viewer",
 		'rcm-module-diff-open' : "Open diff",
@@ -933,14 +933,14 @@ i18n.TEXT = {
 };
 
 /*******************************************************************************
- * DO NOT CHANGE THIS WHEN TRANSLATING
- * MESSAGES is all text that is retrieved from the Wikia servers for any supported language.
- * If it is necessary to overwrite a system message, simply add its key to the TEXT object with the new text for your language.
- *******************************************************************************/
+* DO NOT CHANGE THIS WHEN TRANSLATING
+* MESSAGES is all text that is retrieved from the Wikia servers for any supported language.
+* If it is necessary to overwrite a system message, simply add its key to the TEXT object with the new text for your language.
+********************************************************************************/
 i18n.MESSAGES = {
 	/***************************
-	 * Common Stuff
-	 ***************************/
+	* Common Stuff
+	****************************/
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages/MessagesEn.php
 	'talkpagelinktext' : 'Talk', // L830 - "Talk" is more inter-wiki appropriate than "wall" (wall-message-wall-shorten)
 	'cur' : 'cur', // L1492
@@ -1009,17 +1009,18 @@ i18n.MESSAGES = {
 	'myhome-feed-edited-by' : 'edited by $1',
 	'edit-summary' : 'Edit summary',
 	'wikiaPhotoGallery-conflict-view': 'View the current page',
+	'app-loading': 'Loading...',
 	
 	/***************************
-	 * Diff Modal
-	 ***************************/
+	* Diff Modal
+	****************************/
 	'revisionasof' : 'Revision as of $1',
 	'editold' : 'edit',
 	'editundo' : 'undo',
 	
 	/***************************
-	 * Log Names - wgLogHeaders
-	 ***************************/
+	* Log Names - wgLogHeaders
+	****************************/
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages/MessagesEn.php
 	'blocklogpage'						: 'Block log', // L3157
 	'dellogpage'						: 'Deletion log', // L2848
@@ -1047,8 +1048,8 @@ i18n.MESSAGES = {
 	'abusefilter-log'					: 'Abuse filter log',
 
 	/***************************
-	 * Log Actions -
-	 ***************************/
+	* Log Actions -
+	****************************/
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages/MessagesEn.php
 	// Block
 	'blocklogentry'                   : 'blocked [[$1]] with an expiry time of $2 $3',
@@ -1129,8 +1130,8 @@ i18n.MESSAGES = {
 	"abusefilter-log-detailslink" : "details",
 
 	/***************************
-	 * Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
-	 ***************************/
+	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
+	****************************/
 	'wall-recentchanges-edit'					: 'edited message',
 	'wall-recentchanges-removed-thread'			: 'removed thread "[[$1|$2]]" from [[$3|$4\'s wall]]',
 	'wall-recentchanges-removed-reply'			: 'removed reply from "[[$1|$2]]" from [[$3|$4\'s wall]]',
@@ -1145,8 +1146,8 @@ i18n.MESSAGES = {
 	'wall-recentchanges-thread-history-link'	: 'thread history',
 
 	/***************************
-	 * Forum Boards - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Forum/Forum.i18n.php#L113
-	 ***************************/
+	* Forum Boards - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Forum/Forum.i18n.php#L113
+	****************************/
 	'forum-recentchanges-edit'					: 'edited message',
 	'forum-recentchanges-removed-thread'		: 'removed thread "[[$1|$2]]" from the [[$3|$4 Board]]',
 	'forum-recentchanges-removed-reply'			: 'removed reply from "[[$1|$2]]" from the [[$3|$4 Board]]',
@@ -1159,6 +1160,13 @@ i18n.MESSAGES = {
 	'forum-recentchanges-thread-history-link'	: 'thread history',
 	'forum-recentchanges-closed-thread'			: 'closed thread "[[$1|$2]]" from [[$3|$4]]',
 	'forum-recentchanges-reopened-thread'		: 'reopened thread "[[$1|$2]]" from [[$3|$4]]',
+	
+	/***************************
+	* Discussions
+	****************************/
+	'discussions': 'Discussions',
+	'forum-related-discussion-heading': 'Discussions about $1',
+	'embeddable-discussions-loading': 'Loading Discussions...',
 };
 
 // http://download.remysharp.com/wiki2html.js
