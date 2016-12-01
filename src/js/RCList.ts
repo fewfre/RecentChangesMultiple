@@ -685,7 +685,8 @@ export default class RCList
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCMWikiaDiscussionData>pRC;
 				html += tRC.getThreadStatusIcons();
-				html += tRC.discusssionTitleText();
+				html += tRC.discusssionTitleText( this.getThreadTitle() );
+				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
 				html += tRC.userDetails();
 				html += tRC.getSummary();

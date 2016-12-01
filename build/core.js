@@ -20,7 +20,14 @@ var ConstantsApp = (function () {
         ConstantsApp.FAVICON_BASE = pScriptConfig.FAVICON_BASE || ConstantsApp.FAVICON_BASE;
         ConstantsApp.LOADER_IMG = pScriptConfig.LOADER_IMG || ConstantsApp.LOADER_IMG;
         ConstantsApp.NOTIFICATION_ICON = pScriptConfig.NOTIFICATION_ICON || ConstantsApp.NOTIFICATION_ICON;
+        // // For Testing CSS
+        // mw.util.addCSS(`
+        //
+        // `);
     };
+    /*************************************
+    * Get loading asset
+    **************************************/
     ConstantsApp.getLoader = function (pSize) {
         if (pSize === void 0) { pSize = 15; }
         // return `<img src='${ConstantsApp.LOADER_IMG}' />`;
@@ -36,10 +43,20 @@ var ConstantsApp = (function () {
     **************************************/
     ConstantsApp.getSymbol = function (pID, pWidth, pHeight) {
         if (pWidth === void 0) { pWidth = 15; }
-        pHeight = pHeight || pWidth;
+        if (pHeight === void 0) { pHeight = pWidth; }
         return "<svg width=\"" + pWidth + "\" height=\"" + pHeight + "\" class='rcm-svg-icon'><use xlink:href=\"#" + pID + "\" width=\"" + pWidth + "\" height=\"" + pHeight + "\" /></svg>";
     };
-    ConstantsApp.version = "2.2";
+    // Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
+    // Due to how symbols work, this only needs to be injected once per script.
+    ConstantsApp.initSymbols = function () {
+        if (!ConstantsApp.SVG_SYMBOLS) {
+            return;
+        }
+        var tSVG = "<svg xmlns:dc=\"http://purl.org/dc/elements/1.1/\" style=\"height: 0px; width: 0px; position: absolute; overflow: hidden;\">'\n\t\t\t" + ConstantsApp.SVG_SYMBOLS.join("") + "\n\t\t</svg>";
+        delete ConstantsApp.SVG_SYMBOLS;
+        return tSVG;
+    };
+    ConstantsApp.version = "2.3";
     ConstantsApp.lastVersionDateString = "Thu Oct 29 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.debug = false;
     ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -55,10 +72,10 @@ var ConstantsApp = (function () {
     ConstantsApp.SVG_SYMBOLS = [
         // Loading icon - general use
         // http://loading.io
-        "<symbol id=\"rcm-loading\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMidYMid\" xmlns=\"http://www.w3.org/2000/svg\">\n\t\t\t<rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"none\" class=\"bk\"/>\n\t\t\t<g transform=\"translate(20 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.6\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(50 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.8\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.1s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(80 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.9\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.2s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t</symbol>",
+        "<symbol id=\"rcm-loading\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMidYMid\" xmlns=\"http://www.w3.org/2000/svg\">\n\t\t\t<g transform=\"translate(20 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.3\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(50 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.6\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.1s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(80 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.9\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.2s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t</symbol>",
         // Large Loading icon - for filling empty space during loading (language / modal loading)
         // http://loading.io
-        "<symbol id=\"rcm-loading-large\" viewBox=\"0 0 100 100\">\n\t\t\t<rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"none\" class=\"bk\"/>\n\t\t\t<g transform=\"translate(-20,-20)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#8f7f59\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"90 50 50\" to=\"0 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(20,20) rotate(15 50 50)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#9f9fab\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"90 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t</symbol>",
+        "<symbol id=\"rcm-loading-large\" viewBox=\"0 0 100 100\">\n\t\t\t<g transform=\"translate(-20,-20)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#8f7f59\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"90 50 50\" to=\"0 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(20,20) rotate(15 50 50)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#9f9fab\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"90 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t</symbol>",
         // Columns - for use in AjaxDiff
         // https://commons.wikimedia.org/wiki/File:Columns_font_awesome.svg
         "<symbol id=\"rcm-columns\" viewBox=\"0 -256 1792 1792\" version=\"1.1\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:cc=\"http://creativecommons.org/ns#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" inkscape:version=\"0.48.3.1 r9886\" sodipodi:docname=\"columns_font_awesome.svg\">\n\t\t\t<metadata id=\"metadata12\"><rdf:rdf><cc:work rdf:about=\"\"><dc:format>image/svg+xml</dc:format><dc:type rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\"></dc:type></cc:work></rdf:rdf></metadata>\n\t\t\t<defs id=\"defs10\"></defs>\n\t\t\t<sodipodi:namedview pagecolor=\"#ffffff\" bordercolor=\"#666666\" borderopacity=\"1\" objecttolerance=\"10\" gridtolerance=\"10\" guidetolerance=\"10\" inkscape:pageopacity=\"0\" inkscape:pageshadow=\"2\" inkscape:window-width=\"640\" inkscape:window-height=\"480\" id=\"namedview8\" showgrid=\"false\" inkscape:zoom=\"0.13169643\" inkscape:cx=\"896\" inkscape:cy=\"896\" inkscape:window-x=\"0\" inkscape:window-y=\"25\" inkscape:window-maximized=\"0\" inkscape:current-layer=\"svg2\"></sodipodi:namedview>\n\t\t\t<g transform=\"matrix(1,0,0,-1,68.338983,1277.8305)\" id=\"g4\">\n\t\t\t\t<path d=\"M 160,0 H 768 V 1152 H 128 V 32 Q 128,19 137.5,9.5 147,0 160,0 z M 1536,32 V 1152 H 896 V 0 h 608 q 13,0 22.5,9.5 9.5,9.5 9.5,22.5 z m 128,1216 V 32 q 0,-66 -47,-113 -47,-47 -113,-47 H 160 Q 94,-128 47,-81 0,-34 0,32 v 1216 q 0,66 47,113 47,47 113,47 h 1344 q 66,0 113,-47 47,-47 47,-113 z\" id=\"path6\" inkscape:connector-curvature=\"0\" style=\"fill:currentColor\"></path>\n\t\t\t</g>\n\t\t</symbol>",
@@ -121,18 +138,16 @@ var Main = (function () {
         // Find module wrappers
         var tWrappers = document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
         /***************************
-         * Setup
-         ***************************/
-        // Load the css for module
-        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+        * Initial Param Parsing
+        ****************************/
         var tDataset = tWrappers[0].dataset;
         i18n_1["default"].init(tDataset.lang);
+        if (tDataset.localsystemmessages === "false") {
+            ConstantsApp_1["default"].useLocalSystemMessages = false;
+        }
         // Set load delay (needed for scripts that load large numbers of wikis)
         if (tDataset.loaddelay) {
             ConstantsApp_1["default"].loadDelay = tDataset.loaddelay;
-        }
-        if (tDataset.localsystemmessages === "false") {
-            ConstantsApp_1["default"].useLocalSystemMessages = false;
         }
         // Unless specified, hide the rail to better replicate Special:RecentChanges
         if (tDataset.hiderail !== "false") {
@@ -140,20 +155,20 @@ var Main = (function () {
         }
         tDataset = null;
         /***************************
-        * Load Translations
-        ***************************/
-        this._loadLangMessages();
+        * Preload
+        ****************************/
+        // Load the css for module
+        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+        this._loadLangMessages(); // Load Translations from Wiki database.
+        // Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
+        mw.loader.load([
+            'mediawiki.special.recentchanges',
+            'mediawiki.action.history.diff',
+        ]);
         /***************************
         * Setup SVG symbols
         ***************************/
-        // Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
-        // Due to how symbols work, this only needs to be injected once per script.
-        var tSVG = '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" style="height: 0px; width: 0px; position: absolute; overflow: hidden;">';
-        for (var i = 0; i < ConstantsApp_1["default"].SVG_SYMBOLS.length; i++) {
-            tSVG += ConstantsApp_1["default"].SVG_SYMBOLS[i];
-        }
-        tSVG += "</svg>";
-        $("body").append($(tSVG));
+        $("body").append($(ConstantsApp_1["default"].initSymbols()));
         /***************************
         * Get rcParams from url
         ***************************/
@@ -164,10 +179,10 @@ var Main = (function () {
             if (param == "limit" || param == "days") {
                 this.rcParamsURL[param] = parseInt(tUrlVars[param]);
             }
-            if (param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
+            else if (param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
                 this.rcParamsURL[param] = tUrlVars[param] == "1";
             }
-            if (param == "debug") {
+            else if (param == "debug") {
                 ConstantsApp_1["default"].debug = (tUrlVars[param] == "true");
             }
         }
@@ -191,15 +206,6 @@ var Main = (function () {
         if (refreshAllButton) {
             refreshAllButton.addEventListener("click", function () { self._refreshAllManagers(); });
         }
-        /***************************
-        * Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
-        ***************************/
-        mw.loader.load('mediawiki.special.recentchanges'); // This does things like allow "fieldset" to collapse in RCMOptions
-        mw.loader.load('mediawiki.action.history.diff'); // AjaxDiff css
-        // // For Testing CSS
-        // Utils.newElement("style", { innerHTML:""
-        // 	+""
-        // +"" }, document.body);
         tWrappers = null;
     };
     Main.prototype._refreshAllManagers = function () {
@@ -208,12 +214,12 @@ var Main = (function () {
         }
     };
     Main.prototype._unload = function () {
-        // for(i = 0; i < Main.rcmList.length; i++) {
+        // for(let i = 0; i < this.rcmList.length; i++) {
         // 	// Something on things seems to lag the page.
-        // 	// Main.rcmList[i].dispose();
-        // 	Main.rcmList[i] = null;
+        // 	// this.rcmList[i].dispose();
+        // 	this.rcmList[i] = null;
         // }
-        // Main.rcmList = null;
+        // this.rcmList = null;
         // i18n = null;
     };
     /***************************
@@ -1973,7 +1979,8 @@ var RCList = (function () {
             case RC_TYPE_1["default"].DISCUSSION: {
                 var tRC = pRC;
                 html += tRC.getThreadStatusIcons();
-                html += tRC.discusssionTitleText();
+                html += tRC.discusssionTitleText(this.getThreadTitle());
+                html += i18n_1["default"]("semicolon-separator") + pRC.time();
                 html += RCList.SEP;
                 html += tRC.userDetails();
                 html += tRC.getSummary();
@@ -3435,8 +3442,8 @@ var RCMWikiaDiscussionData = (function (_super) {
     };
     /*override*/ RCMWikiaDiscussionData.prototype.init = function (pData) {
         this.type = RC_TYPE_1["default"].DISCUSSION;
-        this.date = new Date(1970, 0, 1); /*Epoch*/
-        this.date.setSeconds((pData.modificationDate || pData.creationDate).epochSecond);
+        this.date = new Date(0); /*Epoch*/
+        this.date.setUTCSeconds((pData.modificationDate || pData.creationDate).epochSecond);
         this.userEdited = true; // Currently anons cannot edit
         this.author = pData.createdBy.name;
         this.userhidden = false; //pData.userhidden == "";
@@ -4156,7 +4163,6 @@ var i18n = function (pKey) {
     arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
     if (arguments[0] == undefined) {
         console.log("[RecentChangesMultiple.i18n]() " + pKey + " is undefined.");
-        // if(ConstantsApp.debug) { throw(pKey); }
         return pKey;
     }
     return i18n.wiki2html.apply(i18n, arguments);
@@ -5264,7 +5270,6 @@ i18n.wiki2html = function (pText) {
         return pText;
     }
     ;
-    var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
     return pText
         .replace(/'''(.*?)'''/g, function (m, l) {
         return '<strong>' + l + '</strong>';
@@ -5276,7 +5281,7 @@ i18n.wiki2html = function (pText) {
         return '<a href="' + l + '">' + l + '</a>';
     })
         .replace(/\$(\d+)/g, function (match, number) {
-        return typeof args[number - 1] != 'undefined' ? args[number - 1] : match;
+        return typeof pArgs[number - 1] != 'undefined' ? pArgs[number - 1] : match;
     })
         .replace(/\[\[(.*?)\]\]/g, function (m, l) {
         var p = l.split(/\|/);

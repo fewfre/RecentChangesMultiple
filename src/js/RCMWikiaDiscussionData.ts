@@ -41,7 +41,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	
 	/*override*/ init(pData:any) : RCData {
 		this.type = TYPE.DISCUSSION;
-		this.date = new Date(1970, 0, 1); /*Epoch*/ this.date.setSeconds((pData.modificationDate || pData.creationDate).epochSecond);
+		this.date = new Date(0); /*Epoch*/ this.date.setUTCSeconds((pData.modificationDate || pData.creationDate).epochSecond);
 		this.userEdited = true; // Currently anons cannot edit
 		this.author = pData.createdBy.name;
 		this.userhidden = false;//pData.userhidden == "";

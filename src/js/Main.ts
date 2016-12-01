@@ -42,44 +42,36 @@ class Main
 	private _ready() : void {
 		// Find module wrappers
 		var tWrappers = <HTMLScriptElement[]><any>document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
-
-		/***************************
-		 * Setup
-		 ***************************/
-		// Load the css for module
-		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
 		
+		/***************************
+		* Initial Param Parsing
+		****************************/
 		var tDataset:any = tWrappers[0].dataset;
-
 		i18n.init(tDataset.lang);
-
+		if(tDataset.localsystemmessages === "false") { ConstantsApp.useLocalSystemMessages = false; }
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { ConstantsApp.loadDelay = tDataset.loaddelay; }
-		if(tDataset.localsystemmessages === "false") { ConstantsApp.useLocalSystemMessages = false; }
-
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
-		if(tDataset.hiderail !== "false") {
-			document.querySelector("body").className += " rcm-hiderail";
-		}
-
+		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
 		tDataset = null;
-
+		
 		/***************************
-		* Load Translations
-		***************************/
-		this._loadLangMessages();
+		* Preload
+		****************************/
+		// Load the css for module
+		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+		this._loadLangMessages(); // Load Translations from Wiki database.
+		
+		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
+		mw.loader.load([
+			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
+			'mediawiki.action.history.diff', // AjaxDiff css
+		]);
 		
 		/***************************
 		* Setup SVG symbols
 		***************************/
-		// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
-		// Due to how symbols work, this only needs to be injected once per script.
-		var tSVG = '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" style="height: 0px; width: 0px; position: absolute; overflow: hidden;">'
-		for(let i = 0; i < ConstantsApp.SVG_SYMBOLS.length; i++) {
-			tSVG += ConstantsApp.SVG_SYMBOLS[i];
-		}
-		tSVG += `</svg>`;
-		$("body").append($(tSVG));
+		$("body").append($( ConstantsApp.initSymbols() ));
 
 		/***************************
 		* Get rcParams from url
@@ -92,10 +84,10 @@ class Main
 			if(param == "limit" || param == "days") {
 				this.rcParamsURL[param] = parseInt(tUrlVars[param]);
 			}
-			if(param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
+			else if(param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
 				this.rcParamsURL[param] = tUrlVars[param]=="1";
 			}
-			if(param == "debug") { ConstantsApp.debug = (tUrlVars[param]=="true"); }
+			else if(param == "debug") { ConstantsApp.debug = (tUrlVars[param]=="true"); }
 		}
 
 		/***************************
@@ -119,17 +111,6 @@ class Main
 			refreshAllButton.addEventListener("click", function(){ self._refreshAllManagers(); });
 		}
 		
-		/***************************
-		* Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
-		***************************/
-		mw.loader.load( 'mediawiki.special.recentchanges' ); // This does things like allow "fieldset" to collapse in RCMOptions
-		mw.loader.load( 'mediawiki.action.history.diff' ); // AjaxDiff css
-
-		// // For Testing CSS
-		// Utils.newElement("style", { innerHTML:""
-		// 	+""
-		// +"" }, document.body);
-		
 		tWrappers = null;
 	}
 	
@@ -140,12 +121,12 @@ class Main
 	}
 
 	private _unload() : void {
-		// for(i = 0; i < Main.rcmList.length; i++) {
+		// for(let i = 0; i < this.rcmList.length; i++) {
 		// 	// Something on things seems to lag the page.
-		// 	// Main.rcmList[i].dispose();
-		// 	Main.rcmList[i] = null;
+		// 	// this.rcmList[i].dispose();
+		// 	this.rcmList[i] = null;
 		// }
-		// Main.rcmList = null;
+		// this.rcmList = null;
 		// i18n = null;
 	}
 	
@@ -266,13 +247,13 @@ class Main
 	}
 	clearNotifications() : void {
 		// Remove all notifications
-		for(var i = 0; i < this._notifications.length; i++) {
+		for(let i = 0; i < this._notifications.length; i++) {
 			this._notifications[i].close();
 		}
 		this._notifications = [];
 		
 		// Update "previously loaded" messages
-		for(var i = 0; i < this.rcmList.length; i++) {
+		for(let i = 0; i < this.rcmList.length; i++) {
 			this.rcmList[i].lastLoadDateTime = this.rcmList[i].lastLoadDateTimeActual;
 		}
 	}

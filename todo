@@ -4,8 +4,6 @@
 - [Bug] Doesn't work in tabview. Add a delay check, or look for the container being added.
 - Page preview needs a way to load all css / js.
 - [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
-- [Idea] Make an SVG class instead of using ConstantsApp. Also, potentially trying using template strings with variables instead of "getSymbol()" method call?
-	- remove SVG_SYMBOLS array after svg object is created?
 
 ############################################
 ## SECONDARY

@@ -26,7 +26,6 @@ var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|n
 	arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
 	if(arguments[0] == undefined) {
 		console.log(`[RecentChangesMultiple.i18n]() ${pKey} is undefined.`);
-		// if(ConstantsApp.debug) { throw(pKey); }
 		return pKey;
 	}
 	return i18n.wiki2html.apply(i18n, arguments);
@@ -1172,7 +1171,6 @@ i18n.MESSAGES = {
 // http://download.remysharp.com/wiki2html.js
 i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 	if(pText == undefined) { console.log(`ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string`); return pText; };
-	var args = Array.prototype.slice.call(arguments, 1); // Used for formatting string with $1
 
 	return pText
 		// bold
@@ -1189,7 +1187,7 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		})
 		// format string by replacing wiki $1 string vars with text.
 		.replace(/\$(\d+)/g, function(match, number) {
-			return typeof args[number-1] != 'undefined' ? args[number-1]  : match ;
+			return typeof pArgs[number-1] != 'undefined' ? <string>pArgs[number-1]  : match ;
 		})
 		// internal link or image
 		.replace(/\[\[(.*?)\]\]/g, function (m, l) {

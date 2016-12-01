@@ -1,3 +1,8 @@
+== V2.3 - ==
+- [Bug] Discussion timestamps weren't being set correctly, and ended up being stored via local time (instead of UTC).
+- [Bug] Discussion timestamp and title ajax load weren't being added when "grouped recent changes" was toggled off.
+
+
 == V2.2 - 26 November 2016 ==
 - Reworked loading:
 	- Translations must be loaded before managers are initialized.
