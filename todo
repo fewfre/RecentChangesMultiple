@@ -1,9 +1,9 @@
 ############################################
 ## PRIMARY
 ############################################
-- [Bug] Doesn't work in tabview. Add a delay check, or look for the container being added.
 - Page preview needs a way to load all css / js.
 - [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
+
 
 ############################################
 ## SECONDARY
@@ -36,6 +36,16 @@
 - Finish RC "params" support - "from", "namespace" (and related ones), etc. May be useful now with "RCMOptions" part of the script
 - Better error handling for invalid wiki/timeout (specifics on what went wrong. Hard to do due to ajax not supporting JSONP "NET::" error handling)
 - [Idea] Update wiki-specific params to use sub-lists for data. ex: *test.wikia.com \n **hideusers=name \n **params= \n ***param-also-using-sublist \n *next.wikia.com
+
+
+############################################
+## ES6 potential rewrites
+############################################
+- $.extends -> Object.assign
+- Objects (hasOwnProperty, loops) -> Map
+- Utils.forEach -> for...of
+- $.ajax -> fetch()
+- className -> classList
 
 
 ############################################

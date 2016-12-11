@@ -15,20 +15,20 @@ let mw = (<any>window).mediaWiki;
 */
 // Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 interface i18nInterface {
-	(string, ...pArgs:(string|number)[]):string;
+	(pKey:string, ...pArgs:(string|number)[]):string;
 	defaultLang: string,
-	init: (string) => void,
+	init: (pLang:string) => void,
 	TEXT: any,
 	MESSAGES: any,
-	wiki2html: (string, ...pArgs:(string|number)[]) => string
+	wiki2html: (pText:string, ...pArgs:(string|number)[]) => string
 }
 var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
-	arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
-	if(arguments[0] == undefined) {
-		console.log(`[RecentChangesMultiple.i18n]() ${pKey} is undefined.`);
+	let tText = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
+	if(tText == undefined) {
+		console.log(`[RecentChangesMultiple.i18n]() '${pKey}' is undefined.`);
 		return pKey;
 	}
-	return i18n.wiki2html.apply(i18n, arguments);
+	return i18n.wiki2html(tText, ...pArgs);
 }
 i18n.defaultLang = "en";
 

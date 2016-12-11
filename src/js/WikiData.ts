@@ -97,8 +97,6 @@ export default class WikiData
 	
 	// Parses LI element data to be able to retrieve information for the respective wiki.
 	initListData(pNode) : WikiData {
-		var self = this;
-		
 		var tWikiDataRaw = pNode.textContent.replace(/(\r\n|\n|\r)/gm, "").trim().split("&"); // Need to check for new lines due to how wikis create lists.
 		//console.log(tWikiDataRaw);
 		
@@ -129,17 +127,17 @@ export default class WikiData
 					}
 					case "hideusers": {
 						this.hideusers = tVal.replace("", " ").split(",");
-						this.hideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						this.hideusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
 						break;
 					}
 					case "onlyshowusers": {
 						this.onlyshowusers = tVal.replace("", " ").split(",");
-						this.onlyshowusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						this.onlyshowusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
 						break;
 					}
 					case "notifications_hideusers": {
 						this.notificationsHideusers = tVal.replace("", " ").split(",");
-						this.notificationsHideusers.forEach(function(o,i,a){ a[i] = Utils.ucfirst(a[i].trim()); });
+						this.notificationsHideusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
 						break;
 					}
 					case "notifications_enabled": {
@@ -363,6 +361,15 @@ export default class WikiData
 		tPropList = null;
 		
 		if(ConstantsApp.debug) { console.log("[WikiData](getWikiDataApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
+		return tReturnText;
+	}
+	
+	// Gets URL for the Wikia discussions API;
+	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
+	getWikiDiscussionUrl() : string {
+		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
+		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
+		if(ConstantsApp.debug) { console.log("[WikiData](getWikiDiscussionUrl) "+tReturnText); }
 		return tReturnText;
 	}
 	

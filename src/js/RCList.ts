@@ -105,7 +105,7 @@ export default class RCList
 		if(this.type == RC_TYPE.NORMAL && pRC.namespace == 6) {
 			diffLink += this.getAjaxImageButton();
 		}
-		return "("+diffLink+i18n("pipe-separator")+"<a class='rc-hist-link' href='"+pRC.hrefFS+"action=history'>"+i18n('hist')+"</a>)";
+		return `(${diffLink+i18n("pipe-separator")}<a class='rc-hist-link' href='${pRC.hrefFS}action=history'>${i18n('hist')}</a>)`;
 	}
 	
 	// Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
@@ -113,24 +113,21 @@ export default class RCList
 		var tDiffSize = pToRC.newlen - (pFromRC ? pFromRC : pToRC).oldlen;
 		var tDiffSizeText = mw.language.convertNumber(tDiffSize);
 		
-		// var html = "<strong class='{0}'>({1}{2})</strong>";
 		var html = "<strong class='{0}'>{1}</strong>";
 		if(tDiffSize > 0) {
 			return Utils.formatString(html, "mw-plusminus-pos", i18n('parentheses', "+"+tDiffSizeText));
-			// html = Utils.formatString(html, "mw-plusminus-pos", "+", tDiffSizeText);
 		} else if(tDiffSize < 0) {
+			// The negative is part of the number, so no reason to add it.
 			return Utils.formatString(html, "mw-plusminus-neg", i18n('parentheses', tDiffSizeText));
-			// html = Utils.formatString(html, "mw-plusminus-neg", "", tDiffSizeText); // The negative is part of the number, so no reason to add it.
 		} else {
 			return Utils.formatString(html, "mw-plusminus-null", i18n('parentheses', tDiffSizeText));
-			// html = Utils.formatString(html, "mw-plusminus-null", "", tDiffSizeText);
 		}
-		// return html;
 	}
 	
+	// TODO: Convert to a Map once ES6 is used.
 	private _contributorsCountText() : string {
 		var contribs = {}, indx;
-		this.list.forEach(function(rc){
+		this.list.forEach((rc:RCData) => {
 			if(contribs.hasOwnProperty(rc.author)) {
 				contribs[rc.author].count++;
 			} else {
@@ -140,7 +137,7 @@ export default class RCList
 		});
 		
 		var returnText = "[", total = 0, tLength = this.list.length;
-		Object.keys(contribs).forEach(function (key) {
+		Object.keys(contribs).forEach((key) => {
 			returnText += this._userPageLink(key, contribs[key].userEdited, contribs[key].avatar) + (contribs[key].count > 1 ? " ("+contribs[key].count+"&times;)" : "");
 			total += contribs[key].count;
 			if(total < tLength) { returnText += "; "; }
@@ -170,8 +167,8 @@ export default class RCList
 	
 	// Check each entry for "threadTitle", else return default text.
 	getThreadTitle() : string {
-		var tTitle = null;//"<i>"+i18n('rcm-unknownthreadname')+"</i>";
-		this.list.some(function(rc){
+		let tTitle = null;//"<i>"+i18n('rcm-unknownthreadname')+"</i>";
+		this.list.some((rc:RCData) => {
 			if(rc.threadTitle) {
 				tTitle = rc.threadTitle;
 				return true;
@@ -180,20 +177,19 @@ export default class RCList
 		});
 		let tReturnText = tTitle;
 		if(this.manager.extraLoadingEnabled) {
-			var tElemID = Utils.uniqID();
+			let tElemID = Utils.uniqID();
 			tReturnText = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n('rcm-unknownthreadname'))+"</i></span>";
 			
-			let self = this;
 			// These ajax requests are done here to condense number of requests; title is only needed per list, not per RCData.
 			if(this.type != RC_TYPE.DISCUSSION) {
 				this.manager.secondaryWikiData.push({
-					url: self.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
-					callback: function(data){
+					url: this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
+					callback: (data) => {
 						let tSpan = document.querySelector("#"+tElemID);
 						for(var tPageIndex in data.query.pages)
 						var tPage = data.query.pages[tPageIndex];
 						
-						(<HTMLAnchorElement>tSpan.parentNode).href = self.wikiInfo.articlepath + "Thread:" + tPage.pageid;
+						(<HTMLAnchorElement>tSpan.parentNode).href = this.wikiInfo.articlepath + "Thread:" + tPage.pageid;
 						let tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
 						if(tTitleData != null) {
 							tSpan.innerHTML = tTitleData[1];
@@ -202,12 +198,12 @@ export default class RCList
 				});
 			} else {
 				if(tTitle == null) {
-					var tRC = <RCMWikiaDiscussionData>this.newest;
+					let tRC = <RCMWikiaDiscussionData>this.newest;
 					this.manager.secondaryWikiData.push({
 						// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
 						url: `https://services.wikia.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
 						dataType: "json",
-						callback: function(data){
+						callback: (data) => {
 							let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
 							tSpan.innerHTML = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
 							let tIcons = "";
@@ -244,7 +240,6 @@ export default class RCList
 	// https://www.mediawiki.org/wiki/API:Revisions
 	addPreviewDiffListener(pElem:HTMLElement|Element, pFromRC:RCData, pToRC?:RCData) : void {
 		if(pElem) {
-			pElem = <HTMLElement>pElem;
 			if(pToRC == undefined) { pToRC = pFromRC; }
 			// Initializing here since "rc" may be nulled by the time the event is triggered.
 			var pageName = pFromRC.title;
@@ -264,12 +259,7 @@ export default class RCList
 				newRev:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date, minor:pToRC.isMinorEdit },
 			};
 			
-			var tRCM_previewdiff = function(e) {
-				e.preventDefault();
-				RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
-			}
-			pElem.addEventListener("click", tRCM_previewdiff);
-			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewdiff); });
+			this._addAjaxClickListener(pElem, () => { RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo); });
 			
 			pFromRC = null;
 			pToRC = null;
@@ -283,7 +273,6 @@ export default class RCList
 		}
 		pImageRCs = <RCData[]>pImageRCs;
 		if(pElem) {
-			pElem = <HTMLElement>pElem;
 			var tImageNames = [];
 			for (var i = 0; i < pImageRCs.length; i++) {
 				if(tImageNames.indexOf(pImageRCs[i].hrefTitle) < 0) {
@@ -293,12 +282,7 @@ export default class RCList
 			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
 			var articlepath = this.wikiInfo.articlepath;
 			
-			var tRCM_previewimage = function(e) {
-				e.preventDefault();
-				RCData.previewImages(ajaxLink, tImageNames, articlepath);
-			}
-			pElem.addEventListener("click", tRCM_previewimage);
-			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewimage); });
+			this._addAjaxClickListener(pElem, () => { RCData.previewImages(ajaxLink, tImageNames, articlepath); });
 			
 			// tImageNames = null;
 			pImageRCs = null;
@@ -308,7 +292,6 @@ export default class RCList
 	// https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
 	addPreviewPageListener(pElem:HTMLElement|Element, pRC:RCData) : void {
 		if(pElem) {
-			pElem = <HTMLElement>pElem;
 			// Initializing here since "rc" may be nulled by the time the event is triggered.
 			let ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=parse&format=json&pageid=${pRC.pageid}&prop=text|headhtml&disabletoc=true`;
 			var pageName = pRC.title;
@@ -319,13 +302,17 @@ export default class RCList
 			}
 			let serverLink = this.wikiInfo.server;
 			
-			let tRCM_previewpage = function(e) {
-				e.preventDefault();
-				RCData.previewPage(ajaxLink, pageName, pageHref, serverLink);
-			}
-			pElem.addEventListener("click", tRCM_previewpage);
-			this.removeListeners.push(function(){ pElem.removeEventListener("click", tRCM_previewpage); });
+			this._addAjaxClickListener(pElem, () => { RCData.previewPage(ajaxLink, pageName, pageHref, serverLink); });
 		}
+	}
+	
+	private _addAjaxClickListener(pElem:HTMLElement|Element, pCallback:()=>void) : void {
+		let tRCM_AjaxIconClickHandler = (e:MouseEvent) => {
+			e.preventDefault();
+			pCallback();
+		}
+		pElem.addEventListener("click", tRCM_AjaxIconClickHandler);
+		this.removeListeners.push(() => { pElem.removeEventListener("click", tRCM_AjaxIconClickHandler); });
 	}
 	
 	// private _addRollbackLink(pRC) {
@@ -343,12 +330,12 @@ export default class RCList
 	// 	var tPageID = this.pageid;
 	// 	var tRollbackLink = this.hrefFS+"action=rollback&from="+pRC.author+"&token=";
 		
-	// 	var tRCM_rollback = function(){
+	// 	var tRCM_rollback = () => {
 	// 		RCList.ajaxRollback(tScriptDir, tVersion, tPageName, tPageID, tRollbackLink);
 	// 		tRollbackLink.removeEventListener("click", tRCM_rollback);
 	// 	}
 	// 	tRollbackLink.addEventListener("click", tRCM_rollback);
-	// 	this.removeListeners.push(function(){ tRollbackLink.removeEventListener("click", tRCM_rollback); });
+	// 	this.removeListeners.push(() => { tRollbackLink.removeEventListener("click", tRCM_rollback); });
 		
 	// 	pRC = null;
 		
@@ -396,7 +383,7 @@ export default class RCList
 		var html = "";
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				html += pRC.logTitleText();
+				html += pRC.logTitleLink();
 				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += RCList.SEP;
 				html += pRC.logActionText();
@@ -492,7 +479,7 @@ export default class RCList
 		var html = "";
 		switch(this.type) {
 			case RC_TYPE.LOG: {
-				html += this.newest.logTitleText();
+				html += this.newest.logTitleLink();
 				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
 				break;
 			}
@@ -652,7 +639,7 @@ export default class RCList
 		var html = "";
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				html += pRC.logTitleText();
+				html += pRC.logTitleLink();
 				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
@@ -744,7 +731,7 @@ export default class RCList
 	//######################################
 	// Static methods
 	//######################################
-	// RCList.ajaxRollback = function(pScriptDir, pVersion, pPageName, pPageID, pRollbackLink) {
+	// static ajaxRollback(pScriptDir, pVersion, pPageName, pPageID, pRollbackLink) {
 	// 	var tAPiUrl = pScriptDir+"/api.php?", isV1_24Plus = Utils.version_compare(pVersion, "1.24", ">=");
 	// 	if(isV1_24Plus) {
 	// 		tAPiUrl += "action=query&meta=tokens&type=rollback";
@@ -753,7 +740,7 @@ export default class RCList
 	// 	}
 		
 	// 	$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url:tAPiUrl,
-	// 		success: function(pData) {
+	// 		success: (pData) => {
 	// 			var tToken = "";
 	// 			if(isV1_24Plus) {
 	// 				tToken = pData.query.tokens.rollbacktoken;
@@ -762,7 +749,7 @@ export default class RCList
 	// 			}
 	// 			console.log(pRollbackLink+tToken);
 	// 		},
-	// 		error: function(pData) {
+	// 		error: (pData) => {
 				
 	// 		},
 	// 	});

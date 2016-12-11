@@ -19,10 +19,9 @@ export default class Utils
 	
 	// http://stackoverflow.com/a/4673436/1411473
 	static formatString(format:string, ...pArgs:(string|number|boolean)[]) : string {
-		var args = Array.prototype.slice.call(arguments, 1);
-		return format.replace(/{(\d+)}/g, function(match, number) {
-			return typeof args[number] != 'undefined'
-				? args[number]
+		return format.replace(/{(\d+)}/g, (match, number) => {
+			return typeof pArgs[number] != 'undefined'
+				? <string>pArgs[number]
 				: match
 			;
 		});

@@ -6,5 +6,5 @@ if(document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] ==
 	console.log("RecentChangesMultiple tried to run despite no data. Exiting.");
 } else {
 	Main.init(module);
-	(<any>window).dev.RecentChangesMultiple = Main;
+	(<any>window).dev.RecentChangesMultiple.app = Main;
 }

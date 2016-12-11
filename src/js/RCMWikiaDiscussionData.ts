@@ -92,13 +92,13 @@ export default class RCMWikiaDiscussionData extends RCData
 	/*override*/ userDetails() : string {
 		if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		var blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		let blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		// if(this.userEdited) {
 		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		// } else {
 		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		// }
-		var tUserContribsLink = `//${this.wikiInfo.servername}/d/u/${this.user_id}`;
+		let tUserContribsLink = `//${this.wikiInfo.servername}/d/u/${this.user_id}`;
 		return Utils.formatString(""
 			+"<span class='mw-usertoollinks'>"
 				+this.getAvatarImg()+"<a href='{0}User:{1}'>{2}</a>"
@@ -118,15 +118,8 @@ export default class RCMWikiaDiscussionData extends RCData
 	
 	discusssionTitleText(pThreadTitle?:string, pIsHead:boolean=false) : string {
 		if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
-		// var tText = i18n("forum-related-discussion-heading",
-		// var tText = i18n("wall-recentchanges-thread-group",
-		// 	// `<a href='${this.href}'>${pThreadTitle}</a>`,
-		// 	`<a href="${this.href}">${pThreadTitle}</a>`
-		// 	// this.getBoardWallParentLink(),
-		// 	// this.titleNoNS
-		// );
 		let tForumLink = `<a href="//${this.wikiInfo.servername}/d/f?catId=${this.forumId}&sort=latest">${this.forumName}</a>`;
-		var tText = i18n.MESSAGES["wall-recentchanges-thread-group"];
+		let tText = i18n.MESSAGES["wall-recentchanges-thread-group"];
 		tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
 		tText = i18n.wiki2html(tText, `<a href="${pIsHead ? this.threadHref : this.href}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()));
 		return tText;

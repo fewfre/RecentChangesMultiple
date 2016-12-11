@@ -1,4 +1,14 @@
-== V2.3 - ==
+== V2.4 - 11 December 2016 ==
+- Script can now load in Tab Views. Required small rewrite to make script wait for all tabs to load.
+- [Bug] tab title still showed "new" even after you visit the tab.
+- Page preview should now have some more CSS / JS working (such as list style, and infobox tabs/collapsing).
+- [Bug] Fixed a bug using scoped styles in Firefox. Checked if "scoped" was supported, but never actually used it.
+- Animated SVGs now use CSS instead of SMIL (since Chrome depreciated it).
+- [Bug] The second (or more) local links on commit messages were broken.
+- Notifications now include log type
+
+
+== V2.3 - 1 December 2016 ==
 - [Bug] Discussion timestamps weren't being set correctly, and ended up being stored via local time (instead of UTC).
 - [Bug] Discussion timestamp and title ajax load weren't being added when "grouped recent changes" was toggled off.
 

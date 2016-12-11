@@ -40,13 +40,11 @@ class Main
 	
 	// Once all neccisary content is loaded, start the script.
 	private _ready() : void {
-		// Find module wrappers
-		var tWrappers = <HTMLScriptElement[]><any>document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
-		
 		/***************************
 		* Initial Param Parsing
 		****************************/
-		var tDataset:any = tWrappers[0].dataset;
+		let tFirstWrapper = <HTMLElement>document.querySelector('.rc-content-multiple, #rc-content-multiple');
+		let tDataset:any = tFirstWrapper.dataset;
 		i18n.init(tDataset.lang);
 		if(tDataset.localsystemmessages === "false") { ConstantsApp.useLocalSystemMessages = false; }
 		// Set load delay (needed for scripts that load large numbers of wikis)
@@ -54,6 +52,7 @@ class Main
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
 		tDataset = null;
+		tFirstWrapper = null;
 		
 		/***************************
 		* Preload
@@ -77,40 +76,64 @@ class Main
 		* Get rcParams from url
 		***************************/
 		this.rcParamsURL = {};
-
-		var tUrlVars = {}
-		var parts = window.location.href.split("#")[0].replace( /[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value:string){tUrlVars[key] = value; return value;} );
-		for(var param in tUrlVars) {
-			if(param == "limit" || param == "days") {
-				this.rcParamsURL[param] = parseInt(tUrlVars[param]);
+		window.location.href.split("#")[0].replace( /[?&]+([^=&]+)=([^&]*)/gi, (match:string,key:string,val:string) => {
+			switch(key) {
+				case "limit": case "days":
+					this.rcParamsURL[key] = parseInt(val);
+					break;
+				case "hideminor": case "hidebots": case "hideanons": case "hideliu":
+				case "hidemyself": case "hideenhanced": case "hidelogs":
+					this.rcParamsURL[key] = val=="1";
+					break;
+				case "debug":
+					ConstantsApp.debug = val=="true";
+					break;
 			}
-			else if(param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
-				this.rcParamsURL[param] = tUrlVars[param]=="1";
-			}
-			else if(param == "debug") { ConstantsApp.debug = (tUrlVars[param]=="true"); }
-		}
+			return val;
+		});
 
 		/***************************
 		* Start App
 		***************************/
-		let self = this;
-		Utils.forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray){
+		this._parsePage(document);
+
+		/***************************
+		* Listen for new Managers
+		***************************/
+		// Add additional Managers that are need from any "Tab view" loads.
+		setTimeout(() => {
+			// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/extensions/wikia/TabView/js/TabView.js
+			mw.hook('wikipage.content').add((pSection) => {
+				// console.log(pSection[0], pSection[0].classList.contains("tabBody"), pSection[0].innerHTML);
+				if(pSection[0].classList && pSection[0].classList.contains("tabBody")) {
+					if(pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
+						this._parsePage(pSection[0]);
+					}
+				}
+			});
+		}, 0);
+	}
+	
+	private _parsePage(pCont:HTMLElement|Document) : void {
+		let tWrappers = <HTMLElement[]><any>pCont.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
+		Utils.forEach(tWrappers, (pNode, pI, pArray) => {
+			if((<any>pNode).rcm_wrapper_used) { if(ConstantsApp.debug) { console.log("[Main](_parsePage) Wrapper already parsed; exiting."); } return; }
+			(<any>pNode).rcm_wrapper_used = true;
 			let tRCMManager = new RCMManager(pNode, pI);
-			self.rcmList.push( tRCMManager );
+			this.rcmList.push( tRCMManager );
 			// Don't init managers until all translation info is loaded.
-			if(self.langLoaded) {
+			if(this.langLoaded) {
 				tRCMManager.init();
 			} else {
 				tRCMManager.resultCont.innerHTML = `<center>${ConstantsApp.getLoaderLarge()}</center>`;
-				self.onLangLoadCallbacks.push(function(){ tRCMManager.init(); tRCMManager = null; });
+				this.onLangLoadCallbacks.push(() => { tRCMManager.init(); tRCMManager = null; });
 			}
 		});
-
-		var refreshAllButton = document.querySelector(".rcm-refresh-all");
-		if(refreshAllButton) {
-			refreshAllButton.addEventListener("click", function(){ self._refreshAllManagers(); });
-		}
 		
+		let refreshAllButton = <HTMLElement>pCont.querySelector(".rcm-refresh-all");
+		if(refreshAllButton) {
+			refreshAllButton.addEventListener("click", () => { this._refreshAllManagers(); });
+		}
 		tWrappers = null;
 	}
 	
@@ -135,26 +158,32 @@ class Main
 	****************************/
 	private _onFocus() : void {
 		this.clearNotifications();
+		this.cancelBlinkWindowTitle();
+		
+		// Update "previously loaded" messages
+		for(let i = 0; i < this.rcmList.length; i++) {
+			this.rcmList[i].lastLoadDateTime = this.rcmList[i].lastLoadDateTimeActual;
+		}
 	}
 	
 	/***************************
 	* Additional Loading
 	****************************/
-	// Replace all RC_TEXT with that of the language specified.
+	// Replace all i18n.MESSAGES with that of the language specified.
 	// TODO: Should probably have support to check if it ran into loading issues.
 	private _loadLangMessages() : void {
-		var tLangLoadAjaxPromises = [];
+		let tLangLoadAjaxPromises = [];
 
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
-			var tScriptPath = ConstantsApp.useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
-			var url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
+			let tScriptPath = ConstantsApp.useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
+			let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
 			if(ConstantsApp.debug) { console.log(url.replace("&format=json", "&format=jsonfm")); }
 
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
-				success: function(pData){
+				success: (pData) => {
 					if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
-					$.each( (pData.query || {}).allmessages, function( index, message ) {
+					$.each( (pData.query || {}).allmessages, (index, message) => {
 						if( message.missing !== '' ) {
 							i18n.MESSAGES[message.name] = message['*'];
 						}
@@ -164,8 +193,8 @@ class Main
 		}
 
 		// Loads messages in increments of 50.
-		var tMessages = "", tNumLoading = 0;
-		Object.keys(i18n.MESSAGES).forEach(function (key) {
+		let tMessages = "", tNumLoading = 0;
+		Object.keys(i18n.MESSAGES).forEach((key) => {
 			tMessages += (tNumLoading > 0 ? "|" : "")+key
 			tNumLoading++;
 			if(tNumLoading >= 50) {
@@ -179,34 +208,30 @@ class Main
 			tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
 		}
 		
-		let self = this;
 		// When loading of all translated messages is done (or one failed) do this.
-		$.when.apply($, tLangLoadAjaxPromises)
-		.done(function(pData){
-			self.langLoaded = true;
-
-			for (let i = 0; i < self.onLangLoadCallbacks.length; i++) {
-				self.onLangLoadCallbacks[i]();
-			}
-			self.onLangLoadCallbacks = [];
+		$.when(...tLangLoadAjaxPromises)
+		.done((pData) => {
+			this._onAllLangeMessagesLoaded();
 		})
-		.fail(function(pData){
-			var tNumTries = 15;
-			if(self.numLangLoadErrors < tNumTries) {
-				self.numLangLoadErrors++;
-				self._loadLangMessages();
+		.fail((pData) => {
+			if(this.numLangLoadErrors < 15) {
+				this.numLangLoadErrors++;
+				this._loadLangMessages();
 			} else {
 				console.log("ERROR: "+JSON.stringify(pData));
-				alert(`ERROR: RecentChanges text not loaded properly (${tNumTries} tries); defaulting to English.`);
-				self.langLoaded = true;
-				for (var i = 0; i < self.onLangLoadCallbacks.length; i++) {
-					console.log(self.onLangLoadCallbacks[i]);
-					self.onLangLoadCallbacks[i]();
-				}
-				self.onLangLoadCallbacks = [];
+				alert(`ERROR: RecentChanges text not loaded properly (${this.numLangLoadErrors} tries); defaulting to English.`);
+				this._onAllLangeMessagesLoaded();
 			}
 		})
 		;
+	}
+	
+	private _onAllLangeMessagesLoaded() : void {
+		this.langLoaded = true;
+		for (let i = 0; i < this.onLangLoadCallbacks.length; i++) {
+			this.onLangLoadCallbacks[i]();
+		}
+		this.onLangLoadCallbacks = [];
 	}
 	
 	/***************************
@@ -218,10 +243,8 @@ class Main
 	blinkWindowTitle(pTitle:string) : void {
 		this.cancelBlinkWindowTitle();
 		this._originalTitle = document.title;
-		let self = this;
-		this._blinkInterval = setTimeout(function(){
-			document.title = document.title == self._originalTitle ? (pTitle+" - "+self._originalTitle) : self._originalTitle;
-			if(document.hasFocus()) { self.cancelBlinkWindowTitle(); }
+		this._blinkInterval = setInterval(() => {
+			document.title = document.title == this._originalTitle ? (pTitle+" - "+this._originalTitle) : this._originalTitle;
 		}, 1000);
 	}
 	cancelBlinkWindowTitle() : void {
@@ -251,11 +274,6 @@ class Main
 			this._notifications[i].close();
 		}
 		this._notifications = [];
-		
-		// Update "previously loaded" messages
-		for(let i = 0; i < this.rcmList.length; i++) {
-			this.rcmList[i].lastLoadDateTime = this.rcmList[i].lastLoadDateTimeActual;
-		}
 	}
 }
 // We want Main to be an instance class.

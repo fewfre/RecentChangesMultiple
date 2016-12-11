@@ -72,9 +72,8 @@ export default class RCMWikiPanel
 		if(this.singleWiki) {
 			if(!this.infoNode.innerHTML) this.onIconClick(pWikiInfo, null);
 		} else {
-			// this.listNode.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
-			var favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
-			favicon.addEventListener("click", this.onIconClick.bind(this, pWikiInfo));
+			let favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
+			favicon.addEventListener("click", (e) => { this.onIconClick(pWikiInfo, e); });
 			
 			if(this.manager.wikisLeftToLoad > 0) {
 				Utils.addTextTo(":", this.listNode);
@@ -83,7 +82,7 @@ export default class RCMWikiPanel
 	}
 	
 	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
-		var infoBanner = <HTMLElement>this.infoNode.querySelector(".banner-notification");
+		let infoBanner = <HTMLElement>this.infoNode.querySelector(".banner-notification");
 		// If already open for that wiki, then close it.
 		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
 			this.closeInfo();
@@ -139,20 +138,16 @@ export default class RCMWikiPanel
 	}
 	
 	closeInfo() : void {
-		// $(infoBanner).hide(500, "linear", function() {
 		$(this.infoNode.querySelector(".banner-notification")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
 			$(this).remove();
 		});
 	}
 	
 	goToAndOpenInfo(e:Event) : void {
-		// console.log(e, e.currentTarget);
-		// console.log(e.currentTarget.dataset.infoid);
-		
-		var btn = <HTMLElement>document.querySelector("#"+(<any>(<HTMLElement>e.currentTarget).dataset).infoid);
+		let btn = <HTMLElement>document.querySelector("#"+(<any>(<HTMLElement>e.currentTarget).dataset).infoid);
 		if(btn) {
 			if(!Utils.elemIsVisible(btn)) {
-				var tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;
+				let tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;
 				// $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
 				$('html, body').scrollTop( $(btn).offset().top + tScrollOffset - 6 );
 			}

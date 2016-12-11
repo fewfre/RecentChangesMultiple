@@ -20,9 +20,8 @@ var ConstantsApp = (function () {
         ConstantsApp.FAVICON_BASE = pScriptConfig.FAVICON_BASE || ConstantsApp.FAVICON_BASE;
         ConstantsApp.LOADER_IMG = pScriptConfig.LOADER_IMG || ConstantsApp.LOADER_IMG;
         ConstantsApp.NOTIFICATION_ICON = pScriptConfig.NOTIFICATION_ICON || ConstantsApp.NOTIFICATION_ICON;
-        // // For Testing CSS
+        // For Testing CSS
         // mw.util.addCSS(`
-        //
         // `);
     };
     /*************************************
@@ -31,12 +30,16 @@ var ConstantsApp = (function () {
     ConstantsApp.getLoader = function (pSize) {
         if (pSize === void 0) { pSize = 15; }
         // return `<img src='${ConstantsApp.LOADER_IMG}' />`;
-        return ConstantsApp.getSymbol('rcm-loading', pSize, pSize);
+        // return ConstantsApp.getSymbol('rcm-loading', pSize, pSize);
+        // Chrome doesn't like animations in <use> tags.
+        return "<svg width=\"" + pSize + "\" height=\"" + pSize + "\" id=\"rcm-loading\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMidYMid\" xmlns=\"http://www.w3.org/2000/svg\">\n\t\t\t<g transform=\"translate(20 50)\">\n\t\t\t\t<rect class=\"bar bar1\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.3\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(50 50)\">\n\t\t\t\t<rect class=\"bar bar2\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.6\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(80 50)\">\n\t\t\t\t<rect class=\"bar bar3\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.9\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t</svg>";
     };
     ConstantsApp.getLoaderLarge = function (pSize) {
         if (pSize === void 0) { pSize = 75; }
         // return `<img src='${ConstantsApp.LOADER_IMG}' />`;
-        return ConstantsApp.getSymbol('rcm-loading-large', pSize, pSize);
+        // return ConstantsApp.getSymbol('rcm-loading-large', pSize, pSize);
+        // Chrome doesn't like animations in <use> tags.
+        return "<svg width=\"" + pSize + "\" height=\"" + pSize + "\" id=\"rcm-loading-large\" viewBox=\"0 0 100 100\">\n\t\t\t<g transform=\"translate(-20,-20)\">\n\t\t\t\t<path class=\"gear1\" fill=\"#8f7f59\" d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(20,20) rotate(15 50 50)\">\n\t\t\t\t<path class=\"gear2\" fill=\"#9f9fab\" d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\"/>\n\t\t\t</g>\n\t\t</svg>";
     };
     /*************************************
     * SVGs - Inline SVG allows icon to use font color.
@@ -56,7 +59,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.3";
+    ConstantsApp.version = "2.4";
     ConstantsApp.lastVersionDateString = "Thu Oct 29 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.debug = false;
     ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + mw.config.get("wgPageName");
@@ -72,10 +75,10 @@ var ConstantsApp = (function () {
     ConstantsApp.SVG_SYMBOLS = [
         // Loading icon - general use
         // http://loading.io
-        "<symbol id=\"rcm-loading\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMidYMid\" xmlns=\"http://www.w3.org/2000/svg\">\n\t\t\t<g transform=\"translate(20 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.3\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(50 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.6\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.1s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(80 50)\">\n\t\t\t\t<rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"#3769c8\" opacity=\"0.9\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.2s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"/>\n\t\t\t\t</rect>\n\t\t\t</g>\n\t\t</symbol>",
+        "<symbol id=\"rcm-loading\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"xMidYMid\" xmlns=\"http://www.w3.org/2000/svg\">\n\t\t\t<g transform=\"translate(20 50)\">\n\t\t\t\t<rect class=\"bar bar1\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.3\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(50 50)\">\n\t\t\t\t<rect class=\"bar bar2\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.6\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(80 50)\">\n\t\t\t\t<rect class=\"bar bar3\" fill=\"#3769c8\" x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" opacity=\"0.9\" style=\"outline:1px solid #3769c8;\"/>\n\t\t\t</g>\n\t\t</symbol>",
         // Large Loading icon - for filling empty space during loading (language / modal loading)
         // http://loading.io
-        "<symbol id=\"rcm-loading-large\" viewBox=\"0 0 100 100\">\n\t\t\t<g transform=\"translate(-20,-20)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#8f7f59\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"90 50 50\" to=\"0 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(20,20) rotate(15 50 50)\">\n\t\t\t\t<path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"#9f9fab\">\n\t\t\t\t\t<animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"90 50 50\" dur=\"1s\" repeatCount=\"indefinite\"/>\n\t\t\t\t</path>\n\t\t\t</g>\n\t\t</symbol>",
+        "<symbol id=\"rcm-loading-large\" viewBox=\"0 0 100 100\">\n\t\t\t<g transform=\"translate(-20,-20)\">\n\t\t\t\t<path class=\"gear1\" fill=\"#8f7f59\" d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\"/>\n\t\t\t</g>\n\t\t\t<g transform=\"translate(20,20) rotate(15 50 50)\">\n\t\t\t\t<path class=\"gear2\" fill=\"#9f9fab\" d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\"/>\n\t\t\t</g>\n\t\t</symbol>",
         // Columns - for use in AjaxDiff
         // https://commons.wikimedia.org/wiki/File:Columns_font_awesome.svg
         "<symbol id=\"rcm-columns\" viewBox=\"0 -256 1792 1792\" version=\"1.1\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:cc=\"http://creativecommons.org/ns#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" inkscape:version=\"0.48.3.1 r9886\" sodipodi:docname=\"columns_font_awesome.svg\">\n\t\t\t<metadata id=\"metadata12\"><rdf:rdf><cc:work rdf:about=\"\"><dc:format>image/svg+xml</dc:format><dc:type rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\"></dc:type></cc:work></rdf:rdf></metadata>\n\t\t\t<defs id=\"defs10\"></defs>\n\t\t\t<sodipodi:namedview pagecolor=\"#ffffff\" bordercolor=\"#666666\" borderopacity=\"1\" objecttolerance=\"10\" gridtolerance=\"10\" guidetolerance=\"10\" inkscape:pageopacity=\"0\" inkscape:pageshadow=\"2\" inkscape:window-width=\"640\" inkscape:window-height=\"480\" id=\"namedview8\" showgrid=\"false\" inkscape:zoom=\"0.13169643\" inkscape:cx=\"896\" inkscape:cy=\"896\" inkscape:window-x=\"0\" inkscape:window-y=\"25\" inkscape:window-maximized=\"0\" inkscape:current-layer=\"svg2\"></sodipodi:namedview>\n\t\t\t<g transform=\"matrix(1,0,0,-1,68.338983,1277.8305)\" id=\"g4\">\n\t\t\t\t<path d=\"M 160,0 H 768 V 1152 H 128 V 32 Q 128,19 137.5,9.5 147,0 160,0 z M 1536,32 V 1152 H 896 V 0 h 608 q 13,0 22.5,9.5 9.5,9.5 9.5,22.5 z m 128,1216 V 32 q 0,-66 -47,-113 -47,-47 -113,-47 H 160 Q 94,-128 47,-81 0,-34 0,32 v 1216 q 0,66 47,113 47,47 113,47 h 1344 q 66,0 113,-47 47,-47 47,-113 z\" id=\"path6\" inkscape:connector-curvature=\"0\" style=\"fill:currentColor\"></path>\n\t\t\t</g>\n\t\t</symbol>",
@@ -135,12 +138,12 @@ var Main = (function () {
     };
     // Once all neccisary content is loaded, start the script.
     Main.prototype._ready = function () {
-        // Find module wrappers
-        var tWrappers = document.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
+        var _this = this;
         /***************************
         * Initial Param Parsing
         ****************************/
-        var tDataset = tWrappers[0].dataset;
+        var tFirstWrapper = document.querySelector('.rc-content-multiple, #rc-content-multiple');
+        var tDataset = tFirstWrapper.dataset;
         i18n_1["default"].init(tDataset.lang);
         if (tDataset.localsystemmessages === "false") {
             ConstantsApp_1["default"].useLocalSystemMessages = false;
@@ -154,6 +157,7 @@ var Main = (function () {
             document.querySelector("body").className += " rcm-hiderail";
         }
         tDataset = null;
+        tFirstWrapper = null;
         /***************************
         * Preload
         ****************************/
@@ -173,38 +177,73 @@ var Main = (function () {
         * Get rcParams from url
         ***************************/
         this.rcParamsURL = {};
-        var tUrlVars = {};
-        var parts = window.location.href.split("#")[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) { tUrlVars[key] = value; return value; });
-        for (var param in tUrlVars) {
-            if (param == "limit" || param == "days") {
-                this.rcParamsURL[param] = parseInt(tUrlVars[param]);
+        window.location.href.split("#")[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function (match, key, val) {
+            console.log("Url Params: ", key, val);
+            switch (key) {
+                case "limit":
+                case "days":
+                    _this.rcParamsURL[key] = parseInt(val);
+                    break;
+                case "hideminor":
+                case "hidebots":
+                case "hideanons":
+                case "hideliu":
+                case "hidemyself":
+                case "hideenhanced":
+                case "hidelogs":
+                    _this.rcParamsURL[key] = val == "1";
+                    break;
+                case "debug":
+                    ConstantsApp_1["default"].debug = val == "true";
+                    break;
             }
-            else if (param == "hideminor" || param == "hidebots" || param == "hideanons" || param == "hideliu" || param == "hidemyself" || param == "hideenhanced" || param == "hidelogs") {
-                this.rcParamsURL[param] = tUrlVars[param] == "1";
-            }
-            else if (param == "debug") {
-                ConstantsApp_1["default"].debug = (tUrlVars[param] == "true");
-            }
-        }
+            return val;
+        });
         /***************************
         * Start App
         ***************************/
-        var self = this;
-        Utils_1["default"].forEach(tWrappers, function tRCM_start_createRCMs(pNode, pI, pArray) {
+        this._parsePage(document);
+        /***************************
+        * Listen for new Managers
+        ***************************/
+        // Add additional Managers that are need from any "Tab view" loads.
+        setTimeout(function () {
+            // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/extensions/wikia/TabView/js/TabView.js
+            mw.hook('wikipage.content').add(function (pSection) {
+                // console.log(pSection[0], pSection[0].classList.contains("tabBody"), pSection[0].innerHTML);
+                if (pSection[0].classList && pSection[0].classList.contains("tabBody")) {
+                    if (pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
+                        _this._parsePage(pSection[0]);
+                    }
+                }
+            });
+        }, 0);
+    };
+    Main.prototype._parsePage = function (pCont) {
+        var _this = this;
+        var tWrappers = pCont.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
+        Utils_1["default"].forEach(tWrappers, function (pNode, pI, pArray) {
+            if (pNode.rcm_wrapper_used) {
+                if (ConstantsApp_1["default"].debug) {
+                    console.log("[Main](_parsePage) Wrapper already parsed; exiting.");
+                }
+                return;
+            }
+            pNode.rcm_wrapper_used = true;
             var tRCMManager = new RCMManager_1["default"](pNode, pI);
-            self.rcmList.push(tRCMManager);
+            _this.rcmList.push(tRCMManager);
             // Don't init managers until all translation info is loaded.
-            if (self.langLoaded) {
+            if (_this.langLoaded) {
                 tRCMManager.init();
             }
             else {
                 tRCMManager.resultCont.innerHTML = "<center>" + ConstantsApp_1["default"].getLoaderLarge() + "</center>";
-                self.onLangLoadCallbacks.push(function () { tRCMManager.init(); tRCMManager = null; });
+                _this.onLangLoadCallbacks.push(function () { tRCMManager.init(); tRCMManager = null; });
             }
         });
-        var refreshAllButton = document.querySelector(".rcm-refresh-all");
+        var refreshAllButton = pCont.querySelector(".rcm-refresh-all");
         if (refreshAllButton) {
-            refreshAllButton.addEventListener("click", function () { self._refreshAllManagers(); });
+            refreshAllButton.addEventListener("click", function () { _this._refreshAllManagers(); });
         }
         tWrappers = null;
     };
@@ -227,13 +266,19 @@ var Main = (function () {
     ****************************/
     Main.prototype._onFocus = function () {
         this.clearNotifications();
+        this.cancelBlinkWindowTitle();
+        // Update "previously loaded" messages
+        for (var i = 0; i < this.rcmList.length; i++) {
+            this.rcmList[i].lastLoadDateTime = this.rcmList[i].lastLoadDateTimeActual;
+        }
     };
     /***************************
     * Additional Loading
     ****************************/
-    // Replace all RC_TEXT with that of the language specified.
+    // Replace all i18n.MESSAGES with that of the language specified.
     // TODO: Should probably have support to check if it ran into loading issues.
     Main.prototype._loadLangMessages = function () {
+        var _this = this;
         var tLangLoadAjaxPromises = [];
         // Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
         function tRCM_loadLangMessage(pMessages) {
@@ -269,43 +314,36 @@ var Main = (function () {
         if (tMessages != "") {
             tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
         }
-        var self = this;
         // When loading of all translated messages is done (or one failed) do this.
         $.when.apply($, tLangLoadAjaxPromises)
             .done(function (pData) {
-            self.langLoaded = true;
-            for (var i = 0; i < self.onLangLoadCallbacks.length; i++) {
-                self.onLangLoadCallbacks[i]();
-            }
-            self.onLangLoadCallbacks = [];
+            _this._onAllLangeMessagesLoaded();
         })
             .fail(function (pData) {
-            var tNumTries = 15;
-            if (self.numLangLoadErrors < tNumTries) {
-                self.numLangLoadErrors++;
-                self._loadLangMessages();
+            if (_this.numLangLoadErrors < 15) {
+                _this.numLangLoadErrors++;
+                _this._loadLangMessages();
             }
             else {
                 console.log("ERROR: " + JSON.stringify(pData));
-                alert("ERROR: RecentChanges text not loaded properly (" + tNumTries + " tries); defaulting to English.");
-                self.langLoaded = true;
-                for (var i = 0; i < self.onLangLoadCallbacks.length; i++) {
-                    console.log(self.onLangLoadCallbacks[i]);
-                    self.onLangLoadCallbacks[i]();
-                }
-                self.onLangLoadCallbacks = [];
+                alert("ERROR: RecentChanges text not loaded properly (" + _this.numLangLoadErrors + " tries); defaulting to English.");
+                _this._onAllLangeMessagesLoaded();
             }
         });
     };
+    Main.prototype._onAllLangeMessagesLoaded = function () {
+        this.langLoaded = true;
+        for (var i = 0; i < this.onLangLoadCallbacks.length; i++) {
+            this.onLangLoadCallbacks[i]();
+        }
+        this.onLangLoadCallbacks = [];
+    };
     Main.prototype.blinkWindowTitle = function (pTitle) {
+        var _this = this;
         this.cancelBlinkWindowTitle();
         this._originalTitle = document.title;
-        var self = this;
-        this._blinkInterval = setTimeout(function () {
-            document.title = document.title == self._originalTitle ? (pTitle + " - " + self._originalTitle) : self._originalTitle;
-            if (document.hasFocus()) {
-                self.cancelBlinkWindowTitle();
-            }
+        this._blinkInterval = setInterval(function () {
+            document.title = document.title == _this._originalTitle ? (pTitle + " - " + _this._originalTitle) : _this._originalTitle;
         }, 1000);
     };
     Main.prototype.cancelBlinkWindowTitle = function () {
@@ -333,10 +371,6 @@ var Main = (function () {
             this._notifications[i].close();
         }
         this._notifications = [];
-        // Update "previously loaded" messages
-        for (var i = 0; i < this.rcmList.length; i++) {
-            this.rcmList[i].lastLoadDateTime = this.rcmList[i].lastLoadDateTimeActual;
-        }
     };
     return Main;
 }());
@@ -630,59 +664,28 @@ var RCData = (function () {
             return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
     };
-    RCData.prototype.logTitleText = function () {
-        var logTemplate = "(<a class='rc-log-link' href='" + this.wikiInfo.articlepath + "Special:Log/{0}'>{1}</a>)";
+    RCData.prototype.logTitleLink = function () {
+        return "(<a class='rc-log-link' href='" + this.wikiInfo.articlepath + "Special:Log/" + this.logtype + "'>" + this.logTitle() + "</a>)";
+    };
+    RCData.prototype.logTitle = function () {
         switch (this.logtype) {
-            case "abusefilter": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("abusefilter-log"));
-            }
-            case "block": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("blocklogpage"));
-            }
-            case "chatban": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("chat-chatban-log"));
-            }
-            case "delete": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("dellogpage"));
-            }
-            case "import": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("importlogpage"));
-            }
-            case "maps": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("wikia-interactive-maps-log-name"));
-            }
-            case "merge": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("mergelog"));
-            }
-            case "move": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("movelogpage"));
-            }
-            case "protect": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("protectlogpage"));
-            }
-            case "upload": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("uploadlogpage"));
-            }
-            case "useravatar": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("useravatar-log"));
-            }
-            case "newusers": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("newuserlogpage"));
-            }
-            case "renameuser": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("userrenametool-logpage"));
-            }
-            case "rights": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("rightslog"));
-            }
-            case "wikifeatures": {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, i18n_1["default"]("wikifeatures-log-name"));
-            }
-            default: {
-                return Utils_1["default"].formatString(logTemplate, this.logtype, this.logtype);
-            } // At least display it as a log.
+            case "abusefilter": return i18n_1["default"]("abusefilter-log");
+            case "block": return i18n_1["default"]("blocklogpage");
+            case "chatban": return i18n_1["default"]("chat-chatban-log");
+            case "delete": return i18n_1["default"]("dellogpage");
+            case "import": return i18n_1["default"]("importlogpage");
+            case "maps": return i18n_1["default"]("wikia-interactive-maps-log-name");
+            case "merge": return i18n_1["default"]("mergelog");
+            case "move": return i18n_1["default"]("movelogpage");
+            case "protect": return i18n_1["default"]("protectlogpage");
+            case "upload": return i18n_1["default"]("uploadlogpage");
+            case "useravatar": return i18n_1["default"]("useravatar-log");
+            case "newusers": return i18n_1["default"]("newuserlogpage");
+            case "renameuser": return i18n_1["default"]("userrenametool-logpage");
+            case "rights": return i18n_1["default"]("rightslog");
+            case "wikifeatures": return i18n_1["default"]("wikifeatures-log-name");
+            default: return this.logtype; // At least display it as a log.
         }
-        // return "";
     };
     // Check each entry for "threadTitle", else return default text.
     RCData.prototype.getThreadTitle = function () {
@@ -708,7 +711,8 @@ var RCData = (function () {
     };
     RCData.formatParsedComment = function (pParsedComment, pDeleted, pWikiInfo) {
         if (!pDeleted) {
-            pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\"" + pWikiInfo.server + "/"); // Make links point to correct wiki.
+            // pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+            pParsedComment = pParsedComment.replace(/<a href="\//g, "<a href=\"" + pWikiInfo.server + "/"); // Make links point to correct wiki.
         }
         else {
             pParsedComment = "<span class=\"history-deleted\">" + i18n_1["default"]("rev-deleted-comment") + "</span>";
@@ -1023,7 +1027,7 @@ var RCData = (function () {
                     // 	tButtons.splice(tButtons.length-2, 0, {
                     // 		value: i18n('rollbacklink'),
                     // 		event: "rollback",
-                    // 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
+                    // 		callback: () => { window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
                     // 	});
                     // }
                     var tOMinor = tRevision.minor == "" ? "<abbr class=\"minoredit\">" + i18n_1["default"]('minoreditletter') + "</abbr> " : "";
@@ -1079,114 +1083,36 @@ var RCData = (function () {
         });
     };
     // STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
+    // TODO - error support?
     RCData.previewImages = function (pAjaxUrl, pImageNames, pArticlePath) {
         var tImagesInLog = pImageNames.slice();
-        var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
+        var size = 210; // Must match in CSS - Logic: (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
         pAjaxUrl += "&iiurlwidth=" + size + "&iiurlheight=" + size;
         var tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
         if (ConstantsApp_1["default"].debug) {
             console.log("http:" + tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames);
         }
         var tTitle = i18n_1["default"]("awc-metrics-images");
-        // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
         var tButtons = [];
-        var tGetGalleryItem = function (pPage) {
-            var tPage = pPage, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
-            if (tPage.imageinfo) {
-                tImage = tPage.imageinfo[0];
-            }
-            tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
-            tInvalidImage = false;
-            if (tPage.missing == "") {
-                tInvalidImage = {
-                    thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tPage.title),
-                    thumbText: i18n_1["default"]('filedelete-success', tPage.title),
-                    caption: tPageTitleNoNS
-                };
-            }
-            else if (tImage == null) {
-                tInvalidImage = {
-                    thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tPage.title),
-                    thumbText: i18n_1["default"]('shared_help_was_redirect', tPage.title),
-                    caption: tPageTitleNoNS
-                };
-            }
-            else if (Utils_1["default"].isFileAudio(tPage.title)) {
-                tInvalidImage = {
-                    thumbHref: tImage.url,
-                    thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />' + tPage.title,
-                    caption: tPageTitleNoNS
-                };
-            }
-            else if (tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
-                tInvalidImage = {
-                    thumbHref: tImage.url,
-                    thumbText: tPage.title,
-                    caption: tPageTitleNoNS
-                };
-            }
-            if (tInvalidImage !== false) {
-                // Display text instead of image
-                return '<div class="wikia-gallery-item">'
-                    + '<div class="thumb">'
-                    + '<div class="gallery-image-wrapper accent">'
-                    + '<a class="image-no-lightbox" href="' + tInvalidImage.thumbHref + '" target="_blank" style="height:' + size + 'px; width:' + size + 'px; line-height:inherit;">'
-                    + tInvalidImage.thumbText
-                    + '</a>'
-                    + '</div>'
-                    + '</div>'
-                    + '<div class="lightbox-caption" style="width:100%;">'
-                    + tInvalidImage.caption
-                    + '</div>'
-                    + '</div>';
-            }
-            else {
-                tImage = tPage.imageinfo[0];
-                var tOffsetY = size / 2 - tImage.thumbheight / 2; //0;
-                // if(tImage.height < tImage.width || tImage.height < size) {
-                // 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
-                // }
-                var tScaledWidth = tImage.thumbwidth; //size;
-                // if(tImage.width < tImage.height && tImage.height > size) {
-                // 	tScaledWidth = tImage.width * (size / tImage.height);
-                // } else if(tImage.width < size) {
-                // 	tScaledWidth = tImage.width;
-                // }
-                return '<div class="wikia-gallery-item">' //style="width:'+size+'px;"
-                    + '<div class="thumb">' // style="height:'+size+'px;"
-                    + '<div class="gallery-image-wrapper accent" style="position: relative; width:' + tScaledWidth + 'px; top:' + tOffsetY + 'px;">'
-                    + '<a class="image lightbox" href="' + tImage.url + '" target="_blank" style="width:' + tScaledWidth + 'px;">'
-                    + '<img class="thumbimage" src="' + tImage.thumburl + '" alt="' + tPage.title + '">'
-                    + '</a>'
-                    + '</div>'
-                    + '</div>'
-                    + '<div class="lightbox-caption" style="width:100%;">'
-                    + '<a href="' + tImage.descriptionurl + '">' + tPageTitleNoNS + '</a>'
-                    + '</div>'
-                    + '</div>';
-            }
-        };
         var tAddLoadMoreButton = function () {
             if (tImagesInLog.length > 0) {
                 if (ConstantsApp_1["default"].debug) {
                     console.log("Over 50 images to display; Extra images must be loaded later.");
                 }
                 var tModal = document.querySelector("#" + RCMModal_1["default"].MODAL_CONTENT_ID);
-                var tGallery = tModal.querySelector(".rcm-gallery");
-                var tCont = Utils_1["default"].newElement("center", { style: 'margin-bottom: 8px;' }, tModal);
-                var tButton = Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]('specialvideos-btn-load-more') }, tCont);
+                var tGallery_1 = tModal.querySelector(".rcm-gallery");
+                var tCont_1 = Utils_1["default"].newElement("center", { style: 'margin-bottom: 8px;' }, tModal);
+                var tButton = Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]('specialvideos-btn-load-more') }, tCont_1);
                 tButton.addEventListener("click", function () {
                     tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
                     if (ConstantsApp_1["default"].debug) {
                         console.log("http:" + tCurAjaxUrl.replace("&format=json", "&format=jsonfm"));
                     }
-                    tCont.innerHTML = ConstantsApp_1["default"].getLoader(25);
+                    tCont_1.innerHTML = ConstantsApp_1["default"].getLoader(25);
                     $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
                         success: function (pData) {
-                            Utils_1["default"].removeElement(tCont);
-                            for (var key in pData.query.pages) {
-                                tGallery.innerHTML += tGetGalleryItem(pData.query.pages[key]);
-                            }
+                            Utils_1["default"].removeElement(tCont_1);
+                            tGallery_1.innerHTML += RCData.previewImages_getGalleryItemsFromData(pData.query.pages, pArticlePath, size);
                             tAddLoadMoreButton();
                         },
                     });
@@ -1194,43 +1120,102 @@ var RCData = (function () {
             }
         };
         RCMModal_1["default"].showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
-            // Retrieve the diff table.
-            // TODO - error support?
             $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
                 success: function (pData) {
                     var tModalContent = ''
-                        + '<style>'
-                        + '.rcm-gallery .thumbimage { max-width: ' + size + 'px; max-height: ' + size + 'px; width: auto; height: auto; }'
-                        + '.rcm-gallery .wikia-gallery-item { width: ' + size + 'px; }'
-                        + '.rcm-gallery .thumb { height: ' + size + 'px; }'
-                        + '.rcm-gallery .image-no-lightbox { width: ' + size + 'px; }'
-                        + '</style>'
-                        + '<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">';
-                    var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
-                    for (var key in pData.query.pages) {
-                        tModalContent += tGetGalleryItem(pData.query.pages[key]);
-                    }
-                    tModalContent += ''
+                        + '<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
+                        + RCData.previewImages_getGalleryItemsFromData(pData.query.pages, pArticlePath, size)
                         + '</div>';
-                    // RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
                     RCMModal_1["default"].setModalContent(tModalContent);
                     tAddLoadMoreButton();
                 },
             });
         });
     };
+    RCData.previewImages_getGalleryItemsFromData = function (pData, pArticlePath, pSize) {
+        var tReturnText = "";
+        for (var key in pData) {
+            tReturnText += RCData.previewImages_getGalleryItem(pData[key], pArticlePath, pSize);
+        }
+        return tReturnText;
+    };
+    RCData.previewImages_getGalleryItem = function (pPage, pArticlePath, pSize) {
+        var tTitle = pPage.title, tPageTitleNoNS = tTitle.indexOf(":") > -1 ? tTitle.split(":")[1] : tTitle, tImage = pPage.imageinfo ? pPage.imageinfo[0] : null, tInvalidImage = null;
+        if (pPage.missing == "") {
+            tInvalidImage = {
+                thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tTitle),
+                thumbText: i18n_1["default"]('filedelete-success', tTitle)
+            };
+        }
+        else if (tImage == null) {
+            tInvalidImage = {
+                thumbHref: pArticlePath + Utils_1["default"].escapeCharactersLink(tTitle),
+                thumbText: i18n_1["default"]('shared_help_was_redirect', tTitle)
+            };
+        }
+        else if (Utils_1["default"].isFileAudio(tTitle)) {
+            tInvalidImage = {
+                thumbHref: tImage.url,
+                thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />' + tTitle
+            };
+        }
+        else if (tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+            tInvalidImage = {
+                thumbHref: tImage.url,
+                thumbText: tTitle
+            };
+        }
+        var tRCM_galleryItemTemplate = function (_a) {
+            var wrapperStyle = _a.wrapperStyle, image = _a.image, imageHref = _a.imageHref, imageStyle = _a.imageStyle, isLightbox = _a.isLightbox, caption = _a.caption;
+            wrapperStyle = wrapperStyle ? "style=\"" + wrapperStyle + "\"" : "";
+            var lightBoxClass = isLightbox ? "image-no-lightbox" : "image lightbox";
+            return '<div class="wikia-gallery-item">'
+                + '<div class="thumb">'
+                + ("<div class=\"gallery-image-wrapper accent\" " + wrapperStyle + ">")
+                + ("<a class=\"" + lightBoxClass + "\" href=\"" + imageHref + "\" target=\"_blank\" style=\"" + imageStyle + "\">")
+                + image
+                + '</a>'
+                + '</div>'
+                + '</div>'
+                + '<div class="lightbox-caption" style="width:100%;">'
+                + caption
+                + '</div>'
+                + '</div>';
+        };
+        if (tInvalidImage) {
+            // Display text instead of image
+            return tRCM_galleryItemTemplate({ isLightbox: false, wrapperStyle: null,
+                image: tInvalidImage.thumbText,
+                imageHref: tInvalidImage.thumbHref,
+                imageStyle: "height:" + pSize + "px; width:" + pSize + "px; line-height:inherit;",
+                caption: tPageTitleNoNS,
+            });
+        }
+        else {
+            // Returned thumb width/height calculates to fit within size requested at fetch, even if the wiki doesn't return scaled down image.
+            var tOffsetY = pSize / 2 - tImage.thumbheight / 2;
+            var tScaledWidth = tImage.thumbwidth;
+            return tRCM_galleryItemTemplate({ isLightbox: true,
+                wrapperStyle: "position: relative; width:" + tScaledWidth + "px; top:" + tOffsetY + "px;",
+                image: "<img class=\"thumbimage\" src=\"" + tImage.thumburl + "\" alt=\"" + tTitle + "\">",
+                imageHref: tImage.url,
+                imageStyle: "width:" + tScaledWidth + "px;",
+                caption: "<a href=\"" + tImage.descriptionurl + "\">" + tPageTitleNoNS + "</a>",
+            });
+        }
+    };
     RCData.previewPage = function (pAjaxUrl, pPageName, pPageHref, pServerLink) {
         if (ConstantsApp_1["default"].debug) {
             console.log("http:" + pAjaxUrl);
         }
         var tTitle = "" + pPageName;
-        // Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-        var tButtons = [];
-        tButtons.push({
-            value: i18n_1["default"]('wikiaPhotoGallery-conflict-view'),
-            event: "diff",
-            callback: function () { window.open(pPageHref, '_blank'); },
-        });
+        var tButtons = [
+            {
+                value: i18n_1["default"]('wikiaPhotoGallery-conflict-view'),
+                event: "diff",
+                callback: function () { window.open(pPageHref, '_blank'); },
+            }
+        ];
         RCMModal_1["default"].showLoadingModal({ title: tTitle, rcm_buttons: tButtons }, function () {
             // Retrieve the diff table.
             // TODO - error support?
@@ -1248,34 +1233,46 @@ var RCData = (function () {
                         + "</div>"
                         + "</div>";
                     RCMModal_1["default"].setModalContent(tModalContent);
+                    var tModalCont = document.querySelector("#" + RCMModal_1["default"].MODAL_CONTENT_ID);
                     var tCont = document.querySelector("#" + RCMModal_1["default"].MODAL_CONTENT_ID + " #mw-content-text");
                     if (tCont.attachShadow) {
-                        tCont = tCont.attachShadow({ mode: "open" });
-                        var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
+                        // Setup Shadow dom
+                        RCMModal_1["default"].setModalContent("");
+                        tModalCont = tModalCont.attachShadow({ mode: "open" });
+                        tModalCont.innerHTML = tModalContent;
+                        tCont = tModalCont.querySelector("#mw-content-text");
+                        tCont.innerHTML = "";
+                        // Convert <link> tags (not supported in shadow dom) to <style> tags via @import (bad, but neccisary)
+                        // Do it for current wiki head first (since shadow dom strips all css)
                         var tCurPageHead = document.querySelector("head").cloneNode(true);
+                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
+                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                        });
+                        // Prevent warnings from poping up about shadow dom not supporting <link>.
+                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link"), function (o, i, a) { Utils_1["default"].removeElement(o); });
+                        // Add page info
+                        var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
                         Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
                             tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
                         });
                         // Prevent warnings from poping up about shadow dom not supporting <link>.
                         Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link"), function (o, i, a) { Utils_1["default"].removeElement(o); });
-                        // Also do it for current head
-                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
-                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
-                        });
-                        Utils_1["default"].forEach(tCurPageHead.querySelectorAll("link"), function (o, i, a) { Utils_1["default"].removeElement(o); });
                         tCont.innerHTML += tCurPageHead.innerHTML;
+                        tCont.innerHTML += "\n<!-- Loaded Wiki Styles -->\n";
                         tCont.innerHTML += tPreviewHead.innerHTML;
                         tCont.innerHTML += tContentText;
                     }
                     else if ("scoped" in document.createElement("style")) {
                         var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
                         Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
-                            tCont.innerHTML += "<style> @import url(" + o.href + "); </style>"; //o.outerHTML;
+                            tCont.innerHTML += "<style scoped> @import url(" + o.href + "); </style>"; //o.outerHTML;
                         });
                     }
+                    // Fix all local links to point to wiki.
                     Utils_1["default"].forEach(tCont.querySelectorAll("a[href^='/']"), function (o, i, a) {
                         o.href = pServerLink + o.getAttribute("href");
                     });
+                    mw.hook('wikipage.content').fire($(tCont)); // Makes sure infoboxes tabs/section collapsing works.
                 },
             });
         });
@@ -1389,26 +1386,27 @@ var RCList = (function () {
         if (this.type == RC_TYPE_1["default"].NORMAL && pRC.namespace == 6) {
             diffLink += this.getAjaxImageButton();
         }
-        return "(" + diffLink + i18n_1["default"]("pipe-separator") + "<a class='rc-hist-link' href='" + pRC.hrefFS + "action=history'>" + i18n_1["default"]('hist') + "</a>)";
+        return "(" + (diffLink + i18n_1["default"]("pipe-separator")) + "<a class='rc-hist-link' href='" + pRC.hrefFS + "action=history'>" + i18n_1["default"]('hist') + "</a>)";
     };
     // Calculates the size difference between the recent change(s), and returns formatted text to appear in HTML.
     RCList.prototype._diffSizeText = function (pToRC, pFromRC) {
         var tDiffSize = pToRC.newlen - (pFromRC ? pFromRC : pToRC).oldlen;
         var tDiffSizeText = mw.language.convertNumber(tDiffSize);
-        // var html = "<strong class='{0}'>({1}{2})</strong>";
         var html = "<strong class='{0}'>{1}</strong>";
         if (tDiffSize > 0) {
             return Utils_1["default"].formatString(html, "mw-plusminus-pos", i18n_1["default"]('parentheses', "+" + tDiffSizeText));
         }
         else if (tDiffSize < 0) {
+            // The negative is part of the number, so no reason to add it.
             return Utils_1["default"].formatString(html, "mw-plusminus-neg", i18n_1["default"]('parentheses', tDiffSizeText));
         }
         else {
             return Utils_1["default"].formatString(html, "mw-plusminus-null", i18n_1["default"]('parentheses', tDiffSizeText));
         }
-        // return html;
     };
+    // TODO: Convert to a Map once ES6 is used.
     RCList.prototype._contributorsCountText = function () {
+        var _this = this;
         var contribs = {}, indx;
         this.list.forEach(function (rc) {
             if (contribs.hasOwnProperty(rc.author)) {
@@ -1421,7 +1419,7 @@ var RCList = (function () {
         });
         var returnText = "[", total = 0, tLength = this.list.length;
         Object.keys(contribs).forEach(function (key) {
-            returnText += this._userPageLink(key, contribs[key].userEdited, contribs[key].avatar) + (contribs[key].count > 1 ? " (" + contribs[key].count + "&times;)" : "");
+            returnText += _this._userPageLink(key, contribs[key].userEdited, contribs[key].avatar) + (contribs[key].count > 1 ? " (" + contribs[key].count + "&times;)" : "");
             total += contribs[key].count;
             if (total < tLength) {
                 returnText += "; ";
@@ -1450,6 +1448,7 @@ var RCList = (function () {
     };
     // Check each entry for "threadTitle", else return default text.
     RCList.prototype.getThreadTitle = function () {
+        var _this = this;
         var tTitle = null; //"<i>"+i18n('rcm-unknownthreadname')+"</i>";
         this.list.some(function (rc) {
             if (rc.threadTitle) {
@@ -1460,18 +1459,17 @@ var RCList = (function () {
         });
         var tReturnText = tTitle;
         if (this.manager.extraLoadingEnabled) {
-            var tElemID = Utils_1["default"].uniqID();
-            tReturnText = "<span id='" + tElemID + "'><i>" + (tTitle ? tTitle : i18n_1["default"]('rcm-unknownthreadname')) + "</i></span>";
-            var self_1 = this;
+            var tElemID_1 = Utils_1["default"].uniqID();
+            tReturnText = "<span id='" + tElemID_1 + "'><i>" + (tTitle ? tTitle : i18n_1["default"]('rcm-unknownthreadname')) + "</i></span>";
             // These ajax requests are done here to condense number of requests; title is only needed per list, not per RCData.
             if (this.type != RC_TYPE_1["default"].DISCUSSION) {
                 this.manager.secondaryWikiData.push({
-                    url: self_1.wikiInfo.scriptpath + "/api.php?action=query&format=json&prop=revisions&titles=" + this.newest.uniqueID + "&rvprop=content",
+                    url: this.wikiInfo.scriptpath + "/api.php?action=query&format=json&prop=revisions&titles=" + this.newest.uniqueID + "&rvprop=content",
                     callback: function (data) {
-                        var tSpan = document.querySelector("#" + tElemID);
+                        var tSpan = document.querySelector("#" + tElemID_1);
                         for (var tPageIndex in data.query.pages)
                             var tPage = data.query.pages[tPageIndex];
-                        tSpan.parentNode.href = self_1.wikiInfo.articlepath + "Thread:" + tPage.pageid;
+                        tSpan.parentNode.href = _this.wikiInfo.articlepath + "Thread:" + tPage.pageid;
                         var tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
                         if (tTitleData != null) {
                             tSpan.innerHTML = tTitleData[1];
@@ -1487,7 +1485,7 @@ var RCList = (function () {
                         url: "https://services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
                         dataType: "json",
                         callback: function (data) {
-                            var tSpan = document.querySelector("#" + tElemID);
+                            var tSpan = document.querySelector("#" + tElemID_1);
                             tSpan.innerHTML = data.title || (data.rawContent.slice(0, 35).trim() + "..."); // If no title, use part of original message.
                             var tIcons = "";
                             if (data.isLocked) {
@@ -1526,7 +1524,6 @@ var RCList = (function () {
     // https://www.mediawiki.org/wiki/API:Revisions
     RCList.prototype.addPreviewDiffListener = function (pElem, pFromRC, pToRC) {
         if (pElem) {
-            pElem = pElem;
             if (pToRC == undefined) {
                 pToRC = pFromRC;
             }
@@ -1547,12 +1544,7 @@ var RCList = (function () {
                 hrefFS: pFromRC.hrefFS,
                 newRev: { user: pToRC.userDetails(), summary: pToRC.getSummary(), date: pToRC.date, minor: pToRC.isMinorEdit },
             };
-            var tRCM_previewdiff = function (e) {
-                e.preventDefault();
-                RCData_1["default"].previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo);
-            };
-            pElem.addEventListener("click", tRCM_previewdiff);
-            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewdiff); });
+            this._addAjaxClickListener(pElem, function () { RCData_1["default"].previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo); });
             pFromRC = null;
             pToRC = null;
         }
@@ -1564,7 +1556,6 @@ var RCList = (function () {
         }
         pImageRCs = pImageRCs;
         if (pElem) {
-            pElem = pElem;
             var tImageNames = [];
             for (var i = 0; i < pImageRCs.length; i++) {
                 if (tImageNames.indexOf(pImageRCs[i].hrefTitle) < 0) {
@@ -1573,12 +1564,7 @@ var RCList = (function () {
             }
             var ajaxLink = this.wikiInfo.scriptpath + "/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
             var articlepath = this.wikiInfo.articlepath;
-            var tRCM_previewimage = function (e) {
-                e.preventDefault();
-                RCData_1["default"].previewImages(ajaxLink, tImageNames, articlepath);
-            };
-            pElem.addEventListener("click", tRCM_previewimage);
-            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewimage); });
+            this._addAjaxClickListener(pElem, function () { RCData_1["default"].previewImages(ajaxLink, tImageNames, articlepath); });
             // tImageNames = null;
             pImageRCs = null;
         }
@@ -1586,7 +1572,6 @@ var RCList = (function () {
     // https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
     RCList.prototype.addPreviewPageListener = function (pElem, pRC) {
         if (pElem) {
-            pElem = pElem;
             // Initializing here since "rc" may be nulled by the time the event is triggered.
             var ajaxLink_1 = this.wikiInfo.scriptpath + ("/api.php?action=parse&format=json&pageid=" + pRC.pageid + "&prop=text|headhtml&disabletoc=true");
             var pageName = pRC.title;
@@ -1596,13 +1581,16 @@ var RCList = (function () {
                 pageHref_1 = this.wikiInfo.articlepath + "Thread:" + pRC.pageid;
             }
             var serverLink_1 = this.wikiInfo.server;
-            var tRCM_previewpage_1 = function (e) {
-                e.preventDefault();
-                RCData_1["default"].previewPage(ajaxLink_1, pageName, pageHref_1, serverLink_1);
-            };
-            pElem.addEventListener("click", tRCM_previewpage_1);
-            this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_previewpage_1); });
+            this._addAjaxClickListener(pElem, function () { RCData_1["default"].previewPage(ajaxLink_1, pageName, pageHref_1, serverLink_1); });
         }
+    };
+    RCList.prototype._addAjaxClickListener = function (pElem, pCallback) {
+        var tRCM_AjaxIconClickHandler = function (e) {
+            e.preventDefault();
+            pCallback();
+        };
+        pElem.addEventListener("click", tRCM_AjaxIconClickHandler);
+        this.removeListeners.push(function () { pElem.removeEventListener("click", tRCM_AjaxIconClickHandler); });
     };
     // private _addRollbackLink(pRC) {
     // 	if(this.extraLoadingEnabled == false) { return ""; }
@@ -1616,12 +1604,12 @@ var RCList = (function () {
     // 	var tPageName = this.title;
     // 	var tPageID = this.pageid;
     // 	var tRollbackLink = this.hrefFS+"action=rollback&from="+pRC.author+"&token=";
-    // 	var tRCM_rollback = function(){
+    // 	var tRCM_rollback = () => {
     // 		RCList.ajaxRollback(tScriptDir, tVersion, tPageName, tPageID, tRollbackLink);
     // 		tRollbackLink.removeEventListener("click", tRCM_rollback);
     // 	}
     // 	tRollbackLink.addEventListener("click", tRCM_rollback);
-    // 	this.removeListeners.push(function(){ tRollbackLink.removeEventListener("click", tRCM_rollback); });
+    // 	this.removeListeners.push(() => { tRollbackLink.removeEventListener("click", tRCM_rollback); });
     // 	pRC = null;
     // 	return ;
     // }
@@ -1682,7 +1670,7 @@ var RCList = (function () {
         var html = "";
         switch (pRC.type) {
             case RC_TYPE_1["default"].LOG: {
-                html += pRC.logTitleText();
+                html += pRC.logTitleLink();
                 if (pRC.logtype == "upload") {
                     html += this.getAjaxImageButton();
                 }
@@ -1781,7 +1769,7 @@ var RCList = (function () {
         var html = "";
         switch (this.type) {
             case RC_TYPE_1["default"].LOG: {
-                html += this.newest.logTitleText();
+                html += this.newest.logTitleLink();
                 if (this.newest.logtype == "upload") {
                     html += this.getAjaxImageButton();
                 }
@@ -1943,7 +1931,7 @@ var RCList = (function () {
         var html = "";
         switch (pRC.type) {
             case RC_TYPE_1["default"].LOG: {
-                html += pRC.logTitleText();
+                html += pRC.logTitleLink();
                 if (pRC.logtype == "upload") {
                     html += this.getAjaxImageButton();
                 }
@@ -2055,6 +2043,7 @@ var RCMWikiaDiscussionData_1 = require("./RCMWikiaDiscussionData");
 var RCList_1 = require("./RCList");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
+var RC_TYPE_1 = require("./RC_TYPE");
 var Notification = window.Notification;
 var $ = window.jQuery;
 var mw = window.mediaWiki;
@@ -2072,7 +2061,6 @@ var RCMManager = (function () {
         this.ajaxID = 0;
         this.autoRefreshLocalStorageID = ConstantsApp_1["default"].AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
         this.extraLoadingEnabled = true;
-        this.rcm_style_for_rc_bg_added = false;
         this._parseWikiList();
     }
     RCMManager.prototype.dispose = function () {
@@ -2101,6 +2089,7 @@ var RCMManager = (function () {
     ;
     // Should only be called once per RCMManager.
     RCMManager.prototype._parseWikiList = function () {
+        var _this = this;
         /***************************
         * Data provided to script
         ***************************/
@@ -2135,11 +2124,9 @@ var RCMManager = (function () {
         this.makeLinksAjax = tDataset.ajaxlinks == "true" ? true : false;
         this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
         // Wikis for the script to load
-        this.chosenWikis = []; // {array}
-        var self = this;
-        //Utils.forEach(this.resultCont.querySelectorAll("li"), function(pNode){ self.setupWikiData(pNode, self) });
+        this.chosenWikis = [];
         Utils_1["default"].forEach(this.resultCont.querySelectorAll("li"), function (pNode) {
-            self.chosenWikis.push(new WikiData_1["default"](self).initListData(pNode));
+            _this.chosenWikis.push(new WikiData_1["default"](_this).initListData(pNode));
         });
         // Remove duplicates
         this.chosenWikis = Utils_1["default"].uniq_fast_key(this.chosenWikis, "servername");
@@ -2169,22 +2156,76 @@ var RCMManager = (function () {
         this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
-        // this._start(true);
         this._startWikiDataLoad();
         return this;
     };
     ;
     /***************************
+    * Loading
+    ***************************/
+    RCMManager.prototype._load = function (pWikiData, pUrl, pDataType, pTries, pID, pCallback, pDelayNum) {
+        if (pDelayNum === void 0) { pDelayNum = 0; }
+        ++pTries;
+        // A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
+        // A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
+        setTimeout(function () {
+            $.ajax({ type: 'GET', dataType: pDataType, data: {},
+                timeout: 15000,
+                url: pUrl,
+                success: function (data) { pCallback(data, pWikiData, pTries, pID, null); },
+                error: function (data, status) { pCallback(data, pWikiData, pTries, pID, status); },
+            });
+        }, pDelayNum);
+    };
+    RCMManager.prototype._retryOrError = function (pWikiData, pTries, pID, pFailStatus, pLoadCallback, pHandleErrorCallback) {
+        console.log("Error loading " + pWikiData.servername + " (" + pTries + "/" + this.loadingErrorRetryNum + " tries)");
+        //console.log(pData);
+        if (pTries < this.loadingErrorRetryNum) {
+            pLoadCallback(pWikiData, pTries, pID, 0);
+        }
+        else {
+            if (this.erroredWikis.length === 0) {
+                var tMessage = pFailStatus == null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+                // this._handleLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC, pAllowRefresh, pLoadCallback);
+                pHandleErrorCallback(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
+            }
+            else {
+                this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
+                this.statusNode.querySelector(".errored-wiki").innerHTML += ", " + pWikiData.servername;
+            }
+        }
+    };
+    // After a wiki is loaded, check if ALL wikis are loaded
+    // If so add results; if not, load the next wiki, or wait for next wiki to return data.
+    RCMManager.prototype._onParsingFinished = function (pCallback) {
+        this.wikisLeftToLoad--;
+        document.querySelector(this.modID + " .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%"; //.toFixed(3) + "%";
+        if (this.wikisLeftToLoad > 0) {
+            if (this.ajaxCallbacks.length > 0) {
+                // Parse / wait for next wiki
+                this.ajaxCallbacks.shift();
+                if (this.ajaxCallbacks.length > 0) {
+                    this.ajaxCallbacks[0]();
+                }
+            }
+        }
+        else {
+            pCallback();
+        }
+    };
+    /***************************
     * Setup WikiData classes - Various wiki data needs to be loaded before the script can properly run.
+    * These should only be called at the begining of the script; once data is retrieved, does not need to be loaded again.
     ***************************/
     RCMManager.prototype._startWikiDataLoad = function () {
-        var self = this;
+        var _this = this;
         this.erroredWikis = [];
+        this.ajaxCallbacks = [];
         this.ajaxID++;
         this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
         if (this.chosenWikis.length > 0) {
             Utils_1["default"].forEach(this.chosenWikis, function (tWikiData, i) {
-                self._loadWikiData(tWikiData, 0, self.ajaxID, (i + 1) * ConstantsApp_1["default"].loadDelay);
+                _this._loadWikiData(tWikiData, 0, _this.ajaxID, (i + 1) * ConstantsApp_1["default"].loadDelay);
             });
             this.totalItemsToLoad = this.chosenWikis.length;
             this.wikisLeftToLoad = this.totalItemsToLoad;
@@ -2199,24 +2240,9 @@ var RCMManager = (function () {
     };
     RCMManager.prototype._loadWikiData = function (pWikiData, pTries, pID, pDelayNum) {
         if (pDelayNum === void 0) { pDelayNum = 0; }
-        var self = this;
-        ++pTries;
-        // A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
-        // A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
-        setTimeout(function () {
-            $.ajax({
-                type: 'GET',
-                dataType: 'jsonp',
-                data: {},
-                timeout: 15000,
-                url: pWikiData.getWikiDataApiUrl(),
-                success: function (data) { self._onWikiDataLoaded(data, pWikiData, pTries, pID, null); },
-                error: function (data, status) { self._onWikiDataLoaded(null, pWikiData, pTries, pID, status); },
-            });
-        }, pDelayNum);
+        this._load(pWikiData, pWikiData.getWikiDataApiUrl(), 'jsonp', pTries, pID, this._onWikiDataLoaded.bind(this), pDelayNum);
     };
     RCMManager.prototype._onWikiDataLoaded = function (pData, pWikiData, pTries, pID, pFailStatus) {
-        var self = this;
         // Make sure this isn't something loaded before the script was last refreshed.
         if (pID != this.ajaxID) {
             return;
@@ -2231,21 +2257,20 @@ var RCMManager = (function () {
             return;
         }
         else if (pData == null || pData.query == null || pData.query.general == null) {
-            console.log("Error loading " + pWikiData.servername + " (" + pTries + "/" + this.loadingErrorRetryNum + " tries)");
-            //console.log(pData);
-            if (pTries < this.loadingErrorRetryNum) {
-                this._loadWikiData(pWikiData, pTries, pID, 0);
-            }
-            else {
-                if (this.erroredWikis.length === 0) {
-                    var tMessage = pFailStatus == null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
-                    this._handleWikiDataLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-                }
-                else {
-                    this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
-                    this.statusNode.querySelector(".errored-wiki").innerHTML += ", " + pWikiData.servername;
-                }
-            }
+            // console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+            // //console.log(pData);
+            // if(pTries < this.loadingErrorRetryNum) {
+            // 	this._loadWikiData(pWikiData, pTries, pID, 0);
+            // } else {
+            // 	if(this.erroredWikis.length === 0) {
+            // 		var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+            // 		this._handleWikiDataLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
+            // 	} else {
+            // 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
+            // 		this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
+            // 	}
+            // }
+            this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWikiData.bind(this), this._handleWikiDataLoadError.bind(this));
             return;
         }
         if (pData && pData.warning) {
@@ -2253,46 +2278,59 @@ var RCMManager = (function () {
         }
         // Store wiki-data retrieved that's needed before wiki parsing
         pWikiData.initAfterLoad(pData.query);
-        this.wikisLeftToLoad--;
-        document.querySelector(this.modID + " .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%"; //.toFixed(3) + "%";
-        if (this.wikisLeftToLoad <= 0) {
-            this._start(true);
-        }
+        this._onWikiDataParsingFinished(pWikiData);
     };
     RCMManager.prototype._handleWikiDataLoadError = function (pWikiData, pTries, pID, pErrorMessage, pInc) {
-        var self = this;
+        var _this = this;
         this.statusNode.innerHTML = "<div class='rcm-error'>" + i18n_1["default"](pErrorMessage, "<span class='errored-wiki'>" + pWikiData.servername + "</span>", pTries) + "</div>";
         var tHandler = function (pEvent) {
-            self.loadingErrorRetryNum += pInc;
+            _this.loadingErrorRetryNum += pInc;
             if (pEvent) {
                 pEvent.target.removeEventListener("click", tHandler);
             }
             tHandler = null;
-            self.erroredWikis.forEach(function (obj) {
+            _this.erroredWikis.forEach(function (obj) {
                 // console.log(obj);
-                self._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
+                _this._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
             });
-            self.erroredWikis = [];
-            self.statusNode.innerHTML = ConstantsApp_1["default"].getLoader() + " " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>" + self.calcLoadPercent() + "%</span>)";
+            _this.erroredWikis = [];
+            _this.statusNode.innerHTML = ConstantsApp_1["default"].getLoader() + " " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>" + _this.calcLoadPercent() + "%</span>)";
         };
-        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
-        self.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
+        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+        this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
+    };
+    RCMManager.prototype._onWikiDataParsingFinished = function (pWikiData) {
+        var _this = this;
+        this._onParsingFinished(function () { _this._onAllWikiDataParsed(); });
+    };
+    // Should only be called once.
+    RCMManager.prototype._onAllWikiDataParsed = function () {
+        // Add some run-time CSS classes
+        var tCSS = "";
+        Utils_1["default"].forEach(this.chosenWikis, function (wikiInfo) {
+            // bgcolor should be used if specified, otherwise tile favicon as background. But not both.
+            tCSS += "\n." + wikiInfo.rcClass + " .rcm-tiled-favicon {"
+                + (wikiInfo.bgcolor != null ? "background: " + wikiInfo.bgcolor + ";" : "background-image: url(" + wikiInfo.favicon + ");")
+                + " }";
+        });
+        mw.util.addCSS(tCSS);
+        this._start(true);
     };
     /***************************
     * Discussion Loading
     ***************************/
     RCMManager.prototype._startDiscussionLoading = function (pID) {
+        var _this = this;
         if (!this.discussionsEnabled) {
             return;
         }
-        var self = this;
         this.ajaxCallbacks = [];
         this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
         this.totalItemsToLoad = 0;
         Utils_1["default"].forEach(this.chosenWikis, function (tWikiData, i) {
             if (tWikiData.usesWikiaDiscussions !== false) {
-                self.totalItemsToLoad++;
-                self._loadWikiaDiscussions(tWikiData, 0, pID, self.totalItemsToLoad * ConstantsApp_1["default"].loadDelay);
+                _this.totalItemsToLoad++;
+                _this._loadWikiaDiscussions(tWikiData, 0, pID, _this.totalItemsToLoad * ConstantsApp_1["default"].loadDelay);
             }
         });
         // If no discussions are being loaded, skip it and tell manager to not even bother in the future.
@@ -2306,23 +2344,10 @@ var RCMManager = (function () {
     };
     RCMManager.prototype._loadWikiaDiscussions = function (pWikiData, pTries, pID, pDelayNum) {
         if (pDelayNum === void 0) { pDelayNum = 0; }
-        var self = this;
-        ++pTries;
-        var tLimit = pWikiData.rcParams.limit < 50 ? pWikiData.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
-        var tURL = "https://services.wikia.com/discussion/" + pWikiData.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&responseGroup=small&reported=false&viewableOnly=" + !pWikiData.canBlock;
-        if (ConstantsApp_1["default"].debug) {
-            console.log("[RCMManager](_loadWikiaDiscussions) " + tURL);
-        }
-        $.ajax({ type: 'GET', dataType: 'json', data: {},
-            timeout: 15000,
-            url: tURL,
-            success: function (data) { self._onWikiDiscussionLoaded(data, pWikiData, pTries, pID, null); },
-            error: function (data, status) { self._onWikiDiscussionLoaded(data, pWikiData, pTries, pID, status); },
-        });
+        this._load(pWikiData, pWikiData.getWikiDiscussionUrl(), 'json', pTries, pID, this._onWikiDiscussionLoaded.bind(this), pDelayNum);
     };
     RCMManager.prototype._onWikiDiscussionLoaded = function (pData, pWikiData, pTries, pID, pFailStatus) {
-        var self = this;
+        var _this = this;
         // Make sure this isn't something loaded before the script was last refreshed.
         if (pID != this.ajaxID) {
             return;
@@ -2330,7 +2355,7 @@ var RCMManager = (function () {
         if (pFailStatus == null && pData && pData["_embedded"] && pData["_embedded"]["doc:posts"]) {
             pWikiData.usesWikiaDiscussions = true;
             this.ajaxCallbacks.push(function () {
-                self._parseWikiDiscussions(pData["_embedded"]["doc:posts"], pWikiData);
+                _this._parseWikiDiscussions(pData["_embedded"]["doc:posts"], pWikiData);
             });
             if (this.ajaxCallbacks.length === 1) {
                 this.ajaxCallbacks[0]();
@@ -2342,12 +2367,12 @@ var RCMManager = (function () {
                 //console.log(pData);
                 if (pTries < this.loadingErrorRetryNum && pFailStatus == "timeout") {
                     this._loadWikiaDiscussions(pWikiData, pTries, pID, 0);
-                    return;
                 }
                 else {
                     // Don't do any fancy error catching. just fail.
                     this._onDiscussionParsingFinished(pWikiData);
                 }
+                return;
             }
             else {
                 if (pFailStatus != "timeout") {
@@ -2361,7 +2386,7 @@ var RCMManager = (function () {
         }
     };
     RCMManager.prototype._parseWikiDiscussions = function (pData, pWikiData) {
-        var self = this;
+        var _this = this;
         // Check if wiki doesn't have any recent changes
         if (pData.length <= 0) {
             this._onDiscussionParsingFinished(pWikiData);
@@ -2373,14 +2398,14 @@ var RCMManager = (function () {
         });
         var tNewRC, tDate, tChangeAdded;
         // Add each entry from the wiki to the list in a sorted order
-        pData.forEach(function tRCM_parseWiki_parseRCData(pRCData) {
+        pData.forEach(function (pRCData) {
             var tUser = pRCData.createdBy.name;
             // Skip if user is hidden for whole script or specific wiki
-            if (tUser && self.hideusers.indexOf(tUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(tUser) > -1)) {
+            if (tUser && _this.hideusers.indexOf(tUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(tUser) > -1)) {
                 return;
             }
             // Skip if user is NOT a specified user to show for whole script or specific wiki
-            if (tUser && (self.onlyshowusers.length != 0 && self.onlyshowusers.indexOf(tUser) == -1)) {
+            if (tUser && (_this.onlyshowusers.length != 0 && _this.onlyshowusers.indexOf(tUser) == -1)) {
                 return;
             }
             if (tUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(tUser) == -1)) {
@@ -2394,18 +2419,18 @@ var RCMManager = (function () {
             if ((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) {
                 return;
             }
-            self.itemsToAddTotal++;
-            tNewRC = new RCMWikiaDiscussionData_1["default"](pWikiData, self);
+            _this.itemsToAddTotal++;
+            tNewRC = new RCMWikiaDiscussionData_1["default"](pWikiData, _this);
             tNewRC.init(pRCData);
             tChangeAdded = false;
-            self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList, i) {
+            _this.recentChangesEntries.every(function (pRCList, i) {
                 if (tNewRC.date > pRCList.date) {
-                    self.recentChangesEntries.splice(i, 0, new RCList_1["default"](self).addRC(tNewRC));
+                    _this.recentChangesEntries.splice(i, 0, new RCList_1["default"](_this).addRC(tNewRC));
                     tChangeAdded = true;
                     return false;
                 }
                 else {
-                    if (self.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+                    if (_this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
                         pRCList.addRC(tNewRC);
                         tChangeAdded = true;
                         return false;
@@ -2413,8 +2438,8 @@ var RCMManager = (function () {
                 }
                 return true;
             });
-            if (!tChangeAdded || self.recentChangesEntries.length == 0) {
-                self.recentChangesEntries.push(new RCList_1["default"](self).addRC(tNewRC));
+            if (!tChangeAdded || _this.recentChangesEntries.length == 0) {
+                _this.recentChangesEntries.push(new RCList_1["default"](_this).addRC(tNewRC));
             }
         });
         if (ConstantsApp_1["default"].debug) {
@@ -2423,25 +2448,15 @@ var RCMManager = (function () {
         this._onDiscussionParsingFinished(pWikiData);
     };
     RCMManager.prototype._onDiscussionParsingFinished = function (pWikiData) {
-        this.wikisLeftToLoad--;
-        document.querySelector(this.modID + " .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%"; //.toFixed(3) + "%";
-        if (this.wikisLeftToLoad > 0) {
-            // Parse / wait for next wiki
-            this.ajaxCallbacks.shift();
-            if (this.ajaxCallbacks.length > 0) {
-                this.ajaxCallbacks[0]();
-            }
-        }
-        else {
-            this.rcmChunkStart();
-        }
+        var _this = this;
+        this._onParsingFinished(function () { _this.rcmChunkStart(); });
     };
     /***************************
     * Main RecentChanges loading methods
     ***************************/
     RCMManager.prototype._start = function (pUpdateParams) {
+        var _this = this;
         if (pUpdateParams === void 0) { pUpdateParams = false; }
-        var self = this;
         clearTimeout(this.autoRefreshTimeoutID);
         this.wikisNode.populate();
         this.recentChangesEntries = [];
@@ -2455,13 +2470,12 @@ var RCMManager = (function () {
             if (pUpdateParams) {
                 tWikiData.setupRcParams();
             } // Encase it was changed via RCMOptions
-            self._loadWiki(tWikiData, 0, self.ajaxID, (i + 1) * ConstantsApp_1["default"].loadDelay);
+            _this._loadWiki(tWikiData, 0, _this.ajaxID, (i + 1) * ConstantsApp_1["default"].loadDelay);
         });
         this.totalItemsToLoad = this.chosenWikis.length;
         this.wikisLeftToLoad = this.totalItemsToLoad;
         this.statusNode.innerHTML = ConstantsApp_1["default"].getLoader() + " " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>0%</span>)";
     };
-    ;
     RCMManager.prototype.refresh = function (pUpdateParams) {
         if (pUpdateParams === void 0) { pUpdateParams = false; }
         if (this.chosenWikis.length == 0) {
@@ -2486,23 +2500,11 @@ var RCMManager = (function () {
     // Separate method so that it can be reused if the loading failed
     RCMManager.prototype._loadWiki = function (pWikiData, pTries, pID, pDelayNum) {
         if (pDelayNum === void 0) { pDelayNum = 0; }
-        var self = this;
-        ++pTries;
-        // A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
-        // A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
-        setTimeout(function () {
-            $.ajax({ type: 'GET', dataType: 'jsonp', data: {},
-                timeout: 15000,
-                url: pWikiData.getApiUrl(),
-                success: function (data) { self._onWikiLoaded(data, pWikiData, pTries, pID, null); },
-                error: function (data, status) { self._onWikiLoaded(null, pWikiData, pTries, pID, status); },
-            });
-        }, pDelayNum);
+        this._load(pWikiData, pWikiData.getApiUrl(), 'jsonp', pTries, pID, this._onWikiLoaded.bind(this), pDelayNum);
     };
-    ;
     /* Called after a wiki is loaded; will add it to queue, and run it if no other callbacks running. */
     RCMManager.prototype._onWikiLoaded = function (pData, pWikiData, pTries, pID, pFailStatus) {
-        var self = this;
+        var _this = this;
         // Make sure this isn't something loaded before the script was last refreshed.
         if (pID != this.ajaxID) {
             return;
@@ -2517,21 +2519,21 @@ var RCMManager = (function () {
             return;
         }
         else if (pData == null || pData.query == null || pData.query.recentchanges == null) {
-            console.log("Error loading " + pWikiData.servername + " (" + pTries + "/" + this.loadingErrorRetryNum + " tries)");
-            //console.log(pData);
-            if (pTries < this.loadingErrorRetryNum) {
-                this._loadWiki(pWikiData, pTries, pID, 0);
-            }
-            else {
-                if (this.erroredWikis.length === 0) {
-                    var tMessage = pFailStatus == null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
-                    this._handleWikiLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-                }
-                else {
-                    this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
-                    this.statusNode.querySelector(".errored-wiki").innerHTML += ", " + pWikiData.servername;
-                }
-            }
+            // console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+            // //console.log(pData);
+            // if(pTries < this.loadingErrorRetryNum) {
+            // 	this._loadWiki(pWikiData, pTries, pID, 0);
+            // } else {
+            // 	if(this.erroredWikis.length === 0) {
+            // 		var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+            // 		this._handleWikiLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
+            // 	} else {
+            // 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
+            // 		this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
+            // 	}
+            // 	//throw "Refresh";
+            // }
+            this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWiki.bind(this), this._handleWikiLoadError.bind(this));
             return;
         }
         if (pData && pData.warning) {
@@ -2540,46 +2542,44 @@ var RCMManager = (function () {
         // Store wiki-data retrieved that's needed before wiki parsing
         // pWikiData.initAfterLoad(pData.query);
         this.ajaxCallbacks.push(function () {
-            self._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
+            _this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
         });
         if (this.ajaxCallbacks.length === 1) {
             this.ajaxCallbacks[0]();
         }
     };
-    ;
     RCMManager.prototype._handleWikiLoadError = function (pWikiData, pTries, pID, pErrorMessage, pInc) {
-        var self = this;
+        var _this = this;
         clearTimeout(this.loadErrorTimeoutID);
         this.loadErrorTimeoutID = null;
         this.statusNode.innerHTML = "<div class='rcm-error'>" + i18n_1["default"](pErrorMessage, "<span class='errored-wiki'>" + pWikiData.servername + "</span>", pTries) + "</div>";
         this.addRefreshButtonTo(this.statusNode);
         var tHandler = function (pEvent) {
-            clearTimeout(self.loadErrorTimeoutID);
-            self.loadErrorTimeoutID = null;
-            self.loadingErrorRetryNum += pInc;
+            clearTimeout(_this.loadErrorTimeoutID);
+            _this.loadErrorTimeoutID = null;
+            _this.loadingErrorRetryNum += pInc;
             if (pEvent) {
                 pEvent.target.removeEventListener("click", tHandler);
             }
             tHandler = null;
-            self.erroredWikis.forEach(function (obj) {
+            _this.erroredWikis.forEach(function (obj) {
                 // console.log(obj);
-                self._loadWiki(obj.wikiInfo, obj.tries, obj.id);
+                _this._loadWiki(obj.wikiInfo, obj.tries, obj.id);
             });
-            self.erroredWikis = [];
-            self.statusNode.innerHTML = ConstantsApp_1["default"].getLoader() + " " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>" + self.calcLoadPercent() + "%</span>)";
+            _this.erroredWikis = [];
+            _this.statusNode.innerHTML = ConstantsApp_1["default"].getLoader() + " " + i18n_1["default"]('rcm-loading') + " (<span class='rcm-load-perc'>" + _this.calcLoadPercent() + "%</span>)";
         };
-        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, self.statusNode).addEventListener("click", tHandler);
-        self.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
+        Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+        this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
         if (this.isAutoRefreshEnabled()) {
             this.loadErrorTimeoutID = setTimeout(function () { if (tHandler) {
                 tHandler(null);
             } }, 20000);
         }
     };
-    ;
     /* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
     RCMManager.prototype._parseWiki = function (pData, pLogData, pWikiData) {
-        var self = this;
+        var _this = this;
         // Check if wiki doesn't have any recent changes
         if (pData.length <= 0) {
             this._onWikiParsingFinished(pWikiData);
@@ -2590,29 +2590,29 @@ var RCMManager = (function () {
         }
         var tNewRC, tDate, tChangeAdded;
         // Add each entry from the wiki to the list in a sorted order
-        pData.forEach(function tRCM_parseWiki_parseRCData(pRCData) {
+        pData.forEach(function (pRCData) {
             // Skip if user is hidden for whole script or specific wiki
-            if (pRCData.user && self.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) {
+            if (pRCData.user && _this.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) {
                 return;
             }
             // Skip if user is NOT a specified user to show for whole script or specific wiki
-            if (pRCData.user && (self.onlyshowusers.length != 0 && self.onlyshowusers.indexOf(pRCData.user) == -1)) {
+            if (pRCData.user && (_this.onlyshowusers.length != 0 && _this.onlyshowusers.indexOf(pRCData.user) == -1)) {
                 return;
             }
             if (pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) {
                 return;
             }
-            self.itemsToAddTotal++;
-            tNewRC = new RCData_1["default"](pWikiData, self).init(pRCData, pLogData);
+            _this.itemsToAddTotal++;
+            tNewRC = new RCData_1["default"](pWikiData, _this).init(pRCData, pLogData);
             tChangeAdded = false;
-            self.recentChangesEntries.every(function tRCM_parseWiki_checkIfShouldGroup(pRCList, i) {
+            _this.recentChangesEntries.every(function (pRCList, i) {
                 if (tNewRC.date > pRCList.date) {
-                    self.recentChangesEntries.splice(i, 0, new RCList_1["default"](self).addRC(tNewRC));
+                    _this.recentChangesEntries.splice(i, 0, new RCList_1["default"](_this).addRC(tNewRC));
                     tChangeAdded = true;
                     return false;
                 }
                 else {
-                    if (self.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+                    if (_this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
                         pRCList.addRC(tNewRC);
                         tChangeAdded = true;
                         return false;
@@ -2620,8 +2620,8 @@ var RCMManager = (function () {
                 }
                 return true;
             });
-            if (!tChangeAdded || self.recentChangesEntries.length == 0) {
-                self.recentChangesEntries.push(new RCList_1["default"](self).addRC(tNewRC));
+            if (!tChangeAdded || _this.recentChangesEntries.length == 0) {
+                _this.recentChangesEntries.push(new RCList_1["default"](_this).addRC(tNewRC));
             }
         });
         this._onWikiParsingFinished(pWikiData);
@@ -2629,26 +2629,18 @@ var RCMManager = (function () {
     ;
     // After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
     RCMManager.prototype._onWikiParsingFinished = function (pWikiData) {
-        this.wikisLeftToLoad--;
+        var _this = this;
         this.wikisNode.addWiki(pWikiData);
-        document.querySelector(this.modID + " .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%"; //.toFixed(3) + "%";
-        if (this.wikisLeftToLoad > 0) {
-            // Parse / wait for next wiki
-            this.ajaxCallbacks.shift();
-            if (this.ajaxCallbacks.length > 0) {
-                this.ajaxCallbacks[0]();
-            }
+        this._onParsingFinished(function () { _this._onAllWikisParsed(); });
+    };
+    RCMManager.prototype._onAllWikisParsed = function () {
+        if (this.discussionsEnabled) {
+            this._startDiscussionLoading(this.ajaxID);
         }
         else {
-            if (this.discussionsEnabled) {
-                this._startDiscussionLoading(this.ajaxID);
-            }
-            else {
-                this.rcmChunkStart();
-            }
+            this.rcmChunkStart();
         }
     };
-    ;
     /***************************
     * Display Results
     ***************************/
@@ -2658,64 +2650,60 @@ var RCMManager = (function () {
         this.statusNode.innerHTML = i18n_1["default"]('rcm-download-timestamp', "<b><tt>" + Utils_1["default"].pad(Utils_1["default"].getHours(tDate, this.timezone), 2) + ":" + Utils_1["default"].pad(Utils_1["default"].getMinutes(tDate, this.timezone), 2) + "</tt></b>");
         this.statusNode.innerHTML += "<span class='rcm-content-loading'>" + i18n_1["default"]('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / " + this.itemsToAddTotal) + "</span>";
         this.resultsNode.innerHTML = "";
-        // Add some run-time CSS classes
-        if (!this.rcm_style_for_rc_bg_added) {
-            this.rcm_style_for_rc_bg_added = true;
-            var tCSS = "";
-            Utils_1["default"].forEach(this.chosenWikis, function (wikiInfo) {
-                // bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-                tCSS += "\n." + wikiInfo.rcClass + " .rcm-tiled-favicon {"
-                    + (wikiInfo.bgcolor != null ? "background: " + wikiInfo.bgcolor + ";" : "background-image: url(" + wikiInfo.favicon + ");")
-                    + " }";
-            });
-            mw.util.addCSS(tCSS);
-        }
         // console.log(this.recentChangesEntries);
         if (this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
             Utils_1["default"].newElement("div", { className: "rcm-noNewChanges", innerHTML: "<strong>" + i18n_1["default"]('rcm-nonewchanges') + "</strong>" }, this.resultsNode);
         }
         else if (this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
             if (this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
-                var tMostRecentEntry = this.recentChangesEntries[0].newest;
-                // Skip if user is hidden for whole script or specific wiki
-                var tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
-                if (!tDontNotify) {
-                    var tNumNewChanges = 0, tNumNewChangesWiki = 0;
-                    for (var i = 0; i < this.recentChangesEntries.length; i++) {
-                        if (this.recentChangesEntries[i].date > this.lastLoadDateTime) {
-                            for (var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
-                                if (this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) {
-                                    tNumNewChanges++;
-                                    if (this.recentChangesEntries[i].wikiInfo.servername == tMostRecentEntry.wikiInfo.servername) {
-                                        tNumNewChangesWiki++;
-                                    }
-                                }
-                                else {
-                                    break;
-                                }
+                this.notifyUserOfChange();
+            }
+        }
+        this.rcmChunk(0, 99, 99, null, this.ajaxID);
+    };
+    RCMManager.prototype.notifyUserOfChange = function () {
+        var tMostRecentEntry = this.recentChangesEntries[0].newest;
+        // Skip if user is hidden for whole script or specific wiki
+        var tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
+        if (!tDontNotify) {
+            // Find number of changes since page last visited.
+            var tNumNewChanges = 0, tNumNewChangesWiki = 0;
+            for (var i = 0; i < this.recentChangesEntries.length; i++) {
+                if (this.recentChangesEntries[i].date > this.lastLoadDateTime) {
+                    for (var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
+                        if (this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) {
+                            tNumNewChanges++;
+                            if (this.recentChangesEntries[i].wikiInfo.servername == tMostRecentEntry.wikiInfo.servername) {
+                                tNumNewChangesWiki++;
                             }
                         }
                         else {
                             break;
                         }
                     }
-                    Main_1["default"].blinkWindowTitle(i18n_1["default"]("wikifeatures-promotion-new") + "! " + i18n_1["default"]("nchanges", tNumNewChanges));
-                    var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n" + i18n_1["default"]("edit-summary") + ": " + tMostRecentEntry.unparsedComment;
-                    Main_1["default"].addNotification(i18n_1["default"]("nchanges", tNumNewChanges) + " - " + tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " (" + i18n_1["default"]("nchanges", tNumNewChangesWiki) + ")" : ""), {
-                        body: tMostRecentEntry.title + "\n" + Utils_1["default"].ucfirst(i18n_1["default"]("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
-                    });
                 }
-                tMostRecentEntry = null;
+                else {
+                    break;
+                }
             }
+            Main_1["default"].blinkWindowTitle(i18n_1["default"]("wikifeatures-promotion-new") + "! " + i18n_1["default"]("nchanges", tNumNewChanges));
+            var tEditTitle = tMostRecentEntry.title;
+            if (tMostRecentEntry.type == RC_TYPE_1["default"].LOG) {
+                tEditTitle = tMostRecentEntry.logTitle() + (tEditTitle ? " - " + tEditTitle : "");
+            }
+            var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n" + i18n_1["default"]("edit-summary") + ": " + tMostRecentEntry.unparsedComment;
+            Main_1["default"].addNotification(i18n_1["default"]("nchanges", tNumNewChanges) + " - " + tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? " (" + tNumNewChangesWiki + ")" : ""), {
+                body: tEditTitle + "\n" + Utils_1["default"].ucfirst(i18n_1["default"]("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
+            });
         }
-        this.rcmChunk(0, 99, 99, null, this.ajaxID);
+        tMostRecentEntry = null;
     };
     // Add a single change at a time, with a timeout before the next one to prevents script from locking up browser.
     RCMManager.prototype.rcmChunk = function (pIndex, pLastDay, pLastMonth, pContainer, pID) {
+        var _this = this;
         if (pID != this.ajaxID) {
             return;
         } // If the script is refreshed (by auto refresh) while entries are adding, stop adding old entries.
-        var self = this;
         if (this.recentChangesEntries.length == 0) {
             this.finishScript();
             return;
@@ -2739,10 +2727,10 @@ var RCMManager = (function () {
             document.querySelector(this.modID + " .rcm-content-loading-num").innerHTML = this.itemsAdded.toString();
             // Only do a timeout every few changes (timeout to prevent browser potentially locking up, only every few to prevent it taking longer than necessary)
             if (pIndex % 5 == 0) {
-                setTimeout(function () { self.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID); });
+                setTimeout(function () { _this.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID); });
             }
             else {
-                self.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID);
+                this.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID);
             }
         }
         else {
@@ -2775,20 +2763,21 @@ var RCMManager = (function () {
     };
     ;
     RCMManager.prototype.startAutoRefresh = function () {
+        var _this = this;
         if (!this.isAutoRefreshEnabled()) {
             return;
         }
-        var self = this;
         this.autoRefreshTimeoutID = setTimeout(function () {
             if (RCMModal_1["default"].isModalOpen()) {
-                self.startAutoRefresh();
+                _this.startAutoRefresh();
                 return;
             }
-            self.refresh();
+            _this.refresh();
         }, this.autoRefreshTimeoutNum);
     };
     ;
     RCMManager.prototype._loadExtraInfo = function (pID) {
+        var _this = this;
         if (pID != this.ajaxID) {
             return;
         }
@@ -2798,7 +2787,6 @@ var RCMManager = (function () {
             }
             return;
         }
-        var self = this;
         var tUrl = this.secondaryWikiData[0].url;
         var tCallback = this.secondaryWikiData[0].callback;
         var tDataType = this.secondaryWikiData[0].dataType || "jsonp";
@@ -2808,11 +2796,18 @@ var RCMManager = (function () {
             dataType: tDataType,
             data: {},
             url: tUrl,
-            success: function () { if (pID != self.ajaxID) {
-                return;
-            } tCallback.apply(this, arguments); },
+            success: function () {
+                var pArgs = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    pArgs[_i - 0] = arguments[_i];
+                }
+                if (pID != _this.ajaxID) {
+                    return;
+                }
+                tCallback.apply(_this, pArgs);
+            },
         });
-        setTimeout(function () { self._loadExtraInfo(pID); }, ConstantsApp_1["default"].loadDelay);
+        setTimeout(function () { _this._loadExtraInfo(pID); }, ConstantsApp_1["default"].loadDelay);
     };
     /***************************
     * Specific Helper Methods
@@ -2907,7 +2902,7 @@ var RCMManager = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMManager;
 
-},{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./RCMWikiaDiscussionData":9,"./Utils":11,"./WikiData":12,"./i18n":13}],6:[function(require,module,exports){
+},{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./RCMWikiaDiscussionData":9,"./RC_TYPE":10,"./Utils":11,"./WikiData":12,"./i18n":13}],6:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var i18n_1 = require("./i18n");
@@ -3321,14 +3316,14 @@ var RCMWikiPanel = (function () {
     };
     // Clear panel (on refresh).
     RCMWikiPanel.prototype.addWiki = function (pWikiInfo) {
+        var _this = this;
         if (this.singleWiki) {
             if (!this.infoNode.innerHTML)
                 this.onIconClick(pWikiInfo, null);
         }
         else {
-            // this.listNode.innerHTML += Utils.formatString("<span class='favicon' href='{0}Special:RecentChanges{2}'>{1}</span>", pWikiInfo.articlepath, pWikiInfo.getFaviconHTML(), pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString);
             var favicon = Utils_1["default"].newElement("span", { id: pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
-            favicon.addEventListener("click", this.onIconClick.bind(this, pWikiInfo));
+            favicon.addEventListener("click", function (e) { _this.onIconClick(pWikiInfo, e); });
             if (this.manager.wikisLeftToLoad > 0) {
                 Utils_1["default"].addTextTo(":", this.listNode);
             }
@@ -3389,7 +3384,6 @@ var RCMWikiPanel = (function () {
         }
     };
     RCMWikiPanel.prototype.closeInfo = function () {
-        // $(infoBanner).hide(500, "linear", function() {
         $(this.infoNode.querySelector(".banner-notification")).animate({ height: "toggle", opacity: "toggle" }, 200, function () {
             $(this).remove();
         });
@@ -3515,13 +3509,6 @@ var RCMWikiaDiscussionData = (function (_super) {
         if (pThreadTitle == undefined) {
             pThreadTitle = this.getThreadTitle();
         }
-        // var tText = i18n("forum-related-discussion-heading",
-        // var tText = i18n("wall-recentchanges-thread-group",
-        // 	// `<a href='${this.href}'>${pThreadTitle}</a>`,
-        // 	`<a href="${this.href}">${pThreadTitle}</a>`
-        // 	// this.getBoardWallParentLink(),
-        // 	// this.titleNoNS
-        // );
         var tForumLink = "<a href=\"//" + this.wikiInfo.servername + "/d/f?catId=" + this.forumId + "&sort=latest\">" + this.forumName + "</a>";
         var tText = i18n_1["default"].MESSAGES["wall-recentchanges-thread-group"];
         tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
@@ -3582,10 +3569,9 @@ var Utils = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             pArgs[_i - 1] = arguments[_i];
         }
-        var args = Array.prototype.slice.call(arguments, 1);
         return format.replace(/{(\d+)}/g, function (match, number) {
-            return typeof args[number] != 'undefined'
-                ? args[number]
+            return typeof pArgs[number] != 'undefined'
+                ? pArgs[number]
                 : match;
         });
     };
@@ -3792,7 +3778,6 @@ var WikiData = (function () {
     };
     // Parses LI element data to be able to retrieve information for the respective wiki.
     WikiData.prototype.initListData = function (pNode) {
-        var self = this;
         var tWikiDataRaw = pNode.textContent.replace(/(\r\n|\n|\r)/gm, "").trim().split("&"); // Need to check for new lines due to how wikis create lists.
         //console.log(tWikiDataRaw);
         // Some default values
@@ -4055,6 +4040,16 @@ var WikiData = (function () {
         }
         return tReturnText;
     };
+    // Gets URL for the Wikia discussions API;
+    // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
+    WikiData.prototype.getWikiDiscussionUrl = function () {
+        var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
+        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&responseGroup=small&reported=false&viewableOnly=" + !this.canBlock;
+        if (ConstantsApp_1["default"].debug) {
+            console.log("[WikiData](getWikiDiscussionUrl) " + tReturnText);
+        }
+        return tReturnText;
+    };
     // Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
     // https://www.mediawiki.org/wiki/API:RecentChanges
     WikiData.prototype.getApiUrl = function () {
@@ -4160,12 +4155,12 @@ var i18n = function (pKey) {
     for (var _i = 1; _i < arguments.length; _i++) {
         pArgs[_i - 1] = arguments[_i];
     }
-    arguments[0] = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
-    if (arguments[0] == undefined) {
-        console.log("[RecentChangesMultiple.i18n]() " + pKey + " is undefined.");
+    var tText = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
+    if (tText == undefined) {
+        console.log("[RecentChangesMultiple.i18n]() '" + pKey + "' is undefined.");
         return pKey;
     }
-    return i18n.wiki2html.apply(i18n, arguments);
+    return i18n.wiki2html.apply(i18n, [tText].concat(pArgs));
 };
 i18n.defaultLang = "en";
 i18n.init = function (pLang) {
@@ -5327,7 +5322,7 @@ if (document.querySelectorAll('.rc-content-multiple, #rc-content-multiple')[0] =
 }
 else {
     Main_1["default"].init(module);
-    window.dev.RecentChangesMultiple = Main_1["default"];
+    window.dev.RecentChangesMultiple.app = Main_1["default"];
 }
 
 },{"./Main":2}]},{},[14]);

@@ -361,27 +361,29 @@ export default class RCData
 		}
 	}
 	
-	logTitleText() : string {
-		var logTemplate = "(<a class='rc-log-link' href='"+this.wikiInfo.articlepath+"Special:Log/{0}'>{1}</a>)";
+	logTitleLink() : string {
+		return `(<a class='rc-log-link' href='${this.wikiInfo.articlepath}Special:Log/${this.logtype}'>${this.logTitle()}</a>)`;
+	}
+	
+	logTitle() : string {
 		switch(this.logtype) {
-			case "abusefilter"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("abusefilter-log")); }
-			case "block"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("blocklogpage")); }
-			case "chatban"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("chat-chatban-log")); }
-			case "delete"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("dellogpage")); }
-			case "import"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("importlogpage")); }
-			case "maps"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n("wikia-interactive-maps-log-name")); }
-			case "merge"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("mergelog")); }
-			case "move"			:{ return Utils.formatString(logTemplate, this.logtype,	i18n("movelogpage")); }
-			case "protect"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("protectlogpage")); }
-			case "upload"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("uploadlogpage")); }
-			case "useravatar"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("useravatar-log")); }
-			case "newusers"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("newuserlogpage")); }
-			case "renameuser"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("userrenametool-logpage")); }
-			case "rights"		:{ return Utils.formatString(logTemplate, this.logtype,	i18n("rightslog")); }
-			case "wikifeatures"	:{ return Utils.formatString(logTemplate, this.logtype,	i18n("wikifeatures-log-name")); }
-			default				:{ return Utils.formatString(logTemplate, this.logtype,	this.logtype); } // At least display it as a log.
+			case "abusefilter"	: return i18n("abusefilter-log");
+			case "block"		: return i18n("blocklogpage");
+			case "chatban"		: return i18n("chat-chatban-log");
+			case "delete"		: return i18n("dellogpage");
+			case "import"		: return i18n("importlogpage");
+			case "maps"			: return i18n("wikia-interactive-maps-log-name");
+			case "merge"		: return i18n("mergelog");
+			case "move"			: return i18n("movelogpage");
+			case "protect"		: return i18n("protectlogpage");
+			case "upload"		: return i18n("uploadlogpage");
+			case "useravatar"	: return i18n("useravatar-log");
+			case "newusers"		: return i18n("newuserlogpage");
+			case "renameuser"	: return i18n("userrenametool-logpage");
+			case "rights"		: return i18n("rightslog");
+			case "wikifeatures"	: return i18n("wikifeatures-log-name");
+			default				: return this.logtype; // At least display it as a log.
 		}
-		// return "";
 	}
 	
 	// Check each entry for "threadTitle", else return default text.
@@ -410,7 +412,8 @@ export default class RCData
 	
 	static formatParsedComment(pParsedComment:string, pDeleted:boolean, pWikiInfo:WikiData) : string {
 		if(!pDeleted) {
-			pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+			// pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+			pParsedComment = pParsedComment.replace(/<a href="\//g, "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
 		} else {
 			pParsedComment = `<span class="history-deleted">${i18n("rev-deleted-comment")}</span>`;
 		}
@@ -680,21 +683,21 @@ export default class RCData
 		tButtons.push({
 			value: i18n('rcm-module-diff-open'),
 			event: "diff",
-			callback: function(){ window.open(pDiffLink, '_blank'); },
+			callback: () => { window.open(pDiffLink, '_blank'); },
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
 				value: i18n('rcm-module-diff-undo'),
 				event: "undo",
-				callback: function(){ window.open(pUndoLink, '_blank'); },
+				callback: () => { window.open(pUndoLink, '_blank'); },
 			});
 		}
 		
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
 			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
-				success: function(pData){
+				success: (pData) => {
 					var tPage = pData.query.pages[pageID];
 					var tRevision = tPage.revisions[0];
 					
@@ -703,7 +706,7 @@ export default class RCData
 					// 	tButtons.splice(tButtons.length-2, 0, {
 					// 		value: i18n('rollbacklink'),
 					// 		event: "rollback",
-					// 		callback: function(){ window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
+					// 		callback: () => { window.open(pRollbackLink+tRevision.rollbacktoken, '_blank'); },
 					// 	});
 					// }
 					
@@ -763,111 +766,35 @@ export default class RCData
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Imageinfo
+	// TODO - error support?
 	static previewImages(pAjaxUrl:string, pImageNames:string[], pArticlePath:string) : void {
-		var tImagesInLog = pImageNames.slice();
-		var size = 210; // (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
+		let tImagesInLog = pImageNames.slice();
+		const size = 210; // Must match in CSS - Logic: (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
 		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
-		var tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
+		let tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 		
 		if(ConstantsApp.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames); }
 		
-		var tTitle = i18n("awc-metrics-images");
-		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-		var tButtons = [];
+		let tTitle = i18n("awc-metrics-images");
+		let tButtons = [];
 		
-		var tGetGalleryItem = function (pPage) {
-			var tPage = pPage, tPageTitleNoNS = null, tImage = null, tInvalidImage:any|boolean = null;
-			
-			if(tPage.imageinfo) { tImage = tPage.imageinfo[0]; }
-			tPageTitleNoNS = tPage.title.indexOf(":") > -1 ? tPage.title.split(":")[1] : tPage.title;
-			tInvalidImage = false;
-			if(tPage.missing == "") {
-				tInvalidImage = {
-					thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-					thumbText: i18n('filedelete-success', tPage.title),
-					caption: tPageTitleNoNS
-				};
-			} else if(tImage == null) {
-				tInvalidImage = {
-					thumbHref: pArticlePath+Utils.escapeCharactersLink(tPage.title),
-					thumbText: i18n('shared_help_was_redirect', tPage.title),
-					caption: tPageTitleNoNS
-				};
-			} else if(Utils.isFileAudio(tPage.title)) {
-				tInvalidImage = {
-					thumbHref: tImage.url,
-					thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tPage.title,
-					caption: tPageTitleNoNS
-				};
-			} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
-				tInvalidImage = {
-					thumbHref: tImage.url,
-					thumbText: tPage.title,
-					caption: tPageTitleNoNS
-				};
-			}
-			
-			if(tInvalidImage !== false) {
-				// Display text instead of image
-				return '<div class="wikia-gallery-item">'
-					+'<div class="thumb">'
-					+'<div class="gallery-image-wrapper accent">'
-					+'<a class="image-no-lightbox" href="'+tInvalidImage.thumbHref+'" target="_blank" style="height:'+size+'px; width:'+size+'px; line-height:inherit;">'
-						+tInvalidImage.thumbText
-					+'</a>'
-					+'</div>'
-					+'</div>'
-					+'<div class="lightbox-caption" style="width:100%;">'
-						+tInvalidImage.caption
-					+'</div>'
-				+'</div>';
-			} else {
-				tImage = tPage.imageinfo[0];
-				var tOffsetY = size/2 - tImage.thumbheight/2;//0;
-				// if(tImage.height < tImage.width || tImage.height < size) {
-				// 	tOffsetY = size/2 - (tImage.height > size ? tImage.height/2*(size/tImage.width) : tImage.height/2);
-				// }
-				var tScaledWidth = tImage.thumbwidth;//size;
-				// if(tImage.width < tImage.height && tImage.height > size) {
-				// 	tScaledWidth = tImage.width * (size / tImage.height);
-				// } else if(tImage.width < size) {
-				// 	tScaledWidth = tImage.width;
-				// }
-				
-				return '<div class="wikia-gallery-item">'//style="width:'+size+'px;"
-					+'<div class="thumb">' // style="height:'+size+'px;"
-						+'<div class="gallery-image-wrapper accent" style="position: relative; width:'+tScaledWidth+'px; top:'+tOffsetY+'px;">'
-							+'<a class="image lightbox" href="'+tImage.url+'" target="_blank" style="width:'+tScaledWidth+'px;">'
-								+'<img class="thumbimage" src="'+tImage.thumburl+'" alt="'+tPage.title+'">'
-							+'</a>'
-						+'</div>'
-					+'</div>'
-					+'<div class="lightbox-caption" style="width:100%;">'
-						+'<a href="'+tImage.descriptionurl+'">'+tPageTitleNoNS+'</a>'
-					+'</div>'
-				+'</div>';
-			}
-		}
-		
-		var tAddLoadMoreButton = function () {
+		let tAddLoadMoreButton = () => {
 			if(tImagesInLog.length > 0) {
 				if(ConstantsApp.debug) { console.log("Over 50 images to display; Extra images must be loaded later."); }
-				var tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
-				var tGallery = tModal.querySelector(".rcm-gallery");
-				var tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
-				var tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
+				let tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
+				let tGallery = tModal.querySelector(".rcm-gallery");
+				let tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
+				let tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
 				
-				tButton.addEventListener("click", function(){
+				tButton.addEventListener("click", () => {
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 					if(ConstantsApp.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm")); }
 					tCont.innerHTML = ConstantsApp.getLoader(25);
 					
 					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
-						success: function(pData){
+						success: (pData) => {
 							Utils.removeElement(tCont);
-							for(var key in pData.query.pages) {
-								tGallery.innerHTML += tGetGalleryItem(pData.query.pages[key]);
-							}
+							tGallery.innerHTML += RCData.previewImages_getGalleryItemsFromData(pData.query.pages, pArticlePath, size);
 							tAddLoadMoreButton();
 						},
 					});
@@ -875,52 +802,112 @@ export default class RCData
 			}
 		}
 		
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
-			// Retrieve the diff table.
-			// TODO - error support?
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
-				success: function(pData){
-					var tModalContent = ''
-					+'<style>'
-						+'.rcm-gallery .thumbimage { max-width: '+size+'px; max-height: '+size+'px; width: auto; height: auto; }'
-						+'.rcm-gallery .wikia-gallery-item { width: '+size+'px; }'
-						// +'.rcm-gallery .wikia-gallery-item .lightbox { width: '+size+'px; }'
-						+'.rcm-gallery .thumb { height: '+size+'px; }'
-						+'.rcm-gallery .image-no-lightbox { width: '+size+'px; }'
-					+'</style>'
+				success: (pData) => {
+					let tModalContent = ''
 					+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
-						var tPage = null, tPageTitleNoNS = null, tImage = null, tInvalidImage = null;
-						for(var key in pData.query.pages) {
-							tModalContent += tGetGalleryItem(pData.query.pages[key]);
-						}
-					tModalContent += ''
+						+RCData.previewImages_getGalleryItemsFromData(pData.query.pages, pArticlePath, size)
 					+'</div>';
 					
-					// RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons, rcm_onModalShown:tAddLoadMoreButton, });
 					RCMModal.setModalContent(tModalContent);
 					tAddLoadMoreButton();
 				},
 			});
 		});
 	}
+	static previewImages_getGalleryItemsFromData(pData:any, pArticlePath:string, pSize:number) : string {
+		let tReturnText = "";
+		for(let key in pData) {
+			tReturnText += RCData.previewImages_getGalleryItem(pData[key], pArticlePath, pSize);
+		}
+		return tReturnText;
+	}
+	static previewImages_getGalleryItem(pPage:any, pArticlePath:string, pSize:number) : string {
+		let tTitle:string = pPage.title,
+			tPageTitleNoNS = tTitle.indexOf(":") > -1 ? tTitle.split(":")[1] : tTitle,
+			tImage = pPage.imageinfo ? pPage.imageinfo[0] : null,
+			tInvalidImage:{ thumbHref:string, thumbText:string } = null
+		;
+		if(pPage.missing == "") {
+			tInvalidImage = {
+				thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
+				thumbText: i18n('filedelete-success', tTitle)
+			};
+		} else if(tImage == null) {
+			tInvalidImage = {
+				thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
+				thumbText: i18n('shared_help_was_redirect', tTitle)
+			};
+		} else if(Utils.isFileAudio(tTitle)) {
+			tInvalidImage = {
+				thumbHref: tImage.url,
+				thumbText: '<img src="/extensions/OggHandler/play.png" height="22" width="22"><br />'+tTitle
+			};
+		} else if(tImage.thumburl == "" || (tImage.width == 0 && tImage.height == 0)) {
+			tInvalidImage = {
+				thumbHref: tImage.url,
+				thumbText: tTitle
+			};
+		}
+		
+		var tRCM_galleryItemTemplate = ({ wrapperStyle, image, imageHref, imageStyle, isLightbox, caption }):string => {
+			wrapperStyle = wrapperStyle ? `style="${wrapperStyle}"` : "";
+			let lightBoxClass = isLightbox ? "image-no-lightbox" : "image lightbox";
+			return '<div class="wikia-gallery-item">'
+				+'<div class="thumb">'
+					+`<div class="gallery-image-wrapper accent" ${wrapperStyle}>`
+					+`<a class="${lightBoxClass}" href="${imageHref}" target="_blank" style="${imageStyle}">`
+						+image
+					+'</a>'
+					+'</div>'
+				+'</div>'
+				+'<div class="lightbox-caption" style="width:100%;">'
+					+caption
+				+'</div>'
+			+'</div>';
+		};
+		
+		if(tInvalidImage) {
+			// Display text instead of image
+			return tRCM_galleryItemTemplate({ isLightbox:false, wrapperStyle:null,
+				image:tInvalidImage.thumbText,
+				imageHref:tInvalidImage.thumbHref,
+				imageStyle:`height:${pSize}px; width:${pSize}px; line-height:inherit;`,
+				caption: tPageTitleNoNS,
+			});
+		} else {
+			// Returned thumb width/height calculates to fit within size requested at fetch, even if the wiki doesn't return scaled down image.
+			let tOffsetY = pSize/2 - tImage.thumbheight/2;
+			let tScaledWidth = tImage.thumbwidth;
+			
+			return tRCM_galleryItemTemplate({ isLightbox:true,
+				wrapperStyle:`position: relative; width:${tScaledWidth}px; top:${tOffsetY}px;`,
+				image:`<img class="thumbimage" src="${tImage.thumburl}" alt="${tTitle}">`,
+				imageHref:tImage.url,
+				imageStyle:`width:${tScaledWidth}px;`,
+				caption: `<a href="${tImage.descriptionurl}">${tPageTitleNoNS}</a>`,
+			});
+		}
+	}
 	
 	static previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServerLink:string) : void {
 		if(ConstantsApp.debug) { console.log(`http:${pAjaxUrl}`); }
 		
 		var tTitle = `${pPageName}`;
-		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-		var tButtons = [];
-		tButtons.push({
-			value: i18n('wikiaPhotoGallery-conflict-view'),
-			event: "diff",
-			callback: function(){ window.open(pPageHref, '_blank'); },
-		});
+		var tButtons = [
+			{
+				value: i18n('wikiaPhotoGallery-conflict-view'),
+				event: "diff",
+				callback: () => { window.open(pPageHref, '_blank'); },
+			}
+		];
 		
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, function(){
+		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
 			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
-				success: function(pData){
+				success: (pData) => {
 					var tContentText = pData.parse.text["*"];
 					
 					var tModalContent = ''
@@ -934,36 +921,50 @@ export default class RCData
 					+"</div>"
 					+"</div>";
 					RCMModal.setModalContent(tModalContent);
-					let tCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID+" #mw-content-text");
+					let tModalCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
+					let tCont:HTMLElement = <HTMLElement>document.querySelector(`#${RCMModal.MODAL_CONTENT_ID} #mw-content-text`);
 					if((<any>tCont).attachShadow) {
-						tCont = (<any>tCont).attachShadow({ mode:"open" });
-						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
+						// Setup Shadow dom
+						RCMModal.setModalContent("");
+						tModalCont = (<any>tModalCont).attachShadow({ mode:"open" });
+						tModalCont.innerHTML = tModalContent;
+						tCont = <HTMLElement>tModalCont.querySelector("#mw-content-text");
+						tCont.innerHTML = "";
+						
+						// Convert <link> tags (not supported in shadow dom) to <style> tags via @import (bad, but neccisary)
+						// Do it for current wiki head first (since shadow dom strips all css)
 						let tCurPageHead = <HTMLElement>document.querySelector("head").cloneNode(true);
-						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
+						Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
 							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 						});
 						// Prevent warnings from poping up about shadow dom not supporting <link>.
-						Utils.forEach(tPreviewHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
+						Utils.forEach(tCurPageHead.querySelectorAll("link"), (o, i, a) => { Utils.removeElement(o); });
 						
-						// Also do it for current head
-						Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
+						// Add page info
+						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
+						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
 							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 						});
-						Utils.forEach(tCurPageHead.querySelectorAll("link"), function(o, i, a){ Utils.removeElement(o); });
+						// Prevent warnings from poping up about shadow dom not supporting <link>.
+						Utils.forEach(tPreviewHead.querySelectorAll("link"), (o, i, a) => { Utils.removeElement(o); });
 						
 						tCont.innerHTML += tCurPageHead.innerHTML;
+						tCont.innerHTML += "\n<!-- Loaded Wiki Styles -->\n";
 						tCont.innerHTML += tPreviewHead.innerHTML;
 						tCont.innerHTML += tContentText;
 					}
+					// Using scoped styles is only intended as a fallback since not many prowsers yet allow modifying the shadow dom.
 					else if("scoped" in document.createElement("style")) {
 						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
-						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function(o, i, a){
-							tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
+						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
+							tCont.innerHTML += "<style scoped> @import url("+o.href+"); </style>";//o.outerHTML;
 						});
 					}
-					Utils.forEach(tCont.querySelectorAll("a[href^='/']"), function(o, i, a){
+					// Fix all local links to point to wiki.
+					Utils.forEach(tCont.querySelectorAll("a[href^='/']"), (o, i, a) => {
 						o.href = pServerLink + o.getAttribute("href");
 					});
+					mw.hook('wikipage.content').fire($(tCont)); // Makes sure infoboxes tabs/section collapsing works.
 				},
 			});
 		});
