@@ -605,7 +605,7 @@ export default class RCData
 			return "Message_Wall:" + this.titleNoNS;
 		}
 		else {
-			if(ConstantsApp.debug) { console.log("This should not happen in getBoardWallParent()"); }
+			mw.log("This should not happen in getBoardWallParent()");
 			return this.title;
 		}
 	}
@@ -656,26 +656,27 @@ export default class RCData
 		// 	+ 			Utils.pad( Utils.getHours(pDate, this.manager.timezone), 2 )
 		// 	+ ":" +		Utils.pad( Utils.getMinutes(pDate, this.manager.timezone), 2 )
 		// 	+ ", " +	Utils.pad( Utils.getDate(pDate, this.manager.timezone), 2 )
-		// 	+ " " +		mw.config.get('wgMonthNames')[Utils.getMonth(pDate, this.manager.timezone)+1]
+		// 	+ " " +		ConstantsApp.config.wgMonthNames[Utils.getMonth(pDate, this.manager.timezone)+1]
 		// 	+ " " +		Utils.getYear(pDate, this.manager.timezone)
 		// ;
 		return RCData.getFullTimeStamp(pDate, this.manager.timezone);
 	}
 	
 	static getFullTimeStamp(pDate:Date, pTimezone:string) : string {
-		return ""
-			+ 			Utils.pad( Utils.getHours(pDate, pTimezone), 2 )
-			+ ":" +		Utils.pad( Utils.getMinutes(pDate, pTimezone), 2 )
-			+ ", " +	Utils.pad( Utils.getDate(pDate, pTimezone), 2 )
-			+ " " +		mw.config.get('wgMonthNames')[Utils.getMonth(pDate, pTimezone)+1]
-			+ " " +		Utils.getYear(pDate, pTimezone)
-		;
+		return Utils.formatWikiTimeStamp(pDate, pTimezone);
+		// return ""
+		// 	+ 			Utils.pad( Utils.getHours(pDate, pTimezone), 2 )
+		// 	+ ":" +		Utils.pad( Utils.getMinutes(pDate, pTimezone), 2 )
+		// 	+ ", " +	Utils.pad( Utils.getDate(pDate, pTimezone), 2 )
+		// 	+ " " +		ConstantsApp.config.wgMonthNames[Utils.getMonth(pDate, pTimezone)+1]
+		// 	+ " " +		Utils.getYear(pDate, pTimezone)
+		// ;
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
 	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
 	static previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:any) : void {
-		if(ConstantsApp.debug) { console.log(`http:${pAjaxUrl}`); console.log(pDiffLink); console.log(pUndoLink); }
+		mw.log(`http:${pAjaxUrl}`); mw.log(pDiffLink); mw.log(pUndoLink);
 		
 		var tTitle = `${pPageName} - ${i18n('rcm-module-diff-title')}`;
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
@@ -701,7 +702,7 @@ export default class RCData
 					var tPage = pData.query.pages[pageID];
 					var tRevision = tPage.revisions[0];
 					
-					// if(module.debug) { console.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to); }
+					// mw.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to);
 					// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
 					// 	tButtons.splice(tButtons.length-2, 0, {
 					// 		value: i18n('rollbacklink'),
@@ -773,14 +774,14 @@ export default class RCData
 		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
 		let tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 		
-		if(ConstantsApp.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames); }
+		mw.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames);
 		
 		let tTitle = i18n("awc-metrics-images");
 		let tButtons = [];
 		
 		let tAddLoadMoreButton = () => {
 			if(tImagesInLog.length > 0) {
-				if(ConstantsApp.debug) { console.log("Over 50 images to display; Extra images must be loaded later."); }
+				mw.log("Over 50 images to display; Extra images must be loaded later.");
 				let tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
 				let tGallery = tModal.querySelector(".rcm-gallery");
 				let tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
@@ -788,7 +789,7 @@ export default class RCData
 				
 				tButton.addEventListener("click", () => {
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
-					if(ConstantsApp.debug) { console.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm")); }
+					mw.log("http:"+tCurAjaxUrl.replace("&format=json", "&format=jsonfm"));
 					tCont.innerHTML = ConstantsApp.getLoader(25);
 					
 					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
@@ -892,7 +893,7 @@ export default class RCData
 	}
 	
 	static previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServerLink:string) : void {
-		if(ConstantsApp.debug) { console.log(`http:${pAjaxUrl}`); }
+		mw.log(`http:${pAjaxUrl}`);
 		
 		var tTitle = `${pPageName}`;
 		var tButtons = [

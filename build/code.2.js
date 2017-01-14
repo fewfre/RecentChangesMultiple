@@ -26,10 +26,10 @@
 		startLoad();
 	} else {
 		if(document.querySelector('[id^=flytabs_]')) {
-			console.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found; waiting for Tab Views to load.');
+			mw.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found; waiting for Tab Views to load.');
 			mw.hook('wikipage.content').add(checkSectionHooked);
 		} else {
-			console.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found.');
+			mw.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found.');
 		}
 	}
 	
@@ -41,7 +41,7 @@
 				// Main script loads additional tabs, only first one is needed to "start" the script.
 				mw.hook('wikipage.content').remove(checkSectionHooked);
 			} else {
-				console.log('[RecentChangesMultiple] No "rc-content-multiple" container found in tab.');
+				mw.log('[RecentChangesMultiple] No "rc-content-multiple" container found in tab.');
 				return;
 			}
 		}
@@ -50,7 +50,7 @@
 	function startLoad(pCont) {
 		// Don't load this code twice on the same page
 		if(module.loaded) {
-			// console.log("[RecentChangesMultiple] Script already loaded; exiting.");
+			// mw.log("[RecentChangesMultiple] Script already loaded; exiting.");
 			return;
 		}
 		// Mark script as loaded

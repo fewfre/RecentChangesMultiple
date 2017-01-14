@@ -214,7 +214,7 @@ export default class RCMManager
 				timeout: 15000, // Error out after 15s
 				url: pUrl,
 				success: (data) => { pCallback(data, pWikiData, pTries, pID, null); },
-				error: (data, status) => { pCallback(data, pWikiData, pTries, pID, status); },
+				error: (data, status) => { pCallback(null, pWikiData, pTries, pID, status); },
 			});
 		}, pDelayNum);
 	}
@@ -222,7 +222,7 @@ export default class RCMManager
 	private _retryOrError(pWikiData:WikiData, pTries:number, pID:number, pFailStatus:string,
 						pLoadCallback:(pWikiData:WikiData, pTries:number, pID:number, pDelayNum?:number)=>void,
 						pHandleErrorCallback:(pWikiData:WikiData, pTries:number, pID:number, pMessage:string, pInc:number)=>void) : void {
-		console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+		mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
 		if(pTries < this.loadingErrorRetryNum) {
 			pLoadCallback(pWikiData, pTries, pID, 0);
 		} else {
@@ -288,6 +288,7 @@ export default class RCMManager
 		
 		// Make sure results are valid
 		if(!!pData && pData.error && pData.query == null) {
+			console.error(pData , pData.error , pData.query == null);
 			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
 			throw "Wiki returned error";
 		}
@@ -296,8 +297,8 @@ export default class RCMManager
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.general == null) {
-			// console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-			// //console.log(pData);
+			// mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+			// //mw.log(pData);
 			// if(pTries < this.loadingErrorRetryNum) {
 			// 	this._loadWikiData(pWikiData, pTries, pID, 0);
 			// } else {
@@ -313,7 +314,7 @@ export default class RCMManager
 			return;
 		}
 		
-		if(pData && pData.warning) { console.log("WARNING: ", pData.warning); }
+		if(pData && pData.warning) { mw.log("WARNING: ", pData.warning); }
 		
 		// Store wiki-data retrieved that's needed before wiki parsing
 		pWikiData.initAfterLoad(pData.query);
@@ -329,7 +330,7 @@ export default class RCMManager
 			tHandler = null;
 			
 			this.erroredWikis.forEach((obj) => {
-				// console.log(obj);
+				// mw.log(obj);
 				this._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
@@ -400,8 +401,8 @@ export default class RCMManager
 			if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
 		} else {
 			if(pWikiData.usesWikiaDiscussions === true) {
-				console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-				//console.log(pData);
+				mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+				//mw.log(pData);
 				if(pTries < this.loadingErrorRetryNum && pFailStatus == "timeout") {
 					this._loadWikiaDiscussions(pWikiData, pTries, pID, 0);
 				} else {
@@ -411,7 +412,7 @@ export default class RCMManager
 				return;
 			} else {
 				if(pFailStatus != "timeout") {
-					if(ConstantsApp.debug) { console.log("[RCMManager](loadWikiDiscussions) "+pWikiData.servername+" has no discussions."); }
+					mw.log("[RCMManager](loadWikiDiscussions) "+pWikiData.servername+" has no discussions.");
 					pWikiData.usesWikiaDiscussions = false;
 				}
 				this._onDiscussionParsingFinished(pWikiData);
@@ -465,7 +466,7 @@ export default class RCMManager
 			if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
 		});
 		
-		if(ConstantsApp.debug) { console.log("Discussions:", pWikiData.servername, pData); }
+		mw.log("Discussions:", pWikiData.servername, pData);
 		
 		this._onDiscussionParsingFinished(pWikiData);
 	}
@@ -540,8 +541,8 @@ export default class RCMManager
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
-			// console.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-			// //console.log(pData);
+			// mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
+			// //mw.log(pData);
 			// if(pTries < this.loadingErrorRetryNum) {
 			// 	this._loadWiki(pWikiData, pTries, pID, 0);
 			// } else {
@@ -558,7 +559,7 @@ export default class RCMManager
 			return;
 		}
 		
-		if(pData && pData.warning) { console.log("WARNING: ", pData.warning); }
+		if(pData && pData.warning) { mw.log("WARNING: ", pData.warning); }
 		
 		// Store wiki-data retrieved that's needed before wiki parsing
 		// pWikiData.initAfterLoad(pData.query);
@@ -580,7 +581,7 @@ export default class RCMManager
 			tHandler = null;
 			
 			this.erroredWikis.forEach((obj) => {
-				// console.log(obj);
+				// mw.log(obj);
 				this._loadWiki(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
@@ -599,7 +600,7 @@ export default class RCMManager
 			return;
 		}
 		
-		if(ConstantsApp.debug) { console.log(pWikiData.servername, pData); }
+		mw.log(pWikiData.servername, pData);
 		
 		var tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
@@ -657,7 +658,7 @@ export default class RCMManager
 		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
 		this.resultsNode.innerHTML = "";
 		
-		// console.log(this.recentChangesEntries);
+		// mw.log(this.recentChangesEntries);
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
 			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
 		}
@@ -710,7 +711,7 @@ export default class RCMManager
 		if(Utils.getDate(date, this.timezone) != pLastDay || Utils.getMonth(date, this.timezone) != pLastMonth) {
 			pLastDay = Utils.getDate(date, this.timezone);
 			pLastMonth = Utils.getMonth(date, this.timezone);
-			Utils.newElement("h4", { innerHTML:pLastDay+" "+mw.config.get('wgMonthNames')[pLastMonth+1]+" "+Utils.getYear(date, this.timezone) }, this.resultsNode);
+			Utils.newElement("h4", { innerHTML:Utils.formatWikiTimeStamp(date, this.timezone, false) }, this.resultsNode);
 			
 			pContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", {  }, this.resultsNode) : Utils.newElement("ul", { className:"special" }, this.resultsNode);
 		}
@@ -775,7 +776,7 @@ export default class RCMManager
 		
 	private _loadExtraInfo(pID:number) : void {
 		if(pID != this.ajaxID) { return; }
-		if(this.secondaryWikiData.length == 0) { if(ConstantsApp.debug){ console.log("[RCMManager](_loadExtraInfo) All loading finished."); } return; }
+		if(this.secondaryWikiData.length == 0) { mw.log("[RCMManager](_loadExtraInfo) All loading finished."); return; }
 		
 		var tUrl = this.secondaryWikiData[0].url;
 		var tCallback = this.secondaryWikiData[0].callback;

@@ -30,12 +30,14 @@ class Main
 	
 	// Should only be called once.
 	init(pScriptConfig:any) : void {
-		ConstantsApp.init(pScriptConfig);
-		
-		$(document).ready($.proxy(this._ready, this));
-		$(document).unload($.proxy(this._unload, this));
-		
-		$(window).focus($.proxy(this._onFocus, this));
+		mw.loader.using( 'mediawiki.util', 'mediawiki.user.options' ).done(()=>{
+			ConstantsApp.init(pScriptConfig);
+			
+			$(document).ready($.proxy(this._ready, this));
+			$(document).unload($.proxy(this._unload, this));
+			
+			$(window).focus($.proxy(this._onFocus, this));
+		});
 	}
 	
 	// Once all neccisary content is loaded, start the script.
@@ -75,21 +77,16 @@ class Main
 		/***************************
 		* Get rcParams from url
 		***************************/
-		this.rcParamsURL = {};
-		window.location.href.split("#")[0].replace( /[?&]+([^=&]+)=([^&]*)/gi, (match:string,key:string,val:string) => {
-			switch(key) {
-				case "limit": case "days":
-					this.rcParamsURL[key] = parseInt(val);
-					break;
-				case "hideminor": case "hidebots": case "hideanons": case "hideliu":
-				case "hidemyself": case "hideenhanced": case "hidelogs":
-					this.rcParamsURL[key] = val=="1";
-					break;
-				case "debug":
-					ConstantsApp.debug = val=="true";
-					break;
+		this.rcParamsURL = {}; let tParam;
+		["limit", "days"].forEach((key)=>{
+			if((tParam = mw.util.getParamValue(key)) != null) {
+				this.rcParamsURL[key] = parseInt(tParam);
 			}
-			return val;
+		});
+		["hideminor", "hidebots", "hideanons", "hideliu", "hidemyself", "hideenhanced", "hidelogs"].forEach((key)=>{
+			if((tParam = mw.util.getParamValue(key)) != null) {
+				this.rcParamsURL[key] = tParam=="1";
+			}
 		});
 
 		/***************************
@@ -104,7 +101,7 @@ class Main
 		setTimeout(() => {
 			// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/extensions/wikia/TabView/js/TabView.js
 			mw.hook('wikipage.content').add((pSection) => {
-				// console.log(pSection[0], pSection[0].classList.contains("tabBody"), pSection[0].innerHTML);
+				// mw.log(pSection[0], pSection[0].classList.contains("tabBody"), pSection[0].innerHTML);
 				if(pSection[0].classList && pSection[0].classList.contains("tabBody")) {
 					if(pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
 						this._parsePage(pSection[0]);
@@ -117,7 +114,7 @@ class Main
 	private _parsePage(pCont:HTMLElement|Document) : void {
 		let tWrappers = <HTMLElement[]><any>pCont.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
 		Utils.forEach(tWrappers, (pNode, pI, pArray) => {
-			if((<any>pNode).rcm_wrapper_used) { if(ConstantsApp.debug) { console.log("[Main](_parsePage) Wrapper already parsed; exiting."); } return; }
+			if((<any>pNode).rcm_wrapper_used) { mw.log("[Main](_parsePage) Wrapper already parsed; exiting."); return; }
 			(<any>pNode).rcm_wrapper_used = true;
 			let tRCMManager = new RCMManager(pNode, pI);
 			this.rcmList.push( tRCMManager );
@@ -176,9 +173,9 @@ class Main
 
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
-			let tScriptPath = ConstantsApp.useLocalSystemMessages ? mw.config.get("wgServer") + mw.config.get('wgScriptPath') : "http://community.wikia.com";
+			let tScriptPath = ConstantsApp.useLocalSystemMessages ? ConstantsApp.config.wgServer + ConstantsApp.config.wgScriptPath : "http://community.wikia.com";
 			let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
-			if(ConstantsApp.debug) { console.log(url.replace("&format=json", "&format=jsonfm")); }
+			mw.log(url.replace("&format=json", "&format=jsonfm"));
 
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
 				success: (pData) => {
@@ -218,7 +215,7 @@ class Main
 				this.numLangLoadErrors++;
 				this._loadLangMessages();
 			} else {
-				console.log("ERROR: "+JSON.stringify(pData));
+				mw.log("ERROR: "+JSON.stringify(pData));
 				alert(`ERROR: RecentChanges text not loaded properly (${this.numLangLoadErrors} tries); defaulting to English.`);
 				this._onAllLangeMessagesLoaded();
 			}

@@ -98,7 +98,7 @@ export default class WikiData
 	// Parses LI element data to be able to retrieve information for the respective wiki.
 	initListData(pNode) : WikiData {
 		var tWikiDataRaw = pNode.textContent.replace(/(\r\n|\n|\r)/gm, "").trim().split("&"); // Need to check for new lines due to how wikis create lists.
-		//console.log(tWikiDataRaw);
+		//mw.log(tWikiDataRaw);
 		
 		// Some default values
 		this.servername = tWikiDataRaw[0];
@@ -360,16 +360,19 @@ export default class WikiData
 		tMetaList = null;
 		tPropList = null;
 		
-		if(ConstantsApp.debug) { console.log("[WikiData](getWikiDataApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
+		mw.log("[WikiData](getWikiDataApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm"));
 		return tReturnText;
 	}
 	
 	// Gets URL for the Wikia discussions API;
 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
 	getWikiDiscussionUrl() : string {
+		// Get results up to this time stamp.
+		var tEndDate = this.getEndDate();
+
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
-		if(ConstantsApp.debug) { console.log("[WikiData](getWikiDiscussionUrl) "+tReturnText); }
+		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
+		mw.log("[WikiData](getWikiDiscussionUrl) "+tReturnText);
 		return tReturnText;
 	}
 	
@@ -450,7 +453,7 @@ export default class WikiData
 		tPropList = null;
 		tEndDate = null;
 		
-		if(ConstantsApp.debug) { console.log("[WikiData](getApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm")); }
+		mw.log("[WikiData](getApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm"));
 		return tReturnText;
 	}
 }

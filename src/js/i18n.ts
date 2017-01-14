@@ -1,3 +1,5 @@
+import ConstantsApp from "./ConstantsApp";
+
 let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
 
@@ -25,7 +27,7 @@ interface i18nInterface {
 var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
 	let tText = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
 	if(tText == undefined) {
-		console.log(`[RecentChangesMultiple.i18n]() '${pKey}' is undefined.`);
+		mw.log(`[RecentChangesMultiple.i18n]() '${pKey}' is undefined.`);
 		return pKey;
 	}
 	return i18n.wiki2html(tText, ...pArgs);
@@ -34,10 +36,10 @@ i18n.defaultLang = "en";
 
 i18n.init = function(pLang?:string) : void {
 	// Set default lang for script
-	i18n.defaultLang = pLang ? pLang.toLowerCase() : mw.config.get('wgUserLanguage');
+	i18n.defaultLang = pLang ? pLang.toLowerCase() : ConstantsApp.config.wgUserLanguage;
 	// split("-") checks for the "default" form of a language encase the specialized version isn't available for TEXT (ex: zh and zh-tw)
 	i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[i18n.defaultLang] || i18n.TEXT[i18n.defaultLang.split("-")[0]]);
-	mw.language.setData(mw.config.get('wgUserLanguage'), i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
+	mw.language.setData(ConstantsApp.config.wgUserLanguage, i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 }
 
 // Big thanks to wlb.wikia.com for translations.
@@ -1170,7 +1172,7 @@ i18n.MESSAGES = {
 
 // http://download.remysharp.com/wiki2html.js
 i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
-	if(pText == undefined) { console.log(`ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string`); return pText; };
+	if(pText == undefined) { mw.log(`ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string`); return pText; };
 
 	return pText
 		// bold
@@ -1191,8 +1193,8 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		})
 		// internal link or image
 		.replace(/\[\[(.*?)\]\]/g, function (m, l) {
-			var p = l.split(/\|/);
-			var link = p.shift();
+			let p = l.split(/\|/);
+			let link = p.shift();
 
 			// if (link.match(/^Image:(.*)/)) {
 			// 	// no support for images - since it looks up the source from the wiki db
@@ -1203,8 +1205,8 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		})
 		// external link
 		.replace(/[\[](http:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
-			var p = l.replace(/[\[\]]/g, '').split(/ /);
-			var link = p.shift();
+			let p = l.replace(/[\[\]]/g, '').split(/ /);
+			let link = p.shift();
 			return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';
 		})
 		/*******************************************************************************
@@ -1212,20 +1214,20 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		 *******************************************************************************/
 		// {{GENDER}} - cannot be checked by script, so just uses {{{1}}}/{{{2}}}
 		.replace(/{{GENDER:(.*?)}}/g, function(m, l) {
-			var p = l.split("|");
-			var user = p.shift(); // Currently doesn't work, so this will just assume male.
-			return mw.language.gender(user, p);
+			let p = l.split("|");
+			let user = p.shift(); // Remove user object from list
+			return mw.language.gender(ConstantsApp.userOptions.gender, p);
 		})
 		// {{PLURAL}} - only does default support
 		.replace(/{{PLURAL:(.*?)}}/g, function(m, l) {
-			var p = l.split("|");
-			var num = p.shift();
+			let p = l.split("|");
+			let num = p.shift();
 			return mw.language.convertPlural(num, p);
 		})
 		// {{GRAMMAR}}
 		.replace(/{{GRAMMAR:(.*?)}}/g, function(m, l) {
-			var p = l.split("|");
-			//var num = p.shift();
+			let p = l.split("|");
+			//let num = p.shift();
 			return mw.language.convertGrammar(p[1], p[0]);
 		})
 	;

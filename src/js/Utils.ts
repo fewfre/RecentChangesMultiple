@@ -8,24 +8,11 @@ let mw = (<any>window).mediaWiki;
 //######################################
 export default class Utils
 {
+	/***************************
+	* Element Stuff
+	***************************/
 	// Allows forEach even on nodelists
 	static forEach(collection, callback, pScope?:any) : void { if(collection != undefined) { Array.prototype.forEach.call(collection, callback, pScope); } }
-	
-	// http://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
-	static pad(n:number|string, width:number, z:number|string=0) : string {//Number, max padding (ex:3 = 001), what to pad with (default 0)
-		n = n.toString();
-		return n.length >= width ? n : new Array(width - n.length + 1).join(z.toString()) + n;
-	}
-	
-	// http://stackoverflow.com/a/4673436/1411473
-	static formatString(format:string, ...pArgs:(string|number|boolean)[]) : string {
-		return format.replace(/{(\d+)}/g, (match, number) => {
-			return typeof pArgs[number] != 'undefined'
-				? <string>pArgs[number]
-				: match
-			;
-		});
-	}
 	
 	// Creates a new HTML element (not jQuery) with specific attributes
 	static newElement(tag:string, attributes?:any, parent?:HTMLElement|Element) : HTMLElement {
@@ -58,6 +45,84 @@ export default class Utils
 		return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
 	}
 	
+	/***************************
+	* Date Methods
+	***************************/
+	static getSeconds(pDate:Date, timeZone) : number{ return timeZone == "utc" ? pDate.getUTCSeconds() : pDate.getSeconds(); }
+	static getMinutes(pDate:Date, timeZone) : number{ return timeZone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
+	static getHours(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
+	static getDate(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
+	static getMonth(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
+	static getYear(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
+	
+	static formatWikiTimeStamp(pDate:Date, pTimezone, pShowTime:boolean=true) : string {
+		let tYear = Utils.getYear(pDate, pTimezone),
+			tMonth = Utils.getMonth(pDate, pTimezone)+1,
+			tMonthName = ConstantsApp.config.wgMonthNames[tMonth],
+			tDay = Utils.getDate(pDate, pTimezone),
+			tTime = "";
+		if(pShowTime) {
+			let tHours = Utils.getHours(pDate, pTimezone),
+				tMinutes = Utils.getMinutes(pDate, pTimezone),
+				tSeconds = Utils.getSeconds(pDate, pTimezone);
+			tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
+			if(ConstantsApp.userOptions.date != "ISO 8601") {
+				tTime = tTime+", ";
+			} else {
+				tTime = "T"+tTime+ ":" +Utils.pad( tSeconds, 2 );
+			}
+		}
+		switch(ConstantsApp.userOptions.date) {
+			case "mdy": default: return tTime+`${tMonthName} ${tDay}, ${tYear}`;
+			case "dmy": return tTime+`${tDay} ${tMonthName} ${tYear}`;
+			case "ymd": return tTime+`${tYear} ${tMonthName} ${tDay}`;
+			case "ISO 8601": return `${tYear}-${Utils.pad((tMonth), 2, 0)}-${Utils.pad(tDay, 2, 0)}`+tTime;
+		}
+	}
+	
+	// Convert from MediaWiki time format to one Date object like.
+	static getTimestampForYYYYMMDDhhmmSS(pNum:number|string) : string {
+		pNum = ""+pNum;
+		var i = 0;
+		return pNum.slice(i, i+=4) +"-"+ pNum.slice(i, i+=2) +"-"+ pNum.slice(i, i+=2) +"T"+  pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2);
+		// return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+  pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
+	}
+	
+	/***************************
+	* String Methods
+	***************************/
+	// http://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
+	static pad(n:number|string, width:number, z:number|string=0) : string {//Number, max padding (ex:3 = 001), what to pad with (default 0)
+		n = n.toString();
+		return n.length >= width ? n : new Array(width - n.length + 1).join(z.toString()) + n;
+	}
+	
+	// http://stackoverflow.com/a/4673436/1411473
+	static formatString(format:string, ...pArgs:(string|number|boolean)[]) : string {
+		return format.replace(/{(\d+)}/g, (match, number) => {
+			return typeof pArgs[number] != 'undefined'
+				? <string>pArgs[number]
+				: match
+			;
+		});
+	}
+	
+	// Need to escape quote for when text is manually added to an html tag attribute.
+	static escapeCharacters(pString:string) : string {
+		return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
+	}
+	
+	static escapeCharactersLink(pString:string) : string {
+		return mw.util.wikiUrlencode(pString);
+		//return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\&/g, '%26').replace(/\+/g, '%2B') : pString;
+	}
+	
+	// UpperCaseFirstLetter
+	static ucfirst(s:string) : string { return s && s[0].toUpperCase() + s.slice(1); }
+	
+	/***************************
+	* Misc Methods
+	***************************/
 	// Based on: http://stackoverflow.com/a/9229821
 	// Remove duplicates
 	static uniq_fast_key(a:any[], key:string) : any[] {
@@ -78,31 +143,6 @@ export default class Utils
 	static uniqID() : string {
 		return "id"+(++ConstantsApp.uniqID);
 	}
-	
-	static getMinutes(pDate:Date, timeZone) : number{ return timeZone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
-	static getHours(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
-	static getDate(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
-	static getMonth(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
-	static getYear(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
-	
-	// Convert from MediaWiki time format to one Date object like.
-	static getTimestampForYYYYMMDDhhmmSS(pNum:number|string) : string {
-		pNum = ""+pNum;
-		var i = 0;
-		return pNum.slice(i, i+=4) +"-"+ pNum.slice(i, i+=2) +"-"+ pNum.slice(i, i+=2) +"T"+  pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2);
-		// return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+  pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
-	}
-	
-	static escapeCharacters(pString:string) : string {
-		return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
-	}
-	
-	static escapeCharactersLink(pString:string) : string {
-		return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\&/g, '%26').replace(/\+/g, '%2B') : pString;
-	}
-	
-	// UpperCaseFirstLetter
-	static ucfirst(s:string) : string { return s && s[0].toUpperCase() + s.slice(1); }
 	
 	// Assumes the file has already been checked to be in namespace 6
 	static isFileAudio(pTitle:string) : boolean {

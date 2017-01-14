@@ -1,5 +1,6 @@
 import RCMManager from "./RCMManager";
 import WikiData from "./WikiData";
+import ConstantsApp from "./ConstantsApp";
 import Utils from "./Utils";
 import i18n from "./i18n";
 
@@ -26,12 +27,14 @@ export default class RCMWikiPanel
 	 * Storage
 	 ***************************/
 	singleWiki		: boolean; // If this panel's manager only contains one wiki.
+	count			: number;
 	
 	// Constructor
 	constructor(pManager:RCMManager) {
 		this.manager = pManager;
 		
 		this.singleWiki = this.manager.chosenWikis.length == 1;
+		this.count = 0;
 	}
 	
 	dispose() : void {
@@ -65,6 +68,7 @@ export default class RCMWikiPanel
 			this.listNode.innerHTML = "";
 			this.infoNode.innerHTML = "";
 		}
+		this.count = 0;
 	}
 	
 	// Clear panel (on refresh).
@@ -72,13 +76,13 @@ export default class RCMWikiPanel
 		if(this.singleWiki) {
 			if(!this.infoNode.innerHTML) this.onIconClick(pWikiInfo, null);
 		} else {
-			let favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
-			favicon.addEventListener("click", (e) => { this.onIconClick(pWikiInfo, e); });
-			
-			if(this.manager.wikisLeftToLoad > 0) {
+			if(this.count > 0) {
 				Utils.addTextTo(":", this.listNode);
 			}
+			let favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
+			favicon.addEventListener("click", (e) => { this.onIconClick(pWikiInfo, e); });
 		}
+		this.count++;
 	}
 	
 	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
@@ -147,7 +151,7 @@ export default class RCMWikiPanel
 		let btn = <HTMLElement>document.querySelector("#"+(<any>(<HTMLElement>e.currentTarget).dataset).infoid);
 		if(btn) {
 			if(!Utils.elemIsVisible(btn)) {
-				let tScrollOffset = mw.config.get("skin") == "oasis" ? -46 : 0;
+				let tScrollOffset = ConstantsApp.config.skin == "oasis" ? -46 : 0;
 				// $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
 				$('html, body').scrollTop( $(btn).offset().top + tScrollOffset - 6 );
 			}

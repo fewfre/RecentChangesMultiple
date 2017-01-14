@@ -1,3 +1,18 @@
+== V2.5 ==
+- Tweaked usage of mw object:
+	- cached mw.config variables.
+	- changed various console.log()s / "if debug then console.log()"s to mw.log()s.
+	- debug detection now uses config.get("debug").
+	- url encoding now uses mw.util.wikiUrlencode().
+	- url params are now gotten through mw.util.getParamValue().
+	- script now uses (and caches) mw.user.options
+		- Dates now use the chosen formatting from user settings.
+		- System messages now use user's gender.
+- [Bug] Extra colon appearing on wiki list (Bug added in V2.4)
+- [Bug] "undefined" shown for wiki error instead of message / retry button(s) (Bug added in V2.4)
+- Discussions now fetch data using the "since" attribute to avoid unnecessary loading.
+
+
 == V2.4 - 11 December 2016 ==
 - Script can now load in Tab Views. Required small rewrite to make script wait for all tabs to load.
 - [Bug] tab title still showed "new" even after you visit the tab.
@@ -6,6 +21,7 @@
 - Animated SVGs now use CSS instead of SMIL (since Chrome depreciated it).
 - [Bug] The second (or more) local links on commit messages were broken.
 - Notifications now include log type
+- Condenced some RCMManager loading call methods
 
 
 == V2.3 - 1 December 2016 ==

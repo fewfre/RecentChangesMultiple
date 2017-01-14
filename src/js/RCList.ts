@@ -747,7 +747,7 @@ export default class RCList
 	// 			} else {
 	// 				tToken = pData.query.pages[pPageID].revisions[0].rollbacktoken;
 	// 			}
-	// 			console.log(pRollbackLink+tToken);
+	// 			mw.log(pRollbackLink+tToken);
 	// 		},
 	// 		error: (pData) => {
 				
