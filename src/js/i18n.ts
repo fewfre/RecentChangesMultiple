@@ -1011,6 +1011,7 @@ i18n.MESSAGES = {
 	'edit-summary' : 'Edit summary',
 	'wikiaPhotoGallery-conflict-view': 'View the current page',
 	'app-loading': 'Loading...',
+	'wikia-hubs-remove': 'Remove',
 	
 	/***************************
 	* Diff Modal

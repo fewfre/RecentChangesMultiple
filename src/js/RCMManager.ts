@@ -38,16 +38,18 @@ export default class RCMManager
 	resultsNode		: HTMLElement;
 	footerNode		: HTMLElement;
 	
+	rcmNewChangesMarker		: HTMLElement;
+	rcmNoNewChangesMarker	: HTMLElement;
+	
 	/***************************
 	 * Data provided to script
 	 ***************************/
 	rcParamsBase			: any; // An object containing data about the RecentChange "params" sent in
 	rcParams				: any; // Same as rcParamsBase as well as default values if not supplied
 	
-	timezone				: string;
 	autoRefreshTimeoutNum	: number // Number of milliseconds to wait before refreshing
 	
-	chosenWikis				: any[]; // Wikis for the script to load
+	chosenWikis				: WikiData[]; // Wikis for the script to load
 	hideusers				: string[]; // List of users to hide across whole RCMManager
 	onlyshowusers			: string[]; // Only show these users' edits across whole RCMManager
 	notificationsHideusers	: string[]; // Don't send notifications when these users edit.
@@ -61,23 +63,28 @@ export default class RCMManager
 	ajaxID						: number; // A unique ID for all ajax data for a given "load" (used to prevent previously requested data from mixing with currently requested data after "Refresh" is hit after a script error)
 	autoRefreshTimeoutID		: number; // ID for the auto refresh timeout.
 	autoRefreshEnabledDefault	: boolean; // Default value for auto refresh being enabled.
+	autoRefreshEvenOnFocus		: boolean; // Whether or not script should keep auto refreshing even when page has focus.
 	autoRefreshLocalStorageID	: string;
 	
+	rcData						: { data:RCData, list:RCList }[];
 	recentChangesEntries		: RCList[]; // Array of either RecentChange/RecentChangeList objects.
+	newRecentChangesEntries		: RCList[]; // Only the new / "dirty" RCLists
 	ajaxCallbacks				: (()=>void)[]; // Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
 	erroredWikis				: { wikiInfo:WikiData, tries:number, id:number }[]; // Array of wikis that have errored more than expected times; kept in list to be tried more times should user wish
 	
 	extraLoadingEnabled			: boolean; // Turns extra loading on/off
 	secondaryWikiData			: { url:string, callback:(any)=>void, dataType?:string }[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
 	
+	flagWikiDataIsLoaded		: boolean; // Make sure certain actions can't be done by user until wiki data is retrieved.
 	totalItemsToLoad			: number; // Total number of wikis to load.
 	wikisLeftToLoad				: number; // Wikis left to load via ajax
 	loadingErrorRetryNum		: number; // Number of tries to load a wiki before complaining (encase it's due to server, not invalid link)
 	loadErrorTimeoutID			: number;
 	itemsAdded					: number; // Number off items added to screen AFTER load.
 	itemsToAddTotal				: number; // Total number if items to add to the screen
+	isHardRefresh				: boolean;
 	
-	lastLoadDateTime			: Date; // The last time everything was loaded.
+	lastLoadDateTime			: Date; // The last time everything was loaded. This is also updated if window regains focus.
 	lastLoadDateTimeActual		: Date; // Even if lastLoadDateTime hasn't been updated (due to auto refresh), this always has the actual last loaded date
 	
 	// Constructor
@@ -89,6 +96,8 @@ export default class RCMManager
 		this.ajaxID						= 0;
 		this.autoRefreshLocalStorageID	= ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
 		this.extraLoadingEnabled		= true;
+		this.flagWikiDataIsLoaded		= false;
+		this.isHardRefresh				= true;
 		
 		this._parseWikiList();
 	}
@@ -103,9 +112,14 @@ export default class RCMManager
 		this.resultsNode	= null;
 		this.footerNode		= null;
 		
+		this.rcmNewChangesMarker		= null;
+		this.rcmNoNewChangesMarker		= null;
+		
 		this.hideusers		= null;
 		this.onlyshowusers	= null;
 		
+		this.rcData = null;
+		this.newRecentChangesEntries = null;
 		if(this.recentChangesEntries) {
 			for (var i = 0; i < this.recentChangesEntries.length; i++) {
 				this.recentChangesEntries[i].dispose();
@@ -130,10 +144,11 @@ export default class RCMManager
 		this.rcParamsBase = $.extend( {}, Main.rcParamsURL, this.parseRCParams(tDataset.params, "&", "=") );
 		this.rcParams = $.extend( this.getDefaultRCParams(), this.rcParamsBase );
 		
-		this.timezone = tDataset.timezone ? tDataset.timezone.toLowerCase() : 'utc'; // {string}
+		this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
 		this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
+		this.autoRefreshEvenOnFocus = tDataset.autorefreshEvenonfocus == "false" ? false : true;
 		
-		this.discussionsEnabled = tDataset.discussionsEnabled === "true";
+		this.discussionsEnabled = tDataset.discussionsEnabled !== "false";
 		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
@@ -156,7 +171,6 @@ export default class RCMManager
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
 		this.makeLinksAjax = tDataset.ajaxlinks == "true" ? true : false;
 		
-		this.autoRefreshEnabledDefault = tDataset.autorefreshEnabled == "true" ? true : false;
 		// Wikis for the script to load
 		this.chosenWikis = [];
 		Utils.forEach(this.resultCont.querySelectorAll("li"), (pNode) => {
@@ -175,6 +189,8 @@ export default class RCMManager
 		this.resultCont.innerHTML = "";
 		this.resultCont.className += " "+this.modID;
 		this.modID = "."+this.modID;
+		this.rcData = [];
+		this.recentChangesEntries = [];
 		
 		/***************************
 		* HTML Elements/Nodes
@@ -244,8 +260,8 @@ export default class RCMManager
 		if(this.wikisLeftToLoad > 0) {
 			if(this.ajaxCallbacks.length > 0) {
 				this.ajaxCallbacks.shift();
-				// Parse next wiki in queue, or wait for next wiki.
-				if(this.ajaxCallbacks.length > 0){ this.ajaxCallbacks[0](); }
+				// Parse next wiki in queue (if there is one), or wait for next wiki.
+				if(this.ajaxCallbacks.length > 0){ setTimeout(() => { this.ajaxCallbacks[0](); }, 0); }
 			}
 		} else {
 			pCallback();
@@ -324,7 +340,7 @@ export default class RCMManager
 	
 	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
 		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
-		var tHandler = (pEvent:MouseEvent) => {
+		let tHandler = (pEvent:MouseEvent) => {
 			this.loadingErrorRetryNum += pInc;
 			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }
 			tHandler = null;
@@ -337,6 +353,16 @@ export default class RCMManager
 			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
 		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+		let tHandlerRemove = (pEvent:MouseEvent) => {
+			if(pEvent) { pEvent.target.removeEventListener("click", tHandlerRemove); }
+			tHandlerRemove = null;
+			
+			this.chosenWikis.splice(this.chosenWikis.indexOf(pWikiData), 1);
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this._onWikiDataParsingFinished(null);
+		};
+		Utils.addTextTo(" ", this.statusNode);
+		Utils.newElement("button", { innerHTML:i18n("wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	
@@ -346,12 +372,13 @@ export default class RCMManager
 	
 	// Should only be called once.
 	private _onAllWikiDataParsed() : void {
+		this.flagWikiDataIsLoaded = true;
 		// Add some run-time CSS classes
 		let tCSS = "";
-		Utils.forEach(this.chosenWikis, (wikiInfo:WikiData) => {
+		this.chosenWikis.forEach((wikiInfo:WikiData) => {
 			// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-			tCSS += "\n."+wikiInfo.rcClass+" .rcm-tiled-favicon {"
-				+(wikiInfo.bgcolor != null ? "background: "+ wikiInfo.bgcolor +";" : "background-image: url("+ wikiInfo.favicon +");")
+			tCSS += `\n.${wikiInfo.rcClass} .rcm-tiled-favicon {`
+				+(wikiInfo.bgcolor != null ? `background: ${wikiInfo.bgcolor};` : `background-image: url(${wikiInfo.favicon});`)
 			+" }";
 		});
 		mw.util.addCSS(tCSS);
@@ -431,6 +458,7 @@ export default class RCMManager
 		pData.sort((a, b) => {
 			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
 		});
+		pWikiData.updateLastDiscussionDate(Utils.getFirstItemFromObject(pData));
 		var tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
@@ -448,22 +476,24 @@ export default class RCMManager
 			this.itemsToAddTotal++;
 			tNewRC = new RCMWikiaDiscussionData( pWikiData, this );
 			tNewRC.init(pRCData);
-			tChangeAdded = false;
-			this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-				if(tNewRC.date > pRCList.date) {
-					this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-					tChangeAdded = true;
-					return false;
-				} else {
-					if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-						pRCList.addRC(tNewRC);
-						tChangeAdded = true;
-						return false;
-					}
-				}
-				return true;
-			});
-			if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
+			this._addRCDataToList(tNewRC);
+			pWikiData.discussionsCount++;
+			// tChangeAdded = false;
+			// this.recentChangesEntries.every((pRCList:RCList, i:number) => {
+			// 	if(tNewRC.date > pRCList.date) {
+			// 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
+			// 		tChangeAdded = true;
+			// 		return false;
+			// 	} else {
+			// 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+			// 			pRCList.addRC(tNewRC);
+			// 			tChangeAdded = true;
+			// 			return false;
+			// 		}
+			// 	}
+			// 	return true;
+			// });
+			// if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
 		});
 		
 		mw.log("Discussions:", pWikiData.servername, pData);
@@ -482,7 +512,7 @@ export default class RCMManager
 		clearTimeout(this.autoRefreshTimeoutID);
 		this.wikisNode.populate();
 		
-		this.recentChangesEntries = [];
+		this.newRecentChangesEntries = [];
 		this.ajaxCallbacks = [];
 		this.erroredWikis = [];
 		this.secondaryWikiData = [];
@@ -491,7 +521,7 @@ export default class RCMManager
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
-		Utils.forEach(this.chosenWikis, (tWikiData:WikiData, i:number) => {
+		this.chosenWikis.forEach((tWikiData:WikiData, i:number) => {
 			if(pUpdateParams) { tWikiData.setupRcParams(); } // Encase it was changed via RCMOptions
 			this._loadWiki(tWikiData, 0, this.ajaxID, (i+1) * ConstantsApp.loadDelay);
 		});
@@ -500,11 +530,63 @@ export default class RCMManager
 		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
 	
+	// Refresh and add new changes to top
 	refresh(pUpdateParams:boolean=false) : void {
-		if(this.chosenWikis.length == 0) { return; }
+		if(this.chosenWikis.length == 0 || !this.flagWikiDataIsLoaded) { return; }
+		this.isHardRefresh = false;
+		this.statusNode.innerHTML = "";
+		// this.resultsNode.innerHTML = "";
+		this.wikisNode.clear();
+		
+		// Remove except if auto refresh is on, window doesn't have focus, and the window wasn't clicked and then lost focus again (by checking lastLoadDateTime)
+		if(this.rcmNewChangesMarker && (!this.isAutoRefreshEnabled() || (document.hasFocus() || this.lastLoadDateTime >= this.recentChangesEntries[0].date))) {
+			Utils.removeElement(this.rcmNewChangesMarker);
+			this.rcmNewChangesMarker = null;
+		}
+		
+		if(this.rcmNoNewChangesMarker) { Utils.removeElement(this.rcmNoNewChangesMarker); this.rcmNoNewChangesMarker = null; }
+		
+		// if(this.recentChangesEntries != null) {
+		// 	for (var i = 0; i < this.recentChangesEntries.length; i++) {
+		// 		this.recentChangesEntries[i].dispose();
+		// 		this.recentChangesEntries[i] = null;
+		// 	}
+		// 	this.recentChangesEntries = null;
+		// }
+		this.ajaxCallbacks = null;
+		this.secondaryWikiData = null;
+		
+		RCMModal.closeModal();
+		
+		this._start(pUpdateParams);
+	}
+	
+	// Refresh and fetch all data again.
+	hardRefresh(pUpdateParams:boolean=false) : void {
+		if(this.chosenWikis.length == 0 || !this.flagWikiDataIsLoaded) { return; }
+		this.isHardRefresh = true;
 		this.statusNode.innerHTML = "";
 		this.resultsNode.innerHTML = "";
+		this.rcmNewChangesMarker = null;
+		this.rcmNoNewChangesMarker = null;
 		this.wikisNode.clear();
+		
+		this.chosenWikis.forEach((tWikiData:WikiData) => {
+			tWikiData.lastChangeDate = tWikiData.getEndDate();
+			tWikiData.lastDiscussionDate = tWikiData.getEndDate();
+			tWikiData.resultsCount = 0;
+			tWikiData.discussionsCount = 0;
+		});
+		
+		// if(this.rcData != null) {
+		// 	for (var i = 0; i < this.rcData.length; i++) {
+		// 		this.rcData[i].list.dispose();
+		// 		this.rcData[i] = null;
+		// 	}
+		// 	this.rcData = null;
+		// }
+		
+		this.rcData = [];
 		
 		if(this.recentChangesEntries != null) {
 			for (var i = 0; i < this.recentChangesEntries.length; i++) {
@@ -513,13 +595,14 @@ export default class RCMManager
 			}
 			this.recentChangesEntries = null;
 		}
+		this.recentChangesEntries = [];
 		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
 		RCMModal.closeModal();
 		
 		this._start(pUpdateParams);
-	};
+	}
 	
 	// Separate method so that it can be reused if the loading failed
 	private _loadWiki(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
@@ -534,6 +617,7 @@ export default class RCMManager
 		// Make sure results are valid
 		if(!!pData && pData.error && pData.query == null) {
 			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
+			this.addRefreshButtonTo(this.statusNode);
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
@@ -541,20 +625,6 @@ export default class RCMManager
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
-			// mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-			// //mw.log(pData);
-			// if(pTries < this.loadingErrorRetryNum) {
-			// 	this._loadWiki(pWikiData, pTries, pID, 0);
-			// } else {
-			// 	if(this.erroredWikis.length === 0) {
-			// 		var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
-			// 		this._handleWikiLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-			// 	} else {
-			// 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-			// 		this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
-			// 	}
-			// 	//throw "Refresh";
-			// }
 			this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWiki.bind(this), this._handleWikiLoadError.bind(this));
 			return;
 		}
@@ -567,6 +637,7 @@ export default class RCMManager
 		this.ajaxCallbacks.push(() => {
 			this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
 		});
+		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
 	}
 	
@@ -602,7 +673,8 @@ export default class RCMManager
 		
 		mw.log(pWikiData.servername, pData);
 		
-		var tNewRC, tDate, tChangeAdded;
+		pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pData));
+		let tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
 			// Skip if user is hidden for whole script or specific wiki
@@ -613,26 +685,136 @@ export default class RCMManager
 			
 			this.itemsToAddTotal++;
 			tNewRC = new RCData( pWikiData, this ).init(pRCData, pLogData);
-			tChangeAdded = false;
-			this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-				if(tNewRC.date > pRCList.date) {
-					this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-					tChangeAdded = true;
+			this._addRCDataToList(tNewRC);
+			pWikiData.resultsCount++;
+			// tChangeAdded = false;
+			// this.recentChangesEntries.every((pRCList:RCList, i:number) => {
+			// 	if(tNewRC.date > pRCList.date) {
+			// 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
+			// 		tChangeAdded = true;
+			// 		return false;
+			// 	} else {
+			// 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+			// 			pRCList.addRC(tNewRC);
+			// 			tChangeAdded = true;
+			// 			return false;
+			// 		}
+			// 	}
+			// 	return true;
+			// });
+			// if(!tChangeAdded || this.recentChangesEntries.length == 0) {
+			// 	this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) );
+			// }
+		});
+		
+		this._onWikiParsingFinished(pWikiData);
+	};
+	
+	// TODO: Make it more efficient if using hideenhanced by ignoring some calls.
+	private _addRCDataToList(pNewRC:RCData) : void {
+		let tNewRcCombo = { data:pNewRC, list:null };
+		this.rcData.push( tNewRcCombo ); // Just push it in, we'll sort it in rcmChunkStart use array.sort (less intensive than doing it manually).
+		
+		let tResultsIsEmpty = this.resultsNode.innerHTML == "", tNewList:RCList, tNoChangeAdded:boolean;
+		if(this.rcParams.hideenhanced) {
+			tNoChangeAdded = true; // No reason to do fancy stuff, we'll just call array.sort in rcmChunkStart
+		}
+		else if(tResultsIsEmpty) {
+			tNoChangeAdded = this.recentChangesEntries.every((pRCList:RCList, i:number) => {
+				// No reason to check further for groupings than anything older than self (would be end of the list anyways, if not for other wiki entries)
+				if(pNewRC.date > pRCList.date) {
+					this.recentChangesEntries.splice(i, 0, tNewList = new RCList(this).addRC(pNewRC));
 					return false;
+				} else if(pRCList.shouldGroupWith(pNewRC)) {
+					tNewList = pRCList.addRC(pNewRC);
+					return false;
+				}
+				return true;
+			});
+		} else {
+			let tIndexToAddAt:number = -1, tNewTimeStamp = Utils.formatWikiTimeStamp(pNewRC.date, false);
+			tNoChangeAdded = this.recentChangesEntries.every((pRCList:RCList, i:number) => {
+				// No reason to check further for groupings than anything older than self (would be end of the list anyways, if not for other wiki entries)
+				// If results in not empty, then we do want to keep checking (by setting tIndexToAddAt) since previous groupings have already been made.
+				if(tIndexToAddAt == -1 && pNewRC.date > pRCList.date) {
+					// if(tResultsIsEmpty) {
+					// 	this.recentChangesEntries.splice(i, 0, tNewList = new RCList(this).addRC(pNewRC));
+					// 	return false;
+					// } else {
+						tIndexToAddAt = i;
+						// Encase the grouping is the first thing on the list
+						if(pRCList.shouldGroupWith(pNewRC)) {
+							tNewList = pRCList.addRC(pNewRC);
+							// this.recentChangesEntries.splice(i, 1); // i is higher than tIndexToAddAt, so removing it won't mess up order.
+							// this.recentChangesEntries.splice(tIndexToAddAt, 0, pRCList);
+							return false;
+						}
+					// }
 				} else {
-					if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-						pRCList.addRC(tNewRC);
-						tChangeAdded = true;
+					if(pRCList.shouldGroupWith(pNewRC)) {
+						tNewList = pRCList.addRC(pNewRC);
+						if(tIndexToAddAt > -1) {
+							this.recentChangesEntries.splice(i, 1); // i is higher than tIndexToAddAt, so removing it won't mess up order.
+							this.recentChangesEntries.splice(tIndexToAddAt, 0, pRCList);
+						}
+						return false;
+					}
+					// If tIndexToAddAt is set no reason to keep checking if it literally can not match (due to being the next day).
+					else if(tIndexToAddAt > -1 && tNewTimeStamp != Utils.formatWikiTimeStamp(pRCList.date, false)) {
+						this.recentChangesEntries.splice(tIndexToAddAt, 0, tNewList = new RCList(this).addRC(pNewRC));
 						return false;
 					}
 				}
 				return true;
 			});
-			if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
-		});
-		
-		this._onWikiParsingFinished(pWikiData);
-	};
+		}
+		if(tNoChangeAdded) {
+			this.recentChangesEntries.push( tNewList = new RCList(this).addRC(pNewRC) );
+		}
+		tNewRcCombo.list = tNewList;
+	}
+	
+	// /* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
+	// private _parseWikiOld(pData, pLogData, pWikiData:WikiData) : void {
+	// 	// Check if wiki doesn't have any recent changes
+	// 	if(pData.length <= 0) {
+	// 		this._onWikiParsingFinished(pWikiData);
+	// 		return;
+	// 	}
+	//
+	// 	mw.log(pWikiData.servername, pData);
+	//
+	// 	var tNewRC, tDate, tChangeAdded;
+	// 	// Add each entry from the wiki to the list in a sorted order
+	// 	pData.forEach((pRCData) => {
+	// 		// Skip if user is hidden for whole script or specific wiki
+	// 		if(pRCData.user && this.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) { return; }
+	// 		// Skip if user is NOT a specified user to show for whole script or specific wiki
+	// 		if(pRCData.user && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
+	// 		if(pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
+	//
+	// 		this.itemsToAddTotal++;
+	// 		tNewRC = new RCData( pWikiData, this ).init(pRCData, pLogData);
+	// 		tChangeAdded = false;
+	// 		this.recentChangesEntries.every((pRCList:RCList, i:number) => {
+	// 			if(tNewRC.date > pRCList.date) {
+	// 				this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
+	// 				tChangeAdded = true;
+	// 				return false;
+	// 			} else {
+	// 				if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
+	// 					pRCList.addRC(tNewRC);
+	// 					tChangeAdded = true;
+	// 					return false;
+	// 				}
+	// 			}
+	// 			return true;
+	// 		});
+	// 		if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
+	// 	});
+	//
+	// 	this._onWikiParsingFinished(pWikiData);
+	// };
 	
 	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
 	private _onWikiParsingFinished(pWikiData:WikiData) : void {
@@ -654,32 +836,183 @@ export default class RCMManager
 	// All wikis are loaded
 	rcmChunkStart() : void {
 		let tDate:Date = new Date();
-		this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate, this.timezone),2)+":"+Utils.pad(Utils.getMinutes(tDate, this.timezone),2)+"</tt></b>");
+		this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
 		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
-		this.resultsNode.innerHTML = "";
 		
-		// mw.log(this.recentChangesEntries);
+		// Using array sort after as it's more efficient than doing it manually.
+		this.rcData.sort((a, b) => { return b.data.date.valueOf() - a.data.date.valueOf(); });
+		if(this.rcParams.hideenhanced) { this.recentChangesEntries.sort((a, b) => { return b.date.valueOf() - a.date.valueOf(); }); }
+		
+		this.removeOldResults(tDate);
+		
+		// New changes to add to page
+		this.newRecentChangesEntries = [];
+		let tResultsIsEmpty = this.resultsNode.innerHTML == "";
+		this.recentChangesEntries.every((pRCList:RCList, i) => {
+			if(pRCList.date > this.lastLoadDateTimeActual || tResultsIsEmpty) {
+				this.newRecentChangesEntries.push(pRCList);
+				return true;
+			}
+			return false;
+		});
+		
+		// Remove except if auto refresh is on, window doesn't have focus, and the window wasn't clicked and then lost focus again (by checking lastLoadDateTime)
+		// if(this.rcmNewChangesMarker && (!this.isAutoRefreshEnabled() || (document.hasFocus() || this.recentChangesEntries[0].date < this.lastLoadDateTime))) {
+		// 	Utils.removeElement(this.rcmNewChangesMarker);
+		// 	this.rcmNewChangesMarker = null;
+		// }
+		
+		// Remove this before laoding starts.
+		// if(this.rcmNoNewChangesMarker) { Utils.removeElement(this.rcmNoNewChangesMarker); this.rcmNoNewChangesMarker = null; }
+		
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
-			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
+			if(!this.rcmNewChangesMarker) this.rcmNoNewChangesMarker = <HTMLElement>this.resultsNode.insertBefore(Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }), this.resultsNode.firstChild);
 		}
-		else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
-			if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
-				this.notifyUserOfChange();
+		else {
+			if(!this.rcmNewChangesMarker && this.newRecentChangesEntries.length > 0 && this.lastLoadDateTime != null && this.resultsNode.innerHTML != "") {
+				let tRcSection = this.resultsNode.querySelector("div, ul");
+				this.rcmNewChangesMarker = <HTMLElement>tRcSection.insertBefore(Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }), tRcSection.firstChild);
+				tRcSection = null;
+			}
+			
+			if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
+				if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
+					this.notifyUserOfChange();
+				}
 			}
 		}
 		this.rcmChunk(0, 99, 99, null, this.ajaxID);
 	}
+	// // All wikis are loaded
+	// rcmChunkStartOld() : void {
+	// 	let tDate:Date = new Date();
+	// 	this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
+	// 	this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
+	// 	this.resultsNode.innerHTML = "";
+	//
+	// 	// mw.log(this.recentChangesEntries);
+	// 	if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
+	// 		Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
+	// 	}
+	// 	else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
+	// 		if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
+	// 			this.notifyUserOfChange();
+	// 		}
+	// 	}
+	// 	this.rcmChunk(0, 99, 99, null, this.ajaxID);
+	// }
+	
+	// Remove old items past "limit" and "days"
+	// All need to be looped through since grouped changes can cause older results to be at the top.
+	removeOldResults(pDate:Date) : void {
+		if(this.resultsNode.innerHTML == "") { return; }
+		let tWikisToCheck:WikiData[] = this.chosenWikis.slice(0);
+		let tRcCombo:{ data:RCData, list:RCList }, tDirtyLists:RCList[] = [], tWikiI:number;
+		// Remove all old RCDatas, and mark changed lists as "dirty"
+		for(let i = this.rcData.length-1; i >= 0; i--) { tRcCombo = this.rcData[i];
+			if((tWikiI = tWikisToCheck.indexOf(tRcCombo.data.wikiInfo)) == -1) { continue; }
+			// First remove items past "days" (needs to be done first since it can change number allowed by "limit")
+			if(tRcCombo.data.shouldBeRemoved(pDate)) {
+				if(tRcCombo.data.type != RC_TYPE.DISCUSSION) {
+					tRcCombo.data.wikiInfo.resultsCount--;
+				} else {
+					tRcCombo.data.wikiInfo.discussionsCount--;
+				}
+				// if(this.rcData[i].data != tRcCombo.list.list[tRcCombo.list.list.length-1]) {
+				// 	mw.log("MISMATCH:", tRcCombo.list.list.indexOf(tRcCombo.data), tRcCombo.list.list.length-1, this.rcData[i].data.wikiInfo, this.rcData[i] , tRcCombo.list.list[tRcCombo.list.list.length-1], tRcCombo.list.list);
+				// }
+				this.rcData[i] = null;
+				this.rcData.splice(i, 1);
+				tRcCombo.list.removeRC(tRcCombo.data);
+				//tRcCombo.list.list.pop().dispose(); // The last item in a list -should- always be the one we care about
+				// Mark changed lists as dirty. Edit / remove them after encase multiple datas were removed.
+				if(this.rcParams.hideenhanced || tDirtyLists.indexOf(tRcCombo.list) == -1) { tDirtyLists.push(tRcCombo.list); }
+				tRcCombo.data == null; tRcCombo.list = null;
+			} else if(tRcCombo.data.wikiInfo.resultsCount <= tRcCombo.data.wikiInfo.rcParams.limit && tRcCombo.data.wikiInfo.discussionsCount <= Math.min(tRcCombo.data.wikiInfo.rcParams.limit, 50)) {
+				// Stop checking a specific wiki, and if all have been checked exit (for efficency when dealing with high numbers of results).
+				tWikisToCheck.splice(tWikiI, 1);
+				if(tWikisToCheck.length == 0) { break; }
+			}
+		}
+		tRcCombo = null; tWikisToCheck = null;
+		
+		// Now remove or update dirty lists.
+		let tNewRCList:RCList, tOldNode:HTMLElement, tListI:number;
+		tDirtyLists.forEach((pRCList:RCList) => {
+			tListI = this.recentChangesEntries.indexOf(pRCList);
+			if(tListI > -1) {
+				if(pRCList.list.length <= 0) {
+					if(pRCList.htmlNode) { Utils.removeElement(pRCList.htmlNode); }
+					this.recentChangesEntries[tListI].dispose();
+					this.recentChangesEntries[tListI] = null;
+					this.recentChangesEntries.splice(tListI, 1);
+				} else {
+					if(pRCList.htmlNode) {
+						tOldNode = pRCList.htmlNode;
+						Utils.insertAfter(pRCList.toHTML(tListI), tOldNode);
+						Utils.removeElement(tOldNode);
+					}
+				}
+			} else {
+				console.warn("[RCMManager](removeOldResults) Failed to remove old list.");
+			}
+		});
+		tNewRCList = null; tOldNode = null; tDirtyLists = null;
+		
+		// If there are any blank rc sections left over from removed items, remove them.
+		Utils.forEach(this.resultsNode.querySelectorAll(".rcm-rc-cont"), (o) => {
+			if(o.innerHTML == "") {
+				Utils.removeElement(o.previousSibling);
+				Utils.removeElement(o);
+			}
+		});
+		
+		
+		
+		// // First remove items past "days" (needs to be done first since it can change number allowed by "limit")
+		// let tRCList:RCList, tNewRCList:RCList, tOldNode:HTMLElement, tDirty:boolean;
+		// for(let i = this.recentChangesEntries.length-1; i >= 0; i--) { tRCList = this.recentChangesEntries[i];
+		// 	tDirty = false;
+		// 	// Loop through all in list encase more than one is to old.
+		// 	do {
+		// 		if(tRCList.type != RC_TYPE.DISCUSSION) {
+		// 			tDirty = true;
+		// 			tRCList.wikiInfo.resultsCount--;
+		// 			tRCList.list.pop().dispose();
+		// 		} else {
+		// 			tRCList.wikiInfo.discussionsCount--;
+		// 			// TODO: Discussions
+		// 			break;
+		// 		}
+		// 	} while(tRCList.list.length > 0 && tRCList.oldest.shouldBeRemoved(pDate));
+		// 	if(tDirty) {
+		// 		if(tRCList.list.length <= 0) {
+		// 			if(tRCList.htmlNode) { Utils.removeElement(tRCList.htmlNode); }
+		// 			this.recentChangesEntries[i].dispose();
+		// 			this.recentChangesEntries[i] = null;
+		// 			this.recentChangesEntries.splice(i, 1);
+		// 		} else {
+		// 			if(tRCList.htmlNode) {
+		// 				tOldNode = tRCList.htmlNode;
+		// 				Utils.insertAfter(tRCList.toHTML(i), tOldNode);
+		// 				Utils.removeElement(tOldNode);
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// tRCList = null; tNewRCList = null; tOldNode = null;
+	}
 	
 	notifyUserOfChange() {
-		var tMostRecentEntry:RCData = this.recentChangesEntries[0].newest;
+		let tMostRecentEntry:RCData = this.recentChangesEntries[0].newest;
 		// Skip if user is hidden for whole script or specific wiki
-		var tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
+		let tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
 		if(!tDontNotify) {
 			// Find number of changes since page last visited.
-			var tNumNewChanges = 0, tNumNewChangesWiki = 0;
-			for(var i = 0; i < this.recentChangesEntries.length; i++) {
+			let tNumNewChanges = 0, tNumNewChangesWiki = 0;
+			for(let i = 0; i < this.recentChangesEntries.length; i++) {
 				if(this.recentChangesEntries[i].date > this.lastLoadDateTime) {
-					for(var j = 0; j < this.recentChangesEntries[i].list.length; j++) {
+					for(let j = 0; j < this.recentChangesEntries[i].list.length; j++) {
 						if(this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) {
 							tNumNewChanges++;
 							if(this.recentChangesEntries[i].wikiInfo.servername == tMostRecentEntry.wikiInfo.servername) { tNumNewChangesWiki++; }
@@ -688,13 +1021,18 @@ export default class RCMManager
 				} else { break; }
 			}
 			Main.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"! "+i18n("nchanges", tNumNewChanges));
-			var tEditTitle = tMostRecentEntry.title;
+			let tEditTitle = tMostRecentEntry.title;
 			if(tMostRecentEntry.type == RC_TYPE.LOG) {
 				tEditTitle = tMostRecentEntry.logTitle()+(tEditTitle ? " - "+tEditTitle : "");
 			}
-			var tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.unparsedComment;
+			else if(tEditTitle == null) {
+				tEditTitle = this.recentChangesEntries[0].getExistingThreadTitle();
+				tEditTitle = tEditTitle ? i18n('discussions')+" - "+tEditTitle : i18n('discussions');
+			}
+			tEditTitle = tEditTitle ? tEditTitle+"\n" : "";
+			let tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.unparsedComment;
 			Main.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? ` (${tNumNewChangesWiki})` : ""), {
-				body:tEditTitle+"\n"+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
+				body:tEditTitle+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
 			});
 		}
 		tMostRecentEntry = null;
@@ -704,27 +1042,72 @@ export default class RCMManager
 	rcmChunk(pIndex:number, pLastDay:number, pLastMonth:number, pContainer:HTMLElement, pID:number) : void {
 		if(pID != this.ajaxID) { return; } // If the script is refreshed (by auto refresh) while entries are adding, stop adding old entries.
 		
-		if(this.recentChangesEntries.length == 0) { this.finishScript(); return; }
+		if(this.newRecentChangesEntries.length == 0) { this.finishScript(); return; }
 		
-		var date = this.recentChangesEntries[pIndex].date;
+		let date = this.newRecentChangesEntries[pIndex].date;
 		// Add new date grouping if necessary.
-		if(Utils.getDate(date, this.timezone) != pLastDay || Utils.getMonth(date, this.timezone) != pLastMonth) {
-			pLastDay = Utils.getDate(date, this.timezone);
-			pLastMonth = Utils.getMonth(date, this.timezone);
-			Utils.newElement("h4", { innerHTML:Utils.formatWikiTimeStamp(date, this.timezone, false) }, this.resultsNode);
-			
-			pContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", {  }, this.resultsNode) : Utils.newElement("ul", { className:"special" }, this.resultsNode);
+		if(Utils.getDate(date) != pLastDay || Utils.getMonth(date) != pLastMonth) {
+			pLastDay = Utils.getDate(date);
+			pLastMonth = Utils.getMonth(date);
+			let tTimestamp = Utils.formatWikiTimeStamp(date, false);
+			let tNewContainer:HTMLElement;
+			// Re-use existing container if there is one
+			if(tNewContainer = <HTMLElement>this.resultsNode.querySelector(`[data-timestamp="${tTimestamp}"]`)) {
+				pContainer = tNewContainer;
+			} else {
+				let tNewHeading = Utils.newElement("h4", { innerHTML:tTimestamp });
+				tNewContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", { className:"rcm-rc-cont" }) : Utils.newElement("ul", { className:"special rcm-rc-cont" });
+				tNewContainer.dataset["timestamp"] = tTimestamp;
+				if(!pContainer) {
+					if(this.isHardRefresh) {
+						this.resultsNode.appendChild(tNewHeading);
+						this.resultsNode.appendChild(tNewContainer);
+					} else {
+						// Utils.prependChild(tNewContainer, this.resultsNode);
+						Utils.prependChild(tNewHeading, this.resultsNode);
+						Utils.insertAfter(tNewContainer, tNewHeading);
+						// this.resultsNode.insertBefore(tNewContainer, this.resultsNode.firstChild);
+						// this.resultsNode.insertBefore(tNewHeading, this.resultsNode.firstChild);
+					}
+				} else {
+					Utils.insertAfter(tNewHeading, pContainer);
+					Utils.insertAfter(tNewContainer, tNewHeading);
+				}
+				pContainer = tNewContainer;
+				tNewHeading = null;
+			}
+			tNewContainer = null;
 		}
-		// Show at what point new changes start at.
-		if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
-			Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
-		}
+		// // Show at what point new changes start at.
+		// if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.newRecentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
+		// 	this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
+		// }
 		
 		// Add to page
-		pContainer.appendChild(this.recentChangesEntries[pIndex].toHTML(pIndex));
-		this.itemsAdded += this.recentChangesEntries[pIndex].list.length;
+		if(this.rcmNewChangesMarker) {
+			if(this.newRecentChangesEntries[pIndex].htmlNode) { Utils.removeElement(this.newRecentChangesEntries[pIndex].htmlNode); }
+			let tRcNode = this.newRecentChangesEntries[pIndex].toHTML(pIndex);
+			if(pContainer.innerHTML == "") {
+				pContainer.appendChild(tRcNode);
+			}
+			else if(pIndex == 0) {
+				// pContainer.insertBefore(tRcNode, pContainer.firstChild); // For some odd reason this sometimes says pContainer.firstChild is not a child of pContainer
+				pContainer.firstChild.parentNode.insertBefore(tRcNode, pContainer.firstChild);
+			} else {
+				// pContainer.insertBefore(tRcNode, this.rcmNewChangesMarker); // Kinda hacky but doesn't occassionally fail.
+				if(this.newRecentChangesEntries[pIndex-1].htmlNode.parentNode != pContainer) {
+					pContainer.appendChild(tRcNode);
+				} else {
+					Utils.insertAfter(tRcNode, this.newRecentChangesEntries[pIndex-1].htmlNode);
+				}
+			}
+			tRcNode = null;
+		} else {
+			pContainer.appendChild(this.newRecentChangesEntries[pIndex].toHTML(pIndex));
+		}
+		this.itemsAdded += this.newRecentChangesEntries[pIndex].list.length;
 		
-		if(++pIndex < this.recentChangesEntries.length) {
+		if(++pIndex < this.newRecentChangesEntries.length) {
 			document.querySelector(this.modID+" .rcm-content-loading-num").innerHTML = this.itemsAdded.toString();
 			// Only do a timeout every few changes (timeout to prevent browser potentially locking up, only every few to prevent it taking longer than necessary)
 			if(pIndex%5 == 0) {
@@ -736,15 +1119,51 @@ export default class RCMManager
 		else { this.finishScript(); }
 	};
 	
+	// // Add a single change at a time, with a timeout before the next one to prevents script from locking up browser.
+	// rcmChunkOld(pIndex:number, pLastDay:number, pLastMonth:number, pContainer:HTMLElement, pID:number) : void {
+	// 	if(pID != this.ajaxID) { return; } // If the script is refreshed (by auto refresh) while entries are adding, stop adding old entries.
+	//
+	// 	if(this.recentChangesEntries.length == 0) { this.finishScript(); return; }
+	//
+	// 	var date = this.recentChangesEntries[pIndex].date;
+	// 	// Add new date grouping if necessary.
+	// 	if(Utils.getDate(date) != pLastDay || Utils.getMonth(date) != pLastMonth) {
+	// 		pLastDay = Utils.getDate(date);
+	// 		pLastMonth = Utils.getMonth(date);
+	// 		Utils.newElement("h4", { innerHTML:Utils.formatWikiTimeStamp(date, false) }, this.resultsNode);
+	//
+	// 		pContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", {  }, this.resultsNode) : Utils.newElement("ul", { className:"special" }, this.resultsNode);
+	// 	}
+	// 	// Show at what point new changes start at.
+	// 	if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
+	// 		this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
+	// 	}
+	//
+	// 	// Add to page
+	// 	pContainer.appendChild(this.recentChangesEntries[pIndex].toHTML(pIndex));
+	// 	this.itemsAdded += this.recentChangesEntries[pIndex].list.length;
+	//
+	// 	if(++pIndex < this.recentChangesEntries.length) {
+	// 		document.querySelector(this.modID+" .rcm-content-loading-num").innerHTML = this.itemsAdded.toString();
+	// 		// Only do a timeout every few changes (timeout to prevent browser potentially locking up, only every few to prevent it taking longer than necessary)
+	// 		if(pIndex%5 == 0) {
+	// 			setTimeout(() => { this.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID); });
+	// 		} else {
+	// 			this.rcmChunk(pIndex, pLastDay, pLastMonth, pContainer, pID);
+	// 		}
+	// 	}
+	// 	else { this.finishScript(); }
+	// };
+	
 	finishScript() : void {
 		Utils.removeElement(document.querySelector(this.modID+" .rcm-content-loading"));
 		this.addRefreshButtonTo(this.statusNode);
 		this.addAutoRefreshInputTo(this.statusNode);
 		// If auto-refresh is on and window doesn't have focus, then don't update the position of "previously loaded" message.
 		if (this.lastLoadDateTime == null || !this.isAutoRefreshEnabled() || document.hasFocus()) {
-			this.lastLoadDateTime = this.recentChangesEntries[0].date;//new Date();
+			this.lastLoadDateTime = this.recentChangesEntries.length > 0 ? this.recentChangesEntries[0].date : null;//new Date();
 		}
-		this.lastLoadDateTimeActual = this.recentChangesEntries[0].date;//new Date();
+		this.lastLoadDateTimeActual = this.recentChangesEntries.length > 0 ? this.recentChangesEntries[0].date : null;//new Date();
 		
 		// Removing this all remove event handlers
 		// for (var i = 0; i < this.recentChangesEntries.length; i++) {
@@ -769,7 +1188,7 @@ export default class RCMManager
 		if(!this.isAutoRefreshEnabled()) { return; }
 		
 		this.autoRefreshTimeoutID = setTimeout(() => {
-			if(RCMModal.isModalOpen()) { this.startAutoRefresh(); return; }
+			if(RCMModal.isModalOpen() || (this.autoRefreshEvenOnFocus == false && document.hasFocus())) { this.startAutoRefresh(); return; }
 			this.refresh();
 		}, this.autoRefreshTimeoutNum);
 	};

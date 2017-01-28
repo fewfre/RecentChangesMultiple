@@ -39,32 +39,50 @@ export default class Utils
 		(<HTMLElement>pNode).appendChild( document.createTextNode(pText) );
 	}
 	
-	static elemIsVisible(elm:HTMLElement|Element) : boolean {
-		var rect = (<HTMLElement>elm).getBoundingClientRect();
-		var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+	static elemIsVisible(pElem:HTMLElement|Element) : boolean {
+		let rect = (<HTMLElement>pElem).getBoundingClientRect();
+		let viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
 		return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+	}
+	
+	static insertAfter(pNewNode:HTMLElement|Element, pRef:HTMLElement|Element) : HTMLElement {
+		return <HTMLElement>(pRef.nextSibling ? pRef.parentNode.insertBefore(pNewNode, pRef.nextSibling) : pRef.parentNode.appendChild(pNewNode));
+		// if (pRef.nextSibling) {
+		// 	return <HTMLElement>pRef.parentNode.insertBefore(pNewNode, pRef.nextSibling);
+		// } else {
+		// 	return <HTMLElement>pRef.parentNode.appendChild(pNewNode);
+		// }
+	}
+	
+	static prependChild(pNewNode:HTMLElement|Element, pRef:HTMLElement|Element) : HTMLElement {
+		return <HTMLElement>(pRef.firstChild ? pRef.insertBefore(pNewNode, pRef.firstChild) : pRef.appendChild(pNewNode));
+		// if(pRef.firstChild) {
+		// 	return <HTMLElement>pRef.insertBefore(pNewNode, pRef.firstChild);
+		// } else {
+		// 	return <HTMLElement>pRef.appendChild(pNewNode);
+		// }
 	}
 	
 	/***************************
 	* Date Methods
 	***************************/
-	static getSeconds(pDate:Date, timeZone) : number{ return timeZone == "utc" ? pDate.getUTCSeconds() : pDate.getSeconds(); }
-	static getMinutes(pDate:Date, timeZone) : number{ return timeZone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
-	static getHours(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
-	static getDate(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
-	static getMonth(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
-	static getYear(pDate:Date, timeZone) : number	{ return timeZone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
+	static getSeconds(pDate:Date) : number{ return ConstantsApp.timezone == "utc" ? pDate.getUTCSeconds() : pDate.getSeconds(); }
+	static getMinutes(pDate:Date) : number{ return ConstantsApp.timezone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
+	static getHours(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
+	static getDate(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
+	static getMonth(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
+	static getYear(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
 	
-	static formatWikiTimeStamp(pDate:Date, pTimezone, pShowTime:boolean=true) : string {
-		let tYear = Utils.getYear(pDate, pTimezone),
-			tMonth = Utils.getMonth(pDate, pTimezone)+1,
+	static formatWikiTimeStamp(pDate:Date, pShowTime:boolean=true) : string {
+		let tYear = Utils.getYear(pDate),
+			tMonth = Utils.getMonth(pDate)+1,
 			tMonthName = ConstantsApp.config.wgMonthNames[tMonth],
-			tDay = Utils.getDate(pDate, pTimezone),
+			tDay = Utils.getDate(pDate),
 			tTime = "";
 		if(pShowTime) {
-			let tHours = Utils.getHours(pDate, pTimezone),
-				tMinutes = Utils.getMinutes(pDate, pTimezone),
-				tSeconds = Utils.getSeconds(pDate, pTimezone);
+			let tHours = Utils.getHours(pDate),
+				tMinutes = Utils.getMinutes(pDate),
+				tSeconds = Utils.getSeconds(pDate);
 			tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
 			if(ConstantsApp.userOptions.date != "ISO 8601") {
 				tTime = tTime+", ";
@@ -142,6 +160,11 @@ export default class Utils
 	
 	static uniqID() : string {
 		return "id"+(++ConstantsApp.uniqID);
+	}
+	
+	static getFirstItemFromObject(pData:any) : any {
+		for(var tKey in pData)
+		return pData[tKey];
 	}
 	
 	// Assumes the file has already been checked to be in namespace 6

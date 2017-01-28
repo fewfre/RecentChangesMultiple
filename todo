@@ -2,28 +2,25 @@
 ## PRIMARY
 ############################################
 - [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
-- "Skip" option for error
-
+- Add a new way to format data (while retaining backwards compatibility)
+	- Move "data-" values to main visible area
+	- Don't crowd wiki options onto the end of the line; may them an array or something
+	- Allow links to have http(s) (just remove them; won't be an issue anymore due to line above)
+- Better visual loading progress for each wiki on WikiPanel
+	- keep icons in same place
+	- show loading spinner on top of them.
+	- button with option to only show changes for that wiki?
 
 ############################################
 ## SECONDARY
 ############################################
 - Page preview needs a way to load all css / js.
 - [Idea] Add Special:RecentChangesLinked support. (may not be possible?)
-- Loading display rework.
-	A) Display wiki results as they are loaded? (semi pain to do, but cool? Not worth it?) (if not, add "Skip" button encase loading is stalled)
-	B) Only load changes older than current things and just add them to top of list. Make sure to also remove old items. -could mark changed RCLists as "Dirty", moving them up the list, or deleting if list ends up empty.
-	C) Don't update list until it's a sure thing that something is new. (if so, remove "no new load" div until load complete)
-		Issues involve not knowing if this is so without first having to wait for all content to be retrieved and then checking ALL timestamps
-		May add needless complexity while adding little to nothing.
-	- Also add option to temporarily only show edits for a wiki (hide all the rest). Button would appear to show them all again.
-	- Each wiki will have to keep track of it's own "last retreived" date since they return at different times.
-	- https://meta.wikimedia.org/wiki/User:Krinkle/Tools/Real-Time_Recent_Changes
 - [Bug] For Wikia wikis, Comment "move" logs from parent page move can cause errors when it prevents necessary logs from showing up (since logs can't have "hide bot edit" flags)
 	- Fixing may not be possible for Wikia wikis, unless logs messages are replaced with parsing RC info (at least for move logs, not possible for all logs)
 - [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 - Translations: support "rtl" lang dir
-- Option to turn off auto refresh if page has focus.
+- Check for memory leaks.
 
 
 ############################################
@@ -39,6 +36,8 @@
 	- Visual:
 		- Comment deletions go under "comments", not logs (same for when it's by itself?). I kinda prefer under deletion, but should be consistent.
 		- Don't forcefully style diff windows (currently need to since need to load it in, and currently doing so via hard-coding).
+- Add an option to temporarily only show edits for a single wiki (hide all the rest). Button would appear to show them all again.
+- https://meta.wikimedia.org/wiki/User:Krinkle/Tools/Real-Time_Recent_Changes
 
 
 ############################################

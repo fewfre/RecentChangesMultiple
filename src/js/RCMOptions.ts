@@ -174,14 +174,13 @@ export default class RCMOptions
 		this.limitField.innerHTML = "";
 		var tLimit = this.manager.rcParams.limit;
 		var tLimitValues = [25, 50, 75, 100, 200, 350, 500];
-		for(var i = 0; i < tLimitValues.length; i++) {
-			if(tLimit != tLimitValues[i] && tLimit < tLimitValues[i] && (i > 0 && tLimit > tLimitValues[i-1])) {
-				Utils.newElement("option", { value:tLimit, innerHTML:tLimit, selected:"selected" }, this.limitField);
-			}
-			Utils.newElement("option", { value:tLimitValues[i], innerHTML:tLimitValues[i], selected:(tLimit == tLimitValues[i] ? "selected" : undefined) }, this.limitField);
+		// If rcParam value is unique, add it to list
+		if(tLimitValues.indexOf(tLimit) == -1) {
+			tLimitValues.push(tLimit);
+			tLimitValues.sort((a, b)=>{ return a - b; });
 		}
-		if(tLimit > tLimitValues[tLimitValues.length-1]) {
-			Utils.newElement("option", { value:tLimit, innerHTML:tLimit, selected:"selected" }, this.limitField);
+		for(var i = 0; i < tLimitValues.length; i++) {
+			Utils.newElement("option", { value:tLimitValues[i], innerHTML:tLimitValues[i], selected:(tLimit == tLimitValues[i] ? "selected" : undefined) }, this.limitField);
 		}
 		
 		/***************************
@@ -190,14 +189,13 @@ export default class RCMOptions
 		this.daysField.innerHTML = "";
 		var tDays = this.manager.rcParams.days;
 		var tDayValues = [1, 3, 7, 14, 30];
-		for(var i = 0; i < tDayValues.length; i++) {
-			if(tDays != tDayValues[i] && tDays < tDayValues[i] && (i > 0 && tDays > tDayValues[i-1])) {
-				Utils.newElement("option", { value:tDays, innerHTML:tDays, selected:"selected" }, this.daysField);
-			}
-			Utils.newElement("option", { value:tDayValues[i], innerHTML:tDayValues[i], selected:(tDays == tDayValues[i] ? "selected" : undefined) }, this.daysField);
+		// If rcParam value is unique, add it to list
+		if(tDayValues.indexOf(tDays) == -1) {
+			tDayValues.push(tDays);
+			tDayValues.sort((a, b)=>{ return a - b; });
 		}
-		if(tDays > tDayValues[tDayValues.length-1]) {
-			Utils.newElement("option", { value:tDays, innerHTML:tDays, selected:"selected" }, this.daysField);
+		for(var i = 0; i < tDayValues.length; i++) {
+			Utils.newElement("option", { value:tDayValues[i], innerHTML:tDayValues[i], selected:(tDays == tDayValues[i] ? "selected" : undefined) }, this.daysField);
 		}
 		
 		/***************************
@@ -304,7 +302,7 @@ export default class RCMOptions
 	private _onChange_settingsShowDiscussions(pEvent:Event) : void {
 		this.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
 		this.manager.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
-		this.manager.refresh(true);
+		this.manager.hardRefresh(true);
 		this.save();
 	}
 	
@@ -312,17 +310,17 @@ export default class RCMOptions
 	 * Helper Methods
 	 ***************************/
 	// Will add / edit the url param & script value with details entered.
-	afterChangeNumber(pKey:string, pVal:number) : void {
+	afterChangeNumber(pKey:string, pVal:number, pHardRefresh:boolean=false) : void {
 		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh(true);
+		this.manager.hardRefresh(true);
 		this.save();
 	}
 	
-	afterChangeBoolean(pKey:string, pVal:boolean) : void {
+	afterChangeBoolean(pKey:string, pVal:boolean, pHardRefresh:boolean=false) : void {
 		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
-		this.manager.refresh(true);
+		this.manager.hardRefresh(true);
 		this.save();
 	}
 	

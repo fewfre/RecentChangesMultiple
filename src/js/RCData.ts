@@ -335,7 +335,7 @@ export default class RCData
 	}
 	
 	time() : string {
-		return Utils.pad(Utils.getHours(this.date, this.manager.timezone),2)+":"+Utils.pad(Utils.getMinutes(this.date, this.manager.timezone),2);
+		return Utils.pad(Utils.getHours(this.date),2)+":"+Utils.pad(Utils.getMinutes(this.date),2);
 	}
 	
 	userDetails() : string {
@@ -652,25 +652,21 @@ export default class RCData
 	}
 	
 	getLogTimeStamp(pDate) : string {
-		// return ""
-		// 	+ 			Utils.pad( Utils.getHours(pDate, this.manager.timezone), 2 )
-		// 	+ ":" +		Utils.pad( Utils.getMinutes(pDate, this.manager.timezone), 2 )
-		// 	+ ", " +	Utils.pad( Utils.getDate(pDate, this.manager.timezone), 2 )
-		// 	+ " " +		ConstantsApp.config.wgMonthNames[Utils.getMonth(pDate, this.manager.timezone)+1]
-		// 	+ " " +		Utils.getYear(pDate, this.manager.timezone)
-		// ;
-		return RCData.getFullTimeStamp(pDate, this.manager.timezone);
+		return RCData.getFullTimeStamp(pDate);
 	}
 	
-	static getFullTimeStamp(pDate:Date, pTimezone:string) : string {
-		return Utils.formatWikiTimeStamp(pDate, pTimezone);
-		// return ""
-		// 	+ 			Utils.pad( Utils.getHours(pDate, pTimezone), 2 )
-		// 	+ ":" +		Utils.pad( Utils.getMinutes(pDate, pTimezone), 2 )
-		// 	+ ", " +	Utils.pad( Utils.getDate(pDate, pTimezone), 2 )
-		// 	+ " " +		ConstantsApp.config.wgMonthNames[Utils.getMonth(pDate, pTimezone)+1]
-		// 	+ " " +		Utils.getYear(pDate, pTimezone)
-		// ;
+	static getFullTimeStamp(pDate:Date) : string {
+		return Utils.formatWikiTimeStamp(pDate);
+	}
+	
+	shouldBeRemoved(pDate:Date) : boolean {
+		// First remove items past "days" (needs to be done first since it can change number allowed by "limit").
+		// Then start checking if enough items are listed for the wiki to go past it's "limit".
+		return this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400) // days*24*60*60 = days->seconds
+			|| this.type != TYPE.DISCUSSION && this.wikiInfo.resultsCount > this.wikiInfo.rcParams.limit
+			|| this.type == TYPE.DISCUSSION && this.wikiInfo.discussionsCount > Math.min(this.wikiInfo.rcParams.limit, 50)
+			;
+		// return this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400); // days*24*60*60 = days->seconds
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
@@ -699,6 +695,7 @@ export default class RCData
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 				success: (pData) => {
+					if(!RCMModal.isModalOpen()) { return; }
 					var tPage = pData.query.pages[pageID];
 					var tRevision = tPage.revisions[0];
 					
@@ -728,7 +725,7 @@ export default class RCData
 								+"<td class='diff-otitle' colspan='2'>"
 									+"<div class='mw-diff-otitle1'>"
 										+"<strong>"
-											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp), pDiffTableInfo.wikiInfo.manager.timezone))+"</a>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp)))+"</a>"
 											+" <span class='mw-rev-head-action'>"
 												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`
 											+"</span>"
@@ -741,7 +738,7 @@ export default class RCData
 								+"<td class='diff-ntitle' colspan='2'>"
 									+"<div class='mw-diff-ntitle1'>"
 										+"<strong>"
-											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date, pDiffTableInfo.wikiInfo.manager.timezone))+"</a>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date))+"</a>"
 											+" <span class='mw-rev-head-action'>"
 												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`
 											+"</span>"
@@ -806,6 +803,7 @@ export default class RCData
 		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 				success: (pData) => {
+					if(!RCMModal.isModalOpen()) { return; }
 					let tModalContent = ''
 					+'<div class="rcm-gallery wikia-gallery wikia-gallery-caption-below wikia-gallery-position-center wikia-gallery-spacing-medium wikia-gallery-border-small wikia-gallery-captions-center wikia-gallery-caption-size-medium">'
 						+RCData.previewImages_getGalleryItemsFromData(pData.query.pages, pArticlePath, size)
@@ -903,12 +901,12 @@ export default class RCData
 				callback: () => { window.open(pPageHref, '_blank'); },
 			}
 		];
-		
 		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
 			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 				success: (pData) => {
+					if(!RCMModal.isModalOpen()) { return; }
 					var tContentText = pData.parse.text["*"];
 					
 					var tModalContent = ''

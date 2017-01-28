@@ -112,7 +112,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	
 	getAvatarImg() : string {
 		return this.user_avatarUrl
-		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(this.author)}"><img src='${this.user_avatarUrl}' /></a> </span>`
+		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(this.author)}"><img src='${this.user_avatarUrl}' width="15" height="15" /></a> </span>`
 		: "";
 	}
 	

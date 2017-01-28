@@ -1,4 +1,21 @@
-== V2.5 ==
+== V2.6 - 28 January 2017 ==
+- Script no longer removes and re-adds whole list on refresh. This is to help lag on large "limit" sizes, and reduce burden on the server.
+	- Changing one of the "Recent changes options" will perform a "hard refresh" like it did before, removing all items from the list.
+	- Old items (as defined by "days" / "limit") are removed.
+- Fixed small bug where RCMOptions didn't show correct value for days/limit when it was a custom value.
+- Discussions:
+	- Changed to be enabled by default, since they are now fetched using the "Since" attribute, and the refresh rework makes them less time consuming.
+	- Fixed bug were it was possible for a user's returned avatar being added to page without being scaled down.
+	- In most cases discussions titles were showing up as "null" in notifications. They now either used a previously retrieved title, or don't have a title.
+- Added a "remove" option to wiki loading encase a wiki is temporarily down.
+- Made timestamp a page-wide variable; it's set to the value of data-timestamp that's on the first "rc-content-multiple" div.
+- data-autorefresh-evenOnFocus added to add an option to prevent page from refreshing if you currently have it open and focused. On/Refreshed on focus by default.
+- [Bug] Changing something in the options panel during wiki loading would crash script due try trying to refresh it before all neccisary info was loaded.
+- RCMModal now keeps track of it's retrieved modal factory.
+- [Bug] Closing out of a modal while it's content is loading no longer tries to add content to non-existent modal.
+
+
+== V2.5 - 14 January 2017 ==
 - Tweaked usage of mw object:
 	- cached mw.config variables.
 	- changed various console.log()s / "if debug then console.log()"s to mw.log()s.

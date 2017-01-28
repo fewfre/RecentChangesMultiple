@@ -22,9 +22,9 @@ export default class WikiData
 	manager					: RCMManager; // Keep track of what manager this data is attached to.
 	
 	/***************************
-	 * List Data - Data defined by "&attr=" style data on the url list elements.
-	 * ex: *dev.wikia.com &hideusers=Test
-	 ***************************/
+	* List Data - Data defined by "&attr=" style data on the url list elements.
+	* ex: *dev.wikia.com &hideusers=Test
+	****************************/
 	servername				: string; // Base domain url (not http:// or other slashes). ex: dev.wikia.com
 	scriptpath				: string; // Full url to script directory (EXcluding last "/"). ex: //test.wiki/w
 	scriptdir				: string; // The subdirectory api.php is on (in relation to this.servername)
@@ -46,8 +46,8 @@ export default class WikiData
 	rcClass					: string; // Class name for this wiki's RC entries.
 	
 	/***************************
-	 * Siteinfo Data
-	 ***************************/
+	* Siteinfo Data
+	****************************/
 	needsSiteinfoData		: boolean; // Check if the RCMManager should load the Siteinfo for the wiki when it requests wiki info.
 	server					: string; // Full url to base of the server (ex: //test.wikia.com)
 	articlepath				: string; // Full url to wiki article directory (including last "/"). ex: //test.wiki/wiki/
@@ -62,14 +62,22 @@ export default class WikiData
 	usesWikiaDiscussions	: boolean; // To save on pointless requests that would timeout, if the first fetch fails then don't fetch them again. Undefined means it's not known yet.
 	
 	/***************************
-	 * User Data
-	 ***************************/
+	* User Data
+	****************************/
 	needsUserData			: boolean; // Check if the RCMManager should load the this user's account data for the wiki (detect what rights they have).
 	canBlock				: boolean; // If the user has the "block" right on this wiki.
 	canRollback				: boolean; // If the user has the "rollback" right on this wiki. Set to true by default so as to fetch extra necessary data first time around.
 	
 	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
 	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
+	
+	/***************************
+	* Dynamic Data
+	****************************/
+	lastChangeDate			: Date;
+	lastDiscussionDate		: Date;
+	resultsCount			: number;
+	discussionsCount		: number;
 	
 	// Constructor
 	constructor(pManager:RCMManager) {
@@ -82,6 +90,12 @@ export default class WikiData
 		this.canRollback			= true;
 		this.isWikiaWiki			= true;
 		this.useOutdatedLogSystem	= false;
+		
+		// Initial values set in setupRcParams() due to needing "days" value.
+		this.lastChangeDate			= null;
+		this.lastDiscussionDate		= null;
+		this.resultsCount			= 0;
+		this.discussionsCount		= 0;
 	}
 	
 	dispose() : void {
@@ -93,6 +107,9 @@ export default class WikiData
 		this.rcParams = null;
 		
 		this.namespaces = null;
+		
+		this.lastChangeDate = null;
+		this.lastDiscussionDate = null;
 	}
 	
 	// Parses LI element data to be able to retrieve information for the respective wiki.
@@ -287,6 +304,11 @@ export default class WikiData
 			this.rcParams.paramString = this.createRcParamsString(this.rcParams);
 			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
 		// }
+		
+		if(!this.lastChangeDate) {
+			this.lastChangeDate = this.getEndDate();
+			this.lastDiscussionDate = this.getEndDate();
+		}
 	}
 	
 	// Get the string for use with Special:RecentChanges link for this wiki.
@@ -314,6 +336,22 @@ export default class WikiData
 		let tDate = new Date();//this.rcParams.from ? new Date(this.rcParams.from) : new Date();
 		tDate.setDate( tDate.getDate() - this.rcParams.days );
 		return tDate;
+	}
+	
+	updateLastChangeDate(pData:any) : void {
+		this.lastChangeDate = new Date(pData.timestamp);
+		// Add 1 millisecond to avoid getting this change again.
+		this.lastChangeDate.setSeconds(this.lastChangeDate.getSeconds()+1);
+		this.lastChangeDate.setMilliseconds(1);
+		//this.lastChangeDate.setMilliseconds(this.lastChangeDate.getMilliseconds()+1001);
+	}
+	
+	updateLastDiscussionDate(pData:any) : void {
+		let tSecond = (pData.modificationDate || pData.creationDate).epochSecond;
+		this.lastDiscussionDate = new Date(0);
+		// Add 1 millisecond to avoid getting this change again.
+		this.lastDiscussionDate.setUTCSeconds(tSecond);
+		this.lastDiscussionDate.setUTCMilliseconds(1);
 	}
 	
 	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
@@ -368,7 +406,7 @@ export default class WikiData
 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
 	getWikiDiscussionUrl() : string {
 		// Get results up to this time stamp.
-		var tEndDate = this.getEndDate();
+		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
 		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
@@ -385,7 +423,7 @@ export default class WikiData
 		var tPropList = [];
 		
 		// Get results up to this time stamp.
-		var tEndDate = this.getEndDate();
+		var tEndDate = this.lastChangeDate;//this.getEndDate();
 		
 		/***************************
 		* Recent Changes Data - https://www.mediawiki.org/wiki/API:RecentChanges

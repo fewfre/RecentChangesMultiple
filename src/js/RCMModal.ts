@@ -21,6 +21,7 @@ export default class RCMModal
 {
 	static readonly MODAL_ID = "rcm-modal";
 	static readonly MODAL_CONTENT_ID = "rcm-modal-content";
+	static modalFactory = null;
 	static modal = null;
 	
 	// pData = { title:String, content:String, rcm_buttons:Array<{ value:String, event:String, callback:Event->Void, closeOnClick:Boolean=true }>, rcm_onModalShown:Void->Void, vars:Object }
@@ -77,14 +78,23 @@ export default class RCMModal
 	}
 	
 	private static createModalComponent(pData:any, pCallback:(any)=>void) : void {
-		(<any>window).require(['wikia.ui.factory'], function(ui) {
-			ui.init(['modal']).then(function(modal) {
-				modal.createComponent(pData, function(obj){
-					RCMModal.modal = obj;
-					obj.bind("close", function(e) { RCMModal.modal = null; });
-					pCallback(obj);
+		if(RCMModal.modalFactory) {
+			RCMModal.createModalComponentWithExistingFactory(pData, pCallback);
+		} else {
+			(<any>window).require(['wikia.ui.factory'], function(ui) {
+				ui.init(['modal']).then(function(modal) {
+					RCMModal.modalFactory = modal;
+					RCMModal.createModalComponentWithExistingFactory(pData, pCallback);
 				});
 			});
+		}
+	}
+	
+	private static createModalComponentWithExistingFactory(pData:any, pCallback:(any)=>void) : void {
+		RCMModal.modalFactory.createComponent(pData, function(obj){
+			RCMModal.modal = obj;
+			obj.bind("close", function(e) { RCMModal.modal = null; });
+			pCallback(obj);
 		});
 	}
 	

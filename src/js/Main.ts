@@ -51,6 +51,7 @@ class Main
 		if(tDataset.localsystemmessages === "false") { ConstantsApp.useLocalSystemMessages = false; }
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { ConstantsApp.loadDelay = tDataset.loaddelay; }
+		if(tDataset.timezone) { ConstantsApp.timezone = tDataset.timezone.toLowerCase(); }
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
 		tDataset = null;

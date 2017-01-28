@@ -5,8 +5,8 @@ let mw = (<any>window).mediaWiki;
 //###########################################################
 export default class ConstantsApp
 {
-	static readonly version					: string = "2.5";
-	static readonly lastVersionDateString	: string = "Thu Oct 29 2016 00:39:12 GMT-0400 (Eastern Standard Time)";
+	static readonly version					: string = "2.6";
+	static readonly lastVersionDateString	: string = "Sun Jan 29 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
 	static readonly config					: any = mw.config.get([
 		"skin",
 		"debug",
@@ -31,6 +31,7 @@ export default class ConstantsApp
 	// These may be update ay given points.
 	static uniqID							: number = 0;
 	static useLocalSystemMessages			: boolean = true;
+	static timezone							: string = "utc";
 	static loadDelay						: number = 10; // In miliseconds
 	
 	// Initialize

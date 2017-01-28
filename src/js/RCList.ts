@@ -26,7 +26,8 @@ export default class RCList
 	 * "Calculated" Data
 	 ***************************/
 	list				: RCData[]; // List of RCData this list contains. Should always be at least 1.
-	removeListeners		: (() => void)[]; // List of callbacks that will remove event listeners.
+	// removeListeners		: (() => void)[]; // List of callbacks that will remove event listeners.
+	htmlNode			: HTMLElement;
 	
 	// Properties
 	get newest() : RCData { return this.list[0]; }
@@ -40,7 +41,7 @@ export default class RCList
 		this.manager = pManager;
 		
 		this.list			= [];
-		this.removeListeners= [];
+		// this.removeListeners= [];
 	}
 	
 	dispose() : void {
@@ -52,24 +53,37 @@ export default class RCList
 		}
 		this.list = null;
 		
-		// Remove event listeners.
-		for(let i=0; i < this.removeListeners.length; i++) {
-			this.removeListeners[i]();
-			this.removeListeners[i] = null;
-		}
-		this.removeListeners = null;
+		// // Remove event listeners.
+		// for(let i=0; i < this.removeListeners.length; i++) {
+		// 	this.removeListeners[i]();
+		// 	this.removeListeners[i] = null;
+		// }
+		// this.removeListeners = null;
+		
+		this.htmlNode = null;
 	}
 	
-	addRC(pRC:RCData) : RCList {
-		this.list.push(pRC);
+	addRC(pNewRC:RCData) : RCList {
+		this.list.push(pNewRC);
+		this.list.sort((a, b) => { return b.date.valueOf() - a.date.valueOf(); }); // More efficent and dependable than doing it manually.
 		return this; // Return self for chaining or whatnot.
+	}
+	
+	// Removes and disposes
+	removeRC(pRC:RCData) : void {
+		var tDataInListI = this.list.indexOf(pRC);
+		if(tDataInListI > -1) {
+			this.list.splice(tDataInListI, 1)[0].dispose();
+		} else {
+			mw.log("[RCList](removeRC) Data did not exist in list, and thus could not be removed.", pRC);
+		}
 	}
 	
 	shouldGroupWith(pRC:RCData) : boolean {
 		if(this.wikiInfo.servername == pRC.wikiInfo.servername
 			&& this.type == pRC.type
-			&& Utils.getMonth(this.date, this.manager.timezone) == Utils.getMonth(pRC.date, pRC.manager.timezone)
-			&& Utils.getDate(this.date, this.manager.timezone) == Utils.getDate(pRC.date, pRC.manager.timezone)
+			&& Utils.getMonth(this.date) == Utils.getMonth(pRC.date)
+			&& Utils.getDate(this.date) == Utils.getDate(pRC.date)
 		) {
 			switch(this.type) {
 				case RC_TYPE.LOG: {
@@ -165,9 +179,8 @@ export default class RCList
 		}
 	}
 	
-	// Check each entry for "threadTitle", else return default text.
-	getThreadTitle() : string {
-		let tTitle = null;//"<i>"+i18n('rcm-unknownthreadname')+"</i>";
+	getExistingThreadTitle() : string {
+		let tTitle = null;
 		this.list.some((rc:RCData) => {
 			if(rc.threadTitle) {
 				tTitle = rc.threadTitle;
@@ -175,6 +188,12 @@ export default class RCList
 			}
 			return false;
 		});
+		return tTitle;
+	}
+	
+	// Check each entry for "threadTitle", else return default text.
+	getThreadTitle() : string {
+		let tTitle = this.getExistingThreadTitle();
 		let tReturnText = tTitle;
 		if(this.manager.extraLoadingEnabled) {
 			let tElemID = Utils.uniqID();
@@ -186,8 +205,9 @@ export default class RCList
 					url: this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
 					callback: (data) => {
 						let tSpan = document.querySelector("#"+tElemID);
-						for(var tPageIndex in data.query.pages)
-						var tPage = data.query.pages[tPageIndex];
+						// for(var tPageIndex in data.query.pages)
+						// var tPage = data.query.pages[tPageIndex];
+						var tPage = Utils.getFirstItemFromObject(data.query.pages);
 						
 						(<HTMLAnchorElement>tSpan.parentNode).href = this.wikiInfo.articlepath + "Thread:" + tPage.pageid;
 						let tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
@@ -204,12 +224,15 @@ export default class RCList
 						url: `https://services.wikia.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
 						dataType: "json",
 						callback: (data) => {
+							this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
 							let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
-							tSpan.innerHTML = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
-							let tIcons = "";
-							if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
-							if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
-							if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
+							if(tSpan) {
+								tSpan.innerHTML = this.newest.threadTitle;
+								let tIcons = "";
+								if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
+								if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
+								if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
+							}
 						}
 					});
 				} else {
@@ -312,7 +335,7 @@ export default class RCList
 			pCallback();
 		}
 		pElem.addEventListener("click", tRCM_AjaxIconClickHandler);
-		this.removeListeners.push(() => { pElem.removeEventListener("click", tRCM_AjaxIconClickHandler); });
+		// this.removeListeners.push(() => { pElem.removeEventListener("click", tRCM_AjaxIconClickHandler); });
 	}
 	
 	// private _addRollbackLink(pRC) {
@@ -718,12 +741,12 @@ export default class RCList
 	
 	toHTML(pIndex:number) : HTMLElement {
 		if(this.manager.rcParams.hideenhanced) {
-			return this._toHTMLNonEnhanced(this.newest, pIndex);
+			return this.htmlNode = this._toHTMLNonEnhanced(this.newest, pIndex);
 		} else {
 			if(this.list.length > 1) {
-				return this._toHTMLBlock();
+				return this.htmlNode = this._toHTMLBlock();
 			} else {
-				return this._toHTMLSingle(this.newest);
+				return this.htmlNode = this._toHTMLSingle(this.newest);
 			}
 		}
 	}
