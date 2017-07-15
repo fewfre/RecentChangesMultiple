@@ -3,13 +3,16 @@
 ############################################
 - [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
 - Add a new way to format data (while retaining backwards compatibility)
-	- Move "data-" values to main visible area
-	- Don't crowd wiki options onto the end of the line; may them an array or something
-	- Allow links to have http(s) (just remove them; won't be an issue anymore due to line above)
+	- make "data-params" / "&params=" their own params
+	- Don't crowd wiki options onto the end of the line; make them sublists
+		- Allow links to have http(s) when using this (just remove them; won't be an issue anymore due to line above)
+	- make script-wide options on the js page
 - Better visual loading progress for each wiki on WikiPanel
 	- keep icons in same place
 	- show loading spinner on top of them.
 	- button with option to only show changes for that wiki?
+- Add "discussions-enabled" options to individual wikis.
+- [Bug] Deleted pages not removed on soft refresh
 
 ############################################
 ## SECONDARY

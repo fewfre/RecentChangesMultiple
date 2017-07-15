@@ -1,3 +1,7 @@
+== V2.7 - 15 July 2017 ==
+- [Bug] Having a 2nd colon appear in a title with a namespace caused everything after the 2nd colon in a title to be lost (reported by DarkBarbarian)
+
+
 == V2.6 - 28 January 2017 ==
 - Script no longer removes and re-adds whole list on refresh. This is to help lag on large "limit" sizes, and reduce burden on the server.
 	- Changing one of the "Recent changes options" will perform a "hard refresh" like it did before, removing all items from the list.

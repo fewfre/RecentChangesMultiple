@@ -531,7 +531,8 @@ export default class RCList
 			}
 			case RC_TYPE.COMMENT: {
 				// Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
-				html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath+(this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":")+this.newest.titleNoNS+"#WikiaArticleComments" );
+				let tNameSpaceText = this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":";
+				html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), tNameSpaceText+this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments" );
 				html += " ("+this._changesText()+")";
 				// html += SEP
 				// html += this._diffSizeText(this.newest, this.oldest);

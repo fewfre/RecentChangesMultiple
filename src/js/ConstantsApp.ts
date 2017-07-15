@@ -5,7 +5,7 @@ let mw = (<any>window).mediaWiki;
 //###########################################################
 export default class ConstantsApp
 {
-	static readonly version					: string = "2.6";
+	static readonly version					: string = "2.7";
 	static readonly lastVersionDateString	: string = "Sun Jan 29 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
 	static readonly config					: any = mw.config.get([
 		"skin",

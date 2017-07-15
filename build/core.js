@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.6";
+    ConstantsApp.version = "2.7";
     ConstantsApp.lastVersionDateString = "Sun Jan 29 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -434,7 +434,7 @@ var RCData = (function () {
         this.isBotEdit = pData.bot == "";
         this.isMinorEdit = pData.minor == "";
         this.isPatrolled = pData.patrolled == "";
-        this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
+        this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(/:(.+)/)[1] : this.title; // Regex only matches first ":"
         this.uniqueID = this.title; // By default; make change based on this.type.
         this.hrefTitle = Utils_1["default"].escapeCharactersLink(pData.title);
         this.href = this.wikiInfo.articlepath + this.hrefTitle;
@@ -948,7 +948,8 @@ var RCData = (function () {
     };
     RCData.prototype.pageTitleTextLink = function () {
         if (this.type == RC_TYPE_1["default"].COMMENT) {
-            return i18n_1["default"]("article-comments-rc-comment", this.href, this.titleNoNS);
+            var tNameSpaceText = this.namespace == 1 ? "" : this.wikiInfo.namespaces[String(this.namespace - 1)]["*"] + ":";
+            return i18n_1["default"]("article-comments-rc-comment", this.href, tNameSpaceText + this.titleNoNS);
         }
         else {
             return "<a class='rc-pagetitle' href='" + this.href + "'>" + this.title + "</a>";
@@ -1818,7 +1819,8 @@ var RCList = (function () {
             }
             case RC_TYPE_1["default"].COMMENT: {
                 // Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
-                html += i18n_1["default"].wiki2html(i18n_1["default"].MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + (this.newest.namespace == 1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace - 1)]["*"] + ":") + this.newest.titleNoNS + "#WikiaArticleComments");
+                var tNameSpaceText = this.newest.namespace == 1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace - 1)]["*"] + ":";
+                html += i18n_1["default"].wiki2html(i18n_1["default"].MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), tNameSpaceText + this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS + "#WikiaArticleComments");
                 html += " (" + this._changesText() + ")";
                 // html += SEP
                 // html += this._diffSizeText(this.newest, this.oldest);
@@ -2179,7 +2181,7 @@ var RCMManager = (function () {
         var tEndNewMessageDate = new Date(ConstantsApp_1["default"].lastVersionDateString);
         tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
         var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1["default"]("wikifeatures-promotion-new") + '</sup>' : "";
-        this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/rcm_avatar.jpg' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+        this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
         this._startWikiDataLoad();

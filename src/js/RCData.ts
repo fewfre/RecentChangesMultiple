@@ -121,7 +121,7 @@ export default class RCData
 		this.isBotEdit = pData.bot == "";
 		this.isMinorEdit = pData.minor == "";
 		this.isPatrolled = pData.patrolled == "";
-		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
+		this.titleNoNS = (this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(/:(.+)/)[1] : this.title; // Regex only matches first ":"
 		this.uniqueID = this.title; // By default; make change based on this.type.
 		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
 		this.href = this.wikiInfo.articlepath + this.hrefTitle;
@@ -616,7 +616,8 @@ export default class RCData
 	
 	pageTitleTextLink() : string {
 		if(this.type == TYPE.COMMENT) {
-			return i18n("article-comments-rc-comment", this.href, this.titleNoNS);
+			let tNameSpaceText = this.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.namespace-1)]["*"]+":";
+			return i18n("article-comments-rc-comment", this.href, tNameSpaceText+this.titleNoNS);
 		} else {
 			return `<a class='rc-pagetitle' href='${this.href}'>${this.title}</a>`;
 		}
