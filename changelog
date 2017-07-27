@@ -1,3 +1,9 @@
+== V2.8 - 20 July 2017 ==
+- [Bug] "revisionasof" requires $2 and $3 in some parameters to display properly (de) (reported by DarkBarbarian)
+- Each rc-entry now has a class for it's corresponding namespace (requested by leviathan_89)
+- Links to user pages now have classes added to themselves for what group a user belongs to, and if they're blocked. (requested by leviathan_89)
+
+
 == V2.7 - 15 July 2017 ==
 - [Bug] Having a 2nd colon appear in a title with a namespace caused everything after the 2nd colon in a title to be lost (reported by DarkBarbarian)
 

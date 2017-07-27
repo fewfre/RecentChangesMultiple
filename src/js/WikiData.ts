@@ -1,6 +1,7 @@
 import ConstantsApp from "./ConstantsApp";
 import RCMManager from "./RCMManager";
 import RCParams from "./RCParams";
+import UserData from "./UserData";
 import Utils from "./Utils";
 import i18n from "./i18n";
 
@@ -72,6 +73,12 @@ export default class WikiData
 	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
 	
 	/***************************
+	* All Users
+	****************************/
+	users					: { [username: string]: UserData }; // Map of user data. usernames stored with spaces, not _s
+	usersNeeded				: string[]; // usernames stored with spaces, not _s
+	
+	/***************************
 	* Dynamic Data
 	****************************/
 	lastChangeDate			: Date;
@@ -90,6 +97,9 @@ export default class WikiData
 		this.canRollback			= true;
 		this.isWikiaWiki			= true;
 		this.useOutdatedLogSystem	= false;
+		
+		this.users					= {};
+		this.usersNeeded			= [];
 		
 		// Initial values set in setupRcParams() due to needing "days" value.
 		this.lastChangeDate			= null;
@@ -338,6 +348,51 @@ export default class WikiData
 		return tDate;
 	}
 	
+	// Get user CSS classes as a string.
+	getUserClass(pUser:string) : string {
+		if(this.manager.extraLoadingEnabled) {
+			pUser = pUser.replace(/_/g, " ");
+			if(this.users[pUser]) {
+				return this.users[pUser].getClassNames();
+			} else {
+				if(this.usersNeeded.indexOf(pUser) == -1) this.usersNeeded.push(pUser);
+				return "rcm-user-needed";
+			}
+		}
+		return "";
+	}
+	// Get the correspondering dataset for user class.
+	getUserClassDataset(pUser:string) : string {
+		return `data-username=\"${pUser.replace(/"/g, "&quot;")}\"`;
+	}
+	
+	checkForSecondaryLoading() : void {
+		let tUrl = this.getUsersApiUrl();
+		if(tUrl) {
+			this.manager.secondaryWikiData.push({
+				url: tUrl,
+				callback: (data) => {
+					data.query.users.forEach((user, i)=>{
+						let username = user.name;
+						if(user.invalid === "" || user.missing === "") { Utils.removeFromArray(this.usersNeeded, username); return; }
+						// Keep track of data for future use.
+						this.users[username] = new UserData(this, this.manager).init(user);
+						Utils.removeFromArray(this.usersNeeded, username);
+						// Update data on the page.
+						let tNeededClass = "rcm-user-needed";
+						let tUserNodes = this.manager.resultsNode.querySelectorAll(`.${this.rcClass} .${tNeededClass}[data-username="${username.replace(/"/g, '&quot;')}"]`);
+						// loop through them and add classes
+						Utils.forEach(tUserNodes, (pUserNode)=>{
+							pUserNode.className += " "+this.users[username].getClassNames();
+							pUserNode.classList.remove(tNeededClass);
+						});
+						// TODO: Add classes directly to anchor? or always put a wrapper and add "username" class?
+					});
+				}
+			});
+		}
+	}
+	
 	updateLastChangeDate(pData:any) : void {
 		this.lastChangeDate = new Date(pData.timestamp);
 		// Add 1 millisecond to avoid getting this change again.
@@ -412,6 +467,13 @@ export default class WikiData
 		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
 		mw.log("[WikiData](getWikiDiscussionUrl) "+tReturnText);
 		return tReturnText;
+	}
+	
+	getUsersApiUrl() : string {
+		if(this.usersNeeded.length > 0) {
+			return UserData.getUsersApiUrl(this.usersNeeded, this.scriptpath);
+		}
+		return null;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)

@@ -62,8 +62,8 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.7";
-    ConstantsApp.lastVersionDateString = "Sun Jan 29 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
+    ConstantsApp.version = "2.8";
+    ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
         "debug",
@@ -382,7 +382,7 @@ var Main = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = new Main();
 
-},{"./ConstantsApp":1,"./RCMManager":5,"./Utils":11,"./i18n":13}],3:[function(require,module,exports){
+},{"./ConstantsApp":1,"./RCMManager":5,"./Utils":12,"./i18n":14}],3:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var RCMModal_1 = require("./RCMModal");
@@ -663,7 +663,7 @@ var RCData = (function () {
         }
         var blockText = pWikiInfo.canBlock ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         if (pUserEdited) {
-            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1["default"]("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
+            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='" + pWikiInfo.getUserClass(pAuthor) + "' " + pWikiInfo.getUserClassDataset(pAuthor) + ">{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1["default"]("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
         else {
             return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
@@ -966,6 +966,9 @@ var RCData = (function () {
             return i18n_1["default"]("forum-recentchanges-thread-group", "<a href='" + this.href + "'>" + pThreadTitle + "</a>", this.getBoardWallParentLink(), this.titleNoNS);
         }
     };
+    RCData.prototype.getNSClass = function () {
+        return "rc-entry-ns-" + this.namespace;
+    };
     RCData.prototype.wallBoardHistoryLink = function () {
         var tLink = "", tText = "";
         if (this.type == RC_TYPE_1["default"].WALL) {
@@ -1033,6 +1036,8 @@ var RCData = (function () {
                     // }
                     var tOMinor = tRevision.minor == "" ? "<abbr class=\"minoredit\">" + i18n_1["default"]('minoreditletter') + "</abbr> " : "";
                     var tNMinor = pDiffTableInfo.newRev.minor ? "<abbr class=\"minoredit\">" + i18n_1["default"]('minoreditletter') + "</abbr> " : "";
+                    var tRevDate = new Date(tRevision.timestamp);
+                    var tNewRevDate = pDiffTableInfo.newRev.date;
                     // TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
                     var tModalContent = ''
                         + "<div id='rcm-diff-view'>"
@@ -1048,7 +1053,9 @@ var RCData = (function () {
                         + "<td class='diff-otitle' colspan='2'>"
                         + "<div class='mw-diff-otitle1'>"
                         + "<strong>"
-                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "' data-action='revision-link-before'>" + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp))) + "</a>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "' data-action='revision-link-before'>"
+                        + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(tRevDate), Utils_1["default"].formatWikiTimeStampDateOnly(tRevDate), Utils_1["default"].formatWikiTimeStampTimeOnly(tRevDate))
+                        + "</a>"
                         + " <span class='mw-rev-head-action'>"
                         + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.from + "&action=edit\" data-action=\"edit-revision-before\">" + i18n_1["default"]('editold') + "</a>)")
                         + "</span>"
@@ -1060,7 +1067,9 @@ var RCData = (function () {
                         + "<td class='diff-ntitle' colspan='2'>"
                         + "<div class='mw-diff-ntitle1'>"
                         + "<strong>"
-                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "' data-action='revision-link-after'>" + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date)) + "</a>"
+                        + "<a href='" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "' data-action='revision-link-after'>"
+                        + i18n_1["default"]('revisionasof', RCData.getFullTimeStamp(tNewRevDate), Utils_1["default"].formatWikiTimeStampDateOnly(tNewRevDate), Utils_1["default"].formatWikiTimeStampTimeOnly(tNewRevDate))
+                        + "</a>"
                         + " <span class='mw-rev-head-action'>"
                         + ("(<a href=\"" + pDiffTableInfo.hrefFS + "oldid=" + tRevision.diff.to + "&action=edit\" data-action=\"edit-revision-after\">" + i18n_1["default"]('editold') + "</a>)")
                         + "</span>"
@@ -1281,7 +1290,7 @@ var RCData = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCData;
 
-},{"./ConstantsApp":1,"./RCMModal":6,"./RC_TYPE":10,"./Utils":11,"./i18n":13}],4:[function(require,module,exports){
+},{"./ConstantsApp":1,"./RCMModal":6,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],4:[function(require,module,exports){
 "use strict";
 var RCData_1 = require("./RCData");
 var Utils_1 = require("./Utils");
@@ -1451,7 +1460,7 @@ var RCList = (function () {
     };
     RCList.prototype._userPageLink = function (pUsername, pUserEdited, pAvatar) {
         if (pUserEdited) {
-            return pAvatar + "<a href='" + this.wikiInfo.articlepath + "User:" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
+            return pAvatar + "<a href='" + this.wikiInfo.articlepath + "User:" + Utils_1["default"].escapeCharactersLink(pUsername) + "' class=\"" + this.wikiInfo.getUserClass(pUsername) + "\" " + this.wikiInfo.getUserClassDataset(pUsername) + ">" + pUsername + "</a>";
         }
         else {
             return "<a href='" + this.wikiInfo.articlepath + "Special:Contributions/" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
@@ -1742,7 +1751,7 @@ var RCList = (function () {
                 break;
             }
         }
-        var tTable = Utils_1["default"].newElement("table", { className: "mw-enhanced-rc " + pRC.wikiInfo.rcClass });
+        var tTable = Utils_1["default"].newElement("table", { className: "mw-enhanced-rc " + pRC.wikiInfo.rcClass + " " + pRC.getNSClass() });
         Utils_1["default"].newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
         var tRow = Utils_1["default"].newElement("tr", {}, tTable);
         if (this._showFavicon()) {
@@ -1829,7 +1838,7 @@ var RCList = (function () {
         }
         html += RCList.SEP;
         html += this._contributorsCountText();
-        var tTable = Utils_1["default"].newElement("table", { className: "mw-collapsible mw-enhanced-rc mw-collapsed " + this.newest.wikiInfo.rcClass }); // mw-made-collapsible
+        var tTable = Utils_1["default"].newElement("table", { className: "mw-collapsible mw-enhanced-rc mw-collapsed " + this.newest.wikiInfo.rcClass + " " + this.newest.getNSClass() }); // mw-made-collapsible
         Utils_1["default"].newElement("caption", { className: this._getBackgroundClass() }, tTable); // Needed for CSS background.
         var tTbody = Utils_1["default"].newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
         var tRow = Utils_1["default"].newElement("tr", {}, tTbody);
@@ -2011,7 +2020,7 @@ var RCList = (function () {
                 break;
             }
         }
-        var tLi = Utils_1["default"].newElement("li", { className: (pIndex % 2 == 0 ? "mw-line-even" : "mw-line-odd") + " " + pRC.wikiInfo.rcClass });
+        var tLi = Utils_1["default"].newElement("li", { className: (pIndex % 2 == 0 ? "mw-line-even" : "mw-line-odd") + " " + pRC.wikiInfo.rcClass + " " + pRC.getNSClass() });
         Utils_1["default"].newElement("div", { className: this._getBackgroundClass() }, tLi);
         ;
         if (this._showFavicon()) {
@@ -2050,7 +2059,7 @@ var RCList = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCList;
 
-},{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":11,"./i18n":13}],5:[function(require,module,exports){
+},{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],5:[function(require,module,exports){
 "use strict";
 var Main_1 = require("./Main");
 var RCMWikiPanel_1 = require("./RCMWikiPanel");
@@ -2645,7 +2654,7 @@ var RCMManager = (function () {
         Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
         this.erroredWikis.push({ wikiInfo: pWikiData, tries: pTries, id: pID });
         if (this.isAutoRefreshEnabled()) {
-            this.loadErrorTimeoutID = setTimeout(function () { if (tHandler) {
+            this.loadErrorTimeoutID = window.setTimeout(function () { if (tHandler) {
                 tHandler(null);
             } }, 20000);
         }
@@ -3191,6 +3200,8 @@ var RCMManager = (function () {
         (window.ajaxCallAgain || []).forEach(function (cb) { cb(); });
         // Secondary info
         if (this.extraLoadingEnabled) {
+            // Check here instead of adding as they come up to condense calls.
+            this.chosenWikis.forEach(function (wd) { wd.checkForSecondaryLoading(); });
             this._loadExtraInfo(this.ajaxID);
         }
     };
@@ -3200,7 +3211,7 @@ var RCMManager = (function () {
         if (!this.isAutoRefreshEnabled()) {
             return;
         }
-        this.autoRefreshTimeoutID = setTimeout(function () {
+        this.autoRefreshTimeoutID = window.setTimeout(function () {
             if (RCMModal_1["default"].isModalOpen() || (_this.autoRefreshEvenOnFocus == false && document.hasFocus())) {
                 _this.startAutoRefresh();
                 return;
@@ -3333,7 +3344,7 @@ var RCMManager = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMManager;
 
-},{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./RCMWikiaDiscussionData":9,"./RC_TYPE":10,"./Utils":11,"./WikiData":12,"./i18n":13}],6:[function(require,module,exports){
+},{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./RCMWikiaDiscussionData":9,"./RC_TYPE":10,"./Utils":12,"./WikiData":13,"./i18n":14}],6:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var i18n_1 = require("./i18n");
@@ -3445,7 +3456,7 @@ var RCMModal = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMModal;
 
-},{"./ConstantsApp":1,"./i18n":13}],7:[function(require,module,exports){
+},{"./ConstantsApp":1,"./i18n":14}],7:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var Utils_1 = require("./Utils");
@@ -3712,7 +3723,7 @@ var RCMOptions = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMOptions;
 
-},{"./ConstantsApp":1,"./Utils":11,"./i18n":13}],8:[function(require,module,exports){
+},{"./ConstantsApp":1,"./Utils":12,"./i18n":14}],8:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var Utils_1 = require("./Utils");
@@ -3849,7 +3860,7 @@ var RCMWikiPanel = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMWikiPanel;
 
-},{"./ConstantsApp":1,"./Utils":11,"./i18n":13}],9:[function(require,module,exports){
+},{"./ConstantsApp":1,"./Utils":12,"./i18n":14}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -3935,7 +3946,7 @@ var RCMWikiaDiscussionData = (function (_super) {
         var tUserContribsLink = "//" + this.wikiInfo.servername + "/d/u/" + this.user_id;
         return Utils_1["default"].formatString(""
             + "<span class='mw-usertoollinks'>"
-            + this.getAvatarImg() + "<a href='{0}User:{1}'>{2}</a>"
+            + this.getAvatarImg() + "<a href='{0}User:{1}' class='" + this.wikiInfo.getUserClass(this.author) + "' " + this.wikiInfo.getUserClassDataset(this.author) + ">{2}</a>"
             + " (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>"
             + i18n_1["default"]("pipe-separator")
             + "<a href='" + tUserContribsLink + "'>" + i18n_1["default"]("contribslink") + "</a>"
@@ -3971,7 +3982,7 @@ var RCMWikiaDiscussionData = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMWikiaDiscussionData;
 
-},{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":11,"./i18n":13}],10:[function(require,module,exports){
+},{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],10:[function(require,module,exports){
 "use strict";
 var RC_TYPE;
 (function (RC_TYPE) {
@@ -3986,6 +3997,57 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RC_TYPE;
 
 },{}],11:[function(require,module,exports){
+"use strict";
+var Utils_1 = require("./Utils");
+var $ = window.jQuery;
+var mw = window.mediaWiki;
+//######################################
+// #### Wiki Data ####
+// * A data object to keep track of wiki data in an organized way, as well as also having convenience methods.
+// * These should only be created once per wiki per RCMManager. No reason to re-create every refresh.
+//######################################
+var UserData = (function () {
+    // Constructor
+    function UserData(pWikiInfo, pManager) {
+        this.manager = pManager;
+    }
+    UserData.prototype.dispose = function () {
+        delete this.manager;
+        delete this.wikiInfo;
+        this.groups = null;
+        // this.registration = null;
+        this.block = null;
+    };
+    // Handle data retrieved from https://www.mediawiki.org/wiki/API:Users
+    UserData.prototype.init = function (pData) {
+        this.userid = pData.userid;
+        this.name = pData.name;
+        // this.editcount = pData.editcount;
+        this.groups = pData.groups || [];
+        Utils_1["default"].removeFromArray(this.groups, "*");
+        // this.registration = new Date(pData.registration);
+        if (pData.blockedby) {
+            this.block = { by: pData.blockedby, reason: pData.blockreason, expiration: pData.blockexpiry };
+        }
+        return this; // Return self for chaining or whatnot.
+    };
+    // Get user CSS classes as a string.
+    UserData.prototype.getClassNames = function () {
+        return "rcm-usergroup-" + this.groups.join(" rcm-usergroup-") + (this.block ? " rcm-userblocked" : "");
+    };
+    UserData.getUsersApiUrl = function (pList, pScriptpath) {
+        var tReturnText = pScriptpath + "/api.php?action=query&format=json&continue=&list=users";
+        tReturnText += "&usprop=" + ["blockinfo", "groups"].join("|"); // "editcount", "registration"
+        tReturnText += "&ususers=" + Utils_1["default"].escapeCharactersLink(pList.join("|").replace(/ /g, "_"));
+        mw.log("[UserData](getUsersApiUrl)", "http:" + tReturnText.replace("&format=json", "&format=jsonfm"));
+        return tReturnText;
+    };
+    return UserData;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports["default"] = UserData;
+
+},{"./Utils":12}],12:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var $ = window.jQuery;
@@ -4059,24 +4121,37 @@ var Utils = (function () {
     Utils.getYear = function (pDate) { return ConstantsApp_1["default"].timezone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); };
     Utils.formatWikiTimeStamp = function (pDate, pShowTime) {
         if (pShowTime === void 0) { pShowTime = true; }
-        var tYear = Utils.getYear(pDate), tMonth = Utils.getMonth(pDate) + 1, tMonthName = ConstantsApp_1["default"].config.wgMonthNames[tMonth], tDay = Utils.getDate(pDate), tTime = "";
-        if (pShowTime) {
-            var tHours = Utils.getHours(pDate), tMinutes = Utils.getMinutes(pDate), tSeconds = Utils.getSeconds(pDate);
-            tTime = Utils.pad(tHours, 2) + ":" + Utils.pad(tMinutes, 2);
-            if (ConstantsApp_1["default"].userOptions.date != "ISO 8601") {
+        var tDateString = Utils.formatWikiTimeStampDateOnly(pDate), tTime = pShowTime ? Utils.formatWikiTimeStampTimeOnly(pDate) : "";
+        if (ConstantsApp_1["default"].userOptions.date != "ISO 8601") {
+            if (tTime) {
                 tTime = tTime + ", ";
             }
-            else {
-                tTime = "T" + tTime + ":" + Utils.pad(tSeconds, 2);
-            }
+            tDateString = tTime + tDateString;
         }
+        else {
+            if (tTime) {
+                tTime = "T" + tTime;
+            }
+            tDateString = tDateString + tTime;
+        }
+        return tDateString;
+    };
+    Utils.formatWikiTimeStampDateOnly = function (pDate) {
+        var tYear = Utils.getYear(pDate), tMonth = Utils.getMonth(pDate) + 1, tMonthName = ConstantsApp_1["default"].config.wgMonthNames[tMonth], tDay = Utils.getDate(pDate);
         switch (ConstantsApp_1["default"].userOptions.date) {
             case "mdy":
-            default: return tTime + (tMonthName + " " + tDay + ", " + tYear);
-            case "dmy": return tTime + (tDay + " " + tMonthName + " " + tYear);
-            case "ymd": return tTime + (tYear + " " + tMonthName + " " + tDay);
-            case "ISO 8601": return (tYear + "-" + Utils.pad((tMonth), 2, 0) + "-" + Utils.pad(tDay, 2, 0)) + tTime;
+            default: return tMonthName + " " + tDay + ", " + tYear;
+            case "dmy": return tDay + " " + tMonthName + " " + tYear;
+            case "ymd": return tYear + " " + tMonthName + " " + tDay;
+            case "ISO 8601": return tYear + "-" + Utils.pad((tMonth), 2, 0) + "-" + Utils.pad(tDay, 2, 0);
         }
+    };
+    Utils.formatWikiTimeStampTimeOnly = function (pDate) {
+        var tHours = Utils.getHours(pDate), tMinutes = Utils.getMinutes(pDate), tSeconds = Utils.getSeconds(pDate), tTime = Utils.pad(tHours, 2) + ":" + Utils.pad(tMinutes, 2);
+        if (ConstantsApp_1["default"].userOptions.date == "ISO 8601") {
+            tTime += ":" + Utils.pad(tSeconds, 2);
+        }
+        return tTime;
     };
     // Convert from MediaWiki time format to one Date object like.
     Utils.getTimestampForYYYYMMDDhhmmSS = function (pNum) {
@@ -4141,6 +4216,13 @@ var Utils = (function () {
     Utils.getFirstItemFromObject = function (pData) {
         for (var tKey in pData)
             return pData[tKey];
+    };
+    Utils.removeFromArray = function (pArray, pData) {
+        var i = pArray.indexOf(pData);
+        if (i != -1) {
+            return pArray.splice(i, 1)[0];
+        }
+        return null;
     };
     // Assumes the file has already been checked to be in namespace 6
     Utils.isFileAudio = function (pTitle) {
@@ -4243,9 +4325,10 @@ var Utils = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = Utils;
 
-},{"./ConstantsApp":1}],12:[function(require,module,exports){
+},{"./ConstantsApp":1}],13:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
+var UserData_1 = require("./UserData");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
 var $ = window.jQuery;
@@ -4266,6 +4349,8 @@ var WikiData = (function () {
         this.canRollback = true;
         this.isWikiaWiki = true;
         this.useOutdatedLogSystem = false;
+        this.users = {};
+        this.usersNeeded = [];
         // Initial values set in setupRcParams() due to needing "days" value.
         this.lastChangeDate = null;
         this.lastDiscussionDate = null;
@@ -4498,6 +4583,55 @@ var WikiData = (function () {
         tDate.setDate(tDate.getDate() - this.rcParams.days);
         return tDate;
     };
+    // Get user CSS classes as a string.
+    WikiData.prototype.getUserClass = function (pUser) {
+        if (this.manager.extraLoadingEnabled) {
+            pUser = pUser.replace(/_/g, " ");
+            if (this.users[pUser]) {
+                return this.users[pUser].getClassNames();
+            }
+            else {
+                if (this.usersNeeded.indexOf(pUser) == -1)
+                    this.usersNeeded.push(pUser);
+                return "rcm-user-needed";
+            }
+        }
+        return "";
+    };
+    // Get the correspondering dataset for user class.
+    WikiData.prototype.getUserClassDataset = function (pUser) {
+        return "data-username=\"" + pUser.replace(/"/g, "&quot;") + "\"";
+    };
+    WikiData.prototype.checkForSecondaryLoading = function () {
+        var _this = this;
+        var tUrl = this.getUsersApiUrl();
+        if (tUrl) {
+            this.manager.secondaryWikiData.push({
+                url: tUrl,
+                callback: function (data) {
+                    data.query.users.forEach(function (user, i) {
+                        var username = user.name;
+                        if (user.invalid === "" || user.missing === "") {
+                            Utils_1["default"].removeFromArray(_this.usersNeeded, username);
+                            return;
+                        }
+                        // Keep track of data for future use.
+                        _this.users[username] = new UserData_1["default"](_this, _this.manager).init(user);
+                        Utils_1["default"].removeFromArray(_this.usersNeeded, username);
+                        // Update data on the page.
+                        var tNeededClass = "rcm-user-needed";
+                        var tUserNodes = _this.manager.resultsNode.querySelectorAll("." + _this.rcClass + " ." + tNeededClass + "[data-username=\"" + username.replace(/"/g, '&quot;') + "\"]");
+                        // loop through them and add classes
+                        Utils_1["default"].forEach(tUserNodes, function (pUserNode) {
+                            pUserNode.className += " " + _this.users[username].getClassNames();
+                            pUserNode.classList.remove(tNeededClass);
+                        });
+                        // TODO: Add classes directly to anchor? or always put a wrapper and add "username" class?
+                    });
+                }
+            });
+        }
+    };
     WikiData.prototype.updateLastChangeDate = function (pData) {
         this.lastChangeDate = new Date(pData.timestamp);
         // Add 1 millisecond to avoid getting this change again.
@@ -4571,6 +4705,12 @@ var WikiData = (function () {
         var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.canBlock;
         mw.log("[WikiData](getWikiDiscussionUrl) " + tReturnText);
         return tReturnText;
+    };
+    WikiData.prototype.getUsersApiUrl = function () {
+        if (this.usersNeeded.length > 0) {
+            return UserData_1["default"].getUsersApiUrl(this.usersNeeded, this.scriptpath);
+        }
+        return null;
     };
     // Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
     // https://www.mediawiki.org/wiki/API:RecentChanges
@@ -4666,7 +4806,7 @@ var WikiData = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = WikiData;
 
-},{"./ConstantsApp":1,"./Utils":11,"./i18n":13}],13:[function(require,module,exports){
+},{"./ConstantsApp":1,"./UserData":11,"./Utils":12,"./i18n":14}],14:[function(require,module,exports){
 "use strict";
 var ConstantsApp_1 = require("./ConstantsApp");
 var $ = window.jQuery;
@@ -5834,7 +5974,7 @@ i18n.wiki2html = function (pText) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = i18n;
 
-},{"./ConstantsApp":1}],14:[function(require,module,exports){
+},{"./ConstantsApp":1}],15:[function(require,module,exports){
 "use strict";
 var Main_1 = require("./Main");
 // Double check that script can run; should always be true due to loader, but check is here just encase.
@@ -5847,5 +5987,5 @@ else {
     window.dev.RecentChangesMultiple.app = Main_1["default"];
 }
 
-},{"./Main":2}]},{},[14]);
+},{"./Main":2}]},{},[15]);
 //</syntaxhighlight>

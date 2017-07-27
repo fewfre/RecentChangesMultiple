@@ -101,7 +101,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		let tUserContribsLink = `//${this.wikiInfo.servername}/d/u/${this.user_id}`;
 		return Utils.formatString(""
 			+"<span class='mw-usertoollinks'>"
-				+this.getAvatarImg()+"<a href='{0}User:{1}'>{2}</a>"
+				+this.getAvatarImg()+"<a href='{0}User:{1}' class='"+this.wikiInfo.getUserClass(this.author)+"' "+this.wikiInfo.getUserClassDataset(this.author)+">{2}</a>"
 				+" (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"
 				+i18n("pipe-separator")
 				+"<a href='"+tUserContribsLink+"'>"+i18n("contribslink")+"</a>"

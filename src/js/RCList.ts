@@ -173,7 +173,7 @@ export default class RCList
 	
 	private _userPageLink(pUsername:string, pUserEdited:boolean, pAvatar:string) : string {
 		if(pUserEdited) {
-			return `${pAvatar}<a href='${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
+			return `${pAvatar}<a href='${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pUsername)}' class="${this.wikiInfo.getUserClass(pUsername)}" ${this.wikiInfo.getUserClassDataset(pUsername)}>${pUsername}</a>`;
 		} else {
 			return `<a href='${this.wikiInfo.articlepath}Special:Contributions/${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
 		}
@@ -457,7 +457,7 @@ export default class RCList
 			}
 		}
 		
-		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass });
+		var tTable = Utils.newElement("table", { className:"mw-enhanced-rc "+pRC.wikiInfo.rcClass+" "+pRC.getNSClass() });
 		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tRow = Utils.newElement("tr", {}, tTable);
 		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow); }
@@ -542,7 +542,7 @@ export default class RCList
 		html += RCList.SEP;
 		html += this._contributorsCountText();
 		
-		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass }); // mw-made-collapsible
+		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass+" "+this.newest.getNSClass() }); // mw-made-collapsible
 		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
@@ -721,7 +721,7 @@ export default class RCList
 			}
 		}
 		
-		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass });
+		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass+" "+pRC.getNSClass() });
 		Utils.newElement("div", { className:this._getBackgroundClass() }, tLi);;
 		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true)+" "; }
 		tLi.innerHTML += html;

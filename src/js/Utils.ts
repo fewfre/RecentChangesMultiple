@@ -74,28 +74,38 @@ export default class Utils
 	static getYear(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
 	
 	static formatWikiTimeStamp(pDate:Date, pShowTime:boolean=true) : string {
+		let tDateString = Utils.formatWikiTimeStampDateOnly(pDate),
+			tTime = pShowTime ? Utils.formatWikiTimeStampTimeOnly(pDate) : "";
+		if(ConstantsApp.userOptions.date != "ISO 8601") {
+			if(tTime) { tTime = tTime+", "; }
+			tDateString = tTime+tDateString;
+		} else {
+			if(tTime) { tTime = "T"+tTime; }
+			tDateString = tDateString+tTime;
+		}
+		return tDateString;
+	}
+	static formatWikiTimeStampDateOnly(pDate:Date) : string {
 		let tYear = Utils.getYear(pDate),
 			tMonth = Utils.getMonth(pDate)+1,
 			tMonthName = ConstantsApp.config.wgMonthNames[tMonth],
-			tDay = Utils.getDate(pDate),
-			tTime = "";
-		if(pShowTime) {
-			let tHours = Utils.getHours(pDate),
-				tMinutes = Utils.getMinutes(pDate),
-				tSeconds = Utils.getSeconds(pDate);
-			tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
-			if(ConstantsApp.userOptions.date != "ISO 8601") {
-				tTime = tTime+", ";
-			} else {
-				tTime = "T"+tTime+ ":" +Utils.pad( tSeconds, 2 );
-			}
-		}
+			tDay = Utils.getDate(pDate);
 		switch(ConstantsApp.userOptions.date) {
-			case "mdy": default: return tTime+`${tMonthName} ${tDay}, ${tYear}`;
-			case "dmy": return tTime+`${tDay} ${tMonthName} ${tYear}`;
-			case "ymd": return tTime+`${tYear} ${tMonthName} ${tDay}`;
-			case "ISO 8601": return `${tYear}-${Utils.pad((tMonth), 2, 0)}-${Utils.pad(tDay, 2, 0)}`+tTime;
+			case "mdy": default: return `${tMonthName} ${tDay}, ${tYear}`;
+			case "dmy": return `${tDay} ${tMonthName} ${tYear}`;
+			case "ymd": return `${tYear} ${tMonthName} ${tDay}`;
+			case "ISO 8601": return `${tYear}-${Utils.pad((tMonth), 2, 0)}-${Utils.pad(tDay, 2, 0)}`;
 		}
+	}
+	static formatWikiTimeStampTimeOnly(pDate:Date) : string {
+		let tHours = Utils.getHours(pDate),
+			tMinutes = Utils.getMinutes(pDate),
+			tSeconds = Utils.getSeconds(pDate),
+			tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
+		if(ConstantsApp.userOptions.date == "ISO 8601") {
+			tTime += ":" +Utils.pad( tSeconds, 2 );
+		}
+		return tTime;
 	}
 	
 	// Convert from MediaWiki time format to one Date object like.
@@ -165,6 +175,14 @@ export default class Utils
 	static getFirstItemFromObject(pData:any) : any {
 		for(var tKey in pData)
 		return pData[tKey];
+	}
+	
+	static removeFromArray(pArray:any[], pData:any) : any {
+		let i = pArray.indexOf(pData);
+		if(i != -1) {
+			return pArray.splice(i, 1)[0];
+		}
+		return null;
 	}
 	
 	// Assumes the file has already been checked to be in namespace 6

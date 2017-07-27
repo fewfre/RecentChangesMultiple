@@ -13,6 +13,9 @@
 	- button with option to only show changes for that wiki?
 - Add "discussions-enabled" options to individual wikis.
 - [Bug] Deleted pages not removed on soft refresh
+- Close shadow root? (Chrome shows “shadow root (open)”)
+- Add way to list wikis on JS page
+- User info box on hover (since already fetching data for a users' groups)
 
 ############################################
 ## SECONDARY

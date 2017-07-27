@@ -355,7 +355,7 @@ export default class RCData
 		
 		var blockText = pWikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		if(pUserEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
+			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='"+pWikiInfo.getUserClass(pAuthor)+"' "+pWikiInfo.getUserClassDataset(pAuthor)+">{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
 		} else {
 			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
 		}
@@ -640,6 +640,10 @@ export default class RCData
 		}
 	}
 	
+	getNSClass() : string {
+		return "rc-entry-ns-"+this.namespace;
+	}
+	
 	wallBoardHistoryLink() : string {
 		var tLink = "", tText = "";
 		if(this.type == TYPE.WALL) {
@@ -711,6 +715,8 @@ export default class RCData
 					
 					var tOMinor = tRevision.minor == "" ? `<abbr class="minoredit">${i18n('minoreditletter')}</abbr> ` : "";
 					var tNMinor = pDiffTableInfo.newRev.minor ? `<abbr class="minoredit">${i18n('minoreditletter')}</abbr> ` : "";
+					let tRevDate = new Date(tRevision.timestamp);
+					let tNewRevDate = pDiffTableInfo.newRev.date;
 					// TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
 					var tModalContent = ''
 					+"<div id='rcm-diff-view'>"
@@ -726,7 +732,9 @@ export default class RCData
 								+"<td class='diff-otitle' colspan='2'>"
 									+"<div class='mw-diff-otitle1'>"
 										+"<strong>"
-											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"+i18n('revisionasof', RCData.getFullTimeStamp(new Date(tRevision.timestamp)))+"</a>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"
+												+i18n('revisionasof', RCData.getFullTimeStamp(tRevDate), Utils.formatWikiTimeStampDateOnly(tRevDate), Utils.formatWikiTimeStampTimeOnly(tRevDate))
+											+"</a>"
 											+" <span class='mw-rev-head-action'>"
 												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`
 											+"</span>"
@@ -739,7 +747,9 @@ export default class RCData
 								+"<td class='diff-ntitle' colspan='2'>"
 									+"<div class='mw-diff-ntitle1'>"
 										+"<strong>"
-											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"+i18n('revisionasof', RCData.getFullTimeStamp(pDiffTableInfo.newRev.date))+"</a>"
+											+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"
+												+i18n('revisionasof', RCData.getFullTimeStamp(tNewRevDate), Utils.formatWikiTimeStampDateOnly(tNewRevDate), Utils.formatWikiTimeStampTimeOnly(tNewRevDate))
+											+"</a>"
 											+" <span class='mw-rev-head-action'>"
 												+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`
 											+"</span>"

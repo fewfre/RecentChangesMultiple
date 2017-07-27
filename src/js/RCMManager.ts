@@ -660,7 +660,7 @@ export default class RCMManager
 		};
 		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = setTimeout(() => { if(tHandler) { tHandler(null); } }, 20000); }
+		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = window.setTimeout(() => { if(tHandler) { tHandler(null); } }, 20000); }
 	}
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
@@ -1180,6 +1180,9 @@ export default class RCMManager
 		
 		// Secondary info
 		if(this.extraLoadingEnabled) {
+			// Check here instead of adding as they come up to condense calls.
+			this.chosenWikis.forEach(function(wd){ wd.checkForSecondaryLoading(); });
+			
 			this._loadExtraInfo(this.ajaxID);
 		}
 	};
@@ -1187,7 +1190,7 @@ export default class RCMManager
 	startAutoRefresh() : void {
 		if(!this.isAutoRefreshEnabled()) { return; }
 		
-		this.autoRefreshTimeoutID = setTimeout(() => {
+		this.autoRefreshTimeoutID = window.setTimeout(() => {
 			if(RCMModal.isModalOpen() || (this.autoRefreshEvenOnFocus == false && document.hasFocus())) { this.startAutoRefresh(); return; }
 			this.refresh();
 		}, this.autoRefreshTimeoutNum);
