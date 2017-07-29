@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.8";
+    ConstantsApp.version = "2.9";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -649,7 +649,7 @@ var RCData = (function () {
     RCData.prototype.userDetails = function () {
         // if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
         //
-        // var blockText = this.wikiInfo.canBlock ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+        // var blockText = this.wikiInfo.user.hasBlockRight ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
         // if(this.userEdited) {
         // 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
         // } else {
@@ -661,12 +661,12 @@ var RCData = (function () {
         if (pUserHidden) {
             return '<span class="history-deleted">' + i18n_1["default"]("rev-deleted-user") + '</span>';
         }
-        var blockText = pWikiInfo.canBlock ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
+        var blockText = pWikiInfo.user.hasBlockRight ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         if (pUserEdited) {
             return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='" + pWikiInfo.getUserClass(pAuthor) + "' " + pWikiInfo.getUserClassDataset(pAuthor) + ">{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1["default"]("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
         else {
-            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
+            return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a class='rcm-useranon' href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
     };
     RCData.prototype.logTitleLink = function () {
@@ -899,6 +899,9 @@ var RCData = (function () {
             tLogMessage += this.userDetails() + (" ??? (" + this.logtype + " - " + this.logaction + ") ");
         }
         tLogMessage += this.getSummary();
+        if (this.wikiInfo.user.hasUndeleteRight && this.logtype == "delete" && this.logaction == "delete") {
+            tLogMessage += " (<a href='" + this.wikiInfo.articlepath + "Special:Undelete" + this.wikiInfo.firstSeperator + "target=" + this.hrefTitle + "'>" + i18n_1["default"]("undeletelink") + "</a>)";
+        }
         return tLogMessage;
     };
     // Assumes it's a wall/board that has an action (will just return summary otherwise).
@@ -1463,7 +1466,7 @@ var RCList = (function () {
             return pAvatar + "<a href='" + this.wikiInfo.articlepath + "User:" + Utils_1["default"].escapeCharactersLink(pUsername) + "' class=\"" + this.wikiInfo.getUserClass(pUsername) + "\" " + this.wikiInfo.getUserClassDataset(pUsername) + ">" + pUsername + "</a>";
         }
         else {
-            return "<a href='" + this.wikiInfo.articlepath + "Special:Contributions/" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
+            return "<a class=\"rcm-useranon\" href='" + this.wikiInfo.articlepath + "Special:Contributions/" + Utils_1["default"].escapeCharactersLink(pUsername) + "'>" + pUsername + "</a>";
         }
     };
     RCList.prototype.getExistingThreadTitle = function () {
@@ -1562,7 +1565,7 @@ var RCList = (function () {
             var diffLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&diff=" + pToRC.revid + "&oldid=" + pFromRC.old_revid;
             var undoLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&undo=" + pToRC.revid + "&undoafter=" + pFromRC.old_revid + "&action=edit";
             // var rollbackLink = null;
-            // if(this.wikiInfo.canRollback) {
+            // if(this.wikiInfo.user.hasRollbackRight) {
             // 	ajaxLink += "&rvtoken=rollback";
             // 	// Token provided upon results returned from ajaxLink.
             // 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
@@ -1745,7 +1748,7 @@ var RCList = (function () {
                 html += RCList.SEP;
                 html += pRC.userDetails();
                 html += pRC.getSummary();
-                // if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.canRollback) {
+                // if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.hasRollbackRight) {
                 //  html += " [<a href='"+this.href+"action=rollback&from="+this.entry.author.name+"'>rollback</a>]";
                 // }
                 break;
@@ -3937,7 +3940,7 @@ var RCMWikiaDiscussionData = (function (_super) {
         if (this.userhidden) {
             return '<span class="history-deleted">' + i18n_1["default"]("rev-deleted-user") + '</span>';
         }
-        var blockText = this.wikiInfo.canBlock ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
+        var blockText = this.wikiInfo.user.hasBlockRight ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         // if(this.userEdited) {
         // 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
         // } else {
@@ -4345,8 +4348,7 @@ var WikiData = (function () {
         this.notificationsEnabled = true;
         this.needsSiteinfoData = true;
         this.needsUserData = true;
-        this.canBlock = false;
-        this.canRollback = true;
+        this.user = { hasBlockRight: false, hasUndeleteRight: false, hasRollbackRight: true }; // Set hasRollbackRight to true by default so as to fetch extra necessary data first time around.
         this.isWikiaWiki = true;
         this.useOutdatedLogSystem = false;
         this.users = {};
@@ -4364,6 +4366,7 @@ var WikiData = (function () {
         this.rcParamsBase = null;
         this.rcParams = null;
         this.namespaces = null;
+        this.user = null;
         this.lastChangeDate = null;
         this.lastDiscussionDate = null;
     };
@@ -4513,15 +4516,19 @@ var WikiData = (function () {
          * User Data
          ***************************/
         if (this.needsUserData && !!pQuery.users) {
-            this.canBlock = false;
-            this.canRollback = false;
             this.needsUserData = false;
+            this.user.hasBlockRight = false;
+            this.user.hasUndeleteRight = false;
+            this.user.hasRollbackRight = false;
             for (var i in pQuery.users[0].rights) {
                 if (pQuery.users[0].rights[i] == "block") {
-                    this.canBlock = true;
+                    this.user.hasBlockRight = true;
+                }
+                if (pQuery.users[0].rights[i] == "undelete") {
+                    this.user.hasUndeleteRight = true;
                 }
                 else if (pQuery.users[0].rights[i] == "rollback") {
-                    this.canRollback = true;
+                    this.user.hasRollbackRight = true;
                 }
             }
         }
@@ -4702,7 +4709,7 @@ var WikiData = (function () {
         // Get results up to this time stamp.
         var tEndDate = this.lastDiscussionDate; //this.getEndDate();
         var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.canBlock;
+        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
         mw.log("[WikiData](getWikiDiscussionUrl) " + tReturnText);
         return tReturnText;
     };
@@ -5767,6 +5774,7 @@ i18n.MESSAGES = {
     'wikiaPhotoGallery-conflict-view': 'View the current page',
     'app-loading': 'Loading...',
     'wikia-hubs-remove': 'Remove',
+    'undeletelink': 'view/restore',
     /***************************
     * Diff Modal
     ****************************/

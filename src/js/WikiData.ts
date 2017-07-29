@@ -66,17 +66,19 @@ export default class WikiData
 	* User Data
 	****************************/
 	needsUserData			: boolean; // Check if the RCMManager should load the this user's account data for the wiki (detect what rights they have).
-	canBlock				: boolean; // If the user has the "block" right on this wiki.
-	canRollback				: boolean; // If the user has the "rollback" right on this wiki. Set to true by default so as to fetch extra necessary data first time around.
-	
-	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
-	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) need to have them retrieved separately.
+	user					: { hasBlockRight:boolean, hasUndeleteRight:boolean, hasRollbackRight:boolean }; // Data for the user using the script on this specific wiki.
 	
 	/***************************
 	* All Users
 	****************************/
 	users					: { [username: string]: UserData }; // Map of user data. usernames stored with spaces, not _s
 	usersNeeded				: string[]; // usernames stored with spaces, not _s
+	
+	/***************************
+	* Other
+	****************************/
+	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
+	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) needs to have them retrieved separately.
 	
 	/***************************
 	* Dynamic Data
@@ -93,8 +95,7 @@ export default class WikiData
 		this.notificationsEnabled	= true;
 		this.needsSiteinfoData		= true;
 		this.needsUserData			= true;
-		this.canBlock				= false;
-		this.canRollback			= true;
+		this.user					= { hasBlockRight:false, hasUndeleteRight:false, hasRollbackRight:true };  // Set hasRollbackRight to true by default so as to fetch extra necessary data first time around.
 		this.isWikiaWiki			= true;
 		this.useOutdatedLogSystem	= false;
 		
@@ -117,6 +118,7 @@ export default class WikiData
 		this.rcParams = null;
 		
 		this.namespaces = null;
+		this.user = null;
 		
 		this.lastChangeDate = null;
 		this.lastDiscussionDate = null;
@@ -280,12 +282,14 @@ export default class WikiData
 		 * User Data
 		 ***************************/
 		if(this.needsUserData && !!pQuery.users){
-			this.canBlock = false;
-			this.canRollback = false;
 			this.needsUserData = false;
+			this.user.hasBlockRight = false;
+			this.user.hasUndeleteRight = false;
+			this.user.hasRollbackRight = false;
 			for(var i in pQuery.users[0].rights) {
-				if(pQuery.users[0].rights[i] == "block") { this.canBlock = true; }
-				else if(pQuery.users[0].rights[i] == "rollback") { this.canRollback = true; }
+				if(pQuery.users[0].rights[i] == "block") { this.user.hasBlockRight = true; }
+				if(pQuery.users[0].rights[i] == "undelete") { this.user.hasUndeleteRight = true; }
+				else if(pQuery.users[0].rights[i] == "rollback") { this.user.hasRollbackRight = true; }
 			}
 		}
 		
@@ -464,7 +468,7 @@ export default class WikiData
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.canBlock}`;
+		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.hasBlockRight}`;
 		mw.log("[WikiData](getWikiDiscussionUrl) "+tReturnText);
 		return tReturnText;
 	}

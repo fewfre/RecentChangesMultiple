@@ -7,6 +7,7 @@
 	- Don't crowd wiki options onto the end of the line; make them sublists
 		- Allow links to have http(s) when using this (just remove them; won't be an issue anymore due to line above)
 	- make script-wide options on the js page
+	- Add way to list wikis on JS page (display on a special:blank page?)
 - Better visual loading progress for each wiki on WikiPanel
 	- keep icons in same place
 	- show loading spinner on top of them.
@@ -14,7 +15,6 @@
 - Add "discussions-enabled" options to individual wikis.
 - [Bug] Deleted pages not removed on soft refresh
 - Close shadow root? (Chrome shows “shadow root (open)”)
-- Add way to list wikis on JS page
 - User info box on hover (since already fetching data for a users' groups)
 
 ############################################

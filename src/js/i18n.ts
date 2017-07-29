@@ -1012,6 +1012,7 @@ i18n.MESSAGES = {
 	'wikiaPhotoGallery-conflict-view': 'View the current page',
 	'app-loading': 'Loading...',
 	'wikia-hubs-remove': 'Remove',
+	'undeletelink': 'view/restore',
 	
 	/***************************
 	* Diff Modal

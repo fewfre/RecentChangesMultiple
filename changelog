@@ -1,3 +1,9 @@
+== V2.9 - 29 July 2017 ==
+-Added .rcm-useranon to anon user links.
+-Added "view/restore" link to end of deletion logs if user has undelete rights on that wiki.
+-Moved the WikiData.canBlock flags into a "user" object inside same class.
+
+
 == V2.8 - 20 July 2017 ==
 - [Bug] "revisionasof" requires $2 and $3 in some parameters to display properly (de) (reported by DarkBarbarian)
 - Each rc-entry now has a class for it's corresponding namespace (requested by leviathan_89)

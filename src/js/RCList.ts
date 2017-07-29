@@ -175,7 +175,7 @@ export default class RCList
 		if(pUserEdited) {
 			return `${pAvatar}<a href='${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pUsername)}' class="${this.wikiInfo.getUserClass(pUsername)}" ${this.wikiInfo.getUserClassDataset(pUsername)}>${pUsername}</a>`;
 		} else {
-			return `<a href='${this.wikiInfo.articlepath}Special:Contributions/${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
+			return `<a class="rcm-useranon" href='${this.wikiInfo.articlepath}Special:Contributions/${Utils.escapeCharactersLink(pUsername)}'>${pUsername}</a>`;
 		}
 	}
 	
@@ -271,7 +271,7 @@ export default class RCList
 			var diffLink = `${pFromRC.hrefFS}curid=${pFromRC.pageid}&diff=${pToRC.revid}&oldid=${pFromRC.old_revid}`;
 			var undoLink = `${pFromRC.hrefFS}curid=${pFromRC.pageid}&undo=${pToRC.revid}&undoafter=${pFromRC.old_revid}&action=edit`;
 			// var rollbackLink = null;
-			// if(this.wikiInfo.canRollback) {
+			// if(this.wikiInfo.user.hasRollbackRight) {
 			// 	ajaxLink += "&rvtoken=rollback";
 			// 	// Token provided upon results returned from ajaxLink.
 			// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
@@ -450,7 +450,7 @@ export default class RCList
 				html += RCList.SEP;
 				html += pRC.userDetails();
 				html += pRC.getSummary();
-				// if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.canRollback) {
+				// if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.hasRollbackRight) {
 				//  html += " [<a href='"+this.href+"action=rollback&from="+this.entry.author.name+"'>rollback</a>]";
 				// }
 				break;
