@@ -328,4 +328,144 @@ table.mw-enhanced-rc td.mw-enhanced-rc-nested {
 .mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-expanded .mw-rc-closearrow {
   display: inline;
 }
+/* skins/oasis/css/oasis.scss - removed from wikia css, so re-adding here */
+.banner-notification {
+  box-shadow: 0 2px 5px 0 #e0e0e0;
+  padding: 8px 10px;
+}
+.banner-notification.confirm {
+  background: #92CD8E;
+  border: 1px solid #7EB37D;
+  border-top-width: 0;
+  color: #28482E;
+}
+.banner-notification.confirm .close {
+  background-color: #161f15;
+}
+.banner-notification.confirm a {
+  color: #3d6341;
+}
+.banner-notification.notify {
+  background: #7ABFDD;
+  border: 1px solid #6DA8C1;
+  border-top-width: 0;
+  color: #22424F;
+}
+.banner-notification.notify .close {
+  background-color: #121d21;
+}
+.banner-notification.notify a {
+  color: #345b6b;
+}
+.banner-notification.error {
+  background: #E56667;
+  border: 1px solid #C859CA;
+  border-top-width: 0;
+  color: #511616;
+}
+.banner-notification.error .close {
+  background-color: #220f0f;
+}
+.banner-notification.error a {
+  color: #6f2626;
+}
+.banner-notification.warn {
+  background: #F2CF60;
+  border: 1px solid #D2B554;
+  border-top-width: 0;
+  color: #524616;
+}
+.banner-notification.warn .close {
+  background-color: #241f0e;
+}
+.banner-notification.warn a {
+  color: #726125;
+}
+.banner-notification .msg {
+  font-size: 13px;
+  line-height: 16px;
+}
+.banner-notification .msg a {
+  text-decoration: underline;
+}
+.banner-notification .close {
+  float: right;
+  height: 14px;
+  margin: 0;
+  width: 14px;
+}
+.banner-notification .close img {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAnklEQVR42q2SUQ2FMAwAsVALWJiFWXgWsIAFLGABC1iYBSwgYaVLjqQJe2QQSO6ja69ZOzpVfc03cs65N6IRuspXciA1WYzNUBp48cf5WuKLTFEwlCbCWW/sIH9likcaLMSrv82tjLAgnOJIqkFmfj/nEzkiKrOGFtkvaHNbToa0yAkhEk/E841MoVtQpeFQlUuCguQ8//47hM/+7dccsoYmxqM9qkcAAAAASUVORK5CYII=");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 12px 11px;
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+.banner-notification.non-dismissible .close {
+  display: none;
+}
+.banner-notification a.wikia-button {
+  text-decoration: none;
+}
+.banner-notifications-wrapper {
+  margin: 0 auto;
+  transition: top 200ms linear;
+  width: 958px;
+  z-index: 5000101;
+}
+.banner-notifications-wrapper.float {
+  left: 50%;
+  margin-left: -515px;
+  position: fixed;
+}
+.wikia-grid .banner-notifications-wrapper {
+  width: 988px;
+}
+.wikia-grid .banner-notifications-wrapper.float {
+  margin-left: -505px;
+}
+@media screen and (max-width: 1020px) {
+  .wikia-grid .banner-notifications-wrapper.float {
+    width: -webkit-calc(80%);
+    width: calc(80%);
+    left: 0;
+    margin: 0;
+  }
+}
+.modalWrapper .banner-notifications-wrapper {
+  box-shadow: 0 0 0 0 #000;
+  margin: auto;
+  width: auto;
+}
+.modalWrapper .banner-notifications-wrapper .close {
+  display: none;
+}
+.modalWrapper .banner-notifications-wrapper.float {
+  left: 0;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+}
+.modalWrapper .banner-notifications-wrapper .msg {
+  padding: 8px 10px;
+}
+.modal .banner-notifications-wrapper {
+  width: 100%;
+}
+.modal .banner-notifications-wrapper .close {
+  display: none;
+}
+.ve-ui-window-body .banner-notifications-wrapper {
+  box-sizing: border-box;
+  position: absolute;
+  width: 100%;
+}
+.ve-ui-window-body .banner-notifications-wrapper .close {
+  position: absolute;
+  right: 15px;
+}
 /* </syntaxhighlight> */
