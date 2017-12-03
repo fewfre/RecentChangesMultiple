@@ -1,3 +1,7 @@
+== V2.9b - 2 December 2017 ==
+-`stylesheet.css` moved to MediaWiki namespace on dev wikia.
+
+
 == V2.9 - 29 July 2017 ==
 -Added .rcm-useranon to anon user links.
 -Added "view/restore" link to end of deletion logs if user has undelete rights on that wiki.

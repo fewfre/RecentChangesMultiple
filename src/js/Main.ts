@@ -61,7 +61,7 @@ class Main
 		* Preload
 		****************************/
 		// Load the css for module
-		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
 		this._loadLangMessages(); // Load Translations from Wiki database.
 		
 		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load

@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.9";
+    ConstantsApp.version = "2.9b";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -182,7 +182,7 @@ var Main = (function () {
         * Preload
         ****************************/
         // Load the css for module
-        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
         this._loadLangMessages(); // Load Translations from Wiki database.
         // Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
         mw.loader.load([
