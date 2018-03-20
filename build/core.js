@@ -77,9 +77,9 @@ var ConstantsApp = (function () {
     ConstantsApp.debug = ConstantsApp.config.debug;
     ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID = "RecentChangesMultiple-autorefresh-" + ConstantsApp.config.wgPageName;
     ConstantsApp.OPTIONS_SETTINGS_LOCAL_STORAGE_ID = "RecentChangesMultiple-saveoptionscookie-" + ConstantsApp.config.wgPageName;
-    ConstantsApp.FAVICON_BASE = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
-    ConstantsApp.LOADER_IMG = "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
-    ConstantsApp.NOTIFICATION_ICON = "http://vignette1.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
+    ConstantsApp.FAVICON_BASE = "//www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
+    ConstantsApp.LOADER_IMG = "//images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
+    ConstantsApp.NOTIFICATION_ICON = "//vignette.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
     ConstantsApp.username = ConstantsApp.config.wgUserName;
     // These may be update ay given points.
     ConstantsApp.uniqID = 0;
@@ -182,7 +182,7 @@ var Main = (function () {
         * Preload
         ****************************/
         // Load the css for module
-        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple/stylesheet.css&only=styles" }, document.head);
+        Utils_1["default"].newElement("link", { rel: "stylesheet", type: "text/css", href: "/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
         this._loadLangMessages(); // Load Translations from Wiki database.
         // Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
         mw.loader.load([
@@ -289,7 +289,7 @@ var Main = (function () {
         var tLangLoadAjaxPromises = [];
         // Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
         function tRCM_loadLangMessage(pMessages) {
-            var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? ConstantsApp_1["default"].config.wgServer + ConstantsApp_1["default"].config.wgScriptPath : "http://community.wikia.com";
+            var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? ConstantsApp_1["default"].config.wgServer + ConstantsApp_1["default"].config.wgScriptPath : "//community.wikia.com";
             var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang=" + i18n_1["default"].defaultLang + "&ammessages=" + pMessages;
             mw.log(url.replace("&format=json", "&format=jsonfm"));
             return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
@@ -1510,7 +1510,7 @@ var RCList = (function () {
                     var tRC = this.newest;
                     this.manager.secondaryWikiData.push({
                         // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-                        url: "https://services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
+                        url: "//services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
                         dataType: "json",
                         callback: function (data) {
                             _this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim() + "..."); // If no title, use part of original message.
@@ -1761,7 +1761,7 @@ var RCList = (function () {
             Utils_1["default"].newElement("td", { innerHTML: pRC.wikiInfo.getFaviconHTML(true) }, tRow);
         }
         Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
-                + '<img src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
+                + '<img src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
                 + this._getFlags(pRC, "&nbsp;")
                 + "&nbsp;"
                 + pRC.time()
@@ -1851,10 +1851,10 @@ var RCList = (function () {
         var td1 = Utils_1["default"].newElement("td", {}, tRow);
         Utils_1["default"].newElement("span", { className: "mw-collapsible-toggle", innerHTML: ''
                 + '<span class="mw-rc-openarrow"><a title="' + i18n_1["default"]("rc-enhanced-expand") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-expand") + '" alt="+" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-expand") + '" alt="+" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
                 + '</a></span>'
                 + '<span class="mw-rc-closearrow"><a title="' + i18n_1["default"]("rc-enhanced-hide") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-hide") + '" alt="-" src="http://slot1.images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-hide") + '" alt="-" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
                 + '</a></span>' }, td1);
         Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
                 + this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit: true })
@@ -2193,7 +2193,7 @@ var RCMManager = (function () {
         var tEndNewMessageDate = new Date(ConstantsApp_1["default"].lastVersionDateString);
         tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
         var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1["default"]("wikifeatures-promotion-new") + '</sup>' : "";
-        this.footerNode.innerHTML = "[<a href='http://dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+        this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
         this._startWikiDataLoad();
@@ -4433,7 +4433,7 @@ var WikiData = (function () {
                         }
                         else {
                             // [depreciated]
-                            this.favicon = "http://vignette3.wikia.nocookie.net/" + this.favicon + "/images/6/64/Favicon.ico";
+                            this.favicon = "//vignette.wikia.nocookie.net/" + this.favicon + "/images/6/64/Favicon.ico";
                         }
                         break;
                     }
@@ -4709,8 +4709,8 @@ var WikiData = (function () {
         // Get results up to this time stamp.
         var tEndDate = this.lastDiscussionDate; //this.getEndDate();
         var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
-        mw.log("[WikiData](getWikiDiscussionUrl) " + tReturnText);
+        var tReturnText = "//services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
+        mw.log("[WikiData](getWikiDiscussionUrl) https:" + tReturnText);
         return tReturnText;
     };
     WikiData.prototype.getUsersApiUrl = function () {

@@ -16,6 +16,7 @@
 - [Bug] Deleted pages not removed on soft refresh
 - Close shadow root? (Chrome shows “shadow root (open)”)
 - User info box on hover (since already fetching data for a users' groups)
+- In infobox, add link to "discussions" (if it exists for wiki)
 
 ############################################
 ## SECONDARY
@@ -27,6 +28,7 @@
 - [Bug] Ajax image preview: redirected images break. Not able to get info via built-in api "&redirects=1" parameter. May require more than one call to server?
 - Translations: support "rtl" lang dir
 - Check for memory leaks.
+- Make sure all links (even images!) use "//" or https
 
 
 ############################################

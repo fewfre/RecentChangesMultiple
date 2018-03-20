@@ -22,9 +22,9 @@ export default class ConstantsApp
 	
 	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + ConstantsApp.config.wgPageName;
 	static OPTIONS_SETTINGS_LOCAL_STORAGE_ID: string = "RecentChangesMultiple-saveoptionscookie-" + ConstantsApp.config.wgPageName;
-	static FAVICON_BASE						: string = "http://www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
-	static LOADER_IMG						: string = "http://slot1.images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
-	static NOTIFICATION_ICON				: string = "http://vignette1.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
+	static FAVICON_BASE						: string = "//www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
+	static LOADER_IMG						: string = "//images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
+	static NOTIFICATION_ICON				: string = "//vignette.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
 	
 	static readonly username				: string = ConstantsApp.config.wgUserName;
 	
