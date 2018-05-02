@@ -1,3 +1,9 @@
+== V2.10 - 1 May 2018 ==
+- Https compliance
+- [Bug] Fixed https links not being parsed properly
+- [Bug] If a refresh happened after the day changed, any new entries added to previous days ended up at the bottom of that day's list.
+
+
 == V2.9b - 2 December 2017 ==
 -`stylesheet.css` moved to MediaWiki namespace on dev wikia.
 

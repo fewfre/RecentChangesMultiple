@@ -1,5 +1,6 @@
 {
-  "name": "RecentChangesMultiple",
+  "name": "recent-changes-multiple",
+  "version": "0.0.0",
   "dependencies": {},
   "devDependencies": {
     "browserify": "^13.1.1",

@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.9b";
+    ConstantsApp.version = "2.10";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -1510,7 +1510,7 @@ var RCList = (function () {
                     var tRC = this.newest;
                     this.manager.secondaryWikiData.push({
                         // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-                        url: "//services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
+                        url: "https://services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
                         dataType: "json",
                         callback: function (data) {
                             _this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim() + "..."); // If no title, use part of original message.
@@ -2193,7 +2193,7 @@ var RCMManager = (function () {
         var tEndNewMessageDate = new Date(ConstantsApp_1["default"].lastVersionDateString);
         tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
         var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1["default"]("wikifeatures-promotion-new") + '</sup>' : "";
-        this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='http://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+        this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
         this._startWikiDataLoad();
@@ -3066,7 +3066,7 @@ var RCMManager = (function () {
             this.finishScript();
             return;
         }
-        var date = this.newRecentChangesEntries[pIndex].date;
+        var date = this.newRecentChangesEntries[pIndex].date, tAddToTopOfExistingContainer = false;
         // Add new date grouping if necessary.
         if (Utils_1["default"].getDate(date) != pLastDay || Utils_1["default"].getMonth(date) != pLastMonth) {
             pLastDay = Utils_1["default"].getDate(date);
@@ -3076,6 +3076,7 @@ var RCMManager = (function () {
             // Re-use existing container if there is one
             if (tNewContainer = this.resultsNode.querySelector("[data-timestamp=\"" + tTimestamp + "\"]")) {
                 pContainer = tNewContainer;
+                tAddToTopOfExistingContainer = true;
             }
             else {
                 var tNewHeading = Utils_1["default"].newElement("h4", { innerHTML: tTimestamp });
@@ -3114,7 +3115,7 @@ var RCMManager = (function () {
             if (pContainer.innerHTML == "") {
                 pContainer.appendChild(tRcNode);
             }
-            else if (pIndex == 0) {
+            else if (tAddToTopOfExistingContainer || pIndex == 0) {
                 // pContainer.insertBefore(tRcNode, pContainer.firstChild); // For some odd reason this sometimes says pContainer.firstChild is not a child of pContainer
                 pContainer.firstChild.parentNode.insertBefore(tRcNode, pContainer.firstChild);
             }
@@ -4709,7 +4710,7 @@ var WikiData = (function () {
         // Get results up to this time stamp.
         var tEndDate = this.lastDiscussionDate; //this.getEndDate();
         var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        var tReturnText = "//services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
+        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
         mw.log("[WikiData](getWikiDiscussionUrl) https:" + tReturnText);
         return tReturnText;
     };
@@ -5958,7 +5959,7 @@ i18n.wiki2html = function (pText) {
         return '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
         // }
     })
-        .replace(/[\[](http:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
+        .replace(/[\[](https?:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
         var p = l.replace(/[\[\]]/g, '').split(/ /);
         var link = p.shift();
         return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';

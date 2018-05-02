@@ -1206,7 +1206,7 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 			// }
 		})
 		// external link
-		.replace(/[\[](http:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
+		.replace(/[\[](https?:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
 			let p = l.replace(/[\[\]]/g, '').split(/ /);
 			let link = p.shift();
 			return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';

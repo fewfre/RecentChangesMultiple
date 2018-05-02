@@ -207,7 +207,7 @@ export default class RCMManager
 		// Footer never changes, so set here
 		let tEndNewMessageDate = new Date(ConstantsApp.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
 		let tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("wikifeatures-promotion-new")+'</sup>' : "";
-		this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+ConstantsApp.version+"</a>"+tNewVersion, "<img src='http://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='http://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+ConstantsApp.version+"</a>"+tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		
@@ -1044,7 +1044,7 @@ export default class RCMManager
 		
 		if(this.newRecentChangesEntries.length == 0) { this.finishScript(); return; }
 		
-		let date = this.newRecentChangesEntries[pIndex].date;
+		let date = this.newRecentChangesEntries[pIndex].date, tAddToTopOfExistingContainer = false;
 		// Add new date grouping if necessary.
 		if(Utils.getDate(date) != pLastDay || Utils.getMonth(date) != pLastMonth) {
 			pLastDay = Utils.getDate(date);
@@ -1054,6 +1054,7 @@ export default class RCMManager
 			// Re-use existing container if there is one
 			if(tNewContainer = <HTMLElement>this.resultsNode.querySelector(`[data-timestamp="${tTimestamp}"]`)) {
 				pContainer = tNewContainer;
+				tAddToTopOfExistingContainer = true;
 			} else {
 				let tNewHeading = Utils.newElement("h4", { innerHTML:tTimestamp });
 				tNewContainer = this.rcParams.hideenhanced==false ? Utils.newElement("div", { className:"rcm-rc-cont" }) : Utils.newElement("ul", { className:"special rcm-rc-cont" });
@@ -1090,7 +1091,7 @@ export default class RCMManager
 			if(pContainer.innerHTML == "") {
 				pContainer.appendChild(tRcNode);
 			}
-			else if(pIndex == 0) {
+			else if(tAddToTopOfExistingContainer || pIndex == 0) {
 				// pContainer.insertBefore(tRcNode, pContainer.firstChild); // For some odd reason this sometimes says pContainer.firstChild is not a child of pContainer
 				pContainer.firstChild.parentNode.insertBefore(tRcNode, pContainer.firstChild);
 			} else {

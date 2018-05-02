@@ -221,7 +221,7 @@ export default class RCList
 					let tRC = <RCMWikiaDiscussionData>this.newest;
 					this.manager.secondaryWikiData.push({
 						// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-						url: `//services.wikia.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
+						url: `https://services.wikia.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
 						dataType: "json",
 						callback: (data) => {
 							this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
