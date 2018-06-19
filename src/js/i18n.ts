@@ -48,6 +48,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
 		'rcm-error-loading-syntaxhang' : "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
+		'rcm-error-loading-http' : "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
 		'rcm-error-loading-connection' : "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
 		'rcm-error-trymoretimes' : "Try $1 more times",
 		// Notifications

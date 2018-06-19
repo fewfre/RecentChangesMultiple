@@ -340,6 +340,9 @@ export default class RCMManager
 	
 	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
 		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
+		if(pErrorMessage == "rcm-error-loading-syntaxhang" && 'https:' == document.location.protocol) {
+			this.statusNode.innerHTML += "<div class='rcm-error'>"+i18n("rcm-error-loading-http")+"</div>";
+		}
 		let tHandler = (pEvent:MouseEvent) => {
 			this.loadingErrorRetryNum += pInc;
 			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }

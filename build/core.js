@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.10";
+    ConstantsApp.version = "2.10b";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -146,7 +146,7 @@ var Main = (function () {
     // Should only be called once.
     Main.prototype.init = function (pScriptConfig) {
         var _this = this;
-        mw.loader.using('mediawiki.util', 'mediawiki.user.options').done(function () {
+        mw.loader.using(['mediawiki.util', 'mediawiki.language']).done(function () {
             ConstantsApp_1["default"].init(pScriptConfig);
             $(document).ready($.proxy(_this._ready, _this));
             $(document).unload($.proxy(_this._unload, _this));
@@ -2323,6 +2323,9 @@ var RCMManager = (function () {
     RCMManager.prototype._handleWikiDataLoadError = function (pWikiData, pTries, pID, pErrorMessage, pInc) {
         var _this = this;
         this.statusNode.innerHTML = "<div class='rcm-error'>" + i18n_1["default"](pErrorMessage, "<span class='errored-wiki'>" + pWikiData.servername + "</span>", pTries) + "</div>";
+        if (pErrorMessage == "rcm-error-loading-syntaxhang" && 'https:' == document.location.protocol) {
+            this.statusNode.innerHTML += "<div class='rcm-error'>" + i18n_1["default"]("rcm-error-loading-http") + "</div>";
+        }
         var tHandler = function (pEvent) {
             _this.loadingErrorRetryNum += pInc;
             if (pEvent) {
@@ -4845,6 +4848,7 @@ i18n.TEXT = {
         // Errors
         'rcm-error-linkformat': "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
         'rcm-error-loading-syntaxhang': "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
+        'rcm-error-loading-http': "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
         'rcm-error-loading-connection': "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
         'rcm-error-trymoretimes': "Try $1 more times",
         // Notifications

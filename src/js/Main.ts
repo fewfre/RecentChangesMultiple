@@ -30,7 +30,7 @@ class Main
 	
 	// Should only be called once.
 	init(pScriptConfig:any) : void {
-		mw.loader.using( 'mediawiki.util', 'mediawiki.user.options' ).done(()=>{
+		mw.loader.using(['mediawiki.util', 'mediawiki.language']).done(()=>{//, 'mediawiki.user.options'
 			ConstantsApp.init(pScriptConfig);
 			
 			$(document).ready($.proxy(this._ready, this));
