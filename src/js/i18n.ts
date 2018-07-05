@@ -88,6 +88,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' паказаны ў няздатным фармаце. Калі ласка, не выкарыстоўвайце элемент 'http://', не ўстаўляйце нічога пасля яго і першага '/'.",
 		'rcm-error-loading-syntaxhang' : "Памылка пры загрузцы [$1] (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
+		'rcm-error-loading-http' : "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
 		'rcm-error-loading-connection' : "Памылка пры загрузцы [$1] (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
 		'rcm-error-trymoretimes' : "Паспрабуйце $1 раз(а)",
 		// Notifications
@@ -111,6 +112,11 @@ i18n.TEXT = {
 		'rcm-module-diff-undo' : "Адмяніць змены",
 		// Other
 		'rcm-unknownthreadname' : "тэма",
+		
+		'discussions': 'Абмеркаванні',
+		'forum-related-discussion-heading': 'Абмеркаванні пра $1',
+		'embeddable-discussions-loading': 'Загрузка Абмеркаванняў...',
+		
 		/***************************
 		 * mediawiki.language.data
 		 ***************************/
@@ -631,6 +637,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' указан в неподходящем формате. Пожалуйста, не используйте элемент 'http://', не вставляйте ничего после него и первого '/'.",
 		'rcm-error-loading-syntaxhang' : "Ошибка при загрузке [$1] (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
+		'rcm-error-loading-http' : "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
 		'rcm-error-loading-connection' : "Ошибка при загрузке [$1] (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
 		'rcm-error-trymoretimes' : "Попробуйте $1 раз(а)",
 		// Notifications
@@ -654,6 +661,11 @@ i18n.TEXT = {
 		'rcm-module-diff-undo' : "Отменить изменения",
 		// Other
 		'rcm-unknownthreadname' : "тема",
+		
+		'discussions': 'Обсуждения',
+		'forum-related-discussion-heading': 'Обсуждения о $1',
+		'embeddable-discussions-loading': 'Загрузка Обсуждений...',
+
 		/***************************
 		 * mediawiki.language.data
 		 ***************************/
@@ -670,6 +682,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' вказаний в невідповідному форматі. Будь ласка, не використовуйте елемент 'http://', не вставляйте нічого після нього і першого '/'.",
 		'rcm-error-loading-syntaxhang' : "Помилка при завантаженні [$1] (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
+		'rcm-error-loading-http' : "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
 		'rcm-error-loading-connection' : "Помилка при завантаженні [$1] (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
 		'rcm-error-trymoretimes' : "Спробуйте $1 раз(а)",
 		// Notifications
@@ -693,6 +706,11 @@ i18n.TEXT = {
 		'rcm-module-diff-undo' : "Скасувати зміни",
 		// Other
 		'rcm-unknownthreadname' : "тема",
+		
+		'discussions': 'Обговорення',
+		'forum-related-discussion-heading': 'Обговорення щодо $1',
+		'embeddable-discussions-loading': 'Завантаження Обговорень...',
+
 		/***************************
 		 * mediawiki.language.data
 		 ***************************/
