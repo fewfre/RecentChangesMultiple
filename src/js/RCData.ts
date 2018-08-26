@@ -335,7 +335,8 @@ export default class RCData
 	}
 	
 	time() : string {
-		return Utils.pad(Utils.getHours(this.date),2)+":"+Utils.pad(Utils.getMinutes(this.date),2);
+		return Utils.formatWikiTimeStampTimeOnly(this.date, true);
+		// return Utils.pad(Utils.getHours(this.date),2)+":"+Utils.pad(Utils.getMinutes(this.date),2);
 	}
 	
 	userDetails() : string {

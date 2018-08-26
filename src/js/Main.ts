@@ -2,6 +2,7 @@ import RCMManager from "./RCMManager";
 import ConstantsApp from "./ConstantsApp";
 import Utils from "./Utils";
 import i18n from "./i18n";
+import RCParams from "./RCParams";
 
 let Notification = (<any>window).Notification;
 let $ = (<any>window).jQuery;
@@ -30,7 +31,7 @@ class Main
 	
 	// Should only be called once.
 	init(pScriptConfig:any) : void {
-		mw.loader.using(['mediawiki.util', 'mediawiki.language']).done(()=>{//, 'mediawiki.user.options'
+		mw.loader.using(['mediawiki.util', 'mediawiki.language', 'mediawiki.user', 'user.options']).done(()=>{
 			ConstantsApp.init(pScriptConfig);
 			
 			$(document).ready($.proxy(this._ready, this));
@@ -52,6 +53,7 @@ class Main
 		// Set load delay (needed for scripts that load large numbers of wikis)
 		if(tDataset.loaddelay) { ConstantsApp.loadDelay = tDataset.loaddelay; }
 		if(tDataset.timezone) { ConstantsApp.timezone = tDataset.timezone.toLowerCase(); }
+		if(tDataset.timeformat) { ConstantsApp.timeFormat = tDataset.timeformat.toLowerCase(); }
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
 		tDataset = null;
@@ -78,7 +80,15 @@ class Main
 		/***************************
 		* Get rcParams from url
 		***************************/
-		this.rcParamsURL = {}; let tParam;
+		// Options from Special:Preferences > Under the Hood
+		let tBaseUserValues:RCParams = {
+			"days": mw.user.options.get("rcdays") || 7,
+			"limit": mw.user.options.get("rclimit") || 50,
+			"hideenhanced": ((mw.user.options.get("usenewrc")==1 ? "0" : "1") || 0)=="1",
+			"hideminor": (mw.user.options.get("hideminor") || 0)=="1",
+		};
+		// Now modify base values with those in url
+		this.rcParamsURL = tBaseUserValues; let tParam;
 		["limit", "days"].forEach((key)=>{
 			if((tParam = mw.util.getParamValue(key)) != null) {
 				this.rcParamsURL[key] = parseInt(tParam);
@@ -241,7 +251,7 @@ class Main
 	blinkWindowTitle(pTitle:string) : void {
 		this.cancelBlinkWindowTitle();
 		this._originalTitle = document.title;
-		this._blinkInterval = setInterval(() => {
+		this._blinkInterval = window.setInterval(() => {
 			document.title = document.title == this._originalTitle ? (pTitle+" - "+this._originalTitle) : this._originalTitle;
 		}, 1000);
 	}
@@ -261,7 +271,15 @@ class Main
 		if(Notification.permission !== "granted") { return; }
 		pOptions = pOptions || {};
 		pOptions.icon = pOptions.icon || ConstantsApp.NOTIFICATION_ICON;
-		this._notifications.push(new Notification(pTitle, pOptions));
+		let tNotification = new Notification(pTitle, pOptions);
+		this._notifications.push(tNotification);
+		// Make sure on click it brings you back to page (needed for Chrome) https://stackoverflow.com/a/40964355/1411473
+		tNotification.onclick = function () {
+			parent.focus();
+			window.focus(); //just in case, older browsers
+			this.close();
+		};
+		tNotification = null;
 		if(this._notifications.length > 1) {
 			this._notifications.shift().close();
 		}

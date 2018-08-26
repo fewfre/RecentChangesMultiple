@@ -94,17 +94,24 @@ export default class Utils
 			case "mdy": default: return `${tMonthName} ${tDay}, ${tYear}`;
 			case "dmy": return `${tDay} ${tMonthName} ${tYear}`;
 			case "ymd": return `${tYear} ${tMonthName} ${tDay}`;
-			case "ISO 8601": return `${tYear}-${Utils.pad((tMonth), 2, 0)}-${Utils.pad(tDay, 2, 0)}`;
+			case "ISO 8601": return `${tYear}-${Utils.pad(tMonth, 2, 0)}-${Utils.pad(tDay, 2, 0)}`;
 		}
 	}
-	static formatWikiTimeStampTimeOnly(pDate:Date) : string {
+	static formatWikiTimeStampTimeOnly(pDate:Date, pNoSeconds:boolean=false) : string {
 		let tHours = Utils.getHours(pDate),
 			tMinutes = Utils.getMinutes(pDate),
 			tSeconds = Utils.getSeconds(pDate),
-			tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
-		if(ConstantsApp.userOptions.date == "ISO 8601") {
+			tSuffix = "",
+			tTime;
+		if(ConstantsApp.timeFormat == "12") {
+			tSuffix = tHours >= 12 ? "PM":"AM";
+			tHours = ((tHours + 11) % 12 + 1);
+		}
+		tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
+		if(!pNoSeconds && ConstantsApp.userOptions.date == "ISO 8601") {
 			tTime += ":" +Utils.pad( tSeconds, 2 );
 		}
+		tTime += tSuffix;
 		return tTime;
 	}
 	
@@ -112,8 +119,8 @@ export default class Utils
 	static getTimestampForYYYYMMDDhhmmSS(pNum:number|string) : string {
 		pNum = ""+pNum;
 		var i = 0;
-		return pNum.slice(i, i+=4) +"-"+ pNum.slice(i, i+=2) +"-"+ pNum.slice(i, i+=2) +"T"+  pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2);
-		// return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+  pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
+		return pNum.slice(i, i+=4) +"-"+ pNum.slice(i, i+=2) +"-"+ pNum.slice(i, i+=2) +"T"+ pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2) +":"+ pNum.slice(i, i+=2);
+		// return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
 	}
 	
 	/***************************

@@ -205,6 +205,8 @@ export default class RCList
 					url: this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
 					callback: (data) => {
 						let tSpan = document.querySelector("#"+tElemID);
+						// Encase it doesn't exist anymore
+						if(!tSpan) { return; }
 						// for(var tPageIndex in data.query.pages)
 						// var tPage = data.query.pages[tPageIndex];
 						var tPage = Utils.getFirstItemFromObject(data.query.pages);

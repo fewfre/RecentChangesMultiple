@@ -1,3 +1,10 @@
+== V2.11 - 25 August 2018 ==
+- Clicking a Notification now opens RCM in chrome
+- New option, data-timeFormat, which can accept 12 or 24 (default), with 12 adding AM/PM to timestamps
+- Now uses default values found in "Special:Preferences > Under the Hood" before applying anything else.
+- Small bug fixes
+
+
 == V2.10c - 5 July 2018 ==
 -Translations updated for ru/uk/be
 

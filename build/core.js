@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.10c";
+    ConstantsApp.version = "2.11";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -81,10 +81,11 @@ var ConstantsApp = (function () {
     ConstantsApp.LOADER_IMG = "//images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
     ConstantsApp.NOTIFICATION_ICON = "//vignette.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
     ConstantsApp.username = ConstantsApp.config.wgUserName;
-    // These may be update ay given points.
+    // These may be update at given points.
     ConstantsApp.uniqID = 0;
     ConstantsApp.useLocalSystemMessages = true;
     ConstantsApp.timezone = "utc";
+    ConstantsApp.timeFormat = "24";
     ConstantsApp.loadDelay = 10; // In miliseconds
     ConstantsApp.SVG_SYMBOLS = [
         // Loading icon - general use
@@ -146,7 +147,7 @@ var Main = (function () {
     // Should only be called once.
     Main.prototype.init = function (pScriptConfig) {
         var _this = this;
-        mw.loader.using(['mediawiki.util', 'mediawiki.language']).done(function () {
+        mw.loader.using(['mediawiki.util', 'mediawiki.language', 'mediawiki.user', 'user.options']).done(function () {
             ConstantsApp_1["default"].init(pScriptConfig);
             $(document).ready($.proxy(_this._ready, _this));
             $(document).unload($.proxy(_this._unload, _this));
@@ -172,6 +173,9 @@ var Main = (function () {
         if (tDataset.timezone) {
             ConstantsApp_1["default"].timezone = tDataset.timezone.toLowerCase();
         }
+        if (tDataset.timeformat) {
+            ConstantsApp_1["default"].timeFormat = tDataset.timeformat.toLowerCase();
+        }
         // Unless specified, hide the rail to better replicate Special:RecentChanges
         if (tDataset.hiderail !== "false") {
             document.querySelector("body").className += " rcm-hiderail";
@@ -196,7 +200,15 @@ var Main = (function () {
         /***************************
         * Get rcParams from url
         ***************************/
-        this.rcParamsURL = {};
+        // Options from Special:Preferences > Under the Hood
+        var tBaseUserValues = {
+            "days": mw.user.options.get("rcdays") || 7,
+            "limit": mw.user.options.get("rclimit") || 50,
+            "hideenhanced": ((mw.user.options.get("usenewrc") == 1 ? "0" : "1") || 0) == "1",
+            "hideminor": (mw.user.options.get("hideminor") || 0) == "1",
+        };
+        // Now modify base values with those in url
+        this.rcParamsURL = tBaseUserValues;
         var tParam;
         ["limit", "days"].forEach(function (key) {
             if ((tParam = mw.util.getParamValue(key)) != null) {
@@ -347,7 +359,7 @@ var Main = (function () {
         var _this = this;
         this.cancelBlinkWindowTitle();
         this._originalTitle = document.title;
-        this._blinkInterval = setInterval(function () {
+        this._blinkInterval = window.setInterval(function () {
             document.title = document.title == _this._originalTitle ? (pTitle + " - " + _this._originalTitle) : _this._originalTitle;
         }, 1000);
     };
@@ -365,7 +377,15 @@ var Main = (function () {
         }
         pOptions = pOptions || {};
         pOptions.icon = pOptions.icon || ConstantsApp_1["default"].NOTIFICATION_ICON;
-        this._notifications.push(new Notification(pTitle, pOptions));
+        var tNotification = new Notification(pTitle, pOptions);
+        this._notifications.push(tNotification);
+        // Make sure on click it brings you back to page (needed for Chrome) https://stackoverflow.com/a/40964355/1411473
+        tNotification.onclick = function () {
+            parent.focus();
+            window.focus(); //just in case, older browsers
+            this.close();
+        };
+        tNotification = null;
         if (this._notifications.length > 1) {
             this._notifications.shift().close();
         }
@@ -644,7 +664,8 @@ var RCData = (function () {
         tLogParams = null;
     };
     RCData.prototype.time = function () {
-        return Utils_1["default"].pad(Utils_1["default"].getHours(this.date), 2) + ":" + Utils_1["default"].pad(Utils_1["default"].getMinutes(this.date), 2);
+        return Utils_1["default"].formatWikiTimeStampTimeOnly(this.date, true);
+        // return Utils.pad(Utils.getHours(this.date),2)+":"+Utils.pad(Utils.getMinutes(this.date),2);
     };
     RCData.prototype.userDetails = function () {
         // if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
@@ -1494,6 +1515,10 @@ var RCList = (function () {
                     url: this.wikiInfo.scriptpath + "/api.php?action=query&format=json&prop=revisions&titles=" + this.newest.uniqueID + "&rvprop=content",
                     callback: function (data) {
                         var tSpan = document.querySelector("#" + tElemID_1);
+                        // Encase it doesn't exist anymore
+                        if (!tSpan) {
+                            return;
+                        }
                         // for(var tPageIndex in data.query.pages)
                         // var tPage = data.query.pages[tPageIndex];
                         var tPage = Utils_1["default"].getFirstItemFromObject(data.query.pages);
@@ -4150,14 +4175,21 @@ var Utils = (function () {
             default: return tMonthName + " " + tDay + ", " + tYear;
             case "dmy": return tDay + " " + tMonthName + " " + tYear;
             case "ymd": return tYear + " " + tMonthName + " " + tDay;
-            case "ISO 8601": return tYear + "-" + Utils.pad((tMonth), 2, 0) + "-" + Utils.pad(tDay, 2, 0);
+            case "ISO 8601": return tYear + "-" + Utils.pad(tMonth, 2, 0) + "-" + Utils.pad(tDay, 2, 0);
         }
     };
-    Utils.formatWikiTimeStampTimeOnly = function (pDate) {
-        var tHours = Utils.getHours(pDate), tMinutes = Utils.getMinutes(pDate), tSeconds = Utils.getSeconds(pDate), tTime = Utils.pad(tHours, 2) + ":" + Utils.pad(tMinutes, 2);
-        if (ConstantsApp_1["default"].userOptions.date == "ISO 8601") {
+    Utils.formatWikiTimeStampTimeOnly = function (pDate, pNoSeconds) {
+        if (pNoSeconds === void 0) { pNoSeconds = false; }
+        var tHours = Utils.getHours(pDate), tMinutes = Utils.getMinutes(pDate), tSeconds = Utils.getSeconds(pDate), tSuffix = "", tTime;
+        if (ConstantsApp_1["default"].timeFormat == "12") {
+            tSuffix = tHours >= 12 ? "PM" : "AM";
+            tHours = ((tHours + 11) % 12 + 1);
+        }
+        tTime = Utils.pad(tHours, 2) + ":" + Utils.pad(tMinutes, 2);
+        if (!pNoSeconds && ConstantsApp_1["default"].userOptions.date == "ISO 8601") {
             tTime += ":" + Utils.pad(tSeconds, 2);
         }
+        tTime += tSuffix;
         return tTime;
     };
     // Convert from MediaWiki time format to one Date object like.
@@ -4165,7 +4197,7 @@ var Utils = (function () {
         pNum = "" + pNum;
         var i = 0;
         return pNum.slice(i, i += 4) + "-" + pNum.slice(i, i += 2) + "-" + pNum.slice(i, i += 2) + "T" + pNum.slice(i, i += 2) + ":" + pNum.slice(i, i += 2) + ":" + pNum.slice(i, i += 2);
-        // return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+  pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
+        // return pNum.splice(0, 4) +"-"+ pNum.splice(0, 2) +"-"+ pNum.splice(0, 2) +"T"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2) +":"+ pNum.splice(0, 2);
     };
     /***************************
     * String Methods
