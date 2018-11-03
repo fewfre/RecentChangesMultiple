@@ -135,7 +135,7 @@ export default class WikiData
 		this.firstSeperator = "?";
 		this.htmlName = this.servername.replace(/(\.)/g, "-");
 		
-		this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
+		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		if(this.servername.indexOf("/") > -1) {
