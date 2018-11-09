@@ -62,7 +62,7 @@ var ConstantsApp = (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.11";
+    ConstantsApp.version = "2.11c";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -4415,7 +4415,7 @@ var WikiData = (function () {
         this.scriptdir = "";
         this.firstSeperator = "?";
         this.htmlName = this.servername.replace(/(\.)/g, "-");
-        this.isWikiaWiki = this.servername.indexOf(".wikia.") > -1;
+        this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
         this.useOutdatedLogSystem = this.isWikiaWiki;
         if (this.servername.indexOf("/") > -1) {
             this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>" + i18n_1["default"]("rcm-error-linkformat", this.servername) + "</div>";
@@ -5026,26 +5026,27 @@ i18n.TEXT = {
         },
     },
     de: {
-        'rcm-error-linkformat': "'$1' ist ein fehlerhaftes Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
-        'rcm-error-loading-syntaxhang': "Ladefehler [$1] ($2 Versuche). Bitte korrigiere den Syntax (oder aktualisiere das Script, um es erneut zu versuchen).",
-        'rcm-error-loading-connection': "Ladefehler [$1] ($2 Versuche). Höchstwahrscheinlich ein Verbindungsproblem; Lade das Script neu, um es erneut zu versuchen.",
-        'rcm-error-trymoretimes': "Versuche $1 mehrmals",
+        'rcm-error-linkformat': "'$1' ist ein falsches Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
+        'rcm-error-loading-syntaxhang': "Fehler beim Laden [$1] ($2 Versuche). Bitte korrigiere die Syntax (oder lade das Skript neu, um es erneut zu versuchen).",
+        'rcm-error-loading-http': "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
+        'rcm-error-loading-connection': "Fehler beim Laden [$1] ($2 Versuche). Es liegt höchstwahrscheinlich ein Verbindungsproblem vor. Lade das Script neu, um es erneut zu versuchen.",
+        'rcm-error-trymoretimes': "Versuche es $1 Mal mehr",
         'rcm-loading': "Lade/Sortiere...",
         'rcm-refresh': "Aktualisieren",
-        'rcm-download-timestamp': "Letzte Veränderungen nach: $1",
-        'rcm-download-changesadded': " - [$1 Letzte Änderungen, die hinzugefügt wurden]",
+        'rcm-download-timestamp': "Letzte Aktualisierung um: $1",
+        'rcm-download-changesadded': " - [$1 hinzugefügte Veränderungen]",
         'rcm-wikisloaded': "Geladene Wikis: ",
-        'rcm-previouslyloaded': "Bisher geladen:",
+        'rcm-previouslyloaded': "Vorige Änderungen:",
         'rcm-nonewchanges': "Keine neuen Veränderungen",
         'rcm-autorefresh': "Auto-Aktualisierung",
-        'rcm-autorefresh-tooltip': "Aktualisiert automatisch die letzten Veränderungen jede $1 Sekunden",
-        'rcm-footer': "Version $1 bis $2",
+        'rcm-autorefresh-tooltip': "Aktualisiert alle $1 Sekunden automatisch die letzten Veränderungen",
+        'rcm-footer': "Version $1 von $2",
         'rcm-optionspanel-hideusersoverride': "data-hideusers überschreibt dies.",
-        'rcm-optionspanel-savewithcookie': "Speicher Veränderungen mit Cookie",
-        'rcm-module-diff-title': "Anderer Viewer",
-        'rcm-module-diff-open': "Öffne Veränderung",
-        'rcm-module-diff-undo': "Rückgängig",
-        'rcm-unknownthreadname': "Thread",
+        'rcm-optionspanel-savewithcookie': "Speichere Einstellungen mit Cookie",
+        'rcm-module-diff-title': "Schnellvergleich",
+        'rcm-module-diff-open': "Öffne Versionsvergleich",
+        'rcm-module-diff-undo': "Rückgängig machen",
+        'rcm-unknownthreadname': "Diskussion",
         /***************************
          * mediawiki.language.data
          ***************************/
