@@ -80,7 +80,7 @@ export default class RCList
 	}
 	
 	shouldGroupWith(pRC:RCData) : boolean {
-		if(this.wikiInfo.servername == pRC.wikiInfo.servername
+		if(this.wikiInfo.scriptpath == pRC.wikiInfo.scriptpath
 			&& this.type == pRC.type
 			&& Utils.getMonth(this.date) == Utils.getMonth(pRC.date)
 			&& Utils.getDate(this.date) == Utils.getDate(pRC.date)

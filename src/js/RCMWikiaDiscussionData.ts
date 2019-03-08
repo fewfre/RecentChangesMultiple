@@ -70,7 +70,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.titleNoNS = this.title;//(this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = pData.threadId; // By default; make change based on this.type.
 		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
-		this.threadHref = `//${this.wikiInfo.servername}/d/p/${this.threadId}`;
+		this.threadHref = `${this.wikiInfo.scriptpath}/d/p/${this.threadId}`;
 		this.href = this.threadHref + (pData.isReply ? `#reply-${pData.id}` : "");
 		this.hrefBasic = this.href;
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
@@ -98,7 +98,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		// } else {
 		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		// }
-		let tUserContribsLink = `//${this.wikiInfo.servername}/d/u/${this.user_id}`;
+		let tUserContribsLink = `${this.wikiInfo.scriptpath}/d/u/${this.user_id}`;
 		return Utils.formatString(""
 			+"<span class='mw-usertoollinks'>"
 				+this.getAvatarImg()+"<a href='{0}User:{1}' class='"+this.wikiInfo.getUserClass(this.author)+"' "+this.wikiInfo.getUserClassDataset(this.author)+">{2}</a>"
@@ -118,10 +118,12 @@ export default class RCMWikiaDiscussionData extends RCData
 	
 	discusssionTitleText(pThreadTitle?:string, pIsHead:boolean=false) : string {
 		if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
-		let tForumLink = `<a href="//${this.wikiInfo.servername}/d/f?catId=${this.forumId}&sort=latest">${this.forumName}</a>`;
+		let tForumLink = `<a href="${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest">${this.forumName}</a>`;
 		let tText = i18n.MESSAGES["wall-recentchanges-thread-group"];
-		tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
+		// tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
+		tText = tText.replace(/(\[\[.*\]\])/g, "RCM_DISC_BOARD"); // Don't replace with actual content right away, to avoid wiki2html being run on it
 		tText = i18n.wiki2html(tText, `<a href="${pIsHead ? this.threadHref : this.href}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()));
+		tText = tText.replace("RCM_DISC_BOARD", tForumLink);
 		return tText;
 	}
 	

@@ -55,6 +55,7 @@ export default class WikiData
 	sitename				: string; // Name of the wiki
 	mainpage				: string; // Main page for the wiki (not all wiki's redirect to main page if you link to domain)
 	mwversion				: string; // MW version number. ex: MediaWiki 1.24.1
+	langCode				: string; // Language code sent from siteinfo
 	namespaces				: any[]; // A data object with all namespaces on the wiki by number = { "1":{ -data- } }
 	statistics				: any; // A data object with statistics about number of articles / files / users there are on the wiki.
 	wikiaCityID				: string; // wgCityId - used to retrieve Wikia Disccusion changes.
@@ -123,28 +124,33 @@ export default class WikiData
 		this.lastChangeDate = null;
 		this.lastDiscussionDate = null;
 	}
+	// misc todo - fix discussions not using lang code - only when scriptdir used?
 	
 	// Parses LI element data to be able to retrieve information for the respective wiki.
 	initListData(pNode) : WikiData {
-		var tWikiDataRaw = pNode.textContent.replace(/(\r\n|\n|\r)/gm, "").trim().split("&"); // Need to check for new lines due to how wikis create lists.
-		//mw.log(tWikiDataRaw);
+		// var tWikiDataRaw = pNode.textContent.replace(/(\r\n|\n|\r)/gm, "").trim().split("&"); // Need to check for new lines due to how wikis create lists.
+		var [tWikiDataRawUrl, ...tWikiDataRaw] = pNode.textContent.trim().replace(/(\r\n|\n|\r)/gm, "\n").split(/[&\n]/).map(s => s.trim()).filter(s => !!s); // Need to check for new lines due to how wikis create lists.
+		// mw.log(tWikiDataRawUrl, tWikiDataRaw);
 		
+		// todo - remove /s form URL, and add to scriptdir; if scriptdir is UserData, add it to URL, not replace.
+		// todo - but still make sure the scriptdir is used when domain is complained about in errors and such?
 		// Some default values
-		this.servername = tWikiDataRaw[0];
+		this.servername = tWikiDataRawUrl.replace(/^https?\:\/\//, "").replace(/(\/$)/g, "");
 		this.scriptdir = "";
 		this.firstSeperator = "?";
-		this.htmlName = this.servername.replace(/(\.)/g, "-");
+		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
 		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
-		if(this.servername.indexOf("/") > -1) {
-			this.manager.resultCont.innerHTML = "<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>"+ i18n("rcm-error-linkformat", this.servername)+"</div>";
-			throw "Incorrect format";
-		}
+		// todo - allow / - consequences?
+		// if(this.servername.indexOf("/") > -1) {
+		// 	this.manager.resultCont.innerHTML = `<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>${ i18n("rcm-error-linkformat", this.servername) }</div>`;
+		// 	throw "Incorrect format";
+		// }
 		
 		var tWikiDataSplit, tKey, tVal; // Split of raw data
-		for(var i = 1; i < tWikiDataRaw.length; i++) {
+		for(var i = 0; i < tWikiDataRaw.length; i++) {
 			tWikiDataSplit = tWikiDataRaw[i].split("=");
 			if(tWikiDataSplit.length > 1) {
 				tKey = tWikiDataSplit[0];
@@ -237,9 +243,11 @@ export default class WikiData
 			this.server = pQuery.general.server || ("//" + this.servername);
 			this.articlepath = this.server + pQuery.general.articlepath.replace("$1", "");
 			if(this.articlepath.indexOf("?") > -1) { this.firstSeperator = "&"; }
+			this.scriptpath =  `${this.server}${pQuery.general.scriptpath}`; // Re-set with info directly from siteinfo
 			this.sitename = pQuery.general.sitename;
 			this.mainpage = pQuery.general.mainpage;
 			this.mwversion = pQuery.general.generator;
+			this.langCode = pQuery.general.lang;
 			
 			if(this.favicon == null) {
 				// Requires MediaWiki V1.23+
@@ -297,7 +305,7 @@ export default class WikiData
 		 * Favicon fallback - may not be needed now with "pQuery.pages" backup.
 		 ***************************/
 		if(this.favicon == null) {
-			this.favicon = ConstantsApp.FAVICON_BASE+this.servername;
+			this.favicon = ConstantsApp.FAVICON_BASE+this.scriptpath;
 		}
 		
 		return this;
@@ -457,7 +465,7 @@ export default class WikiData
 		tMetaList = null;
 		tPropList = null;
 		
-		mw.log("[WikiData](getWikiDataApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm"));
+		mw.log("[WikiData](getWikiDataApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
 		return tReturnText;
 	}
 	
@@ -469,7 +477,7 @@ export default class WikiData
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
 		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.hasBlockRight}`;
-		mw.log("[WikiData](getWikiDiscussionUrl) https:"+tReturnText);
+		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}
 	
@@ -557,7 +565,7 @@ export default class WikiData
 		tPropList = null;
 		tEndDate = null;
 		
-		mw.log("[WikiData](getApiUrl)", "http:"+tReturnText.replace("&format=json", "&format=jsonfm"));
+		mw.log("[WikiData](getApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
 		return tReturnText;
 	}
 }

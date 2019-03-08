@@ -1,3 +1,14 @@
+== V2.12 - 8 March 2019 ==
+-Updating parsing of wiki list
+	-http(s) and ending slashes are now allowed (to support new wikia /lang/ wiki format)
+	-Updated link var parsing. link vars can now:
+		-be used as before
+		-used as before but with a space between the link and first "&" (to prevent becoming part of link)
+		-be added to sub lists (either each link var on own list, or all on one seperated by &s)
+-Fixed bug with discussion links to language wikis linking to english wiki.
+-Added discussion link to wiki panel (if wiki has discussions enabled).
+
+
 == V2.11c - 8 November 2018 ==
 -Translations updated for de
 

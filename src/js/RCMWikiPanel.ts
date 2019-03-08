@@ -116,6 +116,7 @@ export default class RCMWikiPanel
 			+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>" : "")
 			+ " - "
 			+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>"
+			+ (pWikiInfo.usesWikiaDiscussions ? " - <a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>" : "")
 			+ "</td>"
 			+ "</tr>"
 			// Now for the statistics

@@ -173,12 +173,13 @@ export default class RCMManager
 		
 		// Wikis for the script to load
 		this.chosenWikis = [];
-		Utils.forEach(this.resultCont.querySelectorAll("li"), (pNode) => {
+		// Utils.forEach(this.resultCont.querySelectorAll(">ul>li"), (pNode) => {
+		$(this.resultCont).find(">ul>li").each((i,pNode)=>{
 			this.chosenWikis.push( new WikiData(this).initListData(pNode) );
 		});
 		
 		// Remove duplicates
-		this.chosenWikis = Utils.uniq_fast_key(this.chosenWikis, "servername");
+		this.chosenWikis = Utils.uniq_fast_key(this.chosenWikis, "scriptpath"); //todo - mke sure this now also checks /fr/ and such
 		
 		tDataset = null;
 		this.resultCont.innerHTML = "";
@@ -198,6 +199,7 @@ export default class RCMManager
 		this.optionsNode	= new RCMOptions(this).init(Utils.newElement("div", { className:"rcm-options" }, this.resultCont));
 		this.statusNode		= Utils.newElement("div", { className:"rcm-status" }, this.resultCont);
 		this.wikisNode		= new RCMWikiPanel(this).init(Utils.newElement("div", { className:"rcm-wikis" }, this.resultCont));
+		this._showUpdateMessage();
 		this.resultsNode	= Utils.newElement("div", { className:"rcm-results rc-conntent" }, this.resultCont);
 		this.footerNode		= Utils.newElement("div", { className:"rcm-footer" }, this.resultCont);
 		
@@ -215,6 +217,29 @@ export default class RCMManager
 		this._startWikiDataLoad();
 		
 		return this;
+	};
+		
+	private _showUpdateMessage() {
+		// Stop showing in a month or two, but also remember dismissal via localStorage.
+		let messageID = "rcm-news-V2.12-hide";
+		let messageColor = "green";
+		if( new Date("2019-3-30T00:00:00.000Z") > new Date() && (localStorage.getItem(messageID) != "true") ) {
+			var tMessage = Utils.newElement("div", { className:"rcm-update-message", innerHTML:`
+			Support for fandom language wikis now added.
+			You can now add slashes to a wiki on the list.
+			ex: <code>sonic.fandom.com/pl/.</code>
+			See <a href='https://dev.fandom.com/wiki/RecentChangesMultiple#Basic_Usage'>here</a> for more details.
+			`}, this.resultCont);
+			tMessage.style.cssText = `border:5px double ${messageColor}; padding:2px 6px; overflow-y: hidden;`;
+			
+			var tButton = Utils.newElement("button", { innerHTML:"Dismiss Message" }, tMessage);
+			tButton.addEventListener("click", function tRCM_dismissNotice(){
+				Utils.removeElement(tMessage);
+				tButton.removeEventListener("click", tRCM_dismissNotice);
+				localStorage.setItem(messageID, "true");
+			});
+			tButton.style.cssText = "float:right;";
+		}
 	};
 	
 	/***************************
@@ -1018,7 +1043,7 @@ export default class RCMManager
 					for(let j = 0; j < this.recentChangesEntries[i].list.length; j++) {
 						if(this.recentChangesEntries[i].list[j].date > this.lastLoadDateTime) {
 							tNumNewChanges++;
-							if(this.recentChangesEntries[i].wikiInfo.servername == tMostRecentEntry.wikiInfo.servername) { tNumNewChangesWiki++; }
+							if(this.recentChangesEntries[i].wikiInfo.scriptpath == tMostRecentEntry.wikiInfo.scriptpath) { tNumNewChangesWiki++; }
 						} else { break; }
 					}
 				} else { break; }
