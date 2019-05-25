@@ -36,8 +36,8 @@ export default class UserData
 	}
 	
 	dispose() : void {
-		delete this.manager;
-		delete this.wikiInfo;
+		// delete this.manager;
+		// delete this.wikiInfo;
 		
 		this.groups = null;
 		// this.registration = null;

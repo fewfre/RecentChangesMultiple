@@ -5,13 +5,14 @@
  *
  * Uses ajax loading to view the Special:RecentChanges of multiple wikis all on one page.
  */
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var mw = window.mediaWiki;
 //###########################################################
 // #### ConstantsApp - static class for script-wide data ####
 //###########################################################
-var ConstantsApp = (function () {
+var ConstantsApp = /** @class */ (function () {
     function ConstantsApp() {
     }
     // Initialize
@@ -117,11 +118,11 @@ var ConstantsApp = (function () {
     ];
     return ConstantsApp;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = ConstantsApp;
 
 },{}],2:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var RCMManager_1 = require("./RCMManager");
 var ConstantsApp_1 = require("./ConstantsApp");
 var Utils_1 = require("./Utils");
@@ -132,7 +133,7 @@ var mw = window.mediaWiki;
 //######################################
 // Main (instance class) - Start script and store values.
 //######################################
-var Main = (function () {
+var Main = /** @class */ (function () {
     // Singleton constructor
     function Main() {
         /***************************
@@ -332,8 +333,7 @@ var Main = (function () {
             tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
         }
         // When loading of all translated messages is done (or one failed) do this.
-        $.when.apply($, tLangLoadAjaxPromises)
-            .done(function (pData) {
+        $.when.apply($, tLangLoadAjaxPromises).done(function (pData) {
             _this._onAllLangeMessagesLoaded();
         })
             .fail(function (pData) {
@@ -399,11 +399,12 @@ var Main = (function () {
     };
     return Main;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
+// We want Main to be an instance class.
 exports["default"] = new Main();
 
 },{"./ConstantsApp":1,"./RCMManager":5,"./Utils":12,"./i18n":14}],3:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var RCMModal_1 = require("./RCMModal");
 var Utils_1 = require("./Utils");
@@ -416,15 +417,15 @@ var mw = window.mediaWiki;
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-var RCData = (function () {
+var RCData = /** @class */ (function () {
     // Constructor
     function RCData(pWikiInfo, pManager) {
         this.manager = pManager;
         this.wikiInfo = pWikiInfo;
     }
     RCData.prototype.dispose = function () {
-        delete this.manager;
-        delete this.wikiInfo;
+        // delete this.manager;
+        // delete this.wikiInfo;
         this.date = null;
         this.type = null;
     };
@@ -461,18 +462,18 @@ var RCData = (function () {
         this.hrefBasic = this.href.split("/@comment")[0];
         this.hrefFS = this.href + this.wikiInfo.firstSeperator;
         // Figure out the type of edit this is.
-        if (this.logtype && this.logtype != "0") {
+        if (this.logtype && this.logtype != "0") { // It's a "real" log. "0" signifies a wall/board.
             this.type = RC_TYPE_1["default"].LOG;
             this.log_info_0 = pData["0"];
             this.actionhidden = pData.actionhidden == "";
             this._initLog(pData, pLogDataArray);
         }
-        else if (pData.title.indexOf("/@comment") > -1) {
+        else if (pData.title.indexOf("/@comment") > -1) { // It's a comment / board / wall
             this.isSubComment = pData.title.indexOf("/@comment") != pData.title.lastIndexOf("/@comment"); // Check if it has more than one "/@comment"s
-            if (this.namespace == 2001) {
+            if ( /*Board Thread*/this.namespace == 2001) {
                 this.type = RC_TYPE_1["default"].BOARD;
             }
-            else if (this.namespace == 1201) {
+            else if ( /*Wall Thread*/this.namespace == 1201) {
                 this.type = RC_TYPE_1["default"].WALL;
             }
             else {
@@ -507,7 +508,7 @@ var RCData = (function () {
                 }
             }
         }
-        else {
+        else { // else it's a normal freakin edit =p
             this.type = RC_TYPE_1["default"].NORMAL;
         }
         return this; // Return self for chaining or whatnot.
@@ -526,7 +527,7 @@ var RCData = (function () {
             var i = -1;
             // Find log info that belong to this RC.
             for (var x = 0; x < pLogDataArray.length; x++) {
-                if (pRCData.logid == pLogDataArray[x].logid) {
+                if (pRCData.logid == pLogDataArray[x].logid) { // && pRCData.timestamp == pLogDataArray[x].timestamp) {
                     i = x;
                     break;
                 }
@@ -548,6 +549,7 @@ var RCData = (function () {
                     if (tLogParams) {
                         this.log_move_newTitle = Utils_1["default"].escapeCharacters(tLogParams.target_title);
                         is_log_move_noredirect = tLogParams.suppressredirect == "";
+                        // target_ns
                     }
                 }
                 else {
@@ -555,6 +557,7 @@ var RCData = (function () {
                     if (tLogParams) {
                         this.log_move_newTitle = Utils_1["default"].escapeCharacters(tLogParams.new_title);
                         is_log_move_noredirect = tLogParams.suppressedredirect == "";
+                        // new_ns
                     }
                 }
                 // If true, add a flag for it.
@@ -647,6 +650,7 @@ var RCData = (function () {
                     if (tLogParams) {
                         this.log_merge_destination = Utils_1["default"].escapeCharacters(tLogParams.dest_title);
                         this.log_merge_mergepoint = tLogParams.mergepoint;
+                        // dest_ns
                     }
                 }
                 else {
@@ -670,7 +674,7 @@ var RCData = (function () {
     RCData.prototype.userDetails = function () {
         // if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
         //
-        // var blockText = this.wikiInfo.user.hasBlockRight ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+        // var blockText = this.wikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
         // if(this.userEdited) {
         // 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
         // } else {
@@ -682,7 +686,7 @@ var RCData = (function () {
         if (pUserHidden) {
             return '<span class="history-deleted">' + i18n_1["default"]("rev-deleted-user") + '</span>';
         }
-        var blockText = pWikiInfo.user.hasBlockRight ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
+        var blockText = pWikiInfo.user.rights.block ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         if (pUserEdited) {
             return Utils_1["default"].formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='" + pWikiInfo.getUserClass(pAuthor) + "' " + pWikiInfo.getUserClassDataset(pAuthor) + ">{2}</a> (<a href='{0}User_talk:{1}'>" + i18n_1["default"]("talkpagelinktext") + "</a>" + i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Contributions/{1}'>" + i18n_1["default"]("contribslink") + "</a>" + blockText + ")</span>", pWikiInfo.articlepath, Utils_1["default"].escapeCharactersLink(pAuthor), pAuthor);
         }
@@ -744,6 +748,7 @@ var RCData = (function () {
             pParsedComment = "<span class=\"history-deleted\">" + i18n_1["default"]("rev-deleted-comment") + "</span>";
         }
         if (pParsedComment == "" || pParsedComment == undefined) {
+            // pParsedComment = "";
         }
         else {
             pParsedComment = pParsedComment.trim();
@@ -920,7 +925,7 @@ var RCData = (function () {
             tLogMessage += this.userDetails() + (" ??? (" + this.logtype + " - " + this.logaction + ") ");
         }
         tLogMessage += this.getSummary();
-        if (this.wikiInfo.user.hasUndeleteRight && this.logtype == "delete" && this.logaction == "delete") {
+        if (this.wikiInfo.user.rights.undelete && this.logtype == "delete" && this.logaction == "delete") {
             tLogMessage += " (<a href='" + this.wikiInfo.articlepath + "Special:Undelete" + this.wikiInfo.firstSeperator + "target=" + this.hrefTitle + "'>" + i18n_1["default"]("undeletelink") + "</a>)";
         }
         return tLogMessage;
@@ -1087,6 +1092,7 @@ var RCData = (function () {
                         + "</div>"
                         + "<div class='mw-diff-otitle2'>" + RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "") + "</div>"
                         + "<div class='mw-diff-otitle3'>" + tOMinor + RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo)) + "</div>"
+                        // +"<div class='mw-diff-otitle4'></div>"
                         + "</td>"
                         + "<td class='diff-ntitle' colspan='2'>"
                         + "<div class='mw-diff-ntitle1'>"
@@ -1104,6 +1110,7 @@ var RCData = (function () {
                         + "</div>"
                         + "<div class='mw-diff-ntitle2'>" + pDiffTableInfo.newRev.user + "</div>"
                         + "<div class='mw-diff-ntitle3'>" + tNMinor + pDiffTableInfo.newRev.summary + "</div>"
+                        // +"<div class='mw-diff-ntitle4'></div>"
                         + "</td>"
                         + "</tr>"
                         + tRevision.diff["*"]
@@ -1294,6 +1301,7 @@ var RCData = (function () {
                         tCont.innerHTML += tPreviewHead.innerHTML;
                         tCont.innerHTML += tContentText;
                     }
+                    // Using scoped styles is only intended as a fallback since not many prowsers yet allow modifying the shadow dom.
                     else if ("scoped" in document.createElement("style")) {
                         var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
                         Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
@@ -1311,11 +1319,11 @@ var RCData = (function () {
     };
     return RCData;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCData;
 
 },{"./ConstantsApp":1,"./RCMModal":6,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],4:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var RCData_1 = require("./RCData");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
@@ -1327,7 +1335,7 @@ var mw = window.mediaWiki;
 // #### Recent Change List ####
 // * Contains one or more RCData objects. Formats list as needed.
 //######################################
-var RCList = (function () {
+var RCList = /** @class */ (function () {
     // Constructor
     function RCList(pManager) {
         this.manager = pManager;
@@ -1361,7 +1369,7 @@ var RCList = (function () {
         configurable: true
     });
     RCList.prototype.dispose = function () {
-        delete this.manager;
+        // delete this.manager;
         for (var i = 0; i < this.list.length; i++) {
             this.list[i].dispose();
             this.list[i] = null;
@@ -1590,7 +1598,7 @@ var RCList = (function () {
             var diffLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&diff=" + pToRC.revid + "&oldid=" + pFromRC.old_revid;
             var undoLink = pFromRC.hrefFS + "curid=" + pFromRC.pageid + "&undo=" + pToRC.revid + "&undoafter=" + pFromRC.old_revid + "&action=edit";
             // var rollbackLink = null;
-            // if(this.wikiInfo.user.hasRollbackRight) {
+            // if(this.wikiInfo.user.rights.rollback) {
             // 	ajaxLink += "&rvtoken=rollback";
             // 	// Token provided upon results returned from ajaxLink.
             // 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
@@ -1695,6 +1703,7 @@ var RCList = (function () {
                 }
                 break;
             }
+            // case "unpatrolled":	{ if(pRC.zzzzzz)	{ tI18nLetter="unpatrolledletter"; tI18nTooltip="recentchanges-label-unpatrolled"; } }
         }
         if (tI18nLetter == "") {
             return pEmpty;
@@ -1773,7 +1782,7 @@ var RCList = (function () {
                 html += RCList.SEP;
                 html += pRC.userDetails();
                 html += pRC.getSummary();
-                // if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.hasRollbackRight) {
+                // if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.rights.rollback) {
                 //  html += " [<a href='"+this.href+"action=rollback&from="+this.entry.author.name+"'>rollback</a>]";
                 // }
                 break;
@@ -2084,11 +2093,11 @@ var RCList = (function () {
     RCList.SEP = " . . ";
     return RCList;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCList;
 
 },{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],5:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Main_1 = require("./Main");
 var RCMWikiPanel_1 = require("./RCMWikiPanel");
 var RCMOptions_1 = require("./RCMOptions");
@@ -2097,6 +2106,7 @@ var RCMModal_1 = require("./RCMModal");
 var WikiData_1 = require("./WikiData");
 var RCData_1 = require("./RCData");
 var RCMWikiaDiscussionData_1 = require("./RCMWikiaDiscussionData");
+// import RCMAbuseLogData from "./RCMAbuseLogData";
 var RCList_1 = require("./RCList");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
@@ -2109,7 +2119,7 @@ var mw = window.mediaWiki;
 // * This is what actually parses a "rc-content-multiple" div, and loads the respective information.
 // * Uses RCList to actually format the RecentChanges info.
 //######################################
-var RCMManager = (function () {
+var RCMManager = /** @class */ (function () {
     // Constructor
     function RCMManager(pWrapper, pModID) {
         this.modID = "rcm" + pModID;
@@ -2228,11 +2238,25 @@ var RCMManager = (function () {
     };
     ;
     RCMManager.prototype._showUpdateMessage = function () {
+        this._addUpdateMessage({
+            messageID: "rcm-news-V2.12-wikia-to-fandom-hide",
+            messageColor: "gold",
+            endDate: "2019-5-30T00:00:00.000Z",
+            message: "\n\t\t\tChange \"wikia.com\" wikis to \"fandom.com\" on your wiki list once they convert to help avoid HTTPS errors.\n\t\t\tWhile converted wikia wikis redirect, they still count as http until changed to fandom.com, so using wikia links while running the script on a fandom wiki will often cause errors.\n\t\t\t",
+        });
+        this._addUpdateMessage({
+            messageID: "rcm-news-V2.12-hide",
+            messageColor: "green",
+            endDate: "2019-3-30T00:00:00.000Z",
+            message: "\n\t\t\tSupport for fandom language wikis now added.\n\t\t\tYou can now add slashes to a wiki on the list.\n\t\t\tex: <code>sonic.fandom.com/pl/.</code> (doesn't work with wikia wikis, only fandom)\n\t\t\tSee <a href='https://dev.fandom.com/wiki/RecentChangesMultiple#Basic_Usage'>here</a> for more details.\n\t\t\t",
+        });
+    };
+    ;
+    RCMManager.prototype._addUpdateMessage = function (pData) {
+        var messageID = pData.messageID, messageColor = pData.messageColor, endDate = pData.endDate, message = pData.message;
         // Stop showing in a month or two, but also remember dismissal via localStorage.
-        var messageID = "rcm-news-V2.12-hide";
-        var messageColor = "green";
-        if (new Date("2019-3-30T00:00:00.000Z") > new Date() && (localStorage.getItem(messageID) != "true")) {
-            var tMessage = Utils_1["default"].newElement("div", { className: "rcm-update-message", innerHTML: "\n\t\t\tSupport for fandom language wikis now added.\n\t\t\tYou can now add slashes to a wiki on the list.\n\t\t\tex: <code>sonic.fandom.com/pl/.</code>\n\t\t\tSee <a href='https://dev.fandom.com/wiki/RecentChangesMultiple'>here</a> for more details.\n\t\t\t" }, this.resultCont);
+        if (new Date(endDate) > new Date() && (localStorage.getItem(messageID) != "true")) {
+            var tMessage = Utils_1["default"].newElement("div", { className: "rcm-update-message", innerHTML: message }, this.resultCont);
             tMessage.style.cssText = "border:5px double " + messageColor + "; padding:2px 6px; overflow-y: hidden;";
             var tButton = Utils_1["default"].newElement("button", { innerHTML: "Dismiss Message" }, tMessage);
             tButton.addEventListener("click", function tRCM_dismissNotice() {
@@ -2243,7 +2267,6 @@ var RCMManager = (function () {
             tButton.style.cssText = "float:right;";
         }
     };
-    ;
     /***************************
     * Loading
     ***************************/
@@ -2408,7 +2431,7 @@ var RCMManager = (function () {
         var tCSS = "";
         this.chosenWikis.forEach(function (wikiInfo) {
             // bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-            tCSS += ("\n." + wikiInfo.rcClass + " .rcm-tiled-favicon {")
+            tCSS += "\n." + wikiInfo.rcClass + " .rcm-tiled-favicon {"
                 + (wikiInfo.bgcolor != null ? "background: " + wikiInfo.bgcolor + ";" : "background-image: url(" + wikiInfo.favicon + ");")
                 + " }";
         });
@@ -2498,15 +2521,7 @@ var RCMManager = (function () {
         // Add each entry from the wiki to the list in a sorted order
         pData.forEach(function (pRCData) {
             var tUser = pRCData.createdBy.name;
-            // Skip if user is hidden for whole script or specific wiki
-            if (tUser && _this.hideusers.indexOf(tUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(tUser) > -1)) {
-                return;
-            }
-            // Skip if user is NOT a specified user to show for whole script or specific wiki
-            if (tUser && (_this.onlyshowusers.length != 0 && _this.onlyshowusers.indexOf(tUser) == -1)) {
-                return;
-            }
-            if (tUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(tUser) == -1)) {
+            if (_this._changeShouldBePrunedBasedOnOptions(tUser, pWikiData)) {
                 return;
             }
             // If hideself set
@@ -2522,22 +2537,6 @@ var RCMManager = (function () {
             tNewRC.init(pRCData);
             _this._addRCDataToList(tNewRC);
             pWikiData.discussionsCount++;
-            // tChangeAdded = false;
-            // this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-            // 	if(tNewRC.date > pRCList.date) {
-            // 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-            // 		tChangeAdded = true;
-            // 		return false;
-            // 	} else {
-            // 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-            // 			pRCList.addRC(tNewRC);
-            // 			tChangeAdded = true;
-            // 			return false;
-            // 		}
-            // 	}
-            // 	return true;
-            // });
-            // if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
         });
         mw.log("Discussions:", pWikiData.servername, pData);
         this._onDiscussionParsingFinished(pWikiData);
@@ -2673,6 +2672,7 @@ var RCMManager = (function () {
         // Store wiki-data retrieved that's needed before wiki parsing
         // pWikiData.initAfterLoad(pData.query);
         this.ajaxCallbacks.push(function () {
+            // this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
             _this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
         });
         // Directly call next callback if this is the only one in it. Otherwise let script handle it.
@@ -2722,43 +2722,46 @@ var RCMManager = (function () {
         var tNewRC, tDate, tChangeAdded;
         // Add each entry from the wiki to the list in a sorted order
         pData.forEach(function (pRCData) {
-            // Skip if user is hidden for whole script or specific wiki
-            if (pRCData.user && _this.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) {
-                return;
-            }
-            // Skip if user is NOT a specified user to show for whole script or specific wiki
-            if (pRCData.user && (_this.onlyshowusers.length != 0 && _this.onlyshowusers.indexOf(pRCData.user) == -1)) {
-                return;
-            }
-            if (pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) {
+            if (_this._changeShouldBePrunedBasedOnOptions(pRCData.user, pWikiData)) {
                 return;
             }
             _this.itemsToAddTotal++;
             tNewRC = new RCData_1["default"](pWikiData, _this).init(pRCData, pLogData);
             _this._addRCDataToList(tNewRC);
             pWikiData.resultsCount++;
-            // tChangeAdded = false;
-            // this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-            // 	if(tNewRC.date > pRCList.date) {
-            // 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-            // 		tChangeAdded = true;
-            // 		return false;
-            // 	} else {
-            // 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-            // 			pRCList.addRC(tNewRC);
-            // 			tChangeAdded = true;
-            // 			return false;
-            // 		}
-            // 	}
-            // 	return true;
-            // });
-            // if(!tChangeAdded || this.recentChangesEntries.length == 0) {
-            // 	this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) );
-            // }
         });
         this._onWikiParsingFinished(pWikiData);
     };
     ;
+    RCMManager.prototype._changeShouldBePrunedBasedOnOptions = function (pUser, pWikiData) {
+        // Skip if user is hidden for whole script or specific wiki
+        if (pUser && this.hideusers.indexOf(pUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pUser) > -1)) {
+            return true;
+        }
+        // Skip if user is NOT a specified user to show for whole script or specific wiki
+        if (pUser && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pUser) == -1)) {
+            return true;
+        }
+        if (pUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pUser) == -1)) {
+            return true;
+        }
+        return false;
+    };
+    // private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
+    // 	// Check if wiki doesn't have any logs
+    // 	if(!pLogs || pLogs.length <= 0) {
+    // 		// this._onWikiParsingFinished(pWikiData);
+    // 		return;
+    // 	}
+    // 	pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pLogs));
+    // 	// Add each entry from the wiki to the list in a sorted order
+    // 	pLogs.forEach((pLogData) => {
+    // 		if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
+    // 		this.itemsToAddTotal++;
+    // 		this._addRCDataToList( new RCMAbuseLogData( pWikiData, this ).init(pLogData) );
+    // 		pWikiData.resultsCount++;
+    // 	});
+    // }
     // TODO: Make it more efficient if using hideenhanced by ignoring some calls.
     RCMManager.prototype._addRCDataToList = function (pNewRC) {
         var _this = this;
@@ -2800,6 +2803,7 @@ var RCMManager = (function () {
                         // this.recentChangesEntries.splice(tIndexToAddAt, 0, pRCList);
                         return false;
                     }
+                    // }
                 }
                 else {
                     if (pRCList.shouldGroupWith(pNewRC)) {
@@ -2810,6 +2814,7 @@ var RCMManager = (function () {
                         }
                         return false;
                     }
+                    // If tIndexToAddAt is set no reason to keep checking if it literally can not match (due to being the next day).
                     else if (tIndexToAddAt_1 > -1 && tNewTimeStamp_1 != Utils_1["default"].formatWikiTimeStamp(pRCList.date, false)) {
                         _this.recentChangesEntries.splice(tIndexToAddAt_1, 0, tNewList = new RCList_1["default"](_this).addRC(pNewRC));
                         return false;
@@ -3138,6 +3143,8 @@ var RCMManager = (function () {
                         // Utils.prependChild(tNewContainer, this.resultsNode);
                         Utils_1["default"].prependChild(tNewHeading, this.resultsNode);
                         Utils_1["default"].insertAfter(tNewContainer, tNewHeading);
+                        // this.resultsNode.insertBefore(tNewContainer, this.resultsNode.firstChild);
+                        // this.resultsNode.insertBefore(tNewHeading, this.resultsNode.firstChild);
                     }
                 }
                 else {
@@ -3292,7 +3299,7 @@ var RCMManager = (function () {
             success: function () {
                 var pArgs = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    pArgs[_i - 0] = arguments[_i];
+                    pArgs[_i] = arguments[_i];
                 }
                 if (pID != _this.ajaxID) {
                     return;
@@ -3363,6 +3370,10 @@ var RCMManager = (function () {
                 else if (tRcParamsDataSplit[0] == "namespace" && (tRcParamsDataSplit[1] || tRcParamsDataSplit[1] === "0")) {
                     tRcParams["namespace"] = tRcParamsDataSplit[1];
                 }
+                // else if(tRcParamsDataSplit[0] == "from" && tRcParamsDataSplit[1]) {
+                // 	tRcParams["from"] = tRcParamsDataSplit[1];
+                // }
+                // Check all the true / false ones
                 else if (tRcParamsDataSplit[1]) {
                     tRcParams[tRcParamsDataSplit[0]] = tRcParamsDataSplit[1] == "1";
                 }
@@ -3392,11 +3403,11 @@ var RCMManager = (function () {
     RCMManager.LOADING_ERROR_RETRY_NUM_INC = 5;
     return RCMManager;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMManager;
 
 },{"./ConstantsApp":1,"./Main":2,"./RCData":3,"./RCList":4,"./RCMModal":6,"./RCMOptions":7,"./RCMWikiPanel":8,"./RCMWikiaDiscussionData":9,"./RC_TYPE":10,"./Utils":12,"./WikiData":13,"./i18n":14}],6:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var i18n_1 = require("./i18n");
 var $ = window.jQuery;
@@ -3405,7 +3416,7 @@ var mw = window.mediaWiki;
 // #### Modal Manager ####
 // This is a STATIC class. This is a helper class for using Wikia modals, as RCM has some specific requirements.
 //######################################
-var RCMModal = (function () {
+var RCMModal = /** @class */ (function () {
     function RCMModal() {
     }
     // pData = { title:String, content:String, rcm_buttons:Array<{ value:String, event:String, callback:Event->Void, closeOnClick:Boolean=true }>, rcm_onModalShown:Void->Void, vars:Object }
@@ -3504,11 +3515,11 @@ var RCMModal = (function () {
     RCMModal.modal = null;
     return RCMModal;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMModal;
 
 },{"./ConstantsApp":1,"./i18n":14}],7:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
@@ -3518,7 +3529,7 @@ var mw = window.mediaWiki;
 // #### Run-time Options ####
 // * Custom version of RC "options" section, using url params to keep track of options.
 //######################################
-var RCMOptions = (function () {
+var RCMOptions = /** @class */ (function () {
     // Constructor
     function RCMOptions(pManager) {
         this.manager = pManager;
@@ -3771,11 +3782,11 @@ var RCMOptions = (function () {
     };
     return RCMOptions;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMOptions;
 
 },{"./ConstantsApp":1,"./Utils":12,"./i18n":14}],8:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var Utils_1 = require("./Utils");
 var i18n_1 = require("./i18n");
@@ -3785,7 +3796,7 @@ var mw = window.mediaWiki;
 // #### Wiki Panel ####
 // * Show the current loaded wikis, as well as any information pertaining to them.s
 //######################################
-var RCMWikiPanel = (function () {
+var RCMWikiPanel = /** @class */ (function () {
     // Constructor
     function RCMWikiPanel(pManager) {
         this.manager = pManager;
@@ -3839,7 +3850,7 @@ var RCMWikiPanel = (function () {
     RCMWikiPanel.prototype.onIconClick = function (pWikiInfo, e) {
         var infoBanner = this.infoNode.querySelector(".banner-notification");
         // If already open for that wiki, then close it.
-        if (infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername && e && (e.screenX != 0 && e.screenY != 0)) {
+        if (infoBanner && infoBanner.dataset.wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
             this.closeInfo();
         }
         else {
@@ -3870,6 +3881,7 @@ var RCMWikiPanel = (function () {
                 + (pWikiInfo.usesWikiaDiscussions ? " - <a href='" + pWikiInfo.scriptpath + "/d'>" + i18n_1["default"]("discussions") + "</a>" : "")
                 + "</td>"
                 + "</tr>"
+                // Now for the statistics
                 + "<tr>"
                 + "<td>"
                 + "<table class='wikitable center statisticstable' style='margin: 0;'>"
@@ -3909,16 +3921,21 @@ var RCMWikiPanel = (function () {
     };
     return RCMWikiPanel;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMWikiPanel;
 
 },{"./ConstantsApp":1,"./Utils":12,"./i18n":14}],9:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var RCData_1 = require("./RCData");
 var Utils_1 = require("./Utils");
@@ -3931,11 +3948,11 @@ var mw = window.mediaWiki;
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-var RCMWikiaDiscussionData = (function (_super) {
+var RCMWikiaDiscussionData = /** @class */ (function (_super) {
     __extends(RCMWikiaDiscussionData, _super);
     // Constructor
     function RCMWikiaDiscussionData(pWikiInfo, pManager) {
-        _super.call(this, pWikiInfo, pManager);
+        return _super.call(this, pWikiInfo, pManager) || this;
     }
     /*override*/ RCMWikiaDiscussionData.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
@@ -3989,7 +4006,7 @@ var RCMWikiaDiscussionData = (function (_super) {
         if (this.userhidden) {
             return '<span class="history-deleted">' + i18n_1["default"]("rev-deleted-user") + '</span>';
         }
-        var blockText = this.wikiInfo.user.hasBlockRight ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
+        var blockText = this.wikiInfo.user.rights.block ? i18n_1["default"]("pipe-separator") + "<a href='{0}Special:Block/{1}'>" + i18n_1["default"]("blocklink") + "</a>" : "";
         // if(this.userEdited) {
         // 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
         // } else {
@@ -4018,8 +4035,8 @@ var RCMWikiaDiscussionData = (function (_super) {
         var tForumLink = "<a href=\"" + this.wikiInfo.scriptpath + "/d/f?catId=" + this.forumId + "&sort=latest\">" + this.forumName + "</a>";
         var tText = i18n_1["default"].MESSAGES["wall-recentchanges-thread-group"];
         // tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
-        tText = tText.replace(/(\[\[.*\]\])/g, "RCM_DISC_BOARD");
-        tText = i18n_1["default"].wiki2html(tText, ("<a href=\"" + (pIsHead ? this.threadHref : this.href) + "\">" + pThreadTitle + "</a>") + (pIsHead ? "" : this.getUpvoteCount()));
+        tText = tText.replace(/(\[\[.*\]\])/g, "RCM_DISC_BOARD"); // Don't replace with actual content right away, to avoid wiki2html being run on it
+        tText = i18n_1["default"].wiki2html(tText, "<a href=\"" + (pIsHead ? this.threadHref : this.href) + "\">" + pThreadTitle + "</a>" + (pIsHead ? "" : this.getUpvoteCount()));
         tText = tText.replace("RCM_DISC_BOARD", tForumLink);
         return tText;
     };
@@ -4033,11 +4050,11 @@ var RCMWikiaDiscussionData = (function (_super) {
     };
     return RCMWikiaDiscussionData;
 }(RCData_1["default"]));
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RCMWikiaDiscussionData;
 
 },{"./ConstantsApp":1,"./RCData":3,"./RC_TYPE":10,"./Utils":12,"./i18n":14}],10:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var RC_TYPE;
 (function (RC_TYPE) {
     RC_TYPE[RC_TYPE["NORMAL"] = 0] = "NORMAL";
@@ -4047,11 +4064,11 @@ var RC_TYPE;
     RC_TYPE[RC_TYPE["BOARD"] = 4] = "BOARD";
     RC_TYPE[RC_TYPE["DISCUSSION"] = 5] = "DISCUSSION";
 })(RC_TYPE || (RC_TYPE = {}));
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = RC_TYPE;
 
 },{}],11:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = require("./Utils");
 var $ = window.jQuery;
 var mw = window.mediaWiki;
@@ -4060,14 +4077,14 @@ var mw = window.mediaWiki;
 // * A data object to keep track of wiki data in an organized way, as well as also having convenience methods.
 // * These should only be created once per wiki per RCMManager. No reason to re-create every refresh.
 //######################################
-var UserData = (function () {
+var UserData = /** @class */ (function () {
     // Constructor
     function UserData(pWikiInfo, pManager) {
         this.manager = pManager;
     }
     UserData.prototype.dispose = function () {
-        delete this.manager;
-        delete this.wikiInfo;
+        // delete this.manager;
+        // delete this.wikiInfo;
         this.groups = null;
         // this.registration = null;
         this.block = null;
@@ -4098,18 +4115,18 @@ var UserData = (function () {
     };
     return UserData;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = UserData;
 
 },{"./Utils":12}],12:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var $ = window.jQuery;
 var mw = window.mediaWiki;
 //######################################
 // General Helper Methods - STATIC
 //######################################
-var Utils = (function () {
+var Utils = /** @class */ (function () {
     function Utils() {
     }
     /***************************
@@ -4383,11 +4400,11 @@ var Utils = (function () {
     };
     return Utils;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = Utils;
 
 },{"./ConstantsApp":1}],13:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var UserData_1 = require("./UserData");
 var Utils_1 = require("./Utils");
@@ -4398,18 +4415,23 @@ var mw = window.mediaWiki;
 // * A data object to keep track of wiki data in an organized way, as well as also having convenience methods.
 // * These should only be created once per wiki per RCMManager. No reason to re-create every refresh.
 //######################################
-var WikiData = (function () {
+var WikiData = /** @class */ (function () {
     // Constructor
     function WikiData(pManager) {
         this.manager = pManager;
         this.notificationsEnabled = true;
         this.needsSiteinfoData = true;
         this.needsUserData = true;
-        this.user = { hasBlockRight: false, hasUndeleteRight: false, hasRollbackRight: true }; // Set hasRollbackRight to true by default so as to fetch extra necessary data first time around.
+        // Set rollback to true by default so as to fetch extra necessary data first time around.
+        this.user = { rights: {
+                block: false, undelete: false, rollback: true,
+            } };
         this.isWikiaWiki = true;
         this.useOutdatedLogSystem = false;
         this.users = {};
         this.usersNeeded = [];
+        // this.abuseFilterFilters		= {};
+        // this.needsAbuseFilterFilters = true;
         // Initial values set in setupRcParams() due to needing "days" value.
         this.lastChangeDate = null;
         this.lastDiscussionDate = null;
@@ -4554,6 +4576,7 @@ var WikiData = (function () {
                         this.favicon = this.server + "/" + this.favicon;
                     }
                 }
+                // Should work for all Wikia wikis
                 else if (!!pQuery.pages) {
                     var tPageID;
                     for (tPageID in pQuery.pages)
@@ -4561,6 +4584,12 @@ var WikiData = (function () {
                     if (pQuery.pages[tPageID] && pQuery.pages[tPageID].imageinfo) {
                         this.favicon = pQuery.pages[tPageID].imageinfo[0].url;
                     }
+                    // for (var tPageID in pQuery.pages) {
+                    // 	if(pQuery.pages[tPageID] && pQuery.pages[tPageID].ns == 6 && pQuery.pages[tPageID].title.split(":")[1] == "Favicon.ico") {
+                    // 		if(pQuery.pages[tPageID].imageinfo) { this.favicon = pQuery.pages[tPageID].imageinfo[0].url; }
+                    // 		break;
+                    // 	}
+                    // }
                 }
             }
             this.namespaces = pQuery.namespaces || {};
@@ -4581,20 +4610,20 @@ var WikiData = (function () {
          ***************************/
         if (this.needsUserData && !!pQuery.users) {
             this.needsUserData = false;
-            this.user.hasBlockRight = false;
-            this.user.hasUndeleteRight = false;
-            this.user.hasRollbackRight = false;
-            for (var i in pQuery.users[0].rights) {
-                if (pQuery.users[0].rights[i] == "block") {
-                    this.user.hasBlockRight = true;
-                }
-                if (pQuery.users[0].rights[i] == "undelete") {
-                    this.user.hasUndeleteRight = true;
-                }
-                else if (pQuery.users[0].rights[i] == "rollback") {
-                    this.user.hasRollbackRight = true;
-                }
-            }
+            // this.user.rights.block = false;
+            // this.user.rights.undelete = false;
+            // this.user.rights.rollback = false;
+            // for(var i in pQuery.users[0].rights) {
+            // 	if(pQuery.users[0].rights[i] == "block") { this.user.rights.block = true; }
+            // 	if(pQuery.users[0].rights[i] == "undelete") { this.user.rights.undelete = true; }
+            // 	else if(pQuery.users[0].rights[i] == "rollback") { this.user.rights.rollback = true; }
+            // }
+            var tRightList = pQuery.users[0].rights;
+            this.user.rights = {
+                block: tRightList.indexOf("block") > -1,
+                undelete: tRightList.indexOf("undelete") > -1,
+                rollback: tRightList.indexOf("rollback") > -1,
+            };
         }
         /***************************
          * Favicon fallback - may not be needed now with "pQuery.pages" backup.
@@ -4604,6 +4633,18 @@ var WikiData = (function () {
         }
         return this;
     };
+    // initAbuseFilterFilters(pQuery) : this {
+    // 	if(this.needsAbuseFilterFilters && !!pQuery.abusefilters){
+    // 		this.needsAbuseFilterFilters = false;
+    // 		this.abuseFilterFilters = {};
+    // 		let tFilter;
+    // 		for (let i = 0; i < pQuery.abusefilters.length; i++) {
+    // 			tFilter = pQuery.abusefilters[i];
+    // 			this.abuseFilterFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
+    // 		}
+    // 	}
+    // 	return this;
+    // }
     WikiData.prototype.setupRcParams = function () {
         this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
         if (Object.keys(this.manager.optionsNode.rcParams).length > 0) {
@@ -4704,6 +4745,9 @@ var WikiData = (function () {
         }
     };
     WikiData.prototype.updateLastChangeDate = function (pData) {
+        if (new Date(pData.timestamp) < this.lastChangeDate) {
+            return;
+        }
         this.lastChangeDate = new Date(pData.timestamp);
         // Add 1 millisecond to avoid getting this change again.
         this.lastChangeDate.setSeconds(this.lastChangeDate.getSeconds() + 1);
@@ -4722,7 +4766,7 @@ var WikiData = (function () {
         if (!this.needsSiteinfoData || !this.needsUserData) {
             return null;
         }
-        var tReturnText = this.scriptpath + "/api.php?action=query&format=json&continue="; // don't assume http:// or https://
+        var tReturnText = "https:" + this.scriptpath + "/api.php?action=query&format=json&continue="; // don't assume http:// or https://
         var tUrlList = [];
         var tMetaList = [];
         var tPropList = [];
@@ -4773,7 +4817,7 @@ var WikiData = (function () {
         // Get results up to this time stamp.
         var tEndDate = this.lastDiscussionDate; //this.getEndDate();
         var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.hasBlockRight;
+        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.rights.block;
         mw.log("[WikiData](getWikiDiscussionUrl) " + this.servername + " - " + tReturnText);
         return tReturnText;
     };
@@ -4843,7 +4887,7 @@ var WikiData = (function () {
         * Get info for logs that don't return all necessary info through "Recent Changes" api.
         * To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
         ***************************/
-        if (this.useOutdatedLogSystem) {
+        if (this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
             tUrlList.push("logevents");
             tReturnText += "&leprop=" + ["details", "user", "title", "timestamp", "type", "ids"].join("|");
             tReturnText += "&letype=" + ["rights", "move", "delete", "block", "merge"].join("|");
@@ -4851,6 +4895,22 @@ var WikiData = (function () {
             tReturnText += "&lelimit=" + this.rcParams.limit;
             tReturnText += "&leend=" + tEndDate.toISOString();
         }
+        // /***************************
+        // * Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
+        // * Each wiki has it's own list of abuse filters
+        // ***************************/
+        // // Checking for both rights should assure this wiki has logs the user can potentially see.
+        // mw.log("[WikiData](getApiUrl) Abuse filter: ", this.rcParams.hidelogs == false , this.user.rights , this.user.rights.abusefilter_log , this.user.rights.abusefilter_view);
+        // if(true/*TODO*/ && this.rcParams.hidelogs == false && this.user.rights.abusefilter_log && this.user.rights.abusefilter_view) {
+        // 	if(this.needsAbuseFilterFilters) {
+        // 		tUrlList.push("abusefilters");
+        // 		tReturnText += "&abflimit=500&abfshow=enabled&abfprop=id|description|private";//|actions
+        // 	}
+        // 	tUrlList.push("abuselog");
+        // 	tReturnText += "&afllimit="+this.rcParams.limit;
+        // 	tReturnText += "&aflend="+tEndDate.toISOString();
+        // 	tReturnText += "&aflprop=ids|user|title|action|result|timestamp";
+        // }
         /***************************
         * Finish building url
         ***************************/
@@ -4874,11 +4934,11 @@ var WikiData = (function () {
     WikiData.RC_PROPS = ["user", "flags", "title", "ids", "sizes", "timestamp", "loginfo", "parsedcomment", "comment"].join("|"); // patrolled
     return WikiData;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = WikiData;
 
 },{"./ConstantsApp":1,"./UserData":11,"./Utils":12}],14:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ConstantsApp_1 = require("./ConstantsApp");
 var $ = window.jQuery;
 var mw = window.mediaWiki;
@@ -5006,7 +5066,8 @@ i18n.TEXT = {
                 }
             },
             "pluralRules": [
-                "n % 10 = 1 and n % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, … @decimal 1.0, 21.0, 31.0, 41.0, 51.0, 61.0, 71.0, 81.0, 101.0, 1001.0, …", "n % 10 = 2..4 and n % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, … @decimal 2.0, 3.0, 4.0, 22.0, 23.0, 24.0, 32.0, 33.0, 102.0, 1002.0, …", "n % 10 = 0 or n % 10 = 5..9 or n % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, … @decimal 0.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …"],
+                "n % 10 = 1 and n % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, … @decimal 1.0, 21.0, 31.0, 41.0, 51.0, 61.0, 71.0, 81.0, 101.0, 1001.0, …", "n % 10 = 2..4 and n % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, … @decimal 2.0, 3.0, 4.0, 22.0, 23.0, 24.0, 32.0, 33.0, 102.0, 1002.0, …", "n % 10 = 0 or n % 10 = 5..9 or n % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, … @decimal 0.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …"
+            ],
             "digitGroupingPattern": null,
             "fallbackLanguages": ["en"]
         },
@@ -5626,7 +5687,8 @@ i18n.TEXT = {
                 }
             },
             "pluralRules": [
-                "v = 0 and i % 10 = 1 and i % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …", "v = 0 and i % 10 = 2..4 and i % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, …", "v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, …"],
+                "v = 0 and i % 10 = 1 and i % 100 != 11 @integer 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …", "v = 0 and i % 10 = 2..4 and i % 100 != 12..14 @integer 2~4, 22~24, 32~34, 42~44, 52~54, 62, 102, 1002, …", "v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14 @integer 0, 5~19, 100, 1000, 10000, 100000, 1000000, …"
+            ],
             "digitGroupingPattern": null,
             "fallbackLanguages": ["ru", "en"]
         },
@@ -5961,10 +6023,10 @@ i18n.MESSAGES = {
     'logentry-maps-create_pin': '$1 created new pin for $3',
     'logentry-maps-update_pin': '$1 updated pin for $3',
     'logentry-maps-delete_pin': '$1 deleted pin for $3',
-    // ## Extensions ##
-    // Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
-    "abusefilter-log-entry-modify": "modified $1 ($2)",
-    "abusefilter-log-detailslink": "details",
+    // // ## Extensions ##
+    // // Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
+    // "abusefilter-log-entry-modify" : "modified $1 ($2)",
+    // "abusefilter-log-detailslink" : "details",
     /***************************
     * Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
     ****************************/
@@ -6001,6 +6063,21 @@ i18n.MESSAGES = {
     'discussions': 'Discussions',
     'forum-related-discussion-heading': 'Discussions about $1',
     'embeddable-discussions-loading': 'Loading Discussions...',
+    /***************************
+    * AbuseFilter
+    ****************************/
+    'abusefilter-log-detailedentry-meta': '$1: $2 triggered $3, performing the action \"$4\" on $5.\nActions taken: $6;\nFilter description: $7 ($8)',
+    'abusefilter-log-entry': '$1: $2 triggered an abuse filter, performing the action \"$3\" on $4.\nActions taken: $5;\nFilter description: $6',
+    'abusefilter-action-block': 'Block',
+    'abusefilter-action-blockautopromote': 'Block autopromote',
+    'abusefilter-action-degroup': 'Remove from groups',
+    'abusefilter-action-disallow': 'Disallow',
+    'abusefilter-action-rangeblock': 'Range-block',
+    'abusefilter-action-tag': 'Tag',
+    'abusefilter-action-throttle': 'Throttle',
+    'abusefilter-action-warn': 'Warn',
+    "abusefilter-log-detailslink": "details",
+    "abusefilter-changeslist-examine": "examine",
 };
 // http://download.remysharp.com/wiki2html.js
 i18n.wiki2html = function (pText) {
@@ -6014,18 +6091,23 @@ i18n.wiki2html = function (pText) {
     }
     ;
     return pText
+        // bold
         .replace(/'''(.*?)'''/g, function (m, l) {
         return '<strong>' + l + '</strong>';
     })
+        // italic
         .replace(/''(.*?)''/g, function (m, l) {
         return '<em>' + l + '</em>';
     })
+        // normal link
         .replace(/[^\[](http[^\[\s]*)/g, function (m, l) {
         return '<a href="' + l + '">' + l + '</a>';
     })
+        // format string by replacing wiki $1 string vars with text.
         .replace(/\$(\d+)/g, function (match, number) {
         return typeof pArgs[number - 1] != 'undefined' ? pArgs[number - 1] : match;
     })
+        // internal link or image
         .replace(/\[\[(.*?)\]\]/g, function (m, l) {
         var p = l.split(/\|/);
         var link = p.shift();
@@ -6036,32 +6118,39 @@ i18n.wiki2html = function (pText) {
         return '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
         // }
     })
+        // external link
         .replace(/[\[](https?:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
         var p = l.replace(/[\[\]]/g, '').split(/ /);
         var link = p.shift();
         return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';
     })
+        /*******************************************************************************
+         * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.language
+         *******************************************************************************/
+        // {{GENDER}} - cannot be checked by script, so just uses {{{1}}}/{{{2}}}
         .replace(/{{GENDER:(.*?)}}/g, function (m, l) {
         var p = l.split("|");
         var user = p.shift(); // Remove user object from list
         return mw.language.gender(ConstantsApp_1["default"].userOptions.gender, p);
     })
+        // {{PLURAL}} - only does default support
         .replace(/{{PLURAL:(.*?)}}/g, function (m, l) {
         var p = l.split("|");
         var num = p.shift();
         return mw.language.convertPlural(num, p);
     })
+        // {{GRAMMAR}}
         .replace(/{{GRAMMAR:(.*?)}}/g, function (m, l) {
         var p = l.split("|");
         //let num = p.shift();
         return mw.language.convertGrammar(p[1], p[0]);
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 exports["default"] = i18n;
 
 },{"./ConstantsApp":1}],15:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Main_1 = require("./Main");
 // Double check that script can run; should always be true due to loader, but check is here just encase.
 var appConfig = (window.dev = window.dev || {}).RecentChangesMultiple = window.dev.RecentChangesMultiple || {};

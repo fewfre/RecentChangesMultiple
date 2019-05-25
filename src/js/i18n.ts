@@ -1147,10 +1147,10 @@ i18n.MESSAGES = {
 	'logentry-maps-create_pin' : '$1 created new pin for $3',
 	'logentry-maps-update_pin' : '$1 updated pin for $3',
 	'logentry-maps-delete_pin' : '$1 deleted pin for $3',
-	// ## Extensions ##
-	// Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
-	"abusefilter-log-entry-modify" : "modified $1 ($2)",
-	"abusefilter-log-detailslink" : "details",
+	// // ## Extensions ##
+	// // Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
+	// "abusefilter-log-entry-modify" : "modified $1 ($2)",
+	// "abusefilter-log-detailslink" : "details",
 
 	/***************************
 	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
@@ -1190,6 +1190,24 @@ i18n.MESSAGES = {
 	'discussions': 'Discussions',
 	'forum-related-discussion-heading': 'Discussions about $1',
 	'embeddable-discussions-loading': 'Loading Discussions...',
+	
+	/***************************
+	* AbuseFilter
+	****************************/
+	'abusefilter-log-detailedentry-meta': '$1: $2 triggered $3, performing the action \"$4\" on $5.\nActions taken: $6;\nFilter description: $7 ($8)',
+	'abusefilter-log-entry': '$1: $2 triggered an abuse filter, performing the action \"$3\" on $4.\nActions taken: $5;\nFilter description: $6',
+	
+	'abusefilter-action-block': 'Block',
+	'abusefilter-action-blockautopromote': 'Block autopromote',
+	'abusefilter-action-degroup': 'Remove from groups',
+	'abusefilter-action-disallow': 'Disallow',
+	'abusefilter-action-rangeblock': 'Range-block',
+	'abusefilter-action-tag': 'Tag',
+	'abusefilter-action-throttle': 'Throttle',
+	'abusefilter-action-warn': 'Warn',
+	
+	"abusefilter-log-detailslink": "details",
+	"abusefilter-changeslist-examine": "examine",
 };
 
 // http://download.remysharp.com/wiki2html.js

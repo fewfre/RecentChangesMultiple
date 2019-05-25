@@ -91,7 +91,7 @@ export default class ConstantsApp
 		return `<svg width="${pWidth}" height="${pHeight}" class='rcm-svg-icon'><use xlink:href="#${pID}" width="${pWidth}" height="${pHeight}" /></svg>`;
 	}
 	
-	static readonly SVG_SYMBOLS : string[] = [
+	static /*readonly*/ SVG_SYMBOLS : string[] = [
 		// Loading icon - general use
 		// http://loading.io
 		`<symbol id="rcm-loading" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" xmlns="http://www.w3.org/2000/svg">

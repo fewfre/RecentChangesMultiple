@@ -8,6 +8,13 @@ import i18n from "./i18n";
 let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
 
+interface CurrentUser {
+	rights:{
+		block:boolean, undelete:boolean, rollback:boolean,
+		// abusefilter_view:boolean, abusefilter_log:boolean, abusefilter_log_detail:boolean, abusefilter_log_private:boolean
+	}
+}
+
 //######################################
 // #### Wiki Data ####
 // * A data object to keep track of wiki data in an organized way, as well as also having convenience methods.
@@ -67,13 +74,19 @@ export default class WikiData
 	* User Data
 	****************************/
 	needsUserData			: boolean; // Check if the RCMManager should load the this user's account data for the wiki (detect what rights they have).
-	user					: { hasBlockRight:boolean, hasUndeleteRight:boolean, hasRollbackRight:boolean }; // Data for the user using the script on this specific wiki.
+	user					: CurrentUser; // Data for the user using the script on this specific wiki.
 	
 	/***************************
 	* All Users
 	****************************/
 	users					: { [username: string]: UserData }; // Map of user data. usernames stored with spaces, not _s
 	usersNeeded				: string[]; // usernames stored with spaces, not _s
+	
+	// /***************************
+	// * AbuseFilter
+	// ****************************/
+	// abuseFilterFilters		: { [id: number]: { description:string, private:boolean } };
+	// needsAbuseFilterFilters	: boolean;
 	
 	/***************************
 	* Other
@@ -96,12 +109,19 @@ export default class WikiData
 		this.notificationsEnabled	= true;
 		this.needsSiteinfoData		= true;
 		this.needsUserData			= true;
-		this.user					= { hasBlockRight:false, hasUndeleteRight:false, hasRollbackRight:true };  // Set hasRollbackRight to true by default so as to fetch extra necessary data first time around.
+		// Set rollback to true by default so as to fetch extra necessary data first time around.
+		this.user					= { rights:{
+			block:false, undelete:false, rollback:true,
+			// abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false, abusefilter_log_private:false,
+		} };
 		this.isWikiaWiki			= true;
 		this.useOutdatedLogSystem	= false;
 		
 		this.users					= {};
 		this.usersNeeded			= [];
+		
+		// this.abuseFilterFilters		= {};
+		// this.needsAbuseFilterFilters = true;
 		
 		// Initial values set in setupRcParams() due to needing "days" value.
 		this.lastChangeDate			= null;
@@ -291,14 +311,25 @@ export default class WikiData
 		 ***************************/
 		if(this.needsUserData && !!pQuery.users){
 			this.needsUserData = false;
-			this.user.hasBlockRight = false;
-			this.user.hasUndeleteRight = false;
-			this.user.hasRollbackRight = false;
-			for(var i in pQuery.users[0].rights) {
-				if(pQuery.users[0].rights[i] == "block") { this.user.hasBlockRight = true; }
-				if(pQuery.users[0].rights[i] == "undelete") { this.user.hasUndeleteRight = true; }
-				else if(pQuery.users[0].rights[i] == "rollback") { this.user.hasRollbackRight = true; }
-			}
+			// this.user.rights.block = false;
+			// this.user.rights.undelete = false;
+			// this.user.rights.rollback = false;
+			// for(var i in pQuery.users[0].rights) {
+			// 	if(pQuery.users[0].rights[i] == "block") { this.user.rights.block = true; }
+			// 	if(pQuery.users[0].rights[i] == "undelete") { this.user.rights.undelete = true; }
+			// 	else if(pQuery.users[0].rights[i] == "rollback") { this.user.rights.rollback = true; }
+			// }
+			let tRightList = pQuery.users[0].rights;
+			this.user.rights = {
+				block:		tRightList.indexOf("block") > -1,
+				undelete:	tRightList.indexOf("undelete") > -1,
+				rollback:	tRightList.indexOf("rollback") > -1,
+				
+				// abusefilter_view:			tRightList.indexOf("abusefilter-view") > -1,
+				// abusefilter_log:			tRightList.indexOf("abusefilter-log") > -1,
+				// abusefilter_log_detail:		tRightList.indexOf("abusefilter-log-detail") > -1,
+				// abusefilter_log_private:	tRightList.indexOf("abusefilter-log-private") > -1,
+			};
 		}
 		
 		/***************************
@@ -310,6 +341,20 @@ export default class WikiData
 		
 		return this;
 	}
+	
+	// initAbuseFilterFilters(pQuery) : this {
+	// 	if(this.needsAbuseFilterFilters && !!pQuery.abusefilters){
+	// 		this.needsAbuseFilterFilters = false;
+	// 		this.abuseFilterFilters = {};
+	// 		let tFilter;
+	// 		for (let i = 0; i < pQuery.abusefilters.length; i++) {
+	// 			tFilter = pQuery.abusefilters[i];
+	// 			this.abuseFilterFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
+	// 		}
+	// 	}
+		
+	// 	return this;
+	// }
 	
 	setupRcParams() : void {
 		this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
@@ -406,6 +451,7 @@ export default class WikiData
 	}
 	
 	updateLastChangeDate(pData:any) : void {
+		if(new Date(pData.timestamp) < this.lastChangeDate) { return; }
 		this.lastChangeDate = new Date(pData.timestamp);
 		// Add 1 millisecond to avoid getting this change again.
 		this.lastChangeDate.setSeconds(this.lastChangeDate.getSeconds()+1);
@@ -424,7 +470,7 @@ export default class WikiData
 	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
 	getWikiDataApiUrl() : string {
 		if(!this.needsSiteinfoData || !this.needsUserData) { return null; }
-		var tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
+		var tReturnText = "https:"+this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
 		var tUrlList = [];
 		var tMetaList = [];
 		var tPropList = [];
@@ -476,7 +522,7 @@ export default class WikiData
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.hasBlockRight}`;
+		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.rights.block}`;
 		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}
@@ -542,7 +588,7 @@ export default class WikiData
 		* Get info for logs that don't return all necessary info through "Recent Changes" api.
 		* To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
 		***************************/
-		if(this.useOutdatedLogSystem) {
+		if(this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
 			tUrlList.push("logevents");
 			tReturnText += "&leprop=" + ["details", "user", "title", "timestamp", "type", "ids"].join("|");
 			tReturnText += "&letype=" + ["rights", "move", "delete", "block", "merge"].join("|");
@@ -551,6 +597,23 @@ export default class WikiData
 			tReturnText += "&lelimit="+this.rcParams.limit;
 			tReturnText += "&leend="+tEndDate.toISOString();
 		}
+		
+		// /***************************
+		// * Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
+		// * Each wiki has it's own list of abuse filters
+		// ***************************/
+		// // Checking for both rights should assure this wiki has logs the user can potentially see.
+		// mw.log("[WikiData](getApiUrl) Abuse filter: ", this.rcParams.hidelogs == false , this.user.rights , this.user.rights.abusefilter_log , this.user.rights.abusefilter_view);
+		// if(true/*TODO*/ && this.rcParams.hidelogs == false && this.user.rights.abusefilter_log && this.user.rights.abusefilter_view) {
+		// 	if(this.needsAbuseFilterFilters) {
+		// 		tUrlList.push("abusefilters");
+		// 		tReturnText += "&abflimit=500&abfshow=enabled&abfprop=id|description|private";//|actions
+		// 	}
+		// 	tUrlList.push("abuselog");
+		// 	tReturnText += "&afllimit="+this.rcParams.limit;
+		// 	tReturnText += "&aflend="+tEndDate.toISOString();
+		// 	tReturnText += "&aflprop=ids|user|title|action|result|timestamp";
+		// }
 		
 		/***************************
 		* Finish building url

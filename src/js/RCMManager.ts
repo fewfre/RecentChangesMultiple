@@ -6,6 +6,7 @@ import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
 import RCData from "./RCData";
 import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
+// import RCMAbuseLogData from "./RCMAbuseLogData";
 import RCList from "./RCList";
 import RCParams from "./RCParams";
 import Utils from "./Utils";
@@ -220,16 +221,33 @@ export default class RCMManager
 	};
 		
 	private _showUpdateMessage() {
-		// Stop showing in a month or two, but also remember dismissal via localStorage.
-		let messageID = "rcm-news-V2.12-hide";
-		let messageColor = "green";
-		if( new Date("2019-3-30T00:00:00.000Z") > new Date() && (localStorage.getItem(messageID) != "true") ) {
-			var tMessage = Utils.newElement("div", { className:"rcm-update-message", innerHTML:`
+		this._addUpdateMessage({
+			messageID: "rcm-news-V2.12-wikia-to-fandom-hide",
+			messageColor: "gold",
+			endDate: "2019-5-30T00:00:00.000Z",
+			message:`
+			Change "wikia.com" wikis to "fandom.com" on your wiki list once they convert to help avoid HTTPS errors.
+			While converted wikia wikis redirect, they still count as http until changed to fandom.com, so using wikia links while running the script on a fandom wiki will often cause errors.
+			`,
+		});
+		this._addUpdateMessage({
+			messageID: "rcm-news-V2.12-hide",
+			messageColor: "green",
+			endDate: "2019-3-30T00:00:00.000Z",
+			message:`
 			Support for fandom language wikis now added.
 			You can now add slashes to a wiki on the list.
-			ex: <code>sonic.fandom.com/pl/.</code>
+			ex: <code>sonic.fandom.com/pl/.</code> (doesn't work with wikia wikis, only fandom)
 			See <a href='https://dev.fandom.com/wiki/RecentChangesMultiple#Basic_Usage'>here</a> for more details.
-			`}, this.resultCont);
+			`,
+		});
+	};
+	
+	private _addUpdateMessage(pData) {
+		let {messageID,messageColor,endDate,message} = pData;
+		// Stop showing in a month or two, but also remember dismissal via localStorage.
+		if( new Date(endDate) > new Date() && (localStorage.getItem(messageID) != "true") ) {
+			var tMessage = Utils.newElement("div", { className:"rcm-update-message", innerHTML:message}, this.resultCont);
 			tMessage.style.cssText = `border:5px double ${messageColor}; padding:2px 6px; overflow-y: hidden;`;
 			
 			var tButton = Utils.newElement("button", { innerHTML:"Dismiss Message" }, tMessage);
@@ -240,7 +258,7 @@ export default class RCMManager
 			});
 			tButton.style.cssText = "float:right;";
 		}
-	};
+	}
 	
 	/***************************
 	* Loading
@@ -491,11 +509,7 @@ export default class RCMManager
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
 			let tUser = pRCData.createdBy.name;
-			// Skip if user is hidden for whole script or specific wiki
-			if(tUser && this.hideusers.indexOf(tUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(tUser) > -1)) { return; }
-			// Skip if user is NOT a specified user to show for whole script or specific wiki
-			if(tUser && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(tUser) == -1)) { return; }
-			if(tUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(tUser) == -1)) { return; }
+			if(this._changeShouldBePrunedBasedOnOptions(tUser, pWikiData)) { return; }
 			// If hideself set
 			if(pWikiData.rcParams.hidemyself && ConstantsApp.username == tUser) { return; }
 			// Skip if goes past the RC "changes in last _ days" value.
@@ -506,22 +520,6 @@ export default class RCMManager
 			tNewRC.init(pRCData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.discussionsCount++;
-			// tChangeAdded = false;
-			// this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-			// 	if(tNewRC.date > pRCList.date) {
-			// 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-			// 		tChangeAdded = true;
-			// 		return false;
-			// 	} else {
-			// 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-			// 			pRCList.addRC(tNewRC);
-			// 			tChangeAdded = true;
-			// 			return false;
-			// 		}
-			// 	}
-			// 	return true;
-			// });
-			// if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
 		});
 		
 		mw.log("Discussions:", pWikiData.servername, pData);
@@ -663,6 +661,7 @@ export default class RCMManager
 		// pWikiData.initAfterLoad(pData.query);
 		
 		this.ajaxCallbacks.push(() => {
+			// this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
 			this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
 		});
 		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
@@ -705,38 +704,43 @@ export default class RCMManager
 		let tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
-			// Skip if user is hidden for whole script or specific wiki
-			if(pRCData.user && this.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) { return; }
-			// Skip if user is NOT a specified user to show for whole script or specific wiki
-			if(pRCData.user && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
-			if(pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
+			if(this._changeShouldBePrunedBasedOnOptions(pRCData.user, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
 			tNewRC = new RCData( pWikiData, this ).init(pRCData, pLogData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.resultsCount++;
-			// tChangeAdded = false;
-			// this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-			// 	if(tNewRC.date > pRCList.date) {
-			// 		this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-			// 		tChangeAdded = true;
-			// 		return false;
-			// 	} else {
-			// 		if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-			// 			pRCList.addRC(tNewRC);
-			// 			tChangeAdded = true;
-			// 			return false;
-			// 		}
-			// 	}
-			// 	return true;
-			// });
-			// if(!tChangeAdded || this.recentChangesEntries.length == 0) {
-			// 	this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) );
-			// }
 		});
 		
 		this._onWikiParsingFinished(pWikiData);
 	};
+	
+	private _changeShouldBePrunedBasedOnOptions(pUser:string, pWikiData:WikiData) : boolean {
+		// Skip if user is hidden for whole script or specific wiki
+		if(pUser && this.hideusers.indexOf(pUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pUser) > -1)) { return true; }
+		// Skip if user is NOT a specified user to show for whole script or specific wiki
+		if(pUser && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pUser) == -1)) { return true; }
+		if(pUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pUser) == -1)) { return true; }
+		return false;
+	}
+	
+	// private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
+	// 	// Check if wiki doesn't have any logs
+	// 	if(!pLogs || pLogs.length <= 0) {
+	// 		// this._onWikiParsingFinished(pWikiData);
+	// 		return;
+	// 	}
+		
+	// 	pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pLogs));
+	// 	// Add each entry from the wiki to the list in a sorted order
+	// 	pLogs.forEach((pLogData) => {
+	// 		if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
+			
+	// 		this.itemsToAddTotal++;
+	// 		this._addRCDataToList( new RCMAbuseLogData( pWikiData, this ).init(pLogData) );
+	// 		pWikiData.resultsCount++;
+	// 	});
+	// }
 	
 	// TODO: Make it more efficient if using hideenhanced by ignoring some calls.
 	private _addRCDataToList(pNewRC:RCData) : void {

@@ -39,7 +39,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		super.dispose();
 	}
 	
-	/*override*/ init(pData:any) : RCData {
+	/*override*/ init(pData:any) : this {
 		this.type = TYPE.DISCUSSION;
 		this.date = new Date(0); /*Epoch*/ this.date.setUTCSeconds((pData.modificationDate || pData.creationDate).epochSecond);
 		this.userEdited = true; // Currently anons cannot edit
@@ -92,7 +92,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	/*override*/ userDetails() : string {
 		if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		let blockText = this.wikiInfo.user.hasBlockRight ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		let blockText = this.wikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		// if(this.userEdited) {
 		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		// } else {

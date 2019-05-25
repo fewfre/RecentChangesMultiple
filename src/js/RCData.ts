@@ -86,14 +86,14 @@ export default class RCData
 	}
 	
 	dispose() : void {
-		delete this.manager;
-		delete this.wikiInfo;
+		// delete this.manager;
+		// delete this.wikiInfo;
 		
 		this.date = null;
 		this.type = null;
 	}
 	
-	init(pData:any, pLogDataArray:any[]) : RCData {
+	init(pData:any, pLogDataArray:any[]) : this {
 		this.date = new Date(pData.timestamp);
 		this.userEdited = pData.user != "" && pData.anon != "";
 		this.author = this.userEdited ? pData.user : (pData.anon ? pData.anon : pData.user);
@@ -342,7 +342,7 @@ export default class RCData
 	userDetails() : string {
 		// if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		//
-		// var blockText = this.wikiInfo.user.hasBlockRight ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		// var blockText = this.wikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		// if(this.userEdited) {
 		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 		// } else {
@@ -354,7 +354,7 @@ export default class RCData
 	static formatUserDetails(pWikiInfo:WikiData, pAuthor:string, pUserHidden:boolean, pUserEdited:boolean) : string {
 		if(pUserHidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		var blockText = pWikiInfo.user.hasBlockRight ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		var blockText = pWikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
 		if(pUserEdited) {
 			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='"+pWikiInfo.getUserClass(pAuthor)+"' "+pWikiInfo.getUserClassDataset(pAuthor)+">{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersLink(pAuthor), pAuthor);
 		} else {
@@ -575,7 +575,7 @@ export default class RCData
 			tLogMessage += this.userDetails()+` ??? (${this.logtype} - ${this.logaction}) `;
 		}
 		tLogMessage += this.getSummary();
-		if(this.wikiInfo.user.hasUndeleteRight && this.logtype == "delete" && this.logaction == "delete") {
+		if(this.wikiInfo.user.rights.undelete && this.logtype == "delete" && this.logaction == "delete") {
 			tLogMessage += ` (<a href='${this.wikiInfo.articlepath}Special:Undelete${this.wikiInfo.firstSeperator}target=${this.hrefTitle}'>${i18n("undeletelink")}</a>)`;
 		}
 		return tLogMessage;

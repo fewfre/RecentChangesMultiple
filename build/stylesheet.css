@@ -430,7 +430,7 @@ table.mw-enhanced-rc td.mw-enhanced-rc-nested {
 @media screen and (max-width: 1020px) {
   .wikia-grid .banner-notifications-wrapper.float {
     width: -webkit-calc(80%);
-    width: calc(80%);
+    width: calc(100% - 20px);
     left: 0;
     margin: 0;
   }
