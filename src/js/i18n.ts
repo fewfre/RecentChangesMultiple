@@ -11,7 +11,8 @@ let mw = (<any>window).mediaWiki;
 * NOTES:
 *		Common messages: https://github.com/Wikia/app/tree/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages
 * 		Search: /api.php?action=query&meta=allmessages&format=jsonfm&amfilter=searchterm
-*		mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+*		mediawiki.language.data - "mwLanguageData" can be found by finding [ mw.loader.implement("mediawiki.language.data") ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+*		or use mw.language.getData("en")?
 * POTENTIAL ISSUES:
 * 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
 */
@@ -42,13 +43,13 @@ i18n.init = function(pLang?:string) : void {
 	mw.language.setData(ConstantsApp.config.wgUserLanguage, i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 }
 
-// Big thanks to wlb.wikia.com for translations.
+// Big thanks to wlb.fandom.com for translations.
 i18n.TEXT = {
 	en: { // English (ENGLISH)
 		// Errors
 		'rcm-error-linkformat' : "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
 		'rcm-error-loading-syntaxhang' : "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
-		'rcm-error-loading-http' : "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
+		'rcm-error-loading-http' : "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
 		'rcm-error-loading-connection' : "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
 		'rcm-error-trymoretimes' : "Try $1 more times",
 		// Notifications
@@ -88,7 +89,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' паказаны ў няздатным фармаце. Калі ласка, не выкарыстоўвайце элемент 'http://', не ўстаўляйце нічога пасля яго і першага '/'.",
 		'rcm-error-loading-syntaxhang' : "Памылка пры загрузцы [$1] (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
-		'rcm-error-loading-http' : "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
+		'rcm-error-loading-http' : "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
 		'rcm-error-loading-connection' : "Памылка пры загрузцы [$1] (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
 		'rcm-error-trymoretimes' : "Паспрабуйце $1 раз(а)",
 		// Notifications
@@ -198,7 +199,7 @@ i18n.TEXT = {
 	de: { // Deutsch (German) @author: Cyanide3, Dragon Rainbow, SpacePucky
 		'rcm-error-linkformat' : "'$1' ist ein falsches Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
 		'rcm-error-loading-syntaxhang' : "Fehler beim Laden [$1] ($2 Versuche). Bitte korrigiere die Syntax (oder lade das Skript neu, um es erneut zu versuchen).",
-		'rcm-error-loading-http' : "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
+		'rcm-error-loading-http' : "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
 		'rcm-error-loading-connection' : "Fehler beim Laden [$1] ($2 Versuche). Es liegt höchstwahrscheinlich ein Verbindungsproblem vor. Lade das Script neu, um es erneut zu versuchen.",
 		'rcm-error-trymoretimes' : "Versuche es $1 Mal mehr",
 
@@ -265,7 +266,7 @@ i18n.TEXT = {
 		// Other
 		'rcm-unknownthreadname' : "hilo", // If name of a wall/board thread is not found, this will take it's place.
 		/***************************
-		 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+		 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data") ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
 		 ***************************/
 		mwLanguageData: {
 			"digitTransformTable": null,
@@ -638,7 +639,7 @@ i18n.TEXT = {
 		// Errors
 		'rcm-error-linkformat' : "'$1' указан в неподходящем формате. Пожалуйста, не используйте элемент 'http://', не вставляйте ничего после него и первого '/'.",
 		'rcm-error-loading-syntaxhang' : "Ошибка при загрузке [$1] (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
-		'rcm-error-loading-http' : "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
+		'rcm-error-loading-http' : "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
 		'rcm-error-loading-connection' : "Ошибка при загрузке [$1] (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
 		'rcm-error-trymoretimes' : "Попробуйте $1 раз(а)",
 		// Notifications
@@ -679,11 +680,51 @@ i18n.TEXT = {
 			"fallbackLanguages": ["en"]
 		},
 	},
+	tr: { // Türkçe (TURKISH) @author: BaRaN6161TURK
+		// Errors
+		'rcm-error-linkformat' : "'$1' yanlış bir format. Lütfen 'http://' ya da ilk '/' dahil alandan sonra herhangi bir şey eklemeyin.",
+		'rcm-error-loading-syntaxhang' : "[$1] yüklenirken hata oluştu ($ 2 çalışır). Lütfen sözdizimini düzeltin (veya yeniden denemek için komut dosyasını yenileyin).",
+		'rcm-error-loading-http' : "Bu sayfa bir HTTPS bağlantısı kullanıyor; Bu nedenle, bu hata HTTPS protokolünü desteklemeyen hedef wiki'den de kaynaklanabilir. Ayrıntılar için [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS buraya] bakın.",
+		'rcm-error-loading-connection' : "[$1] yüklenirken hata oluştu ($2 çalışır). Büyük olasılıkla bir bağlantı sorunu; tekrar denemek için komut dosyasını yenileyin.",
+		'rcm-error-trymoretimes' : "$1 kez daha dene",
+		// Notifications
+		'rcm-loading' : "Yükleniyor/Sınıflandırıyor...",
+		'rcm-refresh' : "Yenile",
+		'rcm-download-timestamp' : "İndirilen Son Değişiklikler: $1",
+		'rcm-download-changesadded' : " - [$1 Son Değişiklikler eklendi]",
+		// Basics
+		'rcm-wikisloaded' : "Wikiler Yüklendi: ",
+		'rcm-previouslyloaded' : "Önceden yüklenmiş:",
+		'rcm-nonewchanges' : "No new changes",
+		'rcm-autorefresh' : "Otomatik Yenileme",
+		'rcm-autorefresh-tooltip' : "Son Değişiklikleri $1 saniyede bir otomatik olarak yeniler",
+		'rcm-footer' : "Sürüm $1 yapan $2",
+		// Options Panel
+		'rcm-optionspanel-hideusersoverride' : "veri gizleyicileri bunu geçersiz kılar.",
+		'rcm-optionspanel-savewithcookie' : "Çerezle seçenekleri kaydet",
+		// Modules
+		'rcm-module-diff-title' : "Fark Görüntüleyici",
+		'rcm-module-diff-open' : "Farkı aç",
+		'rcm-module-diff-undo' : "Düzenlemeyi geri al",
+		// Other
+		'rcm-unknownthreadname' : "tartışma",
+		/***************************
+		 * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data") ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+		 ***************************/
+		mwLanguageData: {
+			"digitTransformTable": null ,
+			"separatorTransformTable": { ",": ".", ".": "," },
+			"grammarForms": [],
+			"pluralRules":  [ "n = 1 @integer 1 @decimal 1.0, 1.00, 1.000, 1.0000" ],
+			"digitGroupingPattern": null,
+			"fallbackLanguages": ["en"]
+		},
+	},
 	uk: { // Українська (UKRAINIAN) @author: Mix Gerder
 		// Errors
 		'rcm-error-linkformat' : "'$1' вказаний в невідповідному форматі. Будь ласка, не використовуйте елемент 'http://', не вставляйте нічого після нього і першого '/'.",
 		'rcm-error-loading-syntaxhang' : "Помилка при завантаженні [$1] (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
-		'rcm-error-loading-http' : "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
+		'rcm-error-loading-http' : "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
 		'rcm-error-loading-connection' : "Помилка при завантаженні [$1] (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
 		'rcm-error-trymoretimes' : "Спробуйте $1 раз(а)",
 		// Notifications
@@ -1033,6 +1074,7 @@ i18n.MESSAGES = {
 	'app-loading': 'Loading...',
 	'wikia-hubs-remove': 'Remove',
 	'undeletelink': 'view/restore',
+	'admindashboard-control-analytics-label': 'Analytics',
 	
 	/***************************
 	* Diff Modal

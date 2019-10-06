@@ -114,6 +114,7 @@ export default class RCMWikiPanel
 			+ "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n("log")+"</a>"
 			
 			+ (pWikiInfo.isWikiaWiki ? " - <a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>" : "")
+			+ (pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics ? " - <a href='"+pWikiInfo.articlepath+"Special:Analytics'>"+i18n("admindashboard-control-analytics-label")+"</a>" : "")
 			+ " - "
 			+ "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>"
 			+ (pWikiInfo.usesWikiaDiscussions ? " - <a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>" : "")

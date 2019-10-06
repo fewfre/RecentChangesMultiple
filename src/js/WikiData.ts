@@ -11,6 +11,7 @@ let mw = (<any>window).mediaWiki;
 interface CurrentUser {
 	rights:{
 		block:boolean, undelete:boolean, rollback:boolean,
+		analytics:boolean,
 		// abusefilter_view:boolean, abusefilter_log:boolean, abusefilter_log_detail:boolean, abusefilter_log_private:boolean
 	}
 }
@@ -31,9 +32,9 @@ export default class WikiData
 	
 	/***************************
 	* List Data - Data defined by "&attr=" style data on the url list elements.
-	* ex: *dev.wikia.com &hideusers=Test
+	* ex: *dev.fandom.com &hideusers=Test
 	****************************/
-	servername				: string; // Base domain url (not http:// or other slashes). ex: dev.wikia.com
+	servername				: string; // Base domain url (not http:// or other slashes). ex: dev.fandom.com
 	scriptpath				: string; // Full url to script directory (EXcluding last "/"). ex: //test.wiki/w
 	scriptdir				: string; // The subdirectory api.php is on (in relation to this.servername)
 	firstSeperator			: string; // "?" unless it's a wiki that uses the "index.php?title=" format
@@ -57,7 +58,7 @@ export default class WikiData
 	* Siteinfo Data
 	****************************/
 	needsSiteinfoData		: boolean; // Check if the RCMManager should load the Siteinfo for the wiki when it requests wiki info.
-	server					: string; // Full url to base of the server (ex: //test.wikia.com)
+	server					: string; // Full url to base of the server (ex: //test.fandom.com)
 	articlepath				: string; // Full url to wiki article directory (including last "/"). ex: //test.wiki/wiki/
 	sitename				: string; // Name of the wiki
 	mainpage				: string; // Main page for the wiki (not all wiki's redirect to main page if you link to domain)
@@ -112,6 +113,7 @@ export default class WikiData
 		// Set rollback to true by default so as to fetch extra necessary data first time around.
 		this.user					= { rights:{
 			block:false, undelete:false, rollback:true,
+			analytics: false,
 			// abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false, abusefilter_log_private:false,
 		} };
 		this.isWikiaWiki			= true;
@@ -324,6 +326,7 @@ export default class WikiData
 				block:		tRightList.indexOf("block") > -1,
 				undelete:	tRightList.indexOf("undelete") > -1,
 				rollback:	tRightList.indexOf("rollback") > -1,
+				analytics:	tRightList.indexOf("analytics") > -1,
 				
 				// abusefilter_view:			tRightList.indexOf("abusefilter-view") > -1,
 				// abusefilter_log:			tRightList.indexOf("abusefilter-log") > -1,
@@ -522,7 +525,7 @@ export default class WikiData
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-		var tReturnText = `https://services.wikia.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.rights.block}`;
+		var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.rights.block}`;
 		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}

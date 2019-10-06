@@ -184,7 +184,7 @@ class Main
 
 		// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 		function tRCM_loadLangMessage(pMessages) {
-			let tScriptPath = ConstantsApp.useLocalSystemMessages ? ConstantsApp.config.wgServer + ConstantsApp.config.wgScriptPath : "//community.wikia.com";
+			let tScriptPath = ConstantsApp.useLocalSystemMessages ? ConstantsApp.config.wgServer + ConstantsApp.config.wgScriptPath : "//community.fandom.com";
 			let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
 			mw.log(url.replace("&format=json", "&format=jsonfm"));
 

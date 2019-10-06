@@ -51,7 +51,7 @@ export default class RCData
 	titleNoNS			: string; // Same as this.title, but with the namespace removed (if there is one)
 	uniqueID			: string; // A unique ID is primarily important for boards/walls, since they group by the first "/@comment" in the page name.
 	hrefTitle			: string; // Title of page, escaped for url (neccisary if page name as passed along an ajax call)
-	href				: string; // link to the page (no "&diff", etc) ex: http://test.wikia.com/wiki/Test
+	href				: string; // link to the page (no "&diff", etc) ex: http://test.fandom.com/wiki/Test
 	hrefBasic			: string; // Same as this.href, but with nos "/@comment"s either.
 	hrefFS				: string; // Same as this.href, but followed by this.wikiInfo.firstSeperator.
 	
@@ -86,8 +86,10 @@ export default class RCData
 	}
 	
 	dispose() : void {
-		// delete this.manager;
-		// delete this.wikiInfo;
+		// @ts-ignore - It's read only, but we still want it deleted here
+		delete this.manager;
+		// @ts-ignore - It's read only, but we still want it deleted here
+		delete this.wikiInfo;
 		
 		this.date = null;
 		this.type = null;
@@ -679,7 +681,7 @@ export default class RCData
 	}
 	
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
-	// Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
+	// Inspired by http://dev.fandom.com/wiki/AjaxDiff / http://dev.fandom.com/wiki/LastEdited
 	static previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:any) : void {
 		mw.log(`http:${pAjaxUrl}`); mw.log(pDiffLink); mw.log(pUndoLink);
 		
@@ -967,7 +969,7 @@ export default class RCData
 						tCont.innerHTML += tPreviewHead.innerHTML;
 						tCont.innerHTML += tContentText;
 					}
-					// Using scoped styles is only intended as a fallback since not many prowsers yet allow modifying the shadow dom.
+					// Using scoped styles is only intended as a fallback since not many browsers yet allow modifying the shadow dom.
 					else if("scoped" in document.createElement("style")) {
 						let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
 						Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {

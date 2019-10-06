@@ -63,7 +63,7 @@ var ConstantsApp = /** @class */ (function () {
         delete ConstantsApp.SVG_SYMBOLS;
         return tSVG;
     };
-    ConstantsApp.version = "2.12";
+    ConstantsApp.version = "2.12b";
     ConstantsApp.lastVersionDateString = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
     ConstantsApp.config = mw.config.get([
         "skin",
@@ -302,7 +302,7 @@ var Main = /** @class */ (function () {
         var tLangLoadAjaxPromises = [];
         // Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
         function tRCM_loadLangMessage(pMessages) {
-            var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? ConstantsApp_1["default"].config.wgServer + ConstantsApp_1["default"].config.wgScriptPath : "//community.wikia.com";
+            var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? ConstantsApp_1["default"].config.wgServer + ConstantsApp_1["default"].config.wgScriptPath : "//community.fandom.com";
             var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang=" + i18n_1["default"].defaultLang + "&ammessages=" + pMessages;
             mw.log(url.replace("&format=json", "&format=jsonfm"));
             return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
@@ -424,8 +424,10 @@ var RCData = /** @class */ (function () {
         this.wikiInfo = pWikiInfo;
     }
     RCData.prototype.dispose = function () {
-        // delete this.manager;
-        // delete this.wikiInfo;
+        // @ts-ignore - It's read only, but we still want it deleted here
+        delete this.manager;
+        // @ts-ignore - It's read only, but we still want it deleted here
+        delete this.wikiInfo;
         this.date = null;
         this.type = null;
     };
@@ -1025,7 +1027,7 @@ var RCData = /** @class */ (function () {
         // return this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400); // days*24*60*60 = days->seconds
     };
     // STATIC - https://www.mediawiki.org/wiki/API:Revisions
-    // Inspired by http://dev.wikia.com/wiki/AjaxDiff / http://dev.wikia.com/wiki/LastEdited
+    // Inspired by http://dev.fandom.com/wiki/AjaxDiff / http://dev.fandom.com/wiki/LastEdited
     RCData.previewDiff = function (pPageName, pageID, pAjaxUrl, pDiffLink, pUndoLink, pDiffTableInfo) {
         mw.log("http:" + pAjaxUrl);
         mw.log(pDiffLink);
@@ -1369,7 +1371,8 @@ var RCList = /** @class */ (function () {
         configurable: true
     });
     RCList.prototype.dispose = function () {
-        // delete this.manager;
+        // @ts-ignore - It's read only, but we still want it deleted here
+        delete this.manager;
         for (var i = 0; i < this.list.length; i++) {
             this.list[i].dispose();
             this.list[i] = null;
@@ -1543,7 +1546,7 @@ var RCList = /** @class */ (function () {
                     var tRC = this.newest;
                     this.manager.secondaryWikiData.push({
                         // https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-                        url: "https://services.wikia.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
+                        url: "https://services.fandom.com/discussion/" + this.wikiInfo.wikiaCityID + "/threads/" + tRC.threadId,
                         dataType: "json",
                         callback: function (data) {
                             _this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim() + "..."); // If no title, use part of original message.
@@ -1795,7 +1798,7 @@ var RCList = /** @class */ (function () {
             Utils_1["default"].newElement("td", { innerHTML: pRC.wikiInfo.getFaviconHTML(true) }, tRow);
         }
         Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
-                + '<img src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
+                + '<img src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
                 + this._getFlags(pRC, "&nbsp;")
                 + "&nbsp;"
                 + pRC.time()
@@ -1885,10 +1888,10 @@ var RCList = /** @class */ (function () {
         var td1 = Utils_1["default"].newElement("td", {}, tRow);
         Utils_1["default"].newElement("span", { className: "mw-collapsible-toggle", innerHTML: ''
                 + '<span class="mw-rc-openarrow"><a title="' + i18n_1["default"]("rc-enhanced-expand") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-expand") + '" alt="+" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-expand") + '" alt="+" src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
                 + '</a></span>'
                 + '<span class="mw-rc-closearrow"><a title="' + i18n_1["default"]("rc-enhanced-hide") + '">' // href="#"
-                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-hide") + '" alt="-" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+                + '<img width="12" height="12" title="' + i18n_1["default"]("rc-enhanced-hide") + '" alt="-" src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
                 + '</a></span>' }, td1);
         Utils_1["default"].newElement("td", { className: "mw-enhanced-rc", innerHTML: ""
                 + this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit: true })
@@ -2230,7 +2233,7 @@ var RCMManager = /** @class */ (function () {
         var tEndNewMessageDate = new Date(ConstantsApp_1["default"].lastVersionDateString);
         tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
         var tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">' + i18n_1["default"]("wikifeatures-promotion-new") + '</sup>' : "";
-        this.footerNode.innerHTML = "[<a href='//dev.wikia.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.wikia.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+        this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n_1["default"]('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>" + ConstantsApp_1["default"].version + "</a>" + tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
         $(this.resultsNode).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
         // Now start the app
         this._startWikiDataLoad();
@@ -3876,6 +3879,7 @@ var RCMWikiPanel = /** @class */ (function () {
                 + " - "
                 + "<a href='" + pWikiInfo.articlepath + "Special:Log'>" + i18n_1["default"]("log") + "</a>"
                 + (pWikiInfo.isWikiaWiki ? " - <a href='" + pWikiInfo.articlepath + "Special:Insights'>" + i18n_1["default"]("insights") + "</a>" : "")
+                + (pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics ? " - <a href='" + pWikiInfo.articlepath + "Special:Analytics'>" + i18n_1["default"]("admindashboard-control-analytics-label") + "</a>" : "")
                 + " - "
                 + "<a href='" + pWikiInfo.articlepath + "Special:Random'>" + i18n_1["default"]("randompage") + "</a>"
                 + (pWikiInfo.usesWikiaDiscussions ? " - <a href='" + pWikiInfo.scriptpath + "/d'>" + i18n_1["default"]("discussions") + "</a>" : "")
@@ -4083,8 +4087,10 @@ var UserData = /** @class */ (function () {
         this.manager = pManager;
     }
     UserData.prototype.dispose = function () {
-        // delete this.manager;
-        // delete this.wikiInfo;
+        // @ts-ignore - It's read only, but we still want it deleted here
+        delete this.manager;
+        // @ts-ignore - It's read only, but we still want it deleted here
+        delete this.wikiInfo;
         this.groups = null;
         // this.registration = null;
         this.block = null;
@@ -4425,6 +4431,7 @@ var WikiData = /** @class */ (function () {
         // Set rollback to true by default so as to fetch extra necessary data first time around.
         this.user = { rights: {
                 block: false, undelete: false, rollback: true,
+                analytics: false,
             } };
         this.isWikiaWiki = true;
         this.useOutdatedLogSystem = false;
@@ -4623,6 +4630,7 @@ var WikiData = /** @class */ (function () {
                 block: tRightList.indexOf("block") > -1,
                 undelete: tRightList.indexOf("undelete") > -1,
                 rollback: tRightList.indexOf("rollback") > -1,
+                analytics: tRightList.indexOf("analytics") > -1,
             };
         }
         /***************************
@@ -4817,7 +4825,7 @@ var WikiData = /** @class */ (function () {
         // Get results up to this time stamp.
         var tEndDate = this.lastDiscussionDate; //this.getEndDate();
         var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-        var tReturnText = "https://services.wikia.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.rights.block;
+        var tReturnText = "https://services.fandom.com/discussion/" + this.wikiaCityID + "/posts?limit=" + tLimit + "&page=0&since=" + tEndDate.toISOString() + "&responseGroup=small&reported=false&viewableOnly=" + !this.user.rights.block;
         mw.log("[WikiData](getWikiDiscussionUrl) " + this.servername + " - " + tReturnText);
         return tReturnText;
     };
@@ -4962,13 +4970,13 @@ i18n.init = function (pLang) {
     i18n.TEXT = $.extend(i18n.TEXT.en, i18n.TEXT[i18n.defaultLang] || i18n.TEXT[i18n.defaultLang.split("-")[0]]);
     mw.language.setData(ConstantsApp_1["default"].config.wgUserLanguage, i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 };
-// Big thanks to wlb.wikia.com for translations.
+// Big thanks to wlb.fandom.com for translations.
 i18n.TEXT = {
     en: {
         // Errors
         'rcm-error-linkformat': "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
         'rcm-error-loading-syntaxhang': "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
-        'rcm-error-loading-http': "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
+        'rcm-error-loading-http': "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
         'rcm-error-loading-connection': "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
         'rcm-error-trymoretimes': "Try $1 more times",
         // Notifications
@@ -5008,7 +5016,7 @@ i18n.TEXT = {
         // Errors
         'rcm-error-linkformat': "'$1' паказаны ў няздатным фармаце. Калі ласка, не выкарыстоўвайце элемент 'http://', не ўстаўляйце нічога пасля яго і першага '/'.",
         'rcm-error-loading-syntaxhang': "Памылка пры загрузцы [$1] (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
-        'rcm-error-loading-http': "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
+        'rcm-error-loading-http': "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
         'rcm-error-loading-connection': "Памылка пры загрузцы [$1] (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
         'rcm-error-trymoretimes': "Паспрабуйце $1 раз(а)",
         // Notifications
@@ -5117,7 +5125,7 @@ i18n.TEXT = {
     de: {
         'rcm-error-linkformat': "'$1' ist ein falsches Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
         'rcm-error-loading-syntaxhang': "Fehler beim Laden [$1] ($2 Versuche). Bitte korrigiere die Syntax (oder lade das Skript neu, um es erneut zu versuchen).",
-        'rcm-error-loading-http': "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
+        'rcm-error-loading-http': "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
         'rcm-error-loading-connection': "Fehler beim Laden [$1] ($2 Versuche). Es liegt höchstwahrscheinlich ein Verbindungsproblem vor. Lade das Script neu, um es erneut zu versuchen.",
         'rcm-error-trymoretimes': "Versuche es $1 Mal mehr",
         'rcm-loading': "Lade/Sortiere...",
@@ -5179,7 +5187,7 @@ i18n.TEXT = {
         // Other
         'rcm-unknownthreadname': "hilo",
         /***************************
-         * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data" ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+         * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data") ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
          ***************************/
         mwLanguageData: {
             "digitTransformTable": null,
@@ -5542,7 +5550,7 @@ i18n.TEXT = {
         // Errors
         'rcm-error-linkformat': "'$1' указан в неподходящем формате. Пожалуйста, не используйте элемент 'http://', не вставляйте ничего после него и первого '/'.",
         'rcm-error-loading-syntaxhang': "Ошибка при загрузке [$1] (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
-        'rcm-error-loading-http': "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
+        'rcm-error-loading-http': "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
         'rcm-error-loading-connection': "Ошибка при загрузке [$1] (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
         'rcm-error-trymoretimes': "Попробуйте $1 раз(а)",
         // Notifications
@@ -5581,11 +5589,51 @@ i18n.TEXT = {
             "fallbackLanguages": ["en"]
         },
     },
+    tr: {
+        // Errors
+        'rcm-error-linkformat': "'$1' yanlış bir format. Lütfen 'http://' ya da ilk '/' dahil alandan sonra herhangi bir şey eklemeyin.",
+        'rcm-error-loading-syntaxhang': "[$1] yüklenirken hata oluştu ($ 2 çalışır). Lütfen sözdizimini düzeltin (veya yeniden denemek için komut dosyasını yenileyin).",
+        'rcm-error-loading-http': "Bu sayfa bir HTTPS bağlantısı kullanıyor; Bu nedenle, bu hata HTTPS protokolünü desteklemeyen hedef wiki'den de kaynaklanabilir. Ayrıntılar için [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS buraya] bakın.",
+        'rcm-error-loading-connection': "[$1] yüklenirken hata oluştu ($2 çalışır). Büyük olasılıkla bir bağlantı sorunu; tekrar denemek için komut dosyasını yenileyin.",
+        'rcm-error-trymoretimes': "$1 kez daha dene",
+        // Notifications
+        'rcm-loading': "Yükleniyor/Sınıflandırıyor...",
+        'rcm-refresh': "Yenile",
+        'rcm-download-timestamp': "İndirilen Son Değişiklikler: $1",
+        'rcm-download-changesadded': " - [$1 Son Değişiklikler eklendi]",
+        // Basics
+        'rcm-wikisloaded': "Wikiler Yüklendi: ",
+        'rcm-previouslyloaded': "Önceden yüklenmiş:",
+        'rcm-nonewchanges': "No new changes",
+        'rcm-autorefresh': "Otomatik Yenileme",
+        'rcm-autorefresh-tooltip': "Son Değişiklikleri $1 saniyede bir otomatik olarak yeniler",
+        'rcm-footer': "Sürüm $1 yapan $2",
+        // Options Panel
+        'rcm-optionspanel-hideusersoverride': "veri gizleyicileri bunu geçersiz kılar.",
+        'rcm-optionspanel-savewithcookie': "Çerezle seçenekleri kaydet",
+        // Modules
+        'rcm-module-diff-title': "Fark Görüntüleyici",
+        'rcm-module-diff-open': "Farkı aç",
+        'rcm-module-diff-undo': "Düzenlemeyi geri al",
+        // Other
+        'rcm-unknownthreadname': "tartışma",
+        /***************************
+         * mediawiki.language.data - found by finding [ mw.loader.implement("mediawiki.language.data") ] in the page source. If not found may be cached, so visit page using a "private / incognito" window.
+         ***************************/
+        mwLanguageData: {
+            "digitTransformTable": null,
+            "separatorTransformTable": { ",": ".", ".": "," },
+            "grammarForms": [],
+            "pluralRules": ["n = 1 @integer 1 @decimal 1.0, 1.00, 1.000, 1.0000"],
+            "digitGroupingPattern": null,
+            "fallbackLanguages": ["en"]
+        },
+    },
     uk: {
         // Errors
         'rcm-error-linkformat': "'$1' вказаний в невідповідному форматі. Будь ласка, не використовуйте елемент 'http://', не вставляйте нічого після нього і першого '/'.",
         'rcm-error-loading-syntaxhang': "Помилка при завантаженні [$1] (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
-        'rcm-error-loading-http': "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.wikia.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
+        'rcm-error-loading-http': "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
         'rcm-error-loading-connection': "Помилка при завантаженні [$1] (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
         'rcm-error-trymoretimes': "Спробуйте $1 раз(а)",
         // Notifications
@@ -5915,6 +5963,7 @@ i18n.MESSAGES = {
     'app-loading': 'Loading...',
     'wikia-hubs-remove': 'Remove',
     'undeletelink': 'view/restore',
+    'admindashboard-control-analytics-label': 'Analytics',
     /***************************
     * Diff Modal
     ****************************/

@@ -21,7 +21,7 @@ export default class UserData
 	
 	/***************************
 	* List Data - Data defined by "&attr=" style data on the url list elements.
-	* ex: *dev.wikia.com &hideusers=Test
+	* ex: *dev.fandom.com &hideusers=Test
 	****************************/
 	userid				: string;
 	name				: string;
@@ -36,8 +36,10 @@ export default class UserData
 	}
 	
 	dispose() : void {
-		// delete this.manager;
-		// delete this.wikiInfo;
+		// @ts-ignore - It's read only, but we still want it deleted here
+		delete this.manager;
+		// @ts-ignore - It's read only, but we still want it deleted here
+		delete this.wikiInfo;
 		
 		this.groups = null;
 		// this.registration = null;
