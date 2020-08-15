@@ -70,7 +70,7 @@ export default class UserData
 		tReturnText += "&usprop=" + ["blockinfo", "groups"].join("|"); // "editcount", "registration"
 		tReturnText += "&ususers=" + Utils.escapeCharactersLink(pList.join("|").replace(/ /g, "_"));
 		
-		mw.log("[UserData](getUsersApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+		Utils.logUrl("[UserData](getUsersApiUrl)", tReturnText);
 		return tReturnText;
 	}
 }

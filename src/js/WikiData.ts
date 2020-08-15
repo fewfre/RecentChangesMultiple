@@ -514,7 +514,7 @@ export default class WikiData
 		tMetaList = null;
 		tPropList = null;
 		
-		mw.log("[WikiData](getWikiDataApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+		Utils.logUrl("[WikiData](getWikiDataApiUrl)", tReturnText);
 		return tReturnText;
 	}
 	
@@ -631,7 +631,7 @@ export default class WikiData
 		tPropList = null;
 		tEndDate = null;
 		
-		mw.log("[WikiData](getApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+		Utils.logUrl("[WikiData](getApiUrl)", tReturnText);
 		return tReturnText;
 	}
 }

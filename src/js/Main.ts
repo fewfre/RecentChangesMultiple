@@ -186,7 +186,7 @@ class Main
 		function tRCM_loadLangMessage(pMessages) {
 			let tScriptPath = ConstantsApp.useLocalSystemMessages ? ConstantsApp.config.wgServer + ConstantsApp.config.wgScriptPath : "//community.fandom.com";
 			let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
-			mw.log(url.replace("&format=json", "&format=jsonfm"));
+			Utils.logUrl("", url);
 
 			return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
 				success: (pData) => {

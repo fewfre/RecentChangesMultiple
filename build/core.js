@@ -304,7 +304,7 @@ var Main = /** @class */ (function () {
         function tRCM_loadLangMessage(pMessages) {
             var tScriptPath = ConstantsApp_1["default"].useLocalSystemMessages ? ConstantsApp_1["default"].config.wgServer + ConstantsApp_1["default"].config.wgScriptPath : "//community.fandom.com";
             var url = tScriptPath + "/api.php?action=query&format=json&meta=allmessages&amlang=" + i18n_1["default"].defaultLang + "&ammessages=" + pMessages;
-            mw.log(url.replace("&format=json", "&format=jsonfm"));
+            Utils_1["default"].logUrl("", url);
             return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
                 success: function (pData) {
                     if (typeof pData === 'undefined' || typeof pData.query === 'undefined')
@@ -1132,7 +1132,7 @@ var RCData = /** @class */ (function () {
         var size = 210; // Must match in CSS - Logic: (1000-~40[for internal wrapper width]) / 4 - (15 * 2 [padding])
         pAjaxUrl += "&iiurlwidth=" + size + "&iiurlheight=" + size;
         var tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
-        mw.log(tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames);
+        Utils_1["default"].logUrl("(previewImages)", tCurAjaxUrl, pImageNames);
         var tTitle = i18n_1["default"]("awc-metrics-images");
         var tButtons = [];
         var tAddLoadMoreButton = function () {
@@ -1144,7 +1144,7 @@ var RCData = /** @class */ (function () {
                 var tButton = Utils_1["default"].newElement("button", { innerHTML: i18n_1["default"]('specialvideos-btn-load-more') }, tCont_1);
                 tButton.addEventListener("click", function () {
                     tCurAjaxUrl = pAjaxUrl + "&titles=" + tImagesInLog.splice(0, 50).join("|");
-                    mw.log(tCurAjaxUrl.replace("&format=json", "&format=jsonfm"));
+                    Utils_1["default"].logUrl("(previewImages) click", tCurAjaxUrl);
                     tCont_1.innerHTML = ConstantsApp_1["default"].getLoader(25);
                     $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
                         success: function (pData) {
@@ -1303,7 +1303,7 @@ var RCData = /** @class */ (function () {
                         tCont.innerHTML += tPreviewHead.innerHTML;
                         tCont.innerHTML += tContentText;
                     }
-                    // Using scoped styles is only intended as a fallback since not many prowsers yet allow modifying the shadow dom.
+                    // Using scoped styles is only intended as a fallback since not many browsers yet allow modifying the shadow dom.
                     else if ("scoped" in document.createElement("style")) {
                         var tPreviewHead = Utils_1["default"].newElement("div", { innerHTML: pData.parse.headhtml["*"] });
                         Utils_1["default"].forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), function (o, i, a) {
@@ -4116,7 +4116,7 @@ var UserData = /** @class */ (function () {
         var tReturnText = pScriptpath + "/api.php?action=query&format=json&continue=&list=users";
         tReturnText += "&usprop=" + ["blockinfo", "groups"].join("|"); // "editcount", "registration"
         tReturnText += "&ususers=" + Utils_1["default"].escapeCharactersLink(pList.join("|").replace(/ /g, "_"));
-        mw.log("[UserData](getUsersApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+        Utils_1["default"].logUrl("[UserData](getUsersApiUrl)", tReturnText);
         return tReturnText;
     };
     return UserData;
@@ -4318,6 +4318,20 @@ var Utils = /** @class */ (function () {
             } // If title ends with extension.
         }
         return false;
+    };
+    // Makes log-friendly urls (changes format and encodes data to make them link properly)
+    Utils.logUrl = function (pPrefix, pUrl) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        var _a = pUrl.replace("&format=json", "&format=jsonfm").split(/\?|\&/), start = _a[0], vars = _a.slice(1);
+        // Take all the url vars and encode the data to prevent console wierdness (primarily with `|`)
+        vars = vars.map(function (s) { return (function (_a) {
+            var p = _a[0], d = _a[1];
+            return p + "=" + encodeURIComponent(d);
+        })(s.split("=")); });
+        mw.log.apply(mw, [pPrefix, start + "?" + vars.join("&")].concat(args));
     };
     // http://phpjs.org/functions/version_compare/
     // Simulate PHP version_compare
@@ -4816,7 +4830,7 @@ var WikiData = /** @class */ (function () {
         tReturnText.replace(/ /g, "_");
         tMetaList = null;
         tPropList = null;
-        mw.log("[WikiData](getWikiDataApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+        Utils_1["default"].logUrl("[WikiData](getWikiDataApiUrl)", tReturnText);
         return tReturnText;
     };
     // Gets URL for the Wikia discussions API;
@@ -4934,7 +4948,7 @@ var WikiData = /** @class */ (function () {
         tMetaList = null;
         tPropList = null;
         tEndDate = null;
-        mw.log("[WikiData](getApiUrl)", tReturnText.replace("&format=json", "&format=jsonfm"));
+        Utils_1["default"].logUrl("[WikiData](getApiUrl)", tReturnText);
         return tReturnText;
     };
     // Static Constants

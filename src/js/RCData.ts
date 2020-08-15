@@ -788,7 +788,7 @@ export default class RCData
 		pAjaxUrl += "&iiurlwidth="+size+"&iiurlheight="+size;
 		let tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 		
-		mw.log(tCurAjaxUrl.replace("&format=json", "&format=jsonfm"), pImageNames);
+		Utils.logUrl("(previewImages)", tCurAjaxUrl, pImageNames);
 		
 		let tTitle = i18n("awc-metrics-images");
 		let tButtons = [];
@@ -803,7 +803,7 @@ export default class RCData
 				
 				tButton.addEventListener("click", () => {
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
-					mw.log(tCurAjaxUrl.replace("&format=json", "&format=jsonfm"));
+					Utils.logUrl("(previewImages) click", tCurAjaxUrl);
 					tCont.innerHTML = ConstantsApp.getLoader(25);
 					
 					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,

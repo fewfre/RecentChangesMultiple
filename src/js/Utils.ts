@@ -202,6 +202,14 @@ export default class Utils
 		return false;
 	}
 	
+	// Makes log-friendly urls (changes format and encodes data to make them link properly)
+	static logUrl(pPrefix:string, pUrl:string, ...args:any[]) : void {
+		let [start, ...vars] = pUrl.replace("&format=json", "&format=jsonfm").split(/\?|\&/);
+		// Take all the url vars and encode the data to prevent console wierdness (primarily with `|`)
+		vars = vars.map(s=>(([p,d])=>`${p}=${encodeURIComponent(d)}`)(s.split("=")))
+		mw.log(pPrefix, `${start}?${vars.join("&")}`, ...args);
+	}
+	
 	// http://phpjs.org/functions/version_compare/
 	// Simulate PHP version_compare
 	static version_compare(v1Arg:string|number, v2Arg:string|number, operator:string) : string {
