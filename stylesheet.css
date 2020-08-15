@@ -1,0 +1,145 @@
+/* <syntaxhighlight lang="css"> */
+/*************************
+ * ## Styling for the script ##
+ *************************/
+
+.rc-content-multiple, #rc-content-multiple {
+	padding:4px 5px;
+	background:rgba(0,0,0,0.05);
+}
+.rcm-status, #rcm-status {
+	text-align:center;
+	padding:15px 5px;
+	background:rgba(0,0,0,0.05);
+}
+.rcm-status .rcm-error, #rcm-status .rcm-error {
+	color:red;
+}
+.rcm-wikis, #rcm-wikis {
+	padding:4px 0;
+	border-bottom:2px dotted currentColor;
+}
+.rcm-wikis img, #rcm-wikis img {
+	vertical-align: middle;
+}
+.rcm-footer, #rcm-footer {
+	text-align: right;
+	font-size: 70%;
+	line-height: 1.6;
+	padding: 0 3px;
+	border-top: 1px solid #999;
+	background: rgba(0, 0, 0, 0.15);
+}
+/*.rcm-results, #rcm-results { white-space: pre; }*/
+.rcm-content-loading, #rcm-content-loading {
+	font-size:80%;
+	font-decoration:underline;
+}
+.rcm-options .rcoptions {
+	margin:0;
+}
+.rcm-options .rcoptions legend {
+	padding-top:0;
+}
+.rcm-autoRefresh, #rcm-autoRefresh {
+	font-size:xx-small;
+	line-height:100%;
+}
+.rcm-autoRefresh label, #rcm-autoRefresh label {
+	border-bottom: 1px dotted currentColor;
+	cursor: help;
+}
+.rcm-previouslyLoaded {
+	font-size: small;
+	margin: 3px 5% 0;
+	padding: 2px;
+	text-align: center;
+	background: rgba(200,140,90,0.2);
+	border-radius: 5px 5px 0 0;
+	border: 1px inset rgba(255,100,100,0.5);
+	border-bottom: 1px solid #C77;
+	line-height: 1;
+}
+.rcm-noNewChanges {
+	font-size: small;
+	margin: 6px 5% 0;
+	padding: 2px;
+	text-align: center;
+	background: rgba(116, 140, 90, 0.08);
+	border-radius: 0 0 5px 5px;
+	border: 1px inset rgba(100,100,100,0.2);
+	border-bottom: 1px solid #777;
+	line-height: 1;
+}
+.rcm-previouslyLoaded strong {
+	background: rgba(175,175,175,0.1);
+	display: block;
+	border: 1px solid rgba(116, 140, 90, 0.15);
+	border-radius: 5px 5px 0 0;
+}
+.rcm-ajaxDiff {
+	vertical-align: top;
+}
+table.mw-enhanced-rc {
+	position:relative;
+	width:100%;
+}
+table.mw-enhanced-rc td:last-child {
+	width:100%;
+}
+.rcm-results ul.special li {
+	position: relative;
+}
+table.mw-enhanced-rc caption, .rcm-tiled-favicon {
+	opacity: 0.08;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: -1;
+	background-size:16px;
+	background-attachment: fixed;
+}
+
+/* Hide the rail if this class is present */
+.rcm-hiderail #WikiaRail { display:none; }
+.rcm-hiderail #WikiaMainContentContainer { margin-right:0; }
+.rcm-hiderail #WikiaMainContent { width:100%; }
+.rcm-hiderail #recentWikiActivity { display:none; }
+.rcm-hiderail .home-top-right-ads { display:none; }
+
+/* Monobook Support */
+#positioned_elements .blackout {
+	position: fixed;
+	height: 100%;
+	width: 100%;
+}
+#positioned_elements .wikia-button.secondary {
+	border:1px solid #999;
+	padding:2px 5px;
+	margin:2px 2px 0px;
+	line-height:2.2;
+	border-radius:2px;
+	cursor:pointer;
+}
+
+/**************************
+ * ## Some Special:RecentChanges css, since it's not loaded on normal pages ##
+ **************************/
+
+/* extensions/wikia/RecentChanges/css/RecentChanges.scss */
+.rc-conntent{min-height:200px}.mw-recentchanges-table{zoom:1}.mw-recentchanges-table:after{clear:both;content:" ";display:block;height:0;overflow:hidden;visibility:hidden}.mw-recentchanges-table td.mw-label,.mw-recentchanges-table td.mw-input{vertical-align:middle}.mw-recentchanges-table .WikiaDropdown{float:left;margin-top:1px;margin-right:10px}.mw-recentchanges-table .WikiaDropdown .toolbar{background-color:#ccdee6;border-bottom:1px solid #bcc1c4;line-height:30px;padding:0 10px}.mw-recentchanges-table .WikiaDropdown .toolbar input[type="checkbox"]{margin-right:10px}.mw-recentchanges-table .WikiaDropdown .toolbar input[type="checkbox"].modified{opacity:.5}.mw-recentchanges-table .WikiaDropdown .toolbar label{display:block}
+/* mediawiki.special.changelist */
+table.mw-enhanced-rc{border:0;border-spacing:0}table.mw-enhanced-rc th,table.mw-enhanced-rc td{padding:0;vertical-align:top}td.mw-enhanced-rc{white-space:nowrap;font-family:monospace}.mw-enhanced-rc-time{font-family:monospace}table.mw-enhanced-rc td.mw-enhanced-rc-nested{padding-left:1em} .mw-enhanced-rc .collapsible-expander{float:none} .mw-enhanced-rc .mw-rc-openarrow{visibility:hidden}.mw-enhanced-rc.mw-made-collapsible .mw-rc-openarrow,.mw-enhanced-rc .mw-rc-closearrow{visibility:visible;display:none}.mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-collapsed .mw-rc-openarrow,.mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-expanded .mw-rc-closearrow{display:inline}
+
+
+/**************************
+ * ## Diff table CSS doesn't seem to be on all namespaces, so duplicating it here. ##
+ **************************/
+
+/* mediawiki.action.history.diff */
+table.diff,td.diff-otitle,td.diff-ntitle{background-color:white}td.diff-otitle,td.diff-ntitle{text-align:center}td.diff-marker{text-align:right}td.diff-lineno{font-weight:bold}td.diff-addedline{background:#cfc;font-size:smaller}td.diff-deletedline{background:#ffa;font-size:smaller}td.diff-context{background:#eee;font-size:smaller}.diffchange{color:red;font-weight:bold;white-space:-moz-pre-wrap;white-space:pre-wrap;text-decoration:none}table.diff{border:none;width:98%;border-spacing:4px; table-layout:fixed}table.diff td{padding:0}table.diff col.diff-marker{width:2%}table.diff col.diff-content{width:48%}table.diff td div{ word-wrap:break-word; overflow:auto}
+
+/* </syntaxhighlight> */
+
