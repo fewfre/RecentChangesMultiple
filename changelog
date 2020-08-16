@@ -2,6 +2,7 @@
 -Fixed UCP fandom wikis not loading due to code trying to use old log system for all fandom wikis
 -Fixed issue with UCP wiki favicons not showing correct image (seems fandom doesn't set "favicon" attribute correctly)
 -Updated code to account for discussions now having 3 types; forum (normal), message wall, and article comments
+-Link behavior for message walls somewhat fixed; article comments are not
 -meta/repo changes:
 	-"branches" folder removed, and code moved to git branches
 	-removed "build" folder from the repo and added it to .gitignore

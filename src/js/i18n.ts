@@ -362,30 +362,32 @@ i18n.TEXT = {
 		},
 	},
 	ja: { // 日本語 (JAPANESE) @author: [anonymous]
+		// Errors
 		'rcm-error-linkformat' : "'$1' は表記に誤りがあります。 'http://' や、'/'を含むドメイン名以降の部分を'''含めずに'''指定してください。",
 		'rcm-error-loading-syntaxhang' : "($2回試しましたが) [$1]の読み込みに失敗しました。（再更新してみるか、）設定を修正してください。",
+		'rcm-error-loading-http': "このページはHTTPS接続を利用しています。このエラーはHTTPSプロトコル非対応のWikiにて起こっていることが考えられます。詳細は[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS こちら]をご覧ください。",
 		'rcm-error-loading-connection' : "($2回試しましたが) [$1]の読み込みに失敗しました。接続に失敗した可能性があります。再更新してください。",
 		'rcm-error-trymoretimes' : "もう$1回お試しください",
-
+		// Notifications
 		'rcm-loading' : "読込・整列中...",
 		'rcm-refresh' : "更新",
 		'rcm-download-timestamp' : "$1時点の最近の更新を表示中",
 		'rcm-download-changesadded' : " - [$1件の最近の更新が追加されました]",
-
-		'rcm-wikisloaded' : "対象のWikiaコミュニティ: ",
+		// Basics
+		'rcm-wikisloaded' : "対象のWiki: ",
 		'rcm-previouslyloaded' : "前回との変更点:",
 		'rcm-nonewchanges' : "新しい変更はありません",
 		'rcm-autorefresh' : "自動更新",
 		'rcm-autorefresh-tooltip' : "$1秒おきに情報を自動更新します",
 		'rcm-footer' : "Version $1 (編集者は$2)",
-
+		// Options Panel
 		'rcm-optionspanel-hideusersoverride': "data-hideusersの設定によって無効にされています",
 		'rcm-optionspanel-savewithcookie': "クッキーに変更を保存する",
-
+		// Modules
 		'rcm-module-diff-title' : "差分を表示",
 		'rcm-module-diff-open' : "差分を別のページで表示",
 		'rcm-module-diff-undo' : "編集を取り消す",
-
+		// Other
 		'rcm-unknownthreadname' : "無題",
 		/***************************
 		 * mediawiki.language.data
