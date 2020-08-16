@@ -4448,6 +4448,7 @@ var WikiData = /** @class */ (function () {
                 analytics: false,
             } };
         this.isWikiaWiki = true;
+        this.isPreUcpWikiaWiki = true;
         this.useOutdatedLogSystem = false;
         this.users = {};
         this.usersNeeded = [];
@@ -4484,6 +4485,7 @@ var WikiData = /** @class */ (function () {
         this.firstSeperator = "?";
         this.htmlName = this.servername.replace(/([\.\/])/g, "-");
         this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
+        this.isPreUcpWikiaWiki = this.isWikiaWiki;
         this.useOutdatedLogSystem = this.isWikiaWiki;
         // todo - allow / - consequences?
         // if(this.servername.indexOf("/") > -1) {
@@ -4588,9 +4590,14 @@ var WikiData = /** @class */ (function () {
             this.mainpage = pQuery.general.mainpage;
             this.mwversion = pQuery.general.generator;
             this.langCode = pQuery.general.lang;
+            // For wikia/fandom wikis, check if it is a UCP wiki (updated mediawiki version). If it is old, then also use old log system; otherwise use default
+            if (this.isWikiaWiki) {
+                this.isPreUcpWikiaWiki = this.mwversion == "MediaWiki 1.19.24";
+                this.useOutdatedLogSystem = this.isPreUcpWikiaWiki;
+            }
             if (this.favicon == null) {
-                // Requires MediaWiki V1.23+
-                if (pQuery.general.favicon) {
+                // Requires MediaWiki V1.23+  -- currently has to be hardcoded off for UCP wikis as well, since it shows wrong favicon for this setting
+                if (pQuery.general.favicon && !this.isWikiaWiki) {
                     this.favicon = pQuery.general.favicon;
                     // It SHOULD be an absoule link, but encase it isn't... (at least one case found where it wasn't)
                     if (this.favicon.indexOf("http") != 0 && this.favicon.indexOf("//") != 0) {

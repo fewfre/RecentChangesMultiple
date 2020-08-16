@@ -93,6 +93,7 @@ export default class WikiData
 	* Other
 	****************************/
 	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
+	isPreUcpWikiaWiki		: boolean; // Old system using outdated mediawiki version
 	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) needs to have them retrieved separately.
 	
 	/***************************
@@ -117,6 +118,7 @@ export default class WikiData
 			// abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false, abusefilter_log_private:false,
 		} };
 		this.isWikiaWiki			= true;
+		this.isPreUcpWikiaWiki		= true;
 		this.useOutdatedLogSystem	= false;
 		
 		this.users					= {};
@@ -163,6 +165,7 @@ export default class WikiData
 		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
 		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
+		this.isPreUcpWikiaWiki = this.isWikiaWiki;
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		// todo - allow / - consequences?
@@ -271,9 +274,15 @@ export default class WikiData
 			this.mwversion = pQuery.general.generator;
 			this.langCode = pQuery.general.lang;
 			
+			// For wikia/fandom wikis, check if it is a UCP wiki (updated mediawiki version). If it is old, then also use old log system; otherwise use default
+			if(this.isWikiaWiki) {
+				this.isPreUcpWikiaWiki = this.mwversion == "MediaWiki 1.19.24";
+				this.useOutdatedLogSystem = this.isPreUcpWikiaWiki;
+			}
+			
 			if(this.favicon == null) {
-				// Requires MediaWiki V1.23+
-				if(pQuery.general.favicon) {
+				// Requires MediaWiki V1.23+  -- currently has to be hardcoded off for UCP wikis as well, since it shows wrong favicon for this setting
+				if(pQuery.general.favicon && !this.isWikiaWiki) {
 					this.favicon = pQuery.general.favicon;
 					// It SHOULD be an absoule link, but encase it isn't... (at least one case found where it wasn't)
 					if(this.favicon.indexOf("http") != 0 && this.favicon.indexOf("//") != 0) { this.favicon = this.server + "/" + this.favicon; }
