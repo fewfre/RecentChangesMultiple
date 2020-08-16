@@ -17,6 +17,9 @@ let mw = (<any>window).mediaWiki;
 //######################################
 export default class RCMWikiaDiscussionData extends RCData
 {
+	// Sometimes user data needs to be manually fetched; when it is it is stored in here to avoid having to fetch it again
+	static users	: { [id:string]: { name:string, avatarUrl:string, loadIndex?:string } } = {};
+	
 	// Storage
 	user_id			: string; // createdBy.id
 	user_avatarUrl	: string // createdBy.avatarUrl
@@ -30,6 +33,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	rawContent		: string;
 	
 	threadHref		: string;
+	forumPage		: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched seperately)
 	
 	// Constructor
 	constructor(pWikiInfo:WikiData, pManager:RCMManager) {
@@ -40,11 +44,13 @@ export default class RCMWikiaDiscussionData extends RCData
 		super.dispose();
 	}
 	
-	/*override*/ init(pData:any) : this {
+	/*override*/ init(pData:any, pAllData:any) : this {
 		this.type = TYPE.DISCUSSION;
 		this.containerType = "FORUM";
+		let embeddedThread:any = null;
 		try {
-			this.containerType = pData._embedded.thread[0].containerType || "FORUM";
+			embeddedThread = pData._embedded.thread[0];
+			this.containerType = embeddedThread.containerType || "FORUM";
 		} catch(e){}
 		this.date = new Date(0); /*Epoch*/ this.date.setUTCSeconds((pData.modificationDate || pData.creationDate).epochSecond);
 		this.userEdited = true; // Currently anons cannot edit
@@ -87,16 +93,24 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.hrefBasic = this.href;
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
-		this.threadTitle = pData.title;
+		this.threadTitle = embeddedThread ? (embeddedThread.title || pData.title) : pData.title;
 		
 		// Discussion-specific
 		this.user_id = pData.createdBy.id;
-		this.user_avatarUrl = pData.createdBy.avatarUrl ? pData.createdBy.avatarUrl.replace("/scale-to-width-down/100", "/scale-to-width-down/15") : pData.createdBy.avatarUrl;
+		this.user_avatarUrl = pData.createdBy.avatarUrl ? pData.createdBy.avatarUrl+"/scale-to-width-down/15" : pData.createdBy.avatarUrl;
 		this.upvoteCount = pData.upvoteCount;
 		this.forumName = pData.forumName;
 		this.rawContent = pData.rawContent;
 		this.isLocked = pData.isLocked;
 		this.isReported = pData.isReported;
+		
+		// If it's a wall discussion, then we need to set the wall's owner as the forum page
+		if(this.containerType == "WALL") {
+			this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; kind be relied upon since they may translate it for other languages eventually
+			if(RCMWikiaDiscussionData.users[pData.forumId]) {
+				this.forumPage = RCMWikiaDiscussionData.users[pData.forumId].name;
+			}
+		}
 		
 		return null; // Return self for chaining or whatnot.
 	}
@@ -113,7 +127,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		let tUserContribsLink = `${this.wikiInfo.scriptpath}/d/u/${this.user_id}`;
 		return Utils.formatString(""
 			+"<span class='mw-usertoollinks'>"
-				+this.getAvatarImg()+`<a href='{0}User:{1}' class='${this.wikiInfo.getUserClass(this.author)}' ${this.wikiInfo.getUserClassDataset(this.author)}>{2}</a>`
+				+this.getCreatorAvatarImg()+`<a href='{0}User:{1}' class='${this.wikiInfo.getUserClass(this.author)}' ${this.wikiInfo.getUserClassDataset(this.author)}>{2}</a>`
 				+" (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"
 				+i18n("pipe-separator")
 				+`<a href='${tUserContribsLink}'>${i18n("contribslink")}</a>`
@@ -122,9 +136,13 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
 	}
 	
-	getAvatarImg() : string {
-		return this.user_avatarUrl
-		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(this.author)}"><img src='${this.user_avatarUrl}' width="15" height="15" /></a> </span>`
+	getCreatorAvatarImg() : string {
+		return this.makeAvatarImg(this.author, this.user_avatarUrl);
+	}
+	
+	makeAvatarImg(pAuthor:string, pAvatarUrl:string) : string {
+		return pAvatarUrl
+		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pAuthor)}"><img src='${pAvatarUrl}' width="15" height="15" /></a> </span>`
 		: "";
 	}
 	
@@ -133,22 +151,19 @@ export default class RCMWikiaDiscussionData extends RCData
 			case "FORUM": {
 				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
 				let tForumLink = `<a href="${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest">${this.forumName}</a>`;
-				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"];
-				// tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
-				tText = tText.replace(/(\[\[.*\]\])/g, "RCM_DISC_BOARD"); // Don't replace with actual content right away, to avoid wiki2html being run on it
-				tText = i18n.wiki2html(tText, `<a href="${pIsHead ? this.threadHref : this.href}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()));
-				tText = tText.replace("RCM_DISC_BOARD", tForumLink);
-				return tText;
+				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
+				return i18n.wiki2html(tText, `<a href="${pIsHead ? this.threadHref : this.href}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()), tForumLink);
 			}
 			case "WALL": {
 				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
-				let tForumLink = `<a href="${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest">${this.forumName}</a>`;
-				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"];
-				// tText = tText.replace(/(\[\[.*\]\])/g, tForumLink);
-				tText = tText.replace(/(\[\[.*\]\])/g, "RCM_DISC_BOARD"); // Don't replace with actual content right away, to avoid wiki2html being run on it
-				tText = i18n.wiki2html(tText, `<a href="${pIsHead ? this.threadHref : this.href}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()));
-				tText = tText.replace("RCM_DISC_BOARD", tForumLink);
-				return tText;
+				let tThreadUrl = !this.forumPage ? (pIsHead ? this.threadHref : this.href) : `${this.wikiInfo.articlepath}Message_Wall:${this.forumPage}?threadId=${this.threadId}`;
+				let tForumUrl = !this.forumPage ? "#" : `${this.wikiInfo.articlepath}Message_Wall:${this.forumPage}`;
+				
+				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
+				return i18n.wiki2html(tText,
+					`<a href="${tThreadUrl}">${pThreadTitle}</a>`,
+					`<a href="${tForumUrl}">${this.forumName}</a>`,
+				);
 			}
 			case "ARTICLE_COMMENT": {
 				let tUrl = `${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest`;

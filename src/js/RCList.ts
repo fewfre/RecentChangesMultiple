@@ -147,7 +147,7 @@ export default class RCList
 				contribs[rc.author].count++;
 			} else {
 				contribs[rc.author] = { count:1, userEdited:rc.userEdited };
-				contribs[rc.author].avatar = (rc.type == RC_TYPE.DISCUSSION ? (<RCMWikiaDiscussionData>rc).getAvatarImg() : "");
+				contribs[rc.author].avatar = (rc.type == RC_TYPE.DISCUSSION ? (<RCMWikiaDiscussionData>rc).getCreatorAvatarImg() : "");
 			}
 		});
 		

@@ -505,7 +505,7 @@ export default class RCMManager
 			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
 		});
 		pWikiData.updateLastDiscussionDate(Utils.getFirstItemFromObject(pData));
-		var tNewRC, tDate, tChangeAdded;
+		var tNewRC:RCMWikiaDiscussionData, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
 			let tUser = pRCData.createdBy.name;
@@ -517,7 +517,7 @@ export default class RCMManager
 			
 			this.itemsToAddTotal++;
 			tNewRC = new RCMWikiaDiscussionData( pWikiData, this );
-			tNewRC.init(pRCData);
+			tNewRC.init(pRCData, pData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.discussionsCount++;
 		});
