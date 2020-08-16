@@ -221,23 +221,25 @@ export default class RCList
 				});
 			} else {
 				if(tTitle == null) {
-					let tRC = <RCMWikiaDiscussionData>this.newest;
-					this.manager.secondaryWikiData.push({
-						// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-						url: `https://services.fandom.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
-						dataType: "json",
-						callback: (data) => {
-							this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
-							let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
-							if(tSpan) {
-								tSpan.innerHTML = this.newest.threadTitle;
-								let tIcons = "";
-								if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
-								if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
-								if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
-							}
-						}
-					});
+					(<RCMWikiaDiscussionData>this.newest).handleSecondaryLoad(tElemID);
+					
+					// let tRC = <RCMWikiaDiscussionData>this.newest;
+					// this.manager.secondaryWikiData.push({
+					// 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
+					// 	url: `https://services.fandom.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
+					// 	dataType: "json",
+					// 	callback: (data) => {
+					// 		this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
+					// 		let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
+					// 		if(tSpan) {
+					// 			tSpan.innerHTML = this.newest.threadTitle;
+					// 			let tIcons = "";
+					// 			if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
+					// 			if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
+					// 			if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
+					// 		}
+					// 	}
+					// });
 				} else {
 					tReturnText = tTitle;
 				}
@@ -436,7 +438,7 @@ export default class RCList
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCMWikiaDiscussionData>pRC;
 				html += tRC.getThreadStatusIcons();
-				html += tRC.discusssionTitleText( this.getThreadTitle() );
+				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
 				html += RCList.SEP;
 				html += tRC.userDetails();
 				html += tRC.getSummary();
@@ -528,7 +530,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				html += (<RCMWikiaDiscussionData>this.newest).discusssionTitleText( this.getThreadTitle(), true );
+				html += (<RCMWikiaDiscussionData>this.newest).discussionTitleText( this.getThreadTitle(), true );
 				html += " ("+this._changesText()+")";
 				break;
 			}
@@ -699,7 +701,7 @@ export default class RCList
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCMWikiaDiscussionData>pRC;
 				html += tRC.getThreadStatusIcons();
-				html += tRC.discusssionTitleText( this.getThreadTitle() );
+				html += tRC.discussionTitleText( this.getThreadTitle() );
 				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
 				html += tRC.userDetails();

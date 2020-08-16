@@ -1233,16 +1233,10 @@ export default class RCMManager
 		if(pID != this.ajaxID) { return; }
 		if(this.secondaryWikiData.length == 0) { mw.log("[RCMManager](_loadExtraInfo) All loading finished."); return; }
 		
-		var tUrl = this.secondaryWikiData[0].url;
-		var tCallback = this.secondaryWikiData[0].callback;
-		var tDataType = this.secondaryWikiData[0].dataType || "jsonp";
-		this.secondaryWikiData.splice(0, 1);
+		let { url, dataType="jsonp", callback:tCallback } = this.secondaryWikiData.shift();
 		
 		$.ajax({
-			type: 'GET',
-			dataType: tDataType,
-			data: {},
-			url: tUrl,
+			type: 'GET', url, dataType, data: {},
 			success: (...pArgs) => {
 				if(pID != this.ajaxID) { return; }
 				tCallback.apply(this, pArgs);

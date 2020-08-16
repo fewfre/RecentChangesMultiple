@@ -1,3 +1,12 @@
+== V2.13 - 15 August 2020 ==
+-Fixed UCP fandom wikis not loading due to code trying to use old log system for all fandom wikis
+-Fixed issue with UCP wiki favicons not showing correct image (seems fandom doesn't set "favicon" attribute correctly)
+-Updated code to account for discussions now having 3 types; forum (normal), message wall, and article comments
+-meta/repo changes:
+	-"branches" folder removed, and code moved to git branches
+	-removed "build" folder from the repo and added it to .gitignore
+
+
 == V2.12b - 6 October 2019 ==
 -Translations added for tr - provided by BaRaN6161TURK
 -Analytiics link added to WikiPanel (if it's a wikia wiki, and you have the "analytics" right)
