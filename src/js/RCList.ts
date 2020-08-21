@@ -222,24 +222,6 @@ export default class RCList
 			} else {
 				if(tTitle == null) {
 					(<RCMWikiaDiscussionData>this.newest).handleSecondaryLoad(tElemID);
-					
-					// let tRC = <RCMWikiaDiscussionData>this.newest;
-					// this.manager.secondaryWikiData.push({
-					// 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-					// 	url: `https://services.fandom.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${tRC.threadId}`,
-					// 	dataType: "json",
-					// 	callback: (data) => {
-					// 		this.newest.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
-					// 		let tSpan:HTMLElement = <HTMLElement>document.querySelector("#"+tElemID);
-					// 		if(tSpan) {
-					// 			tSpan.innerHTML = this.newest.threadTitle;
-					// 			let tIcons = "";
-					// 			if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
-					// 			if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
-					// 			if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
-					// 		}
-					// 	}
-					// });
 				} else {
 					tReturnText = tTitle;
 				}
@@ -467,7 +449,7 @@ export default class RCList
 		var tRow = Utils.newElement("tr", {}, tTable);
 		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow); }
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
-			+'<img src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
+			+'<img src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
 			+this._getFlags(pRC, "&nbsp;")
 			+"&nbsp;"
 			+pRC.time()
@@ -555,10 +537,10 @@ export default class RCList
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
 				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
-					+'<img width="12" height="12" title="'+i18n("rc-enhanced-expand")+'" alt="+" src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+					+'<img width="12" height="12" title="'+i18n("rc-enhanced-expand")+'" alt="+" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
 				+'</a></span>'
 				+'<span class="mw-rc-closearrow"><a title="'+i18n("rc-enhanced-hide")+'">'// href="#"
-						+'<img width="12" height="12" title="'+i18n("rc-enhanced-hide")+'" alt="-" src="//images.fandom.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+						+'<img width="12" height="12" title="'+i18n("rc-enhanced-hide")+'" alt="-" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit:true })
