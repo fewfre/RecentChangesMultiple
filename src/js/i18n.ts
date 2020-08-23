@@ -1108,8 +1108,6 @@ i18n.MESSAGES = {
 	'wikifeatures-log-name'				: 'Wiki Features log',
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Chat2/Chat.i18n.php
 	'chat-chatban-log'					: 'Chat ban log',
-	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/WikiaMaps/WikiaMaps.i18n.php
-	'wikia-interactive-maps-log-name'	: 'Maps log',
 	// ## Extensions ##
 	// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	'abusefilter-log'					: 'Abuse filter log',
@@ -1180,17 +1178,6 @@ i18n.MESSAGES = {
 	'chat-chatbanadd-log-entry' : 'banned $1 from chat with an expiry time of $2, ends $3',
 	'chat-chatbanremove-log-entry' : 'unbanned $1 from chat',
 	'chat-chatbanchange-log-entry' : 'changed ban settings for $1 with an expiry time of $2, ends $3',
-	// Maps - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/WikiaMaps/WikiaMaps.i18n.php
-	'logentry-maps-create_map' : '$1 created new map $3',
-	'logentry-maps-update_map' : '$1 updated map $3',
-	'logentry-maps-delete_map' : '$1 deleted map $3',
-	'logentry-maps-undelete_map' : '$1 restored map $3',
-	'logentry-maps-create_pin_type' : '$1 created new pin category for $3',
-	'logentry-maps-update_pin_type' : '$1 updated pin category for $3',
-	'logentry-maps-delete_pin_type' : '$1 deleted pin category for $3',
-	'logentry-maps-create_pin' : '$1 created new pin for $3',
-	'logentry-maps-update_pin' : '$1 updated pin for $3',
-	'logentry-maps-delete_pin' : '$1 deleted pin for $3',
 	// // ## Extensions ##
 	// // Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	// "abusefilter-log-entry-modify" : "modified $1 ($2)",
@@ -1234,6 +1221,9 @@ i18n.MESSAGES = {
 	'discussions': 'Discussions',
 	'forum-related-discussion-heading': 'Discussions about $1',
 	'embeddable-discussions-loading': 'Loading Discussions...',
+	'article-comments-page-header-label': 'Comments',
+	'userprofile-message-wall-label': 'Message Wall',
+	'allmessages-filter-all': 'All',
 	
 	/***************************
 	* AbuseFilter

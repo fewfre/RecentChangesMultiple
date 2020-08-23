@@ -375,7 +375,6 @@ export default class RCData
 			case "chatban"		: return i18n("chat-chatban-log");
 			case "delete"		: return i18n("dellogpage");
 			case "import"		: return i18n("importlogpage");
-			case "maps"			: return i18n("wikia-interactive-maps-log-name");
 			case "merge"		: return i18n("mergelog");
 			case "move"			: return i18n("movelogpage");
 			case "protect"		: return i18n("protectlogpage");
@@ -547,13 +546,6 @@ export default class RCData
 				// logaction assumed: chatbanadd, chatbanremove, chatbanchange
 				tLogMessage += i18n("chat-"+this.logaction+"-log-entry", `<a href='${this.href}'>${this.titleNoNS}</a>`, tChatData[2], t$3 );
 				tChatData = null;
-				break;
-			}
-			case "maps": {
-				// logactions assumed: create_map, update_map, delete_map, undelete_map
-				//						create_pin_type, update_pin_type, delete_pin_type
-				//						create_pin, update_pin, delete_pin
-				tLogMessage += i18n("logentry-maps-"+this.logaction, this.userDetails(), undefined, this.title );
 				break;
 			}
 			case "abusefilter": {
