@@ -67,7 +67,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.summary = pData.rawContent;
 		if(this.containerType == "ARTICLE_COMMENT" && !this.summary && pData.jsonModel) {
 			let jsonModel:{ type:string, content:{ type:string, text:string }[] }[] = JSON.parse(pData.jsonModel).content;
-			this.summary = !jsonModel ? "" : jsonModel.map(d=>d.type=="paragraph" && d.content ? d.content.map(td=>td.text || "") : "").join(" ").replace(/  /, " ");
+			this.summary = !jsonModel || jsonModel.length===0 ? "" : jsonModel.map(d=>d.type=="paragraph" && d.content ? d.content.map(td=>td.text || "") : "").join(" ").replace(/  /, " ");
 		}
 		if(this.summary.length > 175) {
 			this.summary = `"${this.summary}"`; // Add quotes around it just to drive home it is a quote
@@ -106,7 +106,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		
 		// If it's a wall discussion, then we need to set the wall's owner as the forum page
 		if(this.containerType == "WALL") {
-			this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; kind be relied upon since they may translate it for other languages eventually
+			if(this.forumName) this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; kind be relied upon since they may translate it for other languages eventually
 			if(RCMWikiaDiscussionData.users[pData.forumId]) {
 				this.forumPage = RCMWikiaDiscussionData.users[pData.forumId].name;
 			}
@@ -142,7 +142,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	
 	makeAvatarImg(pAuthor:string, pAvatarUrl:string) : string {
 		return pAvatarUrl
-		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pAuthor)}"><img src='${pAvatarUrl}' width="15" height="15" /></a> </span>`
+		? `<span class="rcm-avatar"><a href="${this.wikiInfo.articlepath}User:${Utils.escapeCharactersLink(pAuthor||"")}"><img src='${pAvatarUrl}' width="15" height="15" /></a> </span>`
 		: "";
 	}
 	

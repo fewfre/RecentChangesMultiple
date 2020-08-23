@@ -419,7 +419,7 @@ export default class WikiData
 	
 	// Get user CSS classes as a string.
 	getUserClass(pUser:string) : string {
-		if(this.manager.extraLoadingEnabled) {
+		if(this.manager.extraLoadingEnabled && pUser) {
 			pUser = pUser.replace(/_/g, " ");
 			if(this.users[pUser]) {
 				return this.users[pUser].getClassNames();
@@ -432,6 +432,7 @@ export default class WikiData
 	}
 	// Get the correspondering dataset for user class.
 	getUserClassDataset(pUser:string) : string {
+		if(!pUser) { return ""; }
 		return `data-username=\"${pUser.replace(/"/g, "&quot;")}\"`;
 	}
 	
