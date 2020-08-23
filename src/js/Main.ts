@@ -4,6 +4,7 @@ import Utils from "./Utils";
 import i18n from "./i18n";
 import RCParams from "./RCParams";
 import RCMModal from "./RCMModal";
+import addMakeCollapsible from "./makeCollapsible";
 
 let Notification = (<any>window).Notification;
 let $ = (<any>window).jQuery;
@@ -77,10 +78,17 @@ class Main
 		RCMModal.init();
 		
 		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
-		mw.loader.load([
+		mw.loader.using([
 			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
+			...(ConstantsApp.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
 			ConstantsApp.isUcpWiki ? "mediawiki.diff.styles" : 'mediawiki.action.history.diff', // AjaxDiff css
-		]);
+		])
+		.then(function(){
+			// Fallback support for UCP wiki
+			if(!$.fn.makeCollapsible) {
+				addMakeCollapsible();
+			}
+		});
 		
 		/***************************
 		* Setup SVG symbols

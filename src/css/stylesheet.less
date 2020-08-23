@@ -128,6 +128,10 @@ table.mw-enhanced-rc {
 	.rcoptions legend {
 		padding-top:0;
 	}
+	
+	fieldset{border:solid 1px inherit;margin:1em 0;padding:0 1em 1em}
+	fieldset legend{cursor:pointer;padding:7px}
+	fieldset.collapsible{height:auto}
 }
 .rcm-options-settings {
 	position:absolute;
@@ -216,10 +220,19 @@ table.mw-enhanced-rc {
 // RCM Module
 //#############################
 /* Style the RCM module */
+#rcm-modal {
+	.oo-ui-processDialog-actions-other {
+		text-align: right;
+	}
+}
+	
 #rcm-modal-content {
 	min-width:600px;
 	max-width:1220px;
 	font-size: 14px;
+	.oo-ui-layout & {
+		padding: 20px;
+	}
 	//word-wrap: break-word;
 	#toc { display:none; }
 }
