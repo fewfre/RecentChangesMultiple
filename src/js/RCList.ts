@@ -449,7 +449,7 @@ export default class RCList
 		var tRow = Utils.newElement("tr", {}, tTable);
 		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:pRC.wikiInfo.getFaviconHTML(true) }, tRow); }
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
-			+'<img src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_.png" width="12" height="12" alt="&nbsp;" title="">'
+			+'<span class="rcm-arr none">&nbsp;</span>'
 			+this._getFlags(pRC, "&nbsp;")
 			+"&nbsp;"
 			+pRC.time()
@@ -537,10 +537,10 @@ export default class RCList
 		var td1 = Utils.newElement("td", {}, tRow);
 			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
 				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
-					+'<img width="12" height="12" title="'+i18n("rc-enhanced-expand")+'" alt="+" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png">'
+					+'<span class="rcm-arr" title="'+i18n("rc-enhanced-expand")+'">+</span>'
 				+'</a></span>'
 				+'<span class="mw-rc-closearrow"><a title="'+i18n("rc-enhanced-hide")+'">'// href="#"
-						+'<img width="12" height="12" title="'+i18n("rc-enhanced-hide")+'" alt="-" src="//images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png">'
+					+'<span class="rcm-arr" title="'+i18n("rc-enhanced-hide")+'">-</span>'
 				+'</a></span>' }, td1);
 		Utils.newElement("td", { className:"mw-enhanced-rc", innerHTML:""
 			+this._getFlags(this.oldest, "&nbsp;", { ignoreminoredit:true })
