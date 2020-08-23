@@ -4,7 +4,7 @@
 		"noImplicitAny": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"target": "es5"
+		"target": "es2015"
 	},
 	"exclude": [
 		"node_modules"

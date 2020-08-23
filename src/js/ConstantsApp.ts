@@ -16,9 +16,11 @@ export default class ConstantsApp
 		"wgServer",
 		"wgScriptPath",
 		"wgMonthNames",
+		"wgVersion",
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
 	static readonly debug					: boolean = ConstantsApp.config.debug;
+	static isUcpWiki						: boolean = false;
 	
 	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + ConstantsApp.config.wgPageName;
 	static OPTIONS_SETTINGS_LOCAL_STORAGE_ID: string = "RecentChangesMultiple-saveoptionscookie-" + ConstantsApp.config.wgPageName;
@@ -45,6 +47,7 @@ export default class ConstantsApp
 			"date", // Date format
 			"gender", // System messages
 		])
+		ConstantsApp.isUcpWiki = ConstantsApp.config.wgVersion !== '1.19.24';
 		// For Testing CSS
 		// mw.util.addCSS(`
 		// `);

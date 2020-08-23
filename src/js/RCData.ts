@@ -683,25 +683,25 @@ export default class RCData
 	// STATIC - https://www.mediawiki.org/wiki/API:Revisions
 	// Inspired by http://dev.fandom.com/wiki/AjaxDiff / http://dev.fandom.com/wiki/LastEdited
 	static previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:any) : void {
-		mw.log(`http:${pAjaxUrl}`); mw.log(pDiffLink); mw.log(pUndoLink);
+		Utils.logUrl("(previewDiff)", pAjaxUrl); mw.log(pDiffLink); mw.log(pUndoLink);
 		
 		var tTitle = `${pPageName} - ${i18n('rcm-module-diff-title')}`;
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [];
 		tButtons.push({
-			value: i18n('rcm-module-diff-open'),
+			text: i18n('rcm-module-diff-open'),
 			event: "diff",
 			callback: () => { window.open(pDiffLink, '_blank'); },
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
-				value: i18n('rcm-module-diff-undo'),
+				text: i18n('rcm-module-diff-undo'),
 				event: "undo",
 				callback: () => { window.open(pUndoLink, '_blank'); },
 			});
 		}
 		
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
+		RCMModal.showLoadingModal({ title:tTitle, buttons:tButtons }).then(() => {
 			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
@@ -817,7 +817,7 @@ export default class RCData
 			}
 		}
 		
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
+		RCMModal.showLoadingModal({ title:tTitle, buttons:tButtons }).then(() => {
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 				success: (pData) => {
 					if(!RCMModal.isModalOpen()) { return; }
@@ -908,17 +908,17 @@ export default class RCData
 	}
 	
 	static previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServerLink:string) : void {
-		mw.log(`http:${pAjaxUrl}`);
+		Utils.logUrl("(previewPage)", pAjaxUrl);
 		
 		var tTitle = `${pPageName}`;
 		var tButtons = [
 			{
-				value: i18n('wikiaPhotoGallery-conflict-view'),
+				text: i18n('wikiaPhotoGallery-conflict-view'),
 				event: "diff",
 				callback: () => { window.open(pPageHref, '_blank'); },
 			}
 		];
-		RCMModal.showLoadingModal({ title:tTitle, rcm_buttons:tButtons }, () => {
+		RCMModal.showLoadingModal({ title:tTitle, buttons:tButtons }).then(() => {
 			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
@@ -940,8 +940,9 @@ export default class RCData
 					let tModalCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
 					let tCont:HTMLElement = <HTMLElement>document.querySelector(`#${RCMModal.MODAL_CONTENT_ID} #mw-content-text`);
 					if((<any>tCont).attachShadow) {
+						mw.log("Shadow dom supported");
 						// Setup Shadow dom
-						RCMModal.setModalContent("");
+						tModalCont.innerHTML = "";
 						tModalCont = (<any>tModalCont).attachShadow({ mode:"open" });
 						tModalCont.innerHTML = tModalContent;
 						tCont = <HTMLElement>tModalCont.querySelector("#mw-content-text");

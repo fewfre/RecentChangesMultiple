@@ -3,10 +3,12 @@ import ConstantsApp from "./ConstantsApp";
 import Utils from "./Utils";
 import i18n from "./i18n";
 import RCParams from "./RCParams";
+import RCMModal from "./RCMModal";
 
 let Notification = (<any>window).Notification;
 let $ = (<any>window).jQuery;
 let mw = (<any>window).mediaWiki;
+let importArticles = (<any>window).importArticles;
 
 //######################################
 // Main (instance class) - Start script and store values.
@@ -66,10 +68,18 @@ class Main
 		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
 		this._loadLangMessages(); // Load Translations from Wiki database.
 		
+		importArticles({
+			type: 'script',
+			articles: [
+				'u:dev:MediaWiki:Modal.js',
+			]
+		});
+		RCMModal.init();
+		
 		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
 		mw.loader.load([
 			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
-			'mediawiki.action.history.diff', // AjaxDiff css
+			ConstantsApp.isUcpWiki ? "mediawiki.diff.styles" : 'mediawiki.action.history.diff', // AjaxDiff css
 		]);
 		
 		/***************************
