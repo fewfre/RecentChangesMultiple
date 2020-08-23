@@ -3,7 +3,7 @@ interface MediaWiki {
 	// [key:string]: any;
 	
 	config: MediaWikiMap;
-	hook(name:string) : { add(func:any):any, remove(func:any):any, fire(...args:any):any };
+	hook(name:string) : { add(func:any):any, remove(func:any):any, fire(...args:any[]):any };
 	loader: any;
 	log(...args:any[]) : void;
 	msg(key:string, ...parameters:any[]) : string;
