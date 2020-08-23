@@ -1,12 +1,12 @@
 import ConstantsApp from "./ConstantsApp";
 import RCMManager from "./RCMManager";
-import RCParams from "./RCParams";
+import RCParams from "./types/RCParams";
 import UserData from "./UserData";
 import Utils from "./Utils";
 import i18n from "./i18n";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 interface CurrentUser {
 	rights:{
@@ -308,7 +308,7 @@ export default class WikiData
 			
 			if(!!pQuery.variables) {
 				// This is only for Wikia wikis. Other wikis can ignore this.
-				let wgCityIdObj = $.grep(pQuery.variables, function(o){ return o.id === "wgCityId" })[0];
+				let wgCityIdObj = $.grep(pQuery.variables, function(o:any){ return o.id === "wgCityId" })[0];
 				if(wgCityIdObj) {
 					this.wikiaCityID = wgCityIdObj["*"];
 				} else {
@@ -394,7 +394,7 @@ export default class WikiData
 	// Don't pass in params with "default" values included, or the link will have them all specified.
 	createRcParamsString(pParams) : string {
 		var tArray = [];
-		$.each( pParams, function( tKey, tVal ) {
+		$.each( pParams, function( tKey:string, tVal ) {
 			if( tKey != "paramString" ) {
 				if(tVal === true) { tVal="1"; }
 				if(tVal === false) { tVal="0"; }

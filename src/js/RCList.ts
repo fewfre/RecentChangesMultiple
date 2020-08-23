@@ -3,12 +3,12 @@ import RCData from "./RCData";
 import WikiData from "./WikiData";
 import Utils from "./Utils";
 import i18n from "./i18n";
-import RC_TYPE from "./RC_TYPE";
+import RC_TYPE from "./types/RC_TYPE";
 import ConstantsApp from "./ConstantsApp";
 import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 //######################################
 // #### Recent Change List ####

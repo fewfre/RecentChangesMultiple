@@ -1,4 +1,4 @@
-let mw = (<any>window).mediaWiki;
+let mw = window.mediaWiki;
 
 //###########################################################
 // #### ConstantsApp - static class for script-wide data ####

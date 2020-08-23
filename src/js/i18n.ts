@@ -1,7 +1,7 @@
 import ConstantsApp from "./ConstantsApp";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 /*
 *  TEXT - Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.

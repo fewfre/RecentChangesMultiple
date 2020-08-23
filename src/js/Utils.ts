@@ -1,7 +1,7 @@
 import ConstantsApp from "./ConstantsApp";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 //######################################
 // General Helper Methods - STATIC

@@ -5,10 +5,10 @@ import WikiData from "./WikiData";
 import RCData from "./RCData";
 import Utils from "./Utils";
 import i18n from "./i18n";
-import TYPE from "./RC_TYPE";
+import TYPE from "./types/RC_TYPE";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 	
 //######################################
 // #### Recent Change Data ####

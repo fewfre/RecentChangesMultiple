@@ -1,9 +1,8 @@
 import ConstantsApp from "./ConstantsApp";
-import Utils from "./Utils";
 import i18n from "./i18n";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 interface RCMModalProp {
 	title?:string,
@@ -47,7 +46,7 @@ export default class RCMModal
 		if(ConstantsApp.isUcpWiki) {
 			try {
 				// At this time the Modal.js script doesn't trigger close callback correctly, so manually calling it here
-				(<any>window).dev.modal._windowManager.on("closing", function(modal){
+				window.dev.modal._windowManager.on("closing", function(modal){
 					if(modal.elementId == RCMModal.MODAL_ID) {
 						RCMModal.isOpen = false;
 					}
@@ -145,7 +144,7 @@ export default class RCMModal
 		// Update window size to fit new content
 		if(ConstantsApp.isUcpWiki) {
 			try {
-				(<any>window).dev.modal._windowManager.windows[RCMModal.MODAL_ID].updateSize();
+				window.dev.modal._windowManager.windows[RCMModal.MODAL_ID].updateSize();
 			}
 			catch(e){}
 		}

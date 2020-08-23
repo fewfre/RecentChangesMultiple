@@ -144,7 +144,7 @@ export default function(){
 			  toggleElement($collapsible, action, $that);
 			},
 			buildDefaultToggleLink = function () {
-			  return $('<a href="#"></a>').text(collapsetext).wrap('<span class="mw-collapsible-toggle"></span>').parent().prepend('&nbsp;[').append(']&nbsp;').bind('click.mw-collapse', function (e) {
+			  return $('<a href="#"></a>').text(collapsetext).wrap('<span class="mw-collapsible-toggle"></span>').parent().prepend('&nbsp;[').append(']&nbsp;').on('click.mw-collapse', function (e) {
 				toggleLinkDefault(this, e);
 			  });
 			};
@@ -164,7 +164,7 @@ export default function(){
 			  $customTogglers = $('.' + thatId.replace('mw-customcollapsible', 'mw-customtoggle'));
 			  mw.log(_fn + 'Found custom collapsible: #' + thatId);
 			  if ($customTogglers.length) {
-				$customTogglers.bind('click.mw-collapse', function (e) {
+				$customTogglers.on('click.mw-collapse', function (e) {
 				  toggleLinkCustom($(this), e, $that);
 				});
 			  } else {
@@ -182,7 +182,7 @@ export default function(){
 				  $toggleLink = buildDefaultToggleLink();
 				  $firstRowCells.eq( - 1).prepend($toggleLink);
 				} else {
-				  $toggleLink = $toggle.unbind('click.mw-collapse').bind('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
@@ -197,7 +197,7 @@ export default function(){
 				  $toggleLink = buildDefaultToggleLink();
 				  $that.prepend($toggleLink.wrap('<li class="mw-collapsible-toggle-li"></li>').parent());
 				} else {
-				  $toggleLink = $toggle.unbind('click.mw-collapse').bind('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
@@ -210,7 +210,7 @@ export default function(){
 				  $toggleLink = buildDefaultToggleLink();
 				  $that.prepend($toggleLink);
 				} else {
-				  $toggleLink = $toggle.unbind('click.mw-collapse').bind('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
@@ -223,5 +223,5 @@ export default function(){
 			}
 		  });
 		};
-	  }) ((<any>window).jQuery, (<any>window).mediaWiki);
+	  }) (window.jQuery, window.mediaWiki);
 }

@@ -1,12 +1,9 @@
-import ConstantsApp from "./ConstantsApp";
 import RCMManager from "./RCMManager";
-import RCParams from "./RCParams";
 import WikiData from "./WikiData";
 import Utils from "./Utils";
-import i18n from "./i18n";
 
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 //######################################
 // #### Wiki Data ####

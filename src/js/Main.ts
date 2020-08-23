@@ -2,14 +2,14 @@ import RCMManager from "./RCMManager";
 import ConstantsApp from "./ConstantsApp";
 import Utils from "./Utils";
 import i18n from "./i18n";
-import RCParams from "./RCParams";
+import RCParams from "./types/RCParams";
 import RCMModal from "./RCMModal";
 import addMakeCollapsible from "./makeCollapsible";
 
-let Notification = (<any>window).Notification;
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
-let importArticles = (<any>window).importArticles;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
+// @ts-ignore
+let Notification = window.Notification;
 
 //######################################
 // Main (instance class) - Start script and store values.
@@ -38,7 +38,7 @@ class Main
 			ConstantsApp.init(pScriptConfig);
 			
 			$(document).ready($.proxy(this._ready, this));
-			$(document).unload($.proxy(this._unload, this));
+			$(document).on("unload", $.proxy(this._unload, this));
 			
 			$(window).focus($.proxy(this._onFocus, this));
 		});
@@ -69,7 +69,7 @@ class Main
 		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
 		this._loadLangMessages(); // Load Translations from Wiki database.
 		
-		importArticles({
+		window.importArticles({
 			type: 'script',
 			articles: [
 				'u:dev:MediaWiki:Modal.js',

@@ -8,14 +8,13 @@ import RCData from "./RCData";
 import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
 // import RCMAbuseLogData from "./RCMAbuseLogData";
 import RCList from "./RCList";
-import RCParams from "./RCParams";
+import RCParams from "./types/RCParams";
 import Utils from "./Utils";
 import i18n from "./i18n";
-import RC_TYPE from "./RC_TYPE";
+import RC_TYPE from "./types/RC_TYPE";
 
-let Notification = (<any>window).Notification;
-let $ = (<any>window).jQuery;
-let mw = (<any>window).mediaWiki;
+let $ = window.jQuery;
+let mw = window.mediaWiki;
 
 //######################################
 // #### RCMManager - Module core ####
@@ -1209,7 +1208,7 @@ export default class RCMManager
 		
 		//$( "#rc-content-multiple .mw-collapsible" ).each(function(){ $(this).makeCollapsible(); });
 		
-		((<any>window).ajaxCallAgain || []).forEach((cb) => { cb(); });
+		(window.ajaxCallAgain || []).forEach((cb) => { cb(); });
 		
 		// Secondary info
 		if(this.extraLoadingEnabled) {
