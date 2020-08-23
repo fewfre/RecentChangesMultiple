@@ -4,7 +4,10 @@
 		"noImplicitAny": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"target": "es2015"
+		"target": "es5",
+        "lib": [
+            "es5", "es2015.promise", "dom"
+        ]
 	},
 	"exclude": [
 		"node_modules"

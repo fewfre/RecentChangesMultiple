@@ -131,16 +131,16 @@ export default class RCMModal
 	}
 	
 	static setModalContent(pHTML:string) : void {
-		try {
-			// Don't set it if it has been closed
-			if(!RCMModal.modal) { return; }
-			RCMModal.modal
-				.setContent('<div id="'+RCMModal.MODAL_CONTENT_ID+'">'+pHTML+'</div>')
-				.show()
-			;
-		} catch(e) {
+		// try {
+		// 	// Don't set it if it has been closed
+		// 	if(!RCMModal.modal) { return; }
+		// 	RCMModal.modal
+		// 		.setContent('<div id="'+RCMModal.MODAL_CONTENT_ID+'">'+pHTML+'</div>')
+		// 		.show()
+		// 	;
+		// } catch(e) {
 			document.querySelector("#"+RCMModal.MODAL_CONTENT_ID).innerHTML = pHTML;
-		}
+		// }
 		
 		// Update window size to fit new content
 		if(ConstantsApp.isUcpWiki) {
