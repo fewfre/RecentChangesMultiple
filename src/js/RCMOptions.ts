@@ -97,7 +97,7 @@ export default class RCMOptions
 		tSettingsPanel.innerHTML = ConstantsApp.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
 		var tSettingsPanelContent = <HTMLInputElement>Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
 		
-		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('rcm-optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
+		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
 		this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tSettingsPanelContent);
 		
 		/***************************
@@ -134,14 +134,37 @@ export default class RCMOptions
 		if(ConstantsApp.username && this.manager.hideusers.indexOf(ConstantsApp.username) != -1) {
 			this.myEditsCheckbox.disabled = true;
 			this.myEditsCheckbox.checked = false;
-			this.myEditsCheckbox.title = i18n('rcm-optionspanel-hideusersoverride');
+			this.myEditsCheckbox.title = i18n('optionspanel-hideusersoverride');
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', t1Text), tRow2);
+		if(ConstantsApp.isUcpWiki) {
+			this.groupedChangesCheckbox = this._newCheckbox(" "+i18n('rcfilters-group-results-by-page').toLowerCase(), tRow2);
+		} else {
+			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', t1Text), tRow2);
+		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', t1Text), tRow2);
+		if(ConstantsApp.isUcpWiki) {
+			this.logsCheckbox = this._newCheckbox(" "+i18n('rcfilters-filter-logactions-label').toLowerCase(), tRow2);
+		} else {
+			this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', t1Text), tRow2);
+		}
+		
+		/***************************
+		 * Third line of choices (discussions)
+		 ***************************/
+		// let tRow3 = Utils.newElement("div", {  }, tContent);
+		
+		// Utils.addTextTo("<b>Discussions:</b> ", tRow3);
+		
+		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('allmessages-filter-all'), this.manager.discussionsEnabled, tRow3);
+		// Utils.addTextTo(" | ", tRow2);
+		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tRow3);
+		// Utils.addTextTo(" | ", tRow2);
+		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('message-wall'), this.manager.discussionsEnabled, tRow3);
+		// Utils.addTextTo(" | ", tRow2);
+		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('comments'), this.manager.discussionsEnabled, tRow3);
 		
 		/***************************
 		 * Finish - make this work!
@@ -210,24 +233,24 @@ export default class RCMOptions
 	}
 	
 	addEventListeners() : void {
-		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie.bind(this));
-		this.settingsShowDiscussionsCheckbox.addEventListener("change", this._onChange_settingsShowDiscussions.bind(this));
+		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie);
+		this.settingsShowDiscussionsCheckbox.addEventListener("change", this._onChange_settingsShowDiscussions);
 		
-		this.limitField.addEventListener("change", this._onChange_limit.bind(this));
-		this.daysField.addEventListener("change", this._onChange_days.bind(this));
+		this.limitField.addEventListener("change", this._onChange_limit);
+		this.daysField.addEventListener("change", this._onChange_days);
 		
-		this.minorEditsCheckbox.addEventListener("change", this._onChange_hideminor.bind(this));
-		this.botsCheckbox.addEventListener("change", this._onChange_hidebots.bind(this));
-		this.anonsCheckbox.addEventListener("change", this._onChange_hideanons.bind(this));
-		this.usersCheckbox.addEventListener("change", this._onChange_hideliu.bind(this));
-		this.myEditsCheckbox.addEventListener("change", this._onChange_hidemyself.bind(this));
-		this.groupedChangesCheckbox.addEventListener("change", this._onChange_hideenhanced.bind(this));
-		this.logsCheckbox.addEventListener("change", this._onChange_hidelogs.bind(this));
+		this.minorEditsCheckbox.addEventListener("change", this._onChange_hideminor);
+		this.botsCheckbox.addEventListener("change", this._onChange_hidebots);
+		this.anonsCheckbox.addEventListener("change", this._onChange_hideanons);
+		this.usersCheckbox.addEventListener("change", this._onChange_hideliu);
+		this.myEditsCheckbox.addEventListener("change", this._onChange_hidemyself);
+		this.groupedChangesCheckbox.addEventListener("change", this._onChange_hideenhanced);
+		this.logsCheckbox.addEventListener("change", this._onChange_hidelogs);
 	}
 	
 	removeEventListeners() : void {
-		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie.bind(this));
-		this.settingsShowDiscussionsCheckbox.removeEventListener("change", this._onChange_settingsShowDiscussions.bind(this));
+		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie);
+		this.settingsShowDiscussionsCheckbox.removeEventListener("change", this._onChange_settingsShowDiscussions);
 		
 		this.limitField.removeEventListener("change", this._onChange_limit);
 		this.daysField.removeEventListener("change", this._onChange_days);
@@ -244,23 +267,23 @@ export default class RCMOptions
 	/***************************
 	 * Events
 	 ***************************/
-	private _onChange_limit(pEvent:Event) : void {
+	private _onChange_limit = (pEvent:Event) : void => {
 		this.afterChangeNumber("limit", parseInt((<HTMLInputElement>pEvent.target).value));
 	}
 	
-	private _onChange_days(pEvent:Event) : void {
+	private _onChange_days = (pEvent:Event) : void => {
 		this.afterChangeNumber("days", parseInt((<HTMLInputElement>pEvent.target).value));
 	}
 	
-	private _onChange_hideminor(pEvent:Event) : void {
+	private _onChange_hideminor = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hideminor", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidebots(pEvent:Event) : void {
+	private _onChange_hidebots = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hidebots", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideanons(pEvent:Event) : void {
+	private _onChange_hideanons = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
 		if((<HTMLInputElement>pEvent.target).checked == false && this.usersCheckbox.checked == false) {
 			this.manager.rcParams["hideliu"] = false;
@@ -269,7 +292,7 @@ export default class RCMOptions
 		this.afterChangeBoolean("hideanons", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideliu(pEvent:Event) : void {
+	private _onChange_hideliu = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
 		if((<HTMLInputElement>pEvent.target).checked == false && this.anonsCheckbox.checked == false) {
 			this.manager.rcParams["hideanons"] = false;
@@ -278,19 +301,19 @@ export default class RCMOptions
 		this.afterChangeBoolean("hideliu", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidemyself(pEvent:Event) : void {
+	private _onChange_hidemyself = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hidemyself", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hideenhanced(pEvent:Event) : void {
+	private _onChange_hideenhanced = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hideenhanced", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_hidelogs(pEvent:Event) : void {
+	private _onChange_hidelogs = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hidelogs", !(<HTMLInputElement>pEvent.target).checked);
 	}
 	
-	private _onChange_settingsSaveCookie(pEvent:Event) : void {
+	private _onChange_settingsSaveCookie = (pEvent:Event) : void => {
 		if((<HTMLInputElement>pEvent.target).checked) {
 			this.save();
 		} else {
@@ -298,7 +321,7 @@ export default class RCMOptions
 		}
 	}
 	
-	private _onChange_settingsShowDiscussions(pEvent:Event) : void {
+	private _onChange_settingsShowDiscussions = (pEvent:Event) : void => {
 		this.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
 		this.manager.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
 		this.manager.hardRefresh(true);

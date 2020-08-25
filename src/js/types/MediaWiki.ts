@@ -1,3 +1,6 @@
+// DOC - Detailed guide on what's in the mediaWiki object
+// https://doc.wikimedia.org/mediawiki-core/master/js/
+
 interface MediaWiki {
 	// Makes it so not -everything- has to be documented
 	// [key:string]: any;
@@ -5,7 +8,13 @@ interface MediaWiki {
 	config: MediaWikiMap;
 	hook(name:string) : { add(func:any):any, remove(func:any):any, fire(...args:any[]):any };
 	loader: any;
-	log(...args:any[]) : void;
+	log: {
+		// Log is itself a function, but also has child functions
+		(...args:any[]) : void;
+		
+		warn(...args:any[]) : void;
+		error(...args:any[]) : void;
+	};
 	msg(key:string, ...parameters:any[]) : string;
 	
 	/**************************************

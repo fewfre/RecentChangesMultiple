@@ -93,7 +93,7 @@ export default class WikiData
 	* Other
 	****************************/
 	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
-	isPreUcpWikiaWiki		: boolean; // Old system using outdated mediawiki version
+	isLegacyWikiaWiki		: boolean; // Old system using outdated mediawiki version - pre UCP
 	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) needs to have them retrieved separately.
 	
 	/***************************
@@ -118,7 +118,7 @@ export default class WikiData
 			// abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false, abusefilter_log_private:false,
 		} };
 		this.isWikiaWiki			= true;
-		this.isPreUcpWikiaWiki		= true;
+		this.isLegacyWikiaWiki		= true;
 		this.useOutdatedLogSystem	= false;
 		
 		this.users					= {};
@@ -165,11 +165,12 @@ export default class WikiData
 		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
 		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
-		this.isPreUcpWikiaWiki = this.isWikiaWiki;
+		this.isLegacyWikiaWiki = this.isWikiaWiki;
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		// todo - allow / - consequences?
 		// if(this.servername.indexOf("/") > -1) {
+		// 	// Old message: 'rcm-error-linkformat' : "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
 		// 	this.manager.resultCont.innerHTML = `<div style='color:red; padding:4px 5px; background:rgba(0,0,0,0.1);'>${ i18n("rcm-error-linkformat", this.servername) }</div>`;
 		// 	throw "Incorrect format";
 		// }
@@ -276,8 +277,8 @@ export default class WikiData
 			
 			// For wikia/fandom wikis, check if it is a UCP wiki (updated mediawiki version). If it is old, then also use old log system; otherwise use default
 			if(this.isWikiaWiki) {
-				this.isPreUcpWikiaWiki = this.mwversion == "MediaWiki 1.19.24";
-				this.useOutdatedLogSystem = this.isPreUcpWikiaWiki;
+				this.isLegacyWikiaWiki = this.mwversion == "MediaWiki 1.19.24";
+				this.useOutdatedLogSystem = this.isLegacyWikiaWiki;
 			}
 			
 			if(this.favicon == null) {

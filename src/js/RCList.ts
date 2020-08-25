@@ -2,7 +2,7 @@ import RCMManager from "./RCMManager";
 import RCData from "./RCData";
 import WikiData from "./WikiData";
 import Utils from "./Utils";
-import i18n from "./i18n";
+import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
 import ConstantsApp from "./ConstantsApp";
 import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
@@ -198,7 +198,7 @@ export default class RCList
 		let tReturnText = tTitle;
 		if(this.manager.extraLoadingEnabled) {
 			let tElemID = Utils.uniqID();
-			tReturnText = "<span id='"+tElemID+"'><i>"+(tTitle ? tTitle : i18n('rcm-unknownthreadname'))+"</i></span>";
+			tReturnText = `<span id='${tElemID}'><i>${tTitle ? tTitle : i18n('unknownthreadname')}</i></span>`;
 			
 			// These ajax requests are done here to condense number of requests; title is only needed per list, not per RCData.
 			if(this.type != RC_TYPE.DISCUSSION) {
@@ -228,7 +228,7 @@ export default class RCList
 			}
 		} else {
 			if(tReturnText == null) {
-				tReturnText = "<i>"+i18n('rcm-unknownthreadname')+"</i>";
+				tReturnText = `<i>${i18n('unknownthreadname')}</i>`;
 			}
 		}
 		
@@ -355,14 +355,14 @@ export default class RCList
 	// Provide the <abbr> element appropriate to a given abbreviated flag with the appropriate class.
 	// Returns a non-breaking space if flag not set.
 	private _flag(pFlag:string, pRC:RCData, pEmpty:string) : string {
-		var tI18nLetter = "", tI18nTooltip = "";
+		var tI18nLetter:I18nKey, tI18nTooltip:I18nKey;
 		switch(pFlag) {
 			case "newpage":		{ if(pRC.isNewPage)		{ tI18nLetter="newpageletter";		tI18nTooltip="recentchanges-label-newpage";	} break; }
 			case "minoredit":	{ if(pRC.isMinorEdit)	{ tI18nLetter="minoreditletter";	tI18nTooltip="recentchanges-label-minor";	} break; }
 			case "botedit":		{ if(pRC.isBotEdit)		{ tI18nLetter="boteditletter";		tI18nTooltip="recentchanges-label-bot";		} break; }
 			// case "unpatrolled":	{ if(pRC.zzzzzz)	{ tI18nLetter="unpatrolledletter"; tI18nTooltip="recentchanges-label-unpatrolled"; } }
 		}
-		if(tI18nLetter == "") { return pEmpty; }
+		if(!tI18nLetter) { return pEmpty; }
 		else {
 			return `<abbr class="${pFlag}" title="${i18n(tI18nTooltip)}">${i18n(tI18nLetter)}</abbr>`;
 		}
@@ -519,7 +519,8 @@ export default class RCList
 			case RC_TYPE.COMMENT: {
 				// Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
 				let tNameSpaceText = this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":";
-				html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), tNameSpaceText+this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments" );
+				// html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), tNameSpaceText+this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments" );
+				html += i18n("rc-comments", this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments", tNameSpaceText+this.newest.titleNoNS );
 				html += " ("+this._changesText()+")";
 				// html += SEP
 				// html += this._diffSizeText(this.newest, this.oldest);

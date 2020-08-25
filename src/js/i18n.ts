@@ -16,16 +16,71 @@ let mw = window.mediaWiki;
 * POTENTIAL ISSUES:
 * 		Script cannot check proper use of "{{GENDER}}" (gender is hidden by external API calls for security), so just does male.
 */
+
+// Key for all messages, to avoid typos when using a function
+export type I18nKey = keyof typeof MESSAGES | I18nDevKeys;
+type I18nDevKeys = 
+"error-loading-syntaxhang"
+| "error-loading-http"
+| "error-loading-connection"
+| "error-trymoretimes"
+
+| "status-loading"
+| "status-discussions-loading"
+| "status-loading-sorting"
+| "status-refresh"
+| "status-timestamp"
+| "status-changesadded"
+| "autorefresh"
+| "autorefresh-tooltip"
+
+| "wikipanel-wikisloaded"
+
+| "previouslyloaded"
+| "nonewchanges"
+
+| "footer"
+
+| "optionspanel-hideusersoverride"
+| "optionspanel-savewithcookie"
+
+| "modal-close"
+| "modal-diff-title"
+| "modal-diff-open"
+| "modal-diff-undo"
+| "modal-preview-openpage"
+| "modal-gallery-load-more"
+
+| "notification-edited-by"
+| "notification-edit-summary"
+| "notification-new"
+
+| "discussions"
+| "comments"
+| "message-wall"
+
+| "unknownthreadname"
+
+| "rc-comment"
+| "rc-comments"
+;
+
 // Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 interface i18nInterface {
-	(pKey:string, ...pArgs:(string|number)[]):string;
+	(pKey:I18nKey, ...pArgs:(string|number)[]):string;
 	defaultLang: string,
+	devI18n: DevI18n,
 	init: (pLang:string) => void,
+	exists: (pKey:string) => boolean,
 	TEXT: any,
 	MESSAGES: any,
 	wiki2html: (pText:string, ...pArgs:(string|number)[]) => string
 }
 var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
+	let devMsg = i18n.devI18n.msg(pKey, ...pArgs);
+	if(devMsg.exists) {
+		return devMsg.parse();
+	}
 	let tText = i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
 	if(tText == undefined) {
 		mw.log(`[RecentChangesMultiple.i18n]() '${pKey}' is undefined.`);
@@ -43,20 +98,24 @@ i18n.init = function(pLang?:string) : void {
 	mw.language.setData(ConstantsApp.config.wgUserLanguage, i18n.TEXT.mwLanguageData); // Gets mw.language.convertPlural() to work.
 }
 
+i18n.exists = function(pKey:string) : boolean {
+	let devMsg = i18n.devI18n.msg(pKey);
+	return devMsg.exists || i18n.TEXT[pKey] || i18n.MESSAGES[pKey];
+}
+
 // Big thanks to wlb.fandom.com for translations.
 i18n.TEXT = {
 	en: { // English (ENGLISH)
 		// Errors
-		'rcm-error-linkformat' : "'$1' is an incorrect format. Please do '''not''' include 'http://' or anything after the domain, including the first '/'.",
-		'rcm-error-loading-syntaxhang' : "Error loading [$1] ($2 tries). Please correct syntax (or refresh script to try again).",
+		'rcm-error-loading-syntaxhang' : "Error loading $1 ($2 tries). Please correct syntax (or refresh script to try again).",
 		'rcm-error-loading-http' : "This page is using an HTTPS connection; as such, this error could also be caused by the target wiki not supporting the HTTPS protocol. See [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS here] for details.",
-		'rcm-error-loading-connection' : "Error loading [$1] ($2 tries). Most likely a connection issue; refresh script to try again.",
+		'rcm-error-loading-connection' : "Error loading $1 ($2 tries). Most likely a connection issue; refresh script to try again.",
 		'rcm-error-trymoretimes' : "Try $1 more times",
 		// Notifications
-		'rcm-loading' : "Loading/Sorting...",
+		'rcm-loading-sorting' : "Loading/Sorting...",
 		'rcm-refresh' : "Refresh",
 		'rcm-download-timestamp' : "Recent Changes downloaded at: $1",
-		'rcm-download-changesadded' : " - [$1 Recent Changes added]",
+		'rcm-download-changesadded' : "$1 Recent Changes added",
 		// Basics
 		'rcm-wikisloaded' : "Wikis Loaded: ",
 		'rcm-previouslyloaded' : "Previously loaded:",
@@ -68,9 +127,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Save options with cookie",
 		// Modules
-		'rcm-module-diff-title' : "Diff Viewer",
-		'rcm-module-diff-open' : "Open diff",
-		'rcm-module-diff-undo' : "Undo edit",
+		'rcm-modal-diff-title' : "Diff Viewer",
+		'rcm-modal-diff-open' : "Open diff",
+		'rcm-modal-diff-undo' : "Undo edit",
 		// Other
 		'rcm-unknownthreadname' : "thread", // If name of a wall/board thread is not found, this will take it's place.
 		/***************************
@@ -87,16 +146,15 @@ i18n.TEXT = {
 	},
 	be: { // Беларуская (BELARUSIAN) @author: Mix Gerder
 		// Errors
-		'rcm-error-linkformat' : "'$1' паказаны ў няздатным фармаце. Калі ласка, не выкарыстоўвайце элемент 'http://', не ўстаўляйце нічога пасля яго і першага '/'.",
-		'rcm-error-loading-syntaxhang' : "Памылка пры загрузцы [$1] (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
+		'rcm-error-loading-syntaxhang' : "Памылка пры загрузцы $1 (спроб: $2) Калі ласка, выпраўце сінтаксіс (або абновіце скрыпт, каб паспрабаваць зноў).",
 		'rcm-error-loading-http' : "Гэта старонка скарыстае HTTPS-злучэнне; як такая, гэта абмыла таксама можа быць выклікана мэтавай вікі, што не падтрымвае пратакол HTTPS. Гл.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для атрымання дад. інфармацыі.",
-		'rcm-error-loading-connection' : "Памылка пры загрузцы [$1] (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
+		'rcm-error-loading-connection' : "Памылка пры загрузцы $1 (спроб: $2). Хутчэй за ўсе, гэта памылка з падключэннем, абновіце скрыпт, каб паспрабаваць зноў.",
 		'rcm-error-trymoretimes' : "Паспрабуйце $1 раз(а)",
 		// Notifications
-		'rcm-loading' : "Загрузка/Сартаванне...",
+		'rcm-loading-sorting' : "Загрузка/Сартаванне...",
 		'rcm-refresh' : "Абнавіць",
 		'rcm-download-timestamp' : "Апошнія змены ўзятыя з: $1",
-		'rcm-download-changesadded' : " - [$1 апошніх дададзеных змяненняў]",
+		'rcm-download-changesadded' : "$1 апошніх дададзеных змяненняў",
 		// Basics
 		'rcm-wikisloaded' : "Загружаныя вікі: ",
 		'rcm-previouslyloaded' : "Раней загружаныя:",
@@ -108,9 +166,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers вызначаюцца так.",
 		'rcm-optionspanel-savewithcookie': "Захаваць змены ў Cookie",
 		// Modules
-		'rcm-module-diff-title' : "Папярэдні прагляд змяненняў",
-		'rcm-module-diff-open' : "Паказаць змены",
-		'rcm-module-diff-undo' : "Адмяніць змены",
+		'rcm-modal-diff-title' : "Папярэдні прагляд змяненняў",
+		'rcm-modal-diff-open' : "Паказаць змены",
+		'rcm-modal-diff-undo' : "Адмяніць змены",
 		// Other
 		'rcm-unknownthreadname' : "тэма",
 		
@@ -156,15 +214,14 @@ i18n.TEXT = {
 	},
 	ca: { // Català (CATALAN) @author: Josep Maria Roca Peña
 		// Errors
-		'rcm-error-linkformat' : "'$1' és un format incorrecte. Si us plau, no afegeixis 'http://' o alguna cosa darrere del domini, incloent el primer '/'.",
-		'rcm-error-loading-syntaxhang' : "Error de càrrega [$1] ($2 intents). Si us plau, corregeix les teves sintaxis (o recarrega el teu script i intenta-ho un altre cop).",
-		'rcm-error-loading-connection' : "Error de càrrega [$1] ($2 intents). A causa d'un error de connexió, has de recarregar el teu script i intenta-ho un altre cop.",
+		'rcm-error-loading-syntaxhang' : "Error de càrrega $1 ($2 intents). Si us plau, corregeix les teves sintaxis (o recarrega el teu script i intenta-ho un altre cop).",
+		'rcm-error-loading-connection' : "Error de càrrega $1 ($2 intents). A causa d'un error de connexió, has de recarregar el teu script i intenta-ho un altre cop.",
 		'rcm-error-trymoretimes' : "Intenta-ho $1 més vegades",
 		// Notificacions
-		'rcm-loading' : "Carregant/Classificant…",
+		'rcm-loading-sorting' : "Carregant/Classificant…",
 		'rcm-refresh' : "Actualització",
 		'rcm-download-timestamp' : "Canvis recents baixats a: $1",
-		'rcm-download-changesadded' : " - [$1 Canvis recents afegits]",
+		'rcm-download-changesadded' : "$1 Canvis recents afegits",
 		// Bàsics
 		'rcm-wikisloaded' : "Wikis carregats: ",
 		'rcm-previouslyloaded' : "Breument carregats:",
@@ -176,9 +233,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Guarda els canvis pel cookie",
 		// Mòduls
-		'rcm-module-diff-title' : "Visualitzador de pàgina",
-		'rcm-module-diff-open' : "Obre la pàgina",
-		'rcm-module-diff-undo' : "Desfés el canvi",
+		'rcm-modal-diff-title' : "Visualitzador de pàgina",
+		'rcm-modal-diff-open' : "Obre la pàgina",
+		'rcm-modal-diff-undo' : "Desfés el canvi",
 		// Altres
 		'rcm-unknownthreadname' : "tema",
 		/***************************
@@ -197,16 +254,15 @@ i18n.TEXT = {
 		},
 	},
 	de: { // Deutsch (German) @author: Cyanide3, Dragon Rainbow, SpacePucky
-		'rcm-error-linkformat' : "'$1' ist ein falsches Format. Bitte füge '''nicht''' 'http://' oder Weiteres nach der Domain ein. Dies gilt auch für das erste '/'.",
-		'rcm-error-loading-syntaxhang' : "Fehler beim Laden [$1] ($2 Versuche). Bitte korrigiere die Syntax (oder lade das Skript neu, um es erneut zu versuchen).",
+		'rcm-error-loading-syntaxhang' : "Fehler beim Laden $1 ($2 Versuche). Bitte korrigiere die Syntax (oder lade das Skript neu, um es erneut zu versuchen).",
 		'rcm-error-loading-http' : "Diese Seite wird mit einem HTTPS-Protokoll übertragen; dieser Fehler kann dadurch hervorgerufen werden, dass das Zielwiki HTTPS nicht unterstützt. Siehe [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS hier] für Details.",
-		'rcm-error-loading-connection' : "Fehler beim Laden [$1] ($2 Versuche). Es liegt höchstwahrscheinlich ein Verbindungsproblem vor. Lade das Script neu, um es erneut zu versuchen.",
+		'rcm-error-loading-connection' : "Fehler beim Laden $1 ($2 Versuche). Es liegt höchstwahrscheinlich ein Verbindungsproblem vor. Lade das Script neu, um es erneut zu versuchen.",
 		'rcm-error-trymoretimes' : "Versuche es $1 Mal mehr",
 
-		'rcm-loading' : "Lade/Sortiere...",
+		'rcm-loading-sorting' : "Lade/Sortiere...",
 		'rcm-refresh' : "Aktualisieren",
 		'rcm-download-timestamp' : "Letzte Aktualisierung um: $1",
-		'rcm-download-changesadded' : " - [$1 hinzugefügte Veränderungen]",
+		'rcm-download-changesadded' : "$1 hinzugefügte Veränderungen",
 
 		'rcm-wikisloaded' : "Geladene Wikis: ",
 		'rcm-previouslyloaded' : "Vorige Änderungen:",
@@ -218,9 +274,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers überschreibt dies.",
 		'rcm-optionspanel-savewithcookie': "Speichere Einstellungen mit Cookie",
 
-		'rcm-module-diff-title' : "Schnellvergleich",
-		'rcm-module-diff-open' : "Öffne Versionsvergleich",
-		'rcm-module-diff-undo' : "Rückgängig machen",
+		'rcm-modal-diff-title' : "Schnellvergleich",
+		'rcm-modal-diff-open' : "Öffne Versionsvergleich",
+		'rcm-modal-diff-undo' : "Rückgängig machen",
 
 		'rcm-unknownthreadname' : "Diskussion",
 		/***************************
@@ -240,15 +296,14 @@ i18n.TEXT = {
 	},
 	es: { // Español (SPANISH) @author: Paynekiller92
 		// Errors
-		'rcm-error-linkformat' : "'$1' es un formato incorrecto. Por favor '''no''' incluyas 'http://' o cualquier cosa después, incluyendo el primer '/'.",
-		'rcm-error-loading-syntaxhang' : "Error cargando [$1] ($2 intentos). Por favor corrige la sintaxis (o recarga el script para intentarlo otra vez).",
-		'rcm-error-loading-connection' : "Error cargando [$1] ($2 intentos). Seguramente sea un problema de conexión; recarga el script para intentarlo otra vez.",
+		'rcm-error-loading-syntaxhang' : "Error cargando $1 ($2 intentos). Por favor corrige la sintaxis (o recarga el script para intentarlo otra vez).",
+		'rcm-error-loading-connection' : "Error cargando $1 ($2 intentos). Seguramente sea un problema de conexión; recarga el script para intentarlo otra vez.",
 		'rcm-error-trymoretimes' : "Inténtalo $1 veces más",
 		// Notifications
-		'rcm-loading' : "Cargando/Clasificando...",
+		'rcm-loading-sorting' : "Cargando/Clasificando...",
 		'rcm-refresh' : "Recargar",
 		'rcm-download-timestamp' : "Cambios recientes descargados en: $1",
-		'rcm-download-changesadded' : " - [$1 Cambios Recientes añadidos]",
+		'rcm-download-changesadded' : "$1 Cambios Recientes añadidos",
 		// Basics
 		'rcm-wikisloaded' : "Wikis Cargados: ",
 		'rcm-previouslyloaded' : "Previamente cargados:",
@@ -260,9 +315,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		// 'rcm-optionspanel-savewithcookie': "Save changes with cookie",
 		// Modules
-		'rcm-module-diff-title' : "Visor de cambios",
-		'rcm-module-diff-open' : "Abrir cambio",
-		'rcm-module-diff-undo' : "Deshacer edición",
+		'rcm-modal-diff-title' : "Visor de cambios",
+		'rcm-modal-diff-open' : "Abrir cambio",
+		'rcm-modal-diff-undo' : "Deshacer edición",
 		// Other
 		'rcm-unknownthreadname' : "hilo", // If name of a wall/board thread is not found, this will take it's place.
 		/***************************
@@ -279,15 +334,14 @@ i18n.TEXT = {
 	},
 	gl: { // Galego (GALICIAN) @author: Josep Maria Roca Peña
 		// Erros
-		'rcm-error-linkformat' : "'$1' é un formato incorrecto. Por favor, non tes que engadir 'http://' ou algunha cousa despois do dominio, incluíndo o primeiro '/'.",
-		'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrixe as túas sintaxes (ou recarrega o teu script e téntao novamente).",
-		'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Debido a un erro de conexión, tes de recarregar o teu script e téntao novamente.",
+		'rcm-error-loading-syntaxhang' : "Erro de carregamento $1 ($2 tentativas). Por favor, corrixe as túas sintaxes (ou recarrega o teu script e téntao novamente).",
+		'rcm-error-loading-connection' : "Erro de carregamento $1 ($2 tentativas). Debido a un erro de conexión, tes de recarregar o teu script e téntao novamente.",
 		'rcm-error-trymoretimes' : "Téntao $1 máis veces",
 		// Notificacións
-		'rcm-loading' : "A cargar/A clasificar…",
+		'rcm-loading-sorting' : "A cargar/A clasificar…",
 		'rcm-refresh' : "Actualización",
 		'rcm-download-timestamp' : "Cambios recentes baixados en: $1",
-		'rcm-download-changesadded' : " - [$1 Cambios recentes engadidos]",
+		'rcm-download-changesadded' : "$1 Cambios recentes engadidos",
 		// Básicos
 		'rcm-wikisloaded' : "Wikis cargados: ",
 		'rcm-previouslyloaded' : "Brevemente cargados:",
@@ -299,9 +353,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Gardar cambios polo cookie",
 		// Módulos
-		'rcm-module-diff-title' : "Visualizador de páxina",
-		'rcm-module-diff-open' : "Abrir páxina",
-		'rcm-module-diff-undo' : "Desfacer cambio",
+		'rcm-modal-diff-title' : "Visualizador de páxina",
+		'rcm-modal-diff-open' : "Abrir páxina",
+		'rcm-modal-diff-undo' : "Desfacer cambio",
 		// Outros
 		'rcm-unknownthreadname' : "tópico",
 		/***************************
@@ -322,14 +376,14 @@ i18n.TEXT = {
 	it: { // Italiano (ITALIAN) @author: Leviathan 89
 		// Errori
 		'rcm-errore-linkformat' : "'$1' non è in un formato corretto. Per favore, '''non''' includere 'http://' o qualsiasi altra cosa dopo il dominio, compreso la prima '/'.",
-		'rcm-Errore-loading-syntaxhang' : "Errore caricando [$1] ($2 tentativi). Per favore, correggi la tua sintassi (o ricarica il tuo script per riprovare).",
-		'rcm-Errore-loading-connection' : "Errore caricando [$1] ($2 tentativi). Quasi sicuramente si tratta di un problema di connessione; ricarica lo script per riprovare.",
+		'rcm-Errore-loading-syntaxhang' : "Errore caricando $1 ($2 tentativi). Per favore, correggi la tua sintassi (o ricarica il tuo script per riprovare).",
+		'rcm-Errore-loading-connection' : "Errore caricando $1 ($2 tentativi). Quasi sicuramente si tratta di un problema di connessione; ricarica lo script per riprovare.",
 		'rcm-Errore-trymoretimes' : "Prova $1 volte ancora",
 		// Notifiche
-		'rcm-loading' : "Caricando / Ordinando...",
+		'rcm-loading-sorting' : "Caricando / Ordinando...",
 		'rcm-refresh' : "Ricarica",
 		'rcm-download-timestamp' : "Ultime Modifiche scaricate alle: $1",
-		'rcm-download-changesadded' : " - [$1 Ultime Modifiche aggiunte]",
+		'rcm-download-changesadded' : "$1 Ultime Modifiche aggiunte",
 		// Base
 		'rcm-wikisloaded' : "Wiki caricate:",
 		'rcm-previouslyloaded' : "Precedentemente caricate:",
@@ -341,9 +395,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers sovrascrive questo.",
 		'rcm-optionspanel-savewithcookie': "Salvare modifiche con un cookie",
 		// Moduli
-		'rcm-module-diff-title' : "Visualizzazione cambiamenti",
-		'rcm-module-diff-open' : "Apri il confronto delle versioni",
-		'rcm-module-diff-undo' : "Annulla modifica",
+		'rcm-modal-diff-title' : "Visualizzazione cambiamenti",
+		'rcm-modal-diff-open' : "Apri il confronto delle versioni",
+		'rcm-modal-diff-undo' : "Annulla modifica",
 		// Altri
 		'rcm-unknownthreadname' : "Conversazione",
 		/***************************
@@ -363,16 +417,15 @@ i18n.TEXT = {
 	},
 	ja: { // 日本語 (JAPANESE) @author: [anonymous]
 		// Errors
-		'rcm-error-linkformat' : "'$1' は表記に誤りがあります。 'http://' や、'/'を含むドメイン名以降の部分を'''含めずに'''指定してください。",
-		'rcm-error-loading-syntaxhang' : "($2回試しましたが) [$1]の読み込みに失敗しました。（再更新してみるか、）設定を修正してください。",
+		'rcm-error-loading-syntaxhang' : "($2回試しましたが) $1の読み込みに失敗しました。（再更新してみるか、）設定を修正してください。",
 		'rcm-error-loading-http': "このページはHTTPS接続を利用しています。このエラーはHTTPSプロトコル非対応のWikiにて起こっていることが考えられます。詳細は[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS こちら]をご覧ください。",
-		'rcm-error-loading-connection' : "($2回試しましたが) [$1]の読み込みに失敗しました。接続に失敗した可能性があります。再更新してください。",
+		'rcm-error-loading-connection' : "($2回試しましたが) $1の読み込みに失敗しました。接続に失敗した可能性があります。再更新してください。",
 		'rcm-error-trymoretimes' : "もう$1回お試しください",
 		// Notifications
-		'rcm-loading' : "読込・整列中...",
+		'rcm-loading-sorting' : "読込・整列中...",
 		'rcm-refresh' : "更新",
 		'rcm-download-timestamp' : "$1時点の最近の更新を表示中",
-		'rcm-download-changesadded' : " - [$1件の最近の更新が追加されました]",
+		'rcm-download-changesadded' : "$1件の最近の更新が追加されました",
 		// Basics
 		'rcm-wikisloaded' : "対象のWiki: ",
 		'rcm-previouslyloaded' : "前回との変更点:",
@@ -384,9 +437,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusersの設定によって無効にされています",
 		'rcm-optionspanel-savewithcookie': "クッキーに変更を保存する",
 		// Modules
-		'rcm-module-diff-title' : "差分を表示",
-		'rcm-module-diff-open' : "差分を別のページで表示",
-		'rcm-module-diff-undo' : "編集を取り消す",
+		'rcm-modal-diff-title' : "差分を表示",
+		'rcm-modal-diff-open' : "差分を別のページで表示",
+		'rcm-modal-diff-undo' : "編集を取り消す",
 		// Other
 		'rcm-unknownthreadname' : "無題",
 		/***************************
@@ -402,15 +455,14 @@ i18n.TEXT = {
 		},
 	},
 	nl: { // Nederlands (DUTCH) @author: Mainframe98
-		'rcm-error-linkformat' : "'$1' is een onjuist formaat. Gelieve '''niet''' 'http://' of iets anders na het domein, inclusief de eerste '/' bij te voegen.",
-		'rcm-error-loading-syntaxhang' : "Fout bij het laden van [$1] ($2 pogingen). Corrigeer de syntax (of ververs het script om opnieuw te proberen).",
-		'rcm-error-loading-connection' : "Fout bij het laden van [$1] ($2 pogingen). Hoogstwaarschijnlijk een verbindingsprobleem; ververs het script om opnieuw te proberen.",
+		'rcm-error-loading-syntaxhang' : "Fout bij het laden van $1 ($2 pogingen). Corrigeer de syntax (of ververs het script om opnieuw te proberen).",
+		'rcm-error-loading-connection' : "Fout bij het laden van $1 ($2 pogingen). Hoogstwaarschijnlijk een verbindingsprobleem; ververs het script om opnieuw te proberen.",
 		'rcm-error-trymoretimes' : "Probeer het $1 keer meer",
 
-		'rcm-loading' : "Laden/Sorteren...",
+		'rcm-loading-sorting' : "Laden/Sorteren...",
 		'rcm-refresh' : "Verversen",
 		'rcm-download-timestamp' : "Recente Wijzigingen gedownload van: $1",
-		'rcm-download-changesadded' : " - [$1 Recente Wijzigingen toegevoegd]",
+		'rcm-download-changesadded' : "$1 Recente Wijzigingen toegevoegd",
 
 		'rcm-wikisloaded' : "Wiki's geladen: ",
 		'rcm-previouslyloaded' : "Eerder geladen:",
@@ -422,9 +474,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overschrijft dit.",
 		'rcm-optionspanel-savewithcookie': "Sla wijzigingen op met een cookie",
 
-		'rcm-module-diff-title' : "Toon wijz",
-		'rcm-module-diff-open' : "Open wijz",
-		'rcm-module-diff-undo' : "Bewerking ongedaan maken",
+		'rcm-modal-diff-title' : "Toon wijz",
+		'rcm-modal-diff-open' : "Open wijz",
+		'rcm-modal-diff-undo' : "Bewerking ongedaan maken",
 
 		'rcm-unknownthreadname' : "draad",
 		/***************************
@@ -441,15 +493,14 @@ i18n.TEXT = {
 	},
 	oc: { // Occitan (OCCITAN) @author: Josep Maria Roca Peña
 		// Errors
-		'rcm-error-linkformat' : "'$1' es un format incorrècte. Se vos plai, apondètz pas 'http://' o quicòm darrièr del domeni, en comprenent lo primièr '/'.",
-		'rcm-Error-loading-syntaxhang' : "Error de carga [$1] ($2 assages). Se vos plai, corregissètz las vòstras sintaxis (o recarga lo vòstre script e ensaja-o un autre còp).",
-		'rcm-Error-loading-connection' : "Error de carga [$1] ($2 assages). A causa d'un error de connexion, te cal recargar lo tieu script e ensaja-o un autre còp.",
+		'rcm-Error-loading-syntaxhang' : "Error de carga $1 ($2 assages). Se vos plai, corregissètz las vòstras sintaxis (o recarga lo vòstre script e ensaja-o un autre còp).",
+		'rcm-Error-loading-connection' : "Error de carga $1 ($2 assages). A causa d'un error de connexion, te cal recargar lo tieu script e ensaja-o un autre còp.",
 		'rcm-Error-trymoretimes' : "Ensaja-o $1 mai de còps",
 		// Notificacions
-		'rcm-loading' : "En cargant/En classificant…",
+		'rcm-loading-sorting' : "En cargant/En classificant…",
 		'rcm-refresh' : "Actualizacion",
 		'rcm-download-timestamp' : "Cambiaments recents davalats sus: $1",
-		'rcm-download-changesadded' : " - [$1 Cambiaments recents apondis]",
+		'rcm-download-changesadded' : "$1 Cambiaments recents apondis",
 		// Basics
 		'rcm-wikisloaded' : "Wikis cargats: ",
 		'rcm-previouslyloaded' : "Brèvament cargats:",
@@ -461,9 +512,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Gardatz los cambiaments pel cookie",
 		// Moduls
-		'rcm-module-diff-title' : "Visualitzador de pagina",
-		'rcm-module-diff-open' : "Dobrissètz la pagina",
-		'rcm-module-diff-undo' : "Desfasètz lo cambiament",
+		'rcm-modal-diff-title' : "Visualitzador de pagina",
+		'rcm-modal-diff-open' : "Dobrissètz la pagina",
+		'rcm-modal-diff-undo' : "Desfasètz lo cambiament",
 		// Autras
 		'rcm-unknownthreadname' : "tèma",
 		/***************************
@@ -483,15 +534,14 @@ i18n.TEXT = {
 	},
 	pl: { // Polski (POLISH) - @author: Szynka013, Matik7
 		// Errors
-		'rcm-error-linkformat' : "'$1' to nieodpowiedni format. Proszę nie używać elementu 'http://', niczego po nim oraz pierwszego '/'.",
-		'rcm-error-loading-syntaxhang' : "Błąd podczas wczytywania [$1] (prób: $2) Proszę poprawić syntax (lub odświeżyć skrypt by spróbować ponownie).",
-		'rcm-error-loading-connection' : "Błąd podczas wczytywania [$1] (prób: $2). Najprawdopodobniej jest to błąd z połączeniem, odśwież skrypt by spróbować ponownie.",
+		'rcm-error-loading-syntaxhang' : "Błąd podczas wczytywania $1 (prób: $2) Proszę poprawić syntax (lub odświeżyć skrypt by spróbować ponownie).",
+		'rcm-error-loading-connection' : "Błąd podczas wczytywania $1 (prób: $2). Najprawdopodobniej jest to błąd z połączeniem, odśwież skrypt by spróbować ponownie.",
 		'rcm-error-trymoretimes' : "Spróbuj $1 razy",
 		// Notifications
-		'rcm-loading' : "Ładowanie/Sortowanie...",
+		'rcm-loading-sorting' : "Ładowanie/Sortowanie...",
 		'rcm-refresh' : "Odśwież",
 		'rcm-download-timestamp' : "Ostatnie zmiany pobrane o: $1",
-		'rcm-download-changesadded' : " - [$1 dodanych ostatnich zmian]",
+		'rcm-download-changesadded' : "$1 dodanych ostatnich zmian",
 		// Basics
 		'rcm-wikisloaded' : "Załadowane wiki: ",
 		'rcm-previouslyloaded' : "Poprzednio załadowane:",
@@ -503,9 +553,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Zapisz zmiany w pamięci podręcznej",
 		// Modules
-		'rcm-module-diff-title' : "Podgląd zmian",
-		'rcm-module-diff-open' : "Pokaż zmiany",
-		'rcm-module-diff-undo' : "Cofnij zmiany",
+		'rcm-modal-diff-title' : "Podgląd zmian",
+		'rcm-modal-diff-open' : "Pokaż zmiany",
+		'rcm-modal-diff-undo' : "Cofnij zmiany",
 		// Other
 		'rcm-unknownthreadname' : "wątek", // If name of a wall/board thread is not found, this will take it's place.
 		/***************************
@@ -522,15 +572,14 @@ i18n.TEXT = {
 	},
 	pt: { // Português europeu (PORTUGUESE EUROPE) @author: Josep Maria Roca Peña
 		// Erros
-		'rcm-error-linkformat' : "'$1' é um formato incorrecto. Por favor, não tens de acrescentar 'http://' ou alguma coisa depois do domínio, incluindo o primeiro '/'.",
-		'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrige as tuas sintaxes (ou recarrega o teu script e tenta novamente).",
-		'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Devido a um erro de conexão, tens de recarregar o teu script e tenta novamente.",
+		'rcm-error-loading-syntaxhang' : "Erro de carregamento $1 ($2 tentativas). Por favor, corrige as tuas sintaxes (ou recarrega o teu script e tenta novamente).",
+		'rcm-error-loading-connection' : "Erro de carregamento $1 ($2 tentativas). Devido a um erro de conexão, tens de recarregar o teu script e tenta novamente.",
 		'rcm-error-trymoretimes' : "Tenta $1 mais vezes",
 		// Notificações
-		'rcm-loading' : "A carregar/A classificar…",
+		'rcm-loading-sorting' : "A carregar/A classificar…",
 		'rcm-refresh' : "Actualização",
 		'rcm-download-timestamp' : "Mudanças recentes baixadas em: $1",
-		'rcm-download-changesadded' : " - [$1 Mudanças recentes acrescentadas]",
+		'rcm-download-changesadded' : "$1 Mudanças recentes acrescentadas",
 		// Básicos
 		'rcm-wikisloaded' : "Wikis carregados: ",
 		'rcm-previouslyloaded' : "Brevemente carregados:",
@@ -542,9 +591,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Guardar mudanças pelo cookie",
 		// Módulos
-		'rcm-module-diff-title' : "Visualizador de página",
-		'rcm-module-diff-open' : "Abrir página",
-		'rcm-module-diff-undo' : "Desfazer mudança",
+		'rcm-modal-diff-title' : "Visualizador de página",
+		'rcm-modal-diff-open' : "Abrir página",
+		'rcm-modal-diff-undo' : "Desfazer mudança",
 		// Outros
 		'rcm-unknownthreadname' : "tópico",
 		/***************************
@@ -561,15 +610,14 @@ i18n.TEXT = {
 	},
 	"pt-br": { // Português brasileiro (PORTUGUESE BRAZIL) @author: DannielaServer
 		// Erros
-		'rcm-error-linkformat' : "'$1' é um formato incorreto. Por favor, não inclua 'http://' ou alguma coisa depois do domínio, incluindo a primeira '/'.",
-		'rcm-error-loading-syntaxhang' : "Erro de carregamento [$1] ($2 tentativas). Por favor, corrija as suas sintaxes (ou recarregue o seu script para tentar novamente).",
-		'rcm-error-loading-connection' : "Erro de carregamento [$1] ($2 tentativas). Devido a um erro de conexão,; recarregue o seu script e tente novamente.",
+		'rcm-error-loading-syntaxhang' : "Erro de carregamento $1 ($2 tentativas). Por favor, corrija as suas sintaxes (ou recarregue o seu script para tentar novamente).",
+		'rcm-error-loading-connection' : "Erro de carregamento $1 ($2 tentativas). Devido a um erro de conexão,; recarregue o seu script e tente novamente.",
 		'rcm-error-trymoretimes' : "Tente $1 mais vezes",
 		// Notificações
-		'rcm-loading' : "Carregando/Classificando...",
+		'rcm-loading-sorting' : "Carregando/Classificando...",
 		'rcm-refresh' : "Refresh",
 		'rcm-download-timestamp' : "Mudanças recentes baixadas em: $1",
-		'rcm-download-changesadded' : " - [$1 Mudanças recentes adicionadas]",
+		'rcm-download-changesadded' : "$1 Mudanças recentes adicionadas",
 		// Básicos
 		'rcm-wikisloaded' : "Wikias carregadas: ",
 		'rcm-previouslyloaded' : "Brevemente carregadas:",
@@ -581,9 +629,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers o substitui",
 		'rcm-optionspanel-savewithcookie': "Salvar mudanças pelo cookie",
 		// Modulos
-		'rcm-module-diff-title' : "Visualizador de página",
-		'rcm-module-diff-open' : "Abrir página",
-		'rcm-module-diff-undo' : "Desfazer mudança",
+		'rcm-modal-diff-title' : "Visualizador de página",
+		'rcm-modal-diff-open' : "Abrir página",
+		'rcm-modal-diff-undo' : "Desfazer mudança",
 		// Outros
 		'rcm-unknownthreadname' : "tópico",
 		/***************************
@@ -601,14 +649,14 @@ i18n.TEXT = {
 	ro: { // Română (ROMANIAN) @author: Josep Maria Roca Peña
 		// Erori
 		'rcm-eroare-linkformat' : "'$1' este un format incorect. Te rog să nu incluzi 'http://' sau oricare lucru după aceea, incluzând primul '/'.",
-		'rcm-eroare-loading-syntaxhang' : "Eroare încărcând [$1] ($2 încercări). Te rog să corectezi sintaxele (sau reîncărca-ţi script-ul pentru a încerca din nou).",
-		'rcm-eroare-loading-connection' : "Eroare încărcând [$1] ($2 încercări). Cu siguranţă, este o problemă de conexiune; reîncărca-ţi script-ul pentru a încerca din nou.",
+		'rcm-eroare-loading-syntaxhang' : "Eroare încărcând $1 ($2 încercări). Te rog să corectezi sintaxele (sau reîncărca-ţi script-ul pentru a încerca din nou).",
+		'rcm-eroare-loading-connection' : "Eroare încărcând $1 ($2 încercări). Cu siguranţă, este o problemă de conexiune; reîncărca-ţi script-ul pentru a încerca din nou.",
 		'rcm-eroare-trymoretimes' : "Încearcă-l mai mult de $1 ori",
 		// Înştiinţări
-		'rcm-loading' : "Încărcând/Clasificând…",
+		'rcm-loading-sorting' : "Încărcând/Clasificând…",
 		'rcm-refresh' : "Reîncărcare",
 		'rcm-download-timestamp' : "Schimburi recente descărcate pe: $1",
-		'rcm-download-changesadded' : " - [$1 Schimburi recente adăugate]",
+		'rcm-download-changesadded' : "$1 Schimburi recente adăugate",
 		// Bazici
 		'rcm-wikisloaded' : "Wiki-uri încărcate: ",
 		'rcm-previouslyloaded' : "În prealabil încărcate:",
@@ -620,9 +668,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		// 'rcm-optionspanel-savewithcookie': "Păstraţi schimburi dinspre cookie",
 		// Module
-		'rcm-module-diff-title' : "Vizualizatorul paginei",
-		'rcm-module-diff-open' : "Deschideţi pagina",
-		'rcm-module-diff-undo' : "Desfaceţi ediţia",
+		'rcm-modal-diff-title' : "Vizualizatorul paginei",
+		'rcm-modal-diff-open' : "Deschideţi pagina",
+		'rcm-modal-diff-undo' : "Desfaceţi ediţia",
 		// Mai mult
 		'rcm-unknownthreadname' : "fir",
 		/***************************
@@ -639,16 +687,15 @@ i18n.TEXT = {
 	},
 	ru: { // Русский (RUSSIAN) @author: Mix Gerder
 		// Errors
-		'rcm-error-linkformat' : "'$1' указан в неподходящем формате. Пожалуйста, не используйте элемент 'http://', не вставляйте ничего после него и первого '/'.",
-		'rcm-error-loading-syntaxhang' : "Ошибка при загрузке [$1] (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
+		'rcm-error-loading-syntaxhang' : "Ошибка при загрузке $1 (попыток: $2) Пожалуйста, исправьте синтаксис (или обновите скрипт, чтобы попытаться снова).",
 		'rcm-error-loading-http' : "Эта страница использует HTTPS-соединение; как таковая, эта ошибка также может быть вызвана целевой вики, не поддерживающей протокол HTTPS. См.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для получения доп. информации.",
-		'rcm-error-loading-connection' : "Ошибка при загрузке [$1] (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
+		'rcm-error-loading-connection' : "Ошибка при загрузке $1 (попыток: $2). Скорее всего, это ошибка с подключением, обновите скрипт, чтобы попробовать снова.",
 		'rcm-error-trymoretimes' : "Попробуйте $1 раз(а)",
 		// Notifications
-		'rcm-loading' : "Загрузка/Сортировка...",
+		'rcm-loading-sorting' : "Загрузка/Сортировка...",
 		'rcm-refresh' : "Обновить",
 		'rcm-download-timestamp' : "Последние изменения взяты с: $1",
-		'rcm-download-changesadded' : " - [$1 последних добавленных изменений]",
+		'rcm-download-changesadded' : "$1 последних добавленных изменений",
 		// Basics
 		'rcm-wikisloaded' : "Загруженные вики: ",
 		'rcm-previouslyloaded' : "Ранее загруженные:",
@@ -660,9 +707,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers определяются так.",
 		'rcm-optionspanel-savewithcookie': "Сохранить изменения в Cookie",
 		// Modules
-		'rcm-module-diff-title' : "Предварительный просмотр изменений",
-		'rcm-module-diff-open' : "Показать изменения",
-		'rcm-module-diff-undo' : "Отменить изменения",
+		'rcm-modal-diff-title' : "Предварительный просмотр изменений",
+		'rcm-modal-diff-open' : "Показать изменения",
+		'rcm-modal-diff-undo' : "Отменить изменения",
 		// Other
 		'rcm-unknownthreadname' : "тема",
 		
@@ -684,16 +731,15 @@ i18n.TEXT = {
 	},
 	tr: { // Türkçe (TURKISH) @author: BaRaN6161TURK
 		// Errors
-		'rcm-error-linkformat' : "'$1' yanlış bir format. Lütfen 'http://' ya da ilk '/' dahil alandan sonra herhangi bir şey eklemeyin.",
-		'rcm-error-loading-syntaxhang' : "[$1] yüklenirken hata oluştu ($ 2 çalışır). Lütfen sözdizimini düzeltin (veya yeniden denemek için komut dosyasını yenileyin).",
+		'rcm-error-loading-syntaxhang' : "$1 yüklenirken hata oluştu ($ 2 çalışır). Lütfen sözdizimini düzeltin (veya yeniden denemek için komut dosyasını yenileyin).",
 		'rcm-error-loading-http' : "Bu sayfa bir HTTPS bağlantısı kullanıyor; Bu nedenle, bu hata HTTPS protokolünü desteklemeyen hedef wiki'den de kaynaklanabilir. Ayrıntılar için [https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS buraya] bakın.",
-		'rcm-error-loading-connection' : "[$1] yüklenirken hata oluştu ($2 çalışır). Büyük olasılıkla bir bağlantı sorunu; tekrar denemek için komut dosyasını yenileyin.",
+		'rcm-error-loading-connection' : "$1 yüklenirken hata oluştu ($2 çalışır). Büyük olasılıkla bir bağlantı sorunu; tekrar denemek için komut dosyasını yenileyin.",
 		'rcm-error-trymoretimes' : "$1 kez daha dene",
 		// Notifications
-		'rcm-loading' : "Yükleniyor/Sınıflandırıyor...",
+		'rcm-loading-sorting' : "Yükleniyor/Sınıflandırıyor...",
 		'rcm-refresh' : "Yenile",
 		'rcm-download-timestamp' : "İndirilen Son Değişiklikler: $1",
-		'rcm-download-changesadded' : " - [$1 Son Değişiklikler eklendi]",
+		'rcm-download-changesadded' : "$1 Son Değişiklikler eklendi",
 		// Basics
 		'rcm-wikisloaded' : "Wikiler Yüklendi: ",
 		'rcm-previouslyloaded' : "Önceden yüklenmiş:",
@@ -705,9 +751,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride' : "veri gizleyicileri bunu geçersiz kılar.",
 		'rcm-optionspanel-savewithcookie' : "Çerezle seçenekleri kaydet",
 		// Modules
-		'rcm-module-diff-title' : "Fark Görüntüleyici",
-		'rcm-module-diff-open' : "Farkı aç",
-		'rcm-module-diff-undo' : "Düzenlemeyi geri al",
+		'rcm-modal-diff-title' : "Fark Görüntüleyici",
+		'rcm-modal-diff-open' : "Farkı aç",
+		'rcm-modal-diff-undo' : "Düzenlemeyi geri al",
 		// Other
 		'rcm-unknownthreadname' : "tartışma",
 		/***************************
@@ -724,16 +770,15 @@ i18n.TEXT = {
 	},
 	uk: { // Українська (UKRAINIAN) @author: Mix Gerder
 		// Errors
-		'rcm-error-linkformat' : "'$1' вказаний в невідповідному форматі. Будь ласка, не використовуйте елемент 'http://', не вставляйте нічого після нього і першого '/'.",
-		'rcm-error-loading-syntaxhang' : "Помилка при завантаженні [$1] (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
+		'rcm-error-loading-syntaxhang' : "Помилка при завантаженні $1 (спроб: $2) Будь ласка, виправте синтаксис (або поновіть скрипт, щоб спробувати знову).",
 		'rcm-error-loading-http' : "Ця сторінка використовує HTTPS-з'єднання; як така, ця помилка також може бути викликана цільовою вікі, яка не підтримує протокол HTTPS. Див.[https://dev.fandom.com/wiki/RecentChangesMultiple#HTTPS тут] для отримання додаткової інформації.",
-		'rcm-error-loading-connection' : "Помилка при завантаженні [$1] (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
+		'rcm-error-loading-connection' : "Помилка при завантаженні $1 (спроб: $2). Швидше за все, це помилка з підключенням, поновіть скрипт, щоб спробувати знову.",
 		'rcm-error-trymoretimes' : "Спробуйте $1 раз(а)",
 		// Notifications
-		'rcm-loading' : "Завантаження/Сортування...",
+		'rcm-loading-sorting' : "Завантаження/Сортування...",
 		'rcm-refresh' : "Оновити",
 		'rcm-download-timestamp' : "Останні зміни взяті з: $1",
-		'rcm-download-changesadded' : " - [$1 останніх доданих змін]",
+		'rcm-download-changesadded' : "$1 останніх доданих змін",
 		// Basics
 		'rcm-wikisloaded' : "Завантажені вікі: ",
 		'rcm-previouslyloaded' : "Раніше завантажені:",
@@ -745,9 +790,9 @@ i18n.TEXT = {
 		// 'rcm-optionspanel-hideusersoverride': "data-hideusers визначаються так.",
 		'rcm-optionspanel-savewithcookie': "Зберегти зміни в Cookie",
 		// Modules
-		'rcm-module-diff-title' : "Попередній перегляд змін",
-		'rcm-module-diff-open' : "Показати зміни",
-		'rcm-module-diff-undo' : "Скасувати зміни",
+		'rcm-modal-diff-title' : "Попередній перегляд змін",
+		'rcm-modal-diff-open' : "Показати зміни",
+		'rcm-modal-diff-undo' : "Скасувати зміни",
 		// Other
 		'rcm-unknownthreadname' : "тема",
 		
@@ -838,15 +883,14 @@ i18n.TEXT = {
 	},
 	val: { // Valencià (VALENCIAN) @author: Josep Maria Roca Peña
 		// Errors
-		'rcm-error-linkformat' : "'$1' és un format incorrecte. Per favor, no afiggues 'http://' o alguna cosa darrere del domini, incloent el primer '/'.",
-		'rcm-error-loading-syntaxhang' : "Error de càrrega [$1] ($2 intents). Per favor, corrig les tues sintaxis (o recarrega la tua script i intenta-ho un atre colp).",
-		'rcm-error-loading-connection' : "Error de càrrega [$1] ($2 intents). Per un error de conexió, tens que recarregar la tua script i intenta-ho un atre colp.",
+		'rcm-error-loading-syntaxhang' : "Error de càrrega $1 ($2 intents). Per favor, corrig les tues sintaxis (o recarrega la tua script i intenta-ho un atre colp).",
+		'rcm-error-loading-connection' : "Error de càrrega $1 ($2 intents). Per un error de conexió, tens que recarregar la tua script i intenta-ho un atre colp.",
 		'rcm-error-trymoretimes' : "Intenta-ho $1 més voltes",
 		// Notificacions
-		'rcm-loading' : "Carregant/Classificant…",
+		'rcm-loading-sorting' : "Carregant/Classificant…",
 		'rcm-refresh' : "Actualisació",
 		'rcm-download-timestamp' : "Canvis recents baixats a: ",
-		'rcm-download-changesadded' : " - [$1 Canvis recents afegits]",
+		'rcm-download-changesadded' : "$1 Canvis recents afegits",
 		// Bàsics
 		'rcm-wikisloaded' : "Wikis carregats: ",
 		'rcm-previouslyloaded' : "Breument carregats:",
@@ -858,9 +902,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers overrides this.",
 		'rcm-optionspanel-savewithcookie': "Guardar els canvis pel cookie",
 		// Mòduls
-		'rcm-module-diff-title' : "Visualisador de pàgina",
-		'rcm-module-diff-open' : "Obrir la pàgina",
-		'rcm-module-diff-undo' : "Desfer el canvi",
+		'rcm-modal-diff-title' : "Visualisador de pàgina",
+		'rcm-modal-diff-open' : "Obrir la pàgina",
+		'rcm-modal-diff-undo' : "Desfer el canvi",
 		// Atres
 		'rcm-unknownthreadname' : "tema",
 		/***************************
@@ -876,15 +920,14 @@ i18n.TEXT = {
 		},
 	},
 	vi: { // Vietnamese @author: Dai ca superman
-		'rcm-error-linkformat' : "'$1' không đúng định dạng. Xin đừng '''thêm''' 'http://' hay bất cứ ký tự gì trước tên miền trang, bao gồm dấu gạch chéo '/'.",
-		'rcm-error-loading-syntaxhang' : "Lỗi tải [$1] ($2 lần thử). Hãy sửa lại đúng cú pháp (hoặc làm mới lại trang để thử lại.).",
-		'rcm-error-loading-connection' : "Lỗi tải [$1] ($2 lần thử). Khả năng lớn đây là lỗi kết nối; làm mới lại trang để thử lại.",
+		'rcm-error-loading-syntaxhang' : "Lỗi tải $1 ($2 lần thử). Hãy sửa lại đúng cú pháp (hoặc làm mới lại trang để thử lại.).",
+		'rcm-error-loading-connection' : "Lỗi tải $1 ($2 lần thử). Khả năng lớn đây là lỗi kết nối; làm mới lại trang để thử lại.",
 		'rcm-error-trymoretimes' : "Thử thêm $1 lần nữa",
 
-		'rcm-loading' : "Đang Tải/Đang Sắp Xếp...",
+		'rcm-loading-sorting' : "Đang Tải/Đang Sắp Xếp...",
 		'rcm-refresh' : "Làm mới",
 		'rcm-download-timestamp' : "Thay Đổi Gần Đây đã được tải vào: $1",
-		'rcm-download-changesadded' : " - [$1 Thay Đổi Gần Đây đã được thêm vào]",
+		'rcm-download-changesadded' : "$1 Thay Đổi Gần Đây đã được thêm vào",
 
 		'rcm-wikisloaded' : "Các Wiki đã tải: ",
 		'rcm-previouslyloaded' : "Đã tải trước đó:",
@@ -896,9 +939,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "data-hideusers đã loại trừ điều này.",
 		'rcm-optionspanel-savewithcookie': "Lưu lại thiết đặt bằng cookie",
 
-		'rcm-module-diff-title' : "Trình Xem Thay Đổi",
-		'rcm-module-diff-open' : "Mở xem khác",
-		'rcm-module-diff-undo' : "Lùi sửa",
+		'rcm-modal-diff-title' : "Trình Xem Thay Đổi",
+		'rcm-modal-diff-open' : "Mở xem khác",
+		'rcm-modal-diff-undo' : "Lùi sửa",
 
 		'rcm-unknownthreadname' : "luồng",
 		/***************************
@@ -918,15 +961,14 @@ i18n.TEXT = {
 	},
 	zh: { // 中文 (CHINESE) @author: TsukiYaksha
 
-		'rcm-error-linkformat' : "「$1」为错误格式。请'''不要'''在网域后加入「http://」或任何文字，包括第一个「/」字符。",
-		'rcm-error-loading-syntaxhang' : "读取[$1]时发生错误（$2次尝试）。请更正语法（或刷新语法后再试一次）。",
-		'rcm-error-loading-connection' : "读取[$1]时发生错误（$2次尝试）。极可能为联机问题。请刷新语法后再试一次。",
+		'rcm-error-loading-syntaxhang' : "读取$1时发生错误（$2次尝试）。请更正语法（或刷新语法后再试一次）。",
+		'rcm-error-loading-connection' : "读取$1时发生错误（$2次尝试）。极可能为联机问题。请刷新语法后再试一次。",
 		'rcm-error-trymoretimes' : "请再试$1次",
 
-		'rcm-loading' : "正在载入／整理中......",
+		'rcm-loading-sorting' : "正在载入／整理中......",
 		'rcm-refresh' : "刷新",
 		'rcm-download-timestamp' : "最近更改于$1载入",
-		'rcm-download-changesadded' : " - [已添加$1个最近更改内容]",
+		'rcm-download-changesadded' : "已添加$1个最近更改内容",
 
 		'rcm-wikisloaded' : "已载入的维基：",
 		'rcm-previouslyloaded' : "之前已加载：",
@@ -938,9 +980,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "以data-hideusers覆盖原有设定。",
 		'rcm-optionspanel-savewithcookie': "使用cookie储存变动",
 
-		'rcm-module-diff-title' : "差异查看器",
-		'rcm-module-diff-open' : "开启差异",
-		'rcm-module-diff-undo' : "复原编辑",
+		'rcm-modal-diff-title' : "差异查看器",
+		'rcm-modal-diff-open' : "开启差异",
+		'rcm-modal-diff-undo' : "复原编辑",
 
 		'rcm-unknownthreadname' : "话题",
 		/***************************
@@ -957,15 +999,14 @@ i18n.TEXT = {
 	},
 	"zh-hant": { // 中文 (繁體) (CHINESE TRADITIONAL) @author: TsukiYaksha
 
-		'rcm-error-linkformat' : "「$1」為錯誤格式。請'''不要'''在網域後加入「http://」或任何文字，包括第一個「/」字元。",
-		'rcm-error-loading-syntaxhang' : "讀取[$1]時發生錯誤（$2 次嘗試）。請更正語法（或重新載入語法後再試一次）。",
-		'rcm-error-loading-connection' : "讀取[$1]時發生錯誤（$2 次嘗試）。極可能為連線問題。請重新載入語法後再試一次。",
+		'rcm-error-loading-syntaxhang' : "讀取$1時發生錯誤（$2 次嘗試）。請更正語法（或重新載入語法後再試一次）。",
+		'rcm-error-loading-connection' : "讀取$1時發生錯誤（$2 次嘗試）。極可能為連線問題。請重新載入語法後再試一次。",
 		'rcm-error-trymoretimes' : "請再試$1次",
 
-		'rcm-loading' : "正在載入／整理中......",
+		'rcm-loading-sorting' : "正在載入／整理中......",
 		'rcm-refresh' : "重新整理",
 		'rcm-download-timestamp' : "近期變動於$1載入",
-		'rcm-download-changesadded' : " - [已新增$1個近期變動內容]",
+		'rcm-download-changesadded' : "已新增$1個近期變動內容",
 
 		'rcm-wikisloaded' : "已載入的維基：",
 		'rcm-previouslyloaded' : "之前已載入：",
@@ -977,9 +1018,9 @@ i18n.TEXT = {
 		'rcm-optionspanel-hideusersoverride': "以data-hideusers覆蓋原有設定。",
 		'rcm-optionspanel-savewithcookie': "使用cookie儲存變動",
 
-		'rcm-module-diff-title' : "差異檢視器",
-		'rcm-module-diff-open' : "開啟差異",
-		'rcm-module-diff-undo' : "復原編輯",
+		'rcm-modal-diff-title' : "差異檢視器",
+		'rcm-modal-diff-open' : "開啟差異",
+		'rcm-modal-diff-undo' : "復原編輯",
 
 		'rcm-unknownthreadname' : "討論串",
 		/***************************
@@ -1001,7 +1042,7 @@ i18n.TEXT = {
 * MESSAGES is all text that is retrieved from the Wikia servers for any supported language.
 * If it is necessary to overwrite a system message, simply add its key to the TEXT object with the new text for your language.
 ********************************************************************************/
-i18n.MESSAGES = {
+const MESSAGES = i18n.MESSAGES = {
 	/***************************
 	* Common Stuff
 	****************************/
@@ -1017,8 +1058,10 @@ i18n.MESSAGES = {
 	'rcshowhideanons'		: '$1 anonymous users', // 2051
 	// 'rcshowhidepatr'		: '$1 patrolled edits', // 2052
 	'rcshowhidemine'		: '$1 my edits', // 2053
-	'rcshowhideenhanced'	: '$1 grouped recent changes',
-	'rcshowhidelogs'		: '$1 logs',
+	'rcshowhideenhanced'	: '$1 grouped recent changes', // LEGACY
+	'rcfilters-group-results-by-page'	: 'Group results by page',
+	'rcshowhidelogs'		: '$1 logs', // LEGACY
+	'rcfilters-filter-logactions-label' : 'Logged actions',
 	'diff' : 'diff', // L2055
 	'hist' : 'hist', // L2056
 	'hide' : 'Hide', // L2057
@@ -1047,8 +1090,6 @@ i18n.MESSAGES = {
 	'rev-deleted-user' : '(username removed)',
 	'rev-deleted-event' : '(log action removed)',
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/ArticleComments/ArticleComments.i18n.php
-	'article-comments-rc-comment' : 'Article comment (<span class="plainlinks">[$1 $2]</span>)',
-	'article-comments-rc-comments' : 'Article comments ([[$1]])',
 	'and' : '&#32;and',
 	// Wiki Infobar
 	'recentchanges' : 'Recent changes',
@@ -1060,21 +1101,19 @@ i18n.MESSAGES = {
 	'group-sysop' : 'Administrators',
 	'group-user' : 'Users',
 	'prefs-files' : 'Files',
-	'awc-metrics-articles' : 'Articles',
-	'awc-metrics-edits' : 'Edits',
+	'awc-metrics-articles' : 'Articles', // LEGACY
+	'articles' : 'Articles',
+	'edits' : 'Edits',
 	// Other
 	'filedelete-success' : "'''$1''' has been deleted.",
-	'shared_help_was_redirect' : 'This page is a redirect to $1',
-	'specialvideos-btn-load-more' : 'Load More',
-	'flags-edit-modal-close-button-text' : 'Close',
-	'awc-metrics-images' : 'Images',
-	'wikifeatures-promotion-new' : 'New',
-	'wikiacuratedcontent-content-empty-section' : 'This section needs some items',
-	'myhome-feed-edited-by' : 'edited by $1',
-	'edit-summary' : 'Edit summary',
-	'wikiaPhotoGallery-conflict-view': 'View the current page',
-	'app-loading': 'Loading...',
-	'wikia-hubs-remove': 'Remove',
+	'shared_help_was_redirect' : 'This page is a redirect to $1', // LEGACY
+	'redirectto' : 'Redirect to:',
+	'awc-metrics-images' : 'Images', // LEGACY
+	'images' : 'Images',
+	'wikiacuratedcontent-content-empty-section' : 'This section needs some items', // LEGACY
+	'expand_templates_input_missing' : 'You need to provide at least some input wikitext.',
+	'wikia-hubs-remove': 'Remove', // LEGACY
+	'wall-message-remove': 'Remove',
 	'undeletelink': 'view/restore',
 	'admindashboard-control-analytics-label': 'Analytics',
 	
@@ -1218,11 +1257,8 @@ i18n.MESSAGES = {
 	/***************************
 	* Discussions
 	****************************/
-	'discussions': 'Discussions',
 	'forum-related-discussion-heading': 'Discussions about $1',
 	'embeddable-discussions-loading': 'Loading Discussions...',
-	'article-comments-page-header-label': 'Comments',
-	'userprofile-message-wall-label': 'Message Wall',
 	'allmessages-filter-all': 'All',
 	
 	/***************************
@@ -1243,6 +1279,46 @@ i18n.MESSAGES = {
 	"abusefilter-log-detailslink": "details",
 	"abusefilter-changeslist-examine": "examine",
 };
+
+export const legacyMessagesRemovedContent = [
+	"insights", // Feature removed on UCP
+	// Old Logs
+	"useravatar-log",
+	"wikifeatures-log-name",
+	"blog-avatar-changed-log",
+	"blog-avatar-removed-log",
+	// Chat logs (chat removed in UCP)
+	"chat-chatban-log",
+	"chat-chatbanadd-log-entry",
+	"chat-chatbanremove-log-entry",
+	"chat-chatbanchange-log-entry",
+	// Wall logs (Thread-style walls removed in UCP)
+	"wall-recentchanges-edit",
+	"wall-recentchanges-removed-thread",
+	"wall-recentchanges-removed-reply",
+	"wall-recentchanges-restored-thread",
+	"wall-recentchanges-restored-reply",
+	"wall-recentchanges-deleted-thread",
+	"wall-recentchanges-deleted-reply",
+	"wall-recentchanges-closed-thread",
+	"wall-recentchanges-reopened-thread",
+	"wall-recentchanges-thread-group",
+	"wall-recentchanges-history-link",
+	"wall-recentchanges-thread-history-link",
+	// Forum logs (Thread-style forum removed in UCP)
+	"forum-recentchanges-edit",
+	"forum-recentchanges-removed-thread",
+	"forum-recentchanges-removed-reply",
+	"forum-recentchanges-restored-thread",
+	"forum-recentchanges-restored-reply",
+	"forum-recentchanges-deleted-thread",
+	"forum-recentchanges-deleted-reply",
+	"forum-recentchanges-thread-group",
+	"forum-recentchanges-history-link",
+	"forum-recentchanges-thread-history-link",
+	"forum-recentchanges-closed-thread",
+	"forum-recentchanges-reopened-thread",
+];
 
 // http://download.remysharp.com/wiki2html.js
 i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {

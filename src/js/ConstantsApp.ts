@@ -19,7 +19,7 @@ export default class ConstantsApp
 		"wgVersion",
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
-	static readonly debug					: boolean = ConstantsApp.config.debug;
+	static readonly debug					: boolean = ConstantsApp.config.debug || mw.util.getParamValue("useuserjs")=="0";
 	static isUcpWiki						: boolean = false;
 	
 	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + ConstantsApp.config.wgPageName;

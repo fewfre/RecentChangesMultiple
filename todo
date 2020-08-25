@@ -1,4 +1,27 @@
-﻿- add diff view for new pages collapsed into "(# changes)" - still useful
+﻿new user-translated:
+	status-loading             - app-loading
+	status-discussions-loading - embeddable-discussions-loading (custom, just little support)
+	discussions                - discussions
+	comments                   - article-comments-page-header-label
+	message-wall               - userprofile-message-wall-label
+	modal-preview-openpage     - wikiaPhotoGallery-conflict-view
+	modal-close                - visualeditor-inspector-close-tooltip
+	
+	modal-gallery-load-more    - specialvideos-btn-load-more
+	insights                   - insights
+	
+	notification-edited-by     - myhome-feed-edited-by
+	notification-edit-summary  - edit-summary
+	notification-new           - wikifeatures-promotion-new
+	
+	rc-comment                 - article-comments-rc-comment
+	rc-comments                - article-comments-rc-comments
+
+
+
+
+
+- add diff view for new pages collapsed into "(# changes)" - still useful
 - add support for newer fandom wikis - specifically walls
 - change design somewhat to follow more modern recent changes?
 - allow disabling a wiki

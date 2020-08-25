@@ -3,7 +3,7 @@ import RCMManager from "./RCMManager";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
 import Utils from "./Utils";
-import i18n from "./i18n";
+import i18n, {I18nKey} from "./i18n";
 import TYPE from "./types/RC_TYPE";
 
 let $ = window.jQuery;
@@ -266,8 +266,8 @@ export default class RCData
 				
 				for (var i = 0; i < log_block_flags_arr.length; i++) {
 					// If we have a translation for flag, use it. otherwise, leave the flag id alone.
-					if(i18n("block-log-flags-" + log_block_flags_arr[i])) {
-						log_block_flags_arr[i] = i18n("block-log-flags-" + log_block_flags_arr[i]);
+					if(i18n.exists("block-log-flags-" + log_block_flags_arr[i])) {
+						log_block_flags_arr[i] = i18n(<I18nKey>("block-log-flags-" + log_block_flags_arr[i]));
 					}
 				}
 				this.log_block_flags = "("+ log_block_flags_arr.join(", ") +")";
@@ -390,7 +390,7 @@ export default class RCData
 	
 	// Check each entry for "threadTitle", else return default text.
 	getThreadTitle() : string {
-		return this.threadTitle ? this.threadTitle :  "<i>"+i18n('rcm-unknownthreadname')+"</i>";
+		return this.threadTitle ? this.threadTitle :  "<i>"+i18n('unknownthreadname')+"</i>";
 	}
 	
 	getSummary() : string {
@@ -451,7 +451,7 @@ export default class RCData
 			}
 			case "delete": {
 				// logactions assumed: delete, restore, event, revision, event-legacy, revision-legacy
-				tLogMessage += i18n("logentry-delete-"+this.logaction,
+				tLogMessage += i18n(<I18nKey>("logentry-delete-"+this.logaction),
 					this.userDetails(),
 					undefined, // Cannot know gender of edit user
 					`<a href='${this.href}'>${this.title}</a>`,
@@ -480,7 +480,7 @@ export default class RCData
 			}
 			case "move": {
 				// logactions assumed: move, move-noredirect, move_redir, move_redir-noredirect
-				tLogMessage += i18n("logentry-move-"+this.logaction+(this.log_move_noredirect || ""/*band-aid fix*/),
+				tLogMessage += i18n(<I18nKey>("logentry-move-"+this.logaction+(this.log_move_noredirect || ""/*band-aid fix*/)),
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					`<a href='${this.hrefFS}redirect=no'>${this.title}</a>`,
@@ -509,7 +509,7 @@ export default class RCData
 			}
 			case "newusers": {
 				// logactions assumed: newusers, create, create2, autocreate (kinda sorta maybe)
-				tLogMessage += i18n("logentry-newusers-"+this.logaction, this.userDetails(), undefined, "" );
+				tLogMessage += i18n(<I18nKey>("logentry-newusers-"+this.logaction), this.userDetails(), undefined, "" );
 				break;
 			}
 			case "rights": {
@@ -544,26 +544,26 @@ export default class RCData
 				
 				tLogMessage += this.userDetails()+" ";
 				// logaction assumed: chatbanadd, chatbanremove, chatbanchange
-				tLogMessage += i18n("chat-"+this.logaction+"-log-entry", `<a href='${this.href}'>${this.titleNoNS}</a>`, tChatData[2], t$3 );
+				tLogMessage += i18n(<I18nKey>("chat-"+this.logaction+"-log-entry"), `<a href='${this.href}'>${this.titleNoNS}</a>`, tChatData[2], t$3 );
 				tChatData = null;
 				break;
 			}
-			case "abusefilter": {
-				var tAbusePage = this.log_info_0.split("\n");
-				var tAbuseItem = tAbusePage.shift();
+			// case "abusefilter": {
+			// 	var tAbusePage = this.log_info_0.split("\n");
+			// 	var tAbuseItem = tAbusePage.shift();
 				
-				tLogMessage += this.userDetails()+" ";
-				switch(this.logaction) {
-					case "modify": {
-						tLogMessage += i18n("abusefilter-log-entry-modify",
-							`<a href='${this.href}'>${this.title}</a>`,
-							`<a href='${this.wikiInfo.articlepath}Special:AbuseFilter/history/${tAbusePage}/diff/prev/${tAbuseItem}'>${i18n("abusefilter-log-detailslink")}</a>`
-						);
-						break;
-					}
-				}
-				break;
-			}
+			// 	tLogMessage += this.userDetails()+" ";
+			// 	switch(this.logaction) {
+			// 		case "modify": {
+			// 			tLogMessage += i18n("abusefilter-log-entry-modify",
+			// 				`<a href='${this.href}'>${this.title}</a>`,
+			// 				`<a href='${this.wikiInfo.articlepath}Special:AbuseFilter/history/${tAbusePage}/diff/prev/${tAbuseItem}'>${i18n("abusefilter-log-detailslink")}</a>`
+			// 			);
+			// 			break;
+			// 		}
+			// 	}
+			// 	break;
+			// }
 		}
 		if(tLogMessage == "") {
 			tLogMessage += this.userDetails()+` ??? (${this.logtype} - ${this.logaction}) `;
@@ -578,7 +578,7 @@ export default class RCData
 	// Assumes it's a wall/board that has an action (will just return summary otherwise).
 	wallBoardActionMessageWithSummary(pThreadTitle?:string) : string {
 		var tThreadTitle = pThreadTitle || this.getThreadTitle(); // Title is passed in due to it being found via ajax.
-		var tLocalizedActionMessage = "";
+		var tLocalizedActionMessage:any;
 		var tPrefix = this.type == TYPE.BOARD ? "forum-recentchanges" : "wall-recentchanges";
 		var tMsgType = this.isSubComment ? "reply" : "thread";
 		switch(this.logaction) {
@@ -588,7 +588,7 @@ export default class RCData
 			case "wall_archive":		tLocalizedActionMessage = tPrefix + "-closed-thread"; break;
 			case "wall_reopen":			tLocalizedActionMessage = tPrefix + "-reopened-thread"; break;
 		}
-		if(tLocalizedActionMessage != "") {
+		if(tLocalizedActionMessage) {
 			return " "+i18n(tLocalizedActionMessage, this.href, tThreadTitle, this.getBoardWallParentLink(), this.titleNoNS) + this.getSummary();
 		} else {
 			return this.getSummary(); // Else not a wall/board action
@@ -615,7 +615,7 @@ export default class RCData
 	pageTitleTextLink() : string {
 		if(this.type == TYPE.COMMENT) {
 			let tNameSpaceText = this.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.namespace-1)]["*"]+":";
-			return i18n("article-comments-rc-comment", this.href, tNameSpaceText+this.titleNoNS);
+			return i18n("rc-comment", this.href, tNameSpaceText+this.titleNoNS);
 		} else {
 			return `<a class='rc-pagetitle' href='${this.href}'>${this.title}</a>`;
 		}
@@ -643,7 +643,7 @@ export default class RCData
 	}
 	
 	wallBoardHistoryLink() : string {
-		var tLink = "", tText = "";
+		var tLink = "", tText:I18nKey;
 		if(this.type == TYPE.WALL) {
 			tLink = this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.getBoardWallParentTitleWithNamespace()) + this.wikiInfo.firstSeperator + "action=history";
 			tText = this.isSubComment ? "wall-recentchanges-thread-history-link" : "wall-recentchanges-history-link";
@@ -677,17 +677,17 @@ export default class RCData
 	static previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:any) : void {
 		Utils.logUrl("(previewDiff)", pAjaxUrl); mw.log(pDiffLink); mw.log(pUndoLink);
 		
-		var tTitle = `${pPageName} - ${i18n('rcm-module-diff-title')}`;
+		var tTitle = `${pPageName} - ${i18n('modal-diff-title')}`;
 		// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
 		var tButtons = [];
 		tButtons.push({
-			text: i18n('rcm-module-diff-open'),
+			text: i18n('modal-diff-open'),
 			event: "diff",
 			callback: () => { window.open(pDiffLink, '_blank'); },
 		});
 		if(pUndoLink != null) {
 			tButtons.push({
-				text: i18n('rcm-module-diff-undo'),
+				text: i18n('modal-diff-undo'),
 				event: "undo",
 				callback: () => { window.open(pUndoLink, '_blank'); },
 			});
@@ -782,7 +782,7 @@ export default class RCData
 		
 		Utils.logUrl("(previewImages)", tCurAjaxUrl, pImageNames);
 		
-		let tTitle = i18n("awc-metrics-images");
+		let tTitle = i18n(ConstantsApp.isUcpWiki ? "images" : "awc-metrics-images");
 		let tButtons = [];
 		
 		let tAddLoadMoreButton = () => {
@@ -791,7 +791,7 @@ export default class RCData
 				let tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
 				let tGallery = tModal.querySelector(".rcm-gallery");
 				let tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
-				let tButton = Utils.newElement("button", { innerHTML:i18n('specialvideos-btn-load-more') }, tCont);
+				let tButton = Utils.newElement("button", { innerHTML:i18n('modal-gallery-load-more') }, tCont);
 				
 				tButton.addEventListener("click", () => {
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
@@ -845,7 +845,9 @@ export default class RCData
 		} else if(tImage == null) {
 			tInvalidImage = {
 				thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
-				thumbText: i18n('shared_help_was_redirect', tTitle)
+				thumbText: ConstantsApp.isUcpWiki
+					? i18n('redirectto')+" "+tTitle
+					: i18n('shared_help_was_redirect', tTitle) // LEGACY
 			};
 		} else if(Utils.isFileAudio(tTitle)) {
 			tInvalidImage = {
@@ -905,13 +907,12 @@ export default class RCData
 		var tTitle = `${pPageName}`;
 		var tButtons = [
 			{
-				text: i18n('wikiaPhotoGallery-conflict-view'),
-				event: "diff",
+				text: i18n('modal-preview-openpage'),
+				event: "view",
 				callback: () => { window.open(pPageHref, '_blank'); },
 			}
 		];
 		RCMModal.showLoadingModal({ title:tTitle, buttons:tButtons }).then(() => {
-			// Retrieve the diff table.
 			// TODO - error support?
 			$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: pAjaxUrl,
 				success: (pData) => {
@@ -932,7 +933,6 @@ export default class RCData
 					let tModalCont:HTMLElement = <HTMLElement>document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
 					let tCont:HTMLElement = <HTMLElement>document.querySelector(`#${RCMModal.MODAL_CONTENT_ID} #mw-content-text`);
 					if((<any>tCont).attachShadow) {
-						mw.log("Shadow dom supported");
 						// Setup Shadow dom
 						tModalCont.innerHTML = "";
 						tModalCont = (<any>tModalCont).attachShadow({ mode:"open" });

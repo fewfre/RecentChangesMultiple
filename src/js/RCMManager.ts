@@ -10,7 +10,7 @@ import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
 import RCList from "./RCList";
 import RCParams from "./types/RCParams";
 import Utils from "./Utils";
-import i18n from "./i18n";
+import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
 
 let $ = window.jQuery;
@@ -208,8 +208,8 @@ export default class RCMManager
 		***************************/
 		// Footer never changes, so set here
 		let tEndNewMessageDate = new Date(ConstantsApp.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
-		let tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("wikifeatures-promotion-new")+'</sup>' : "";
-		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('rcm-footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+ConstantsApp.version+"</a>"+tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		let tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("notification-new")+'</sup>' : "";
+		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "<a href='https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog'>"+ConstantsApp.version+"</a>"+tNewVersion, "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		
@@ -285,7 +285,7 @@ export default class RCMManager
 			pLoadCallback(pWikiData, pTries, pID, 0);
 		} else {
 			if(this.erroredWikis.length === 0) {
-				let tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+				let tMessage = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
 				pHandleErrorCallback(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
 			} else {
 				this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
@@ -327,12 +327,12 @@ export default class RCMManager
 			});
 			this.totalItemsToLoad = this.chosenWikis.length;
 			this.wikisLeftToLoad = this.totalItemsToLoad;
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('app-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 		} else {
 			// If the RCM has no wikis listed, there is nothing to run, and the user should be informed.
 			Utils.removeElement(this.statusNode);
 			Utils.removeElement(this.wikisNode.root);
-			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n("wikiacuratedcontent-content-empty-section")+"</div>";
+			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n(ConstantsApp.isUcpWiki ? "expand_templates_input_missing" : "wikiacuratedcontent-content-empty-section")+"</div>";
 		}
 	}
 	
@@ -351,7 +351,7 @@ export default class RCMManager
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
-			this._handleWikiDataLoadError(pWikiData, pTries, pID, "rcm-error-loading-syntaxhang", 1);
+			this._handleWikiDataLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.general == null) {
@@ -361,7 +361,7 @@ export default class RCMManager
 			// 	this._loadWikiData(pWikiData, pTries, pID, 0);
 			// } else {
 			// 	if(this.erroredWikis.length === 0) {
-			// 		var tMessage = pFailStatus==null ? "rcm-error-loading-syntaxhang" : "rcm-error-loading-connection";
+			// 		var tMessage = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
 			// 		this._handleWikiDataLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
 			// 	} else {
 			// 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
@@ -380,10 +380,10 @@ export default class RCMManager
 		this._onWikiDataParsingFinished(pWikiData);
 	}
 	
-	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
-		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
-		if(pErrorMessage == "rcm-error-loading-syntaxhang" && 'https:' == document.location.protocol) {
-			this.statusNode.innerHTML += "<div class='rcm-error'>"+i18n("rcm-error-loading-http")+"</div>";
+	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void {
+		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "[<span class='errored-wiki'>"+pWikiData.servername+"</span>]", pTries)+"</div>";
+		if(pErrorMessage == "error-loading-syntaxhang" && 'https:' == document.location.protocol) {
+			this.statusNode.innerHTML += "<div class='rcm-error'>"+i18n("error-loading-http")+"</div>";
 		}
 		let tHandler = (pEvent:MouseEvent) => {
 			this.loadingErrorRetryNum += pInc;
@@ -395,19 +395,19 @@ export default class RCMManager
 				this._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
-		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		let tHandlerRemove = (pEvent:MouseEvent) => {
 			if(pEvent) { pEvent.target.removeEventListener("click", tHandlerRemove); }
 			tHandlerRemove = null;
 			
 			this.chosenWikis.splice(this.chosenWikis.indexOf(pWikiData), 1);
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 			this._onWikiDataParsingFinished(null);
 		};
 		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { innerHTML:i18n("wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
+		Utils.newElement("button", { innerHTML:i18n(ConstantsApp.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	
@@ -454,7 +454,7 @@ export default class RCMManager
 			return;
 		}
 		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('embeddable-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
 	
 	private _loadWikiaDiscussions(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
@@ -552,7 +552,7 @@ export default class RCMManager
 		});
 		this.totalItemsToLoad = this.chosenWikis.length;
 		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
 	
 	// Refresh and add new changes to top
@@ -646,7 +646,7 @@ export default class RCMManager
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
-			this._handleWikiLoadError(pWikiData, pTries, pID, "rcm-error-loading-syntaxhang", 1);
+			this._handleWikiLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
 			return;
 		}
 		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
@@ -667,9 +667,9 @@ export default class RCMManager
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
 	}
 	
-	private _handleWikiLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:string, pInc:number) : void {
+	private _handleWikiLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void {
 		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "<span class='errored-wiki'>"+pWikiData.servername+"</span>", pTries)+"</div>";
+		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "[<span class='errored-wiki'>"+pWikiData.servername+"</span>]", pTries)+"</div>";
 		this.addRefreshButtonTo(this.statusNode);
 		let tHandler = (pEvent) => {
 			clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
@@ -682,9 +682,9 @@ export default class RCMManager
 				this._loadWiki(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('rcm-loading')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
-		Utils.newElement("button", { innerHTML:i18n("rcm-error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = window.setTimeout(() => { if(tHandler) { tHandler(null); } }, 20000); }
 	}
@@ -867,8 +867,8 @@ export default class RCMManager
 	// All wikis are loaded
 	rcmChunkStart() : void {
 		let tDate:Date = new Date();
-		this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
-		this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
+		this.statusNode.innerHTML = i18n('status-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
+		this.statusNode.innerHTML += "<span class='rcm-content-loading'> – ["+i18n('status-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"]</span>"
 		
 		// Using array sort after as it's more efficient than doing it manually.
 		this.rcData.sort((a, b) => { return b.data.date.valueOf() - a.data.date.valueOf(); });
@@ -897,12 +897,12 @@ export default class RCMManager
 		// if(this.rcmNoNewChangesMarker) { Utils.removeElement(this.rcmNoNewChangesMarker); this.rcmNoNewChangesMarker = null; }
 		
 		if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
-			if(!this.rcmNewChangesMarker) this.rcmNoNewChangesMarker = <HTMLElement>this.resultsNode.insertBefore(Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }), this.resultsNode.firstChild);
+			if(!this.rcmNewChangesMarker) this.rcmNoNewChangesMarker = <HTMLElement>this.resultsNode.insertBefore(Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('nonewchanges')+"</strong>" }), this.resultsNode.firstChild);
 		}
 		else {
 			if(!this.rcmNewChangesMarker && this.newRecentChangesEntries.length > 0 && this.lastLoadDateTime != null && this.resultsNode.innerHTML != "") {
 				let tRcSection = this.resultsNode.querySelector("div, ul");
-				this.rcmNewChangesMarker = <HTMLElement>tRcSection.insertBefore(Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }), tRcSection.firstChild);
+				this.rcmNewChangesMarker = <HTMLElement>tRcSection.insertBefore(Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('previouslyloaded')+"</strong>" }), tRcSection.firstChild);
 				tRcSection = null;
 			}
 			
@@ -917,13 +917,13 @@ export default class RCMManager
 	// // All wikis are loaded
 	// rcmChunkStartOld() : void {
 	// 	let tDate:Date = new Date();
-	// 	this.statusNode.innerHTML = i18n('rcm-download-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
-	// 	this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('rcm-download-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
+	// 	this.statusNode.innerHTML = i18n('status-timestamp', "<b><tt>"+Utils.pad(Utils.getHours(tDate),2)+":"+Utils.pad(Utils.getMinutes(tDate),2)+"</tt></b>");
+	// 	this.statusNode.innerHTML += "<span class='rcm-content-loading'>"+i18n('status-changesadded', "<span class='rcm-content-loading-num'>0</span> / "+this.itemsToAddTotal)+"</span>"
 	// 	this.resultsNode.innerHTML = "";
 	//
 	// 	// mw.log(this.recentChangesEntries);
 	// 	if(this.recentChangesEntries.length == 0 || (this.lastLoadDateTime != null && this.recentChangesEntries[0].date <= this.lastLoadDateTime)) {
-	// 		Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('rcm-nonewchanges')+"</strong>" }, this.resultsNode);
+	// 		Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('nonewchanges')+"</strong>" }, this.resultsNode);
 	// 	}
 	// 	else if(this.lastLoadDateTimeActual != null && this.isAutoRefreshEnabled() && !document.hasFocus()) {
 	// 		if(this.recentChangesEntries[0].date > this.lastLoadDateTimeActual) {
@@ -1051,7 +1051,7 @@ export default class RCMManager
 					}
 				} else { break; }
 			}
-			Main.blinkWindowTitle(i18n("wikifeatures-promotion-new")+"! "+i18n("nchanges", tNumNewChanges));
+			Main.blinkWindowTitle(i18n("notification-new")+" "+i18n("nchanges", tNumNewChanges));
 			let tEditTitle = tMostRecentEntry.title;
 			if(tMostRecentEntry.type == RC_TYPE.LOG) {
 				tEditTitle = tMostRecentEntry.logTitle()+(tEditTitle ? " - "+tEditTitle : "");
@@ -1060,10 +1060,15 @@ export default class RCMManager
 				tEditTitle = this.recentChangesEntries[0].getExistingThreadTitle();
 				tEditTitle = tEditTitle ? i18n('discussions')+" - "+tEditTitle : i18n('discussions');
 			}
-			tEditTitle = tEditTitle ? tEditTitle+"\n" : "";
-			let tEditSummary = !tMostRecentEntry.unparsedComment ? "" : "\n"+i18n("edit-summary")+": "+tMostRecentEntry.unparsedComment;
+			
+			// Get each line of the notification
+			let bodyContents = [];
+			if(tEditTitle) bodyContents.push(tEditTitle);
+			bodyContents.push( i18n("notification-edited-by", tMostRecentEntry.author) );
+			if(tMostRecentEntry.unparsedComment) bodyContents.push( i18n("notification-edit-summary", tMostRecentEntry.unparsedComment) );
+			
 			Main.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? ` (${tNumNewChangesWiki})` : ""), {
-				body:tEditTitle+Utils.ucfirst(i18n("myhome-feed-edited-by", tMostRecentEntry.author)) + tEditSummary
+				body: bodyContents.join("\n")
 			});
 		}
 		tMostRecentEntry = null;
@@ -1112,7 +1117,7 @@ export default class RCMManager
 		}
 		// // Show at what point new changes start at.
 		// if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.newRecentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
-		// 	this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
+		// 	this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('previouslyloaded')+"</strong>" }, pContainer);
 		// }
 		
 		// Add to page
@@ -1168,7 +1173,7 @@ export default class RCMManager
 	// 	}
 	// 	// Show at what point new changes start at.
 	// 	if(this.lastLoadDateTime != null && pIndex-1 >= 0 && date <= this.lastLoadDateTime && this.recentChangesEntries[pIndex-1].date > this.lastLoadDateTime) {
-	// 		this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('rcm-previouslyloaded')+"</strong>" }, pContainer);
+	// 		this.rcmNewChangesMarker = Utils.newElement("div", { className:"rcm-previouslyLoaded", innerHTML:"<strong>"+i18n('previouslyloaded')+"</strong>" }, pContainer);
 	// 	}
 	//
 	// 	// Add to page
@@ -1253,7 +1258,7 @@ export default class RCMManager
 		
 		pParent.appendChild(document.createTextNode(" "));
 		
-		Utils.newElement("button", { innerHTML:i18n('rcm-refresh') }, pParent).addEventListener("click", function tHandler(e){
+		Utils.newElement("button", { innerHTML:i18n('status-refresh') }, pParent).addEventListener("click", function tHandler(e){
 			e.target.removeEventListener("click", tHandler);
 			self.refresh();
 		});
@@ -1265,7 +1270,7 @@ export default class RCMManager
 		pParent.appendChild(document.createTextNode(" "));
 		
 		let autoRefresh = Utils.newElement("span", { className:"rcm-autoRefresh" }, pParent);
-		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n('rcm-autorefresh'), title:i18n('rcm-autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
+		Utils.newElement("label", { htmlFor:"rcm-autoRefresh-checkbox", innerHTML:i18n('autorefresh'), title:i18n('autorefresh-tooltip', Math.floor(self.autoRefreshTimeoutNum/1000)) }, autoRefresh);
 		let checkBox:HTMLInputElement = <HTMLInputElement>Utils.newElement("input", { className:"rcm-autoRefresh-checkbox", type:"checkbox" }, autoRefresh);
 		checkBox.checked = this.isAutoRefreshEnabled();
 		

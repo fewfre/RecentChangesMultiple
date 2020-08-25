@@ -169,7 +169,7 @@ export default class RCMWikiaDiscussionData extends RCData
 				let tUrl = `${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest`;
 				let tPagename = this.forumName;
 				
-				return i18n("article-comments-rc-comment", tUrl, tPagename);
+				return i18n("rc-comment", tUrl, tPagename);
 			}
 		}
 		mw.log("(discussionTitleText) Unknown containerType:", this.containerType);

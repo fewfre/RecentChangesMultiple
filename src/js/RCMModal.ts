@@ -57,7 +57,7 @@ export default class RCMModal
 	}
 	
 	private static async createModal(pData:ModalJsProp) : Promise<any> {
-		mw.log("[RCMModal](createModal)", pData);
+		// mw.log("[RCMModal](createModal)", pData);
 		return new Promise(function(resolve){
 			RCMModal.clearModalCache();
 			// Create a new Modal
@@ -86,7 +86,7 @@ export default class RCMModal
 		
 		// Close button
 		buttons.push({
-			text: i18n('flags-edit-modal-close-button-text'),
+			text: i18n('modal-close'),
 			event: "close_button",
 			normal: false, primary: false,
 		});

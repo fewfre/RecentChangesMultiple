@@ -1,6 +1,12 @@
 == ==
--Updated code to used JQuery typing + extended window; window calls no longer use <any>
+-I18n revamp
+	-Translation system reworked to use I18n-js for easier translating
+	-Multiple i18n MESSAGES replaced or moved to custom messages due to UCP removing many messages
+	-Added support for fetching legacy messages on UCP wiki
+	-i18n() now uses I18nKey as an arguement to ensure all translation IDs are typed correctly and expected.
+-Updated code to use JQuery typing, custom MediaWiki typing, and an extended window; window calls no longer use <any>
 -Added wikia-chiclet-button to CSS for UCP support
+-Removed old code / messages about Wikia Maps feature, as it has been removed
 -Converted rc "arr_" images to CSS as uri data. This was done for 2 reasons:
 	-Encase those png image are ever removed (since they are no longer used on UCP)
 	-To be more efficient (better than manually having an img tag each time)
