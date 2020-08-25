@@ -615,7 +615,7 @@ export default class RCData
 	pageTitleTextLink() : string {
 		if(this.type == TYPE.COMMENT) {
 			let tNameSpaceText = this.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.namespace-1)]["*"]+":";
-			return i18n("rc-comment", this.href, tNameSpaceText+this.titleNoNS);
+			return i18n("rc-comment", `[${this.href} ${tNameSpaceText+this.titleNoNS}]`);
 		} else {
 			return `<a class='rc-pagetitle' href='${this.href}'>${this.title}</a>`;
 		}
