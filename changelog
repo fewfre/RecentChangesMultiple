@@ -4,6 +4,7 @@
 	-Multiple i18n MESSAGES replaced or moved to custom messages due to UCP removing many messages
 	-Added support for fetching legacy messages on UCP wiki
 	-i18n() now uses I18nKey as an arguement to ensure all translation IDs are typed correctly and expected.
+-Discussion-based Comments now load thier page names as expected! Big thanks to MarkusRost for pointing out how, and thanks to KockaAdmiralac for pointing out a proxy could get around the CORS issue.
 -Updated code to use JQuery typing, custom MediaWiki typing, and an extended window; window calls no longer use <any>
 -Added wikia-chiclet-button to CSS for UCP support
 -Removed old code / messages about Wikia Maps feature, as it has been removed

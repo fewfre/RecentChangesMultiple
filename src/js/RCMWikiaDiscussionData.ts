@@ -111,6 +111,10 @@ export default class RCMWikiaDiscussionData extends RCData
 				this.forumPage = RCMWikiaDiscussionData.users[pData.forumId].name;
 			}
 		}
+		// This is a fake page name, so if we see it we want to treat it as unknown
+		else if(this.containerType == "ARTICLE_COMMENT" && this.forumName == "Root Forum") {
+			this.forumName = null;
+		}
 		
 		return null; // Return self for chaining or whatnot.
 	}
@@ -166,13 +170,61 @@ export default class RCMWikiaDiscussionData extends RCData
 				);
 			}
 			case "ARTICLE_COMMENT": {
-				let tUrl = `${this.wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest`;
-				let tPagename = this.forumName;
-				
-				return i18n("rc-comment", `[${tUrl} ${tPagename}]`);
+				return i18n(pIsHead ? "rc-comments" : "rc-comment", this.getCommentForumNameLink());
 			}
 		}
 		mw.log("(discussionTitleText) Unknown containerType:", this.containerType);
+	}
+	
+	getCommentForumNameLink() : string {
+		// If already loaded and saved
+		if(this.forumName) { return `[${this.href} ${this.forumName}]`; }
+		// If loaded but page not updated for some reason
+		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
+			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
+			this.forumName = title;
+			this.threadHref = this.wikiInfo.server+relativeUrl+`?threadId=${this.threadId}#articleComments`;
+			this.href = this.threadHref;
+			
+			return `[${this.href} ${this.forumName}]`;
+		}
+		
+		// Else name unknown and must be loaded
+		let uniqID = Utils.uniqID();
+		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
+			this.forumName = title;
+			this.threadHref = this.wikiInfo.server+relativeUrl+`?threadId=${this.threadId}#articleComments`;
+			this.href = this.threadHref;
+			
+			$(`.rcm${uniqID} a`).attr("href", this.href).text(this.forumName);
+		} });
+		
+		// If secondary fetch not start for this wiki, then start one
+		// To save on speed, we fetch as many as possible from a given wiki
+		// (ids stored in discCommentPageNamesNeeded, and url generated when everything is fetched)
+		if(this.wikiInfo.discCommentPageNamesNeeded.length === 1) {
+			this.manager.secondaryWikiData.push({
+				url: ()=>{
+					let ids = this.wikiInfo.discCommentPageNamesNeeded.map(o=>o.pageID).filter((o,i,a)=>a.indexOf(o)==i).join(",");
+					let url = `${this.wikiInfo.scriptpath}/wikia.php?controller=FeedsAndPosts&method=getArticleNamesAndUsernames&stablePageIds=${ids}&format=json`;
+					Utils.logUrl("(getCommentForumNameLink)", url);
+					url = `${ConstantsApp.PROXY}${url.split("//")[1]}`
+					return url;
+				},
+				dataType: "json",
+				callback: (data) => {
+					// Pass data to all waiting items
+					this.wikiInfo.discCommentPageNamesNeeded.forEach((o)=>{
+						if(data.articleNames[Number(o.pageID)])
+							o.cb(data.articleNames[Number(o.pageID)]);
+					});
+					// List cleared of waiting items
+					this.wikiInfo.discCommentPageNamesNeeded = [];
+				}
+			});
+		}
+		// Pass back temp url with an id to allow updating later
+		return `<span class="rcm${uniqID}">[[#|${this.forumName}]]</span>`;
 	}
 	
 	getUpvoteCount() : string {

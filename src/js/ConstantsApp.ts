@@ -27,6 +27,7 @@ export default class ConstantsApp
 	static FAVICON_BASE						: string = "//www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	static LOADER_IMG						: string = "//images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
 	static NOTIFICATION_ICON				: string = "//vignette.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
+	static PROXY							: string = "https://cors-anywhere.herokuapp.com/";
 	
 	static readonly username				: string = ConstantsApp.config.wgUserName;
 	

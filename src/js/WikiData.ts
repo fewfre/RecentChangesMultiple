@@ -83,6 +83,12 @@ export default class WikiData
 	users					: { [username: string]: UserData }; // Map of user data. usernames stored with spaces, not _s
 	usersNeeded				: string[]; // usernames stored with spaces, not _s
 	
+	/***************************
+	* Comment Page Names - are loaded via secondary data, so cache to avoid needless refetching
+	****************************/
+	discCommentPageNames	: Map<string, { title:string, relativeUrl:string }>;
+	discCommentPageNamesNeeded : Array<{ pageID:string, uniqID:string, cb:(data:{ title:string, relativeUrl:string })=>void }>;
+	
 	// /***************************
 	// * AbuseFilter
 	// ****************************/
@@ -123,6 +129,9 @@ export default class WikiData
 		
 		this.users					= {};
 		this.usersNeeded			= [];
+		
+		this.discCommentPageNames	= new Map();
+		this.discCommentPageNamesNeeded = [];
 		
 		// this.abuseFilterFilters		= {};
 		// this.needsAbuseFilterFilters = true;

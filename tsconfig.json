@@ -6,7 +6,7 @@
 		"noUnusedParameters": false,
 		"target": "es5",
         "lib": [
-            "es5", "es2015.promise", "dom"
+            "es5", "es2015.promise", "es2015.collection", "dom"
         ]
 	},
 	"exclude": [

@@ -73,7 +73,7 @@ export default class RCMManager
 	erroredWikis				: { wikiInfo:WikiData, tries:number, id:number }[]; // Array of wikis that have errored more than expected times; kept in list to be tried more times should user wish
 	
 	extraLoadingEnabled			: boolean; // Turns extra loading on/off
-	secondaryWikiData			: { url:string, callback:(any)=>void, dataType?:string }[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
+	secondaryWikiData			: { url:string|(()=>string), callback:(any)=>void, dataType?:string }[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
 	
 	flagWikiDataIsLoaded		: boolean; // Make sure certain actions can't be done by user until wiki data is retrieved.
 	totalItemsToLoad			: number; // Total number of wikis to load.
@@ -1238,10 +1238,12 @@ export default class RCMManager
 		if(this.secondaryWikiData.length == 0) { mw.log("[RCMManager](_loadExtraInfo) All loading finished."); return; }
 		
 		let { url, dataType="jsonp", callback:tCallback } = this.secondaryWikiData.shift();
+		if(typeof url === "function") url = url();
 		
 		$.ajax({
 			type: 'GET', url, dataType, data: {},
 			success: (...pArgs) => {
+				// Don't run result if script already moved on
 				if(pID != this.ajaxID) { return; }
 				tCallback.apply(this, pArgs);
 			},
