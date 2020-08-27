@@ -199,7 +199,7 @@ export default class RCMManager
 		this.optionsNode	= new RCMOptions(this).init(Utils.newElement("div", { className:"rcm-options" }, this.resultCont));
 		this.statusNode		= Utils.newElement("div", { className:"rcm-status" }, this.resultCont);
 		this.wikisNode		= new RCMWikiPanel(this).init(Utils.newElement("div", { className:"rcm-wikis" }, this.resultCont));
-		this._showUpdateMessage();
+		ConstantsApp.showUpdateMessage(this.resultCont);
 		this.resultsNode	= Utils.newElement("div", { className:"rcm-results rc-conntent" }, this.resultCont);
 		this.footerNode		= Utils.newElement("div", { className:"rcm-footer" }, this.resultCont);
 		
@@ -209,7 +209,10 @@ export default class RCMManager
 		// Footer never changes, so set here
 		let tEndNewMessageDate = new Date(ConstantsApp.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
 		let tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("notification-new")+'</sup>' : "";
-		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "[https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog "+ConstantsApp.version+"]"+tNewVersion, "REPLACE").replace("REPLACE", "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+		
+		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "[https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog "+ConstantsApp.version+"]VERSION", "REPLACE")
+			.replace("VERSION", tNewVersion)
+			.replace("REPLACE", "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		
@@ -218,46 +221,6 @@ export default class RCMManager
 		
 		return this;
 	};
-		
-	private _showUpdateMessage() {
-		this._addUpdateMessage({
-			messageID: "rcm-news-V2.12-wikia-to-fandom-hide",
-			messageColor: "gold",
-			endDate: "2019-5-30T00:00:00.000Z",
-			message:`
-			Change "wikia.com" wikis to "fandom.com" on your wiki list once they convert to help avoid HTTPS errors.
-			While converted wikia wikis redirect, they still count as http until changed to fandom.com, so using wikia links while running the script on a fandom wiki will often cause errors.
-			`,
-		});
-		this._addUpdateMessage({
-			messageID: "rcm-news-V2.12-hide",
-			messageColor: "green",
-			endDate: "2019-3-30T00:00:00.000Z",
-			message:`
-			Support for fandom language wikis now added.
-			You can now add slashes to a wiki on the list.
-			ex: <code>sonic.fandom.com/pl/.</code> (doesn't work with wikia wikis, only fandom)
-			See <a href='https://dev.fandom.com/wiki/RecentChangesMultiple#Basic_Usage'>here</a> for more details.
-			`,
-		});
-	};
-	
-	private _addUpdateMessage(pData) {
-		let {messageID,messageColor,endDate,message} = pData;
-		// Stop showing in a month or two, but also remember dismissal via localStorage.
-		if( new Date(endDate) > new Date() && (localStorage.getItem(messageID) != "true") ) {
-			var tMessage = Utils.newElement("div", { className:"rcm-update-message", innerHTML:message}, this.resultCont);
-			tMessage.style.cssText = `border:5px double ${messageColor}; padding:2px 6px; overflow-y: hidden;`;
-			
-			var tButton = Utils.newElement("button", { innerHTML:"Dismiss Message" }, tMessage);
-			tButton.addEventListener("click", function tRCM_dismissNotice(){
-				Utils.removeElement(tMessage);
-				tButton.removeEventListener("click", tRCM_dismissNotice);
-				localStorage.setItem(messageID, "true");
-			});
-			tButton.style.cssText = "float:right;";
-		}
-	}
 	
 	/***************************
 	* Loading

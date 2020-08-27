@@ -1,3 +1,5 @@
+import Utils from './Utils';
+
 let mw = window.mediaWiki;
 
 //###########################################################
@@ -5,8 +7,9 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class ConstantsApp
 {
-	static readonly version					: string = "2.13b";
-	static readonly lastVersionDateString	: string = "Sun Jul 20 2017 00:39:12 GMT-0400 (Eastern Standard Time)";
+	static readonly version					: string = "2.14";
+	static readonly lastVersionDateString	: string = "Aug 27 2020 00:00:00 GMT";
+	
 	static readonly config					: any = mw.config.get([
 		"skin",
 		"debug",
@@ -190,5 +193,43 @@ export default class ConstantsApp
 		</svg>`;
 		delete ConstantsApp.SVG_SYMBOLS;
 		return tSVG;
+	}
+	
+	/*************************************
+	* Method for adding update message to an RCMManager
+	**************************************/
+	static showUpdateMessage(pMessageCont:HTMLElement) {
+		ConstantsApp._addUpdateMessage(pMessageCont, {
+			messageID: "rcm-news-V2-14-i18n-rework",
+			messageColor: "gold",
+			endDate: "Sep 28 2020 00:00:00 GMT",
+			message:`
+			Script translation now uses the I18n-js system, and can easily be edited <a href="https://dev.fandom.com/wiki/Special:BlankPage/I18nEdit/RecentChangesMultiple">here</a> (must be logged in)!
+			Adding a new language is simple as well, by visiting the same link.
+			`,
+		});
+	};
+	
+	private static _addUpdateMessage(pMessageCont:HTMLElement, {messageID,messageColor,endDate,message}:{ messageID:string,messageColor:string,endDate:string,message:string }) {
+		// mw.log("(_addUpdateMessage)", { messageID, endDate });
+		// Stop showing in a month or two, but also remember dismissal via localStorage.
+		if( new Date(endDate) > new Date() && (localStorage.getItem(messageID) != "true") ) {
+			mw.log("(_addUpdateMessage) Message still new enough, so adding");
+			var tMessage = Utils.newElement("div", { className:"rcm-update-message rcm-um-"+messageID, innerHTML:message}, pMessageCont);
+			tMessage.style.cssText = `border:5px double ${messageColor}; padding:2px 6px; overflow-y: hidden;`;
+			
+			var tButton = Utils.newElement("button", { innerHTML:"Dismiss Message" }, tMessage);
+			
+			tButton.addEventListener("click", () => {
+				// Remove all messages with this ID encase it was added to multiple RCMManagers
+				const messages = document.querySelectorAll(".rcm-um-"+messageID);
+				for(let i = 0; i < messages.length; i++) {
+					Utils.removeElement(messages[i]);
+				}
+				
+				localStorage.setItem(messageID, "true");
+			});
+			tButton.style.cssText = "float:right;";
+		}
 	}
 }
