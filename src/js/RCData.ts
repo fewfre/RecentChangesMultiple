@@ -867,7 +867,7 @@ export default class RCData
 			return '<div class="wikia-gallery-item">'
 				+'<div class="thumb">'
 					+`<div class="gallery-image-wrapper accent" ${wrapperStyle}>`
-					+`<a class="${lightBoxClass}" href="${imageHref}" target="_blank" style="${imageStyle}">`
+					+`<a class="${lightBoxClass}" href="${imageHref}" style="${imageStyle}">`
 						+image
 					+'</a>'
 					+'</div>'
@@ -894,9 +894,11 @@ export default class RCData
 			return tRCM_galleryItemTemplate({ isLightbox:true,
 				wrapperStyle:`position: relative; width:${tScaledWidth}px; top:${tOffsetY}px;`,
 				image:`<img class="thumbimage" src="${tImage.thumburl}" alt="${tTitle}">`,
-				imageHref:tImage.url,
+				imageHref:tImage.descriptionurl,
 				imageStyle:`width:${tScaledWidth}px;`,
-				caption: `<a href="${tImage.descriptionurl}">${tPageTitleNoNS}</a>`,
+				caption: `<a href="${tImage.descriptionurl}">${tPageTitleNoNS}</a>`
+					// Icon to open link to actual image
+					+` &#32; <a class="rcm-ajaxIcon" href="${tImage.url}" target="_blank">${ConstantsApp.getSymbol("rcm-picture")}</a>`,
 			});
 		}
 	}
