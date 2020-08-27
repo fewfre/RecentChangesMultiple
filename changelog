@@ -1,9 +1,10 @@
-==  ==
+== V2.14 - 26 August 2020 ==
 -I18n revamp
 	-Translation system reworked to use I18n-js for easier translating
 	-Multiple i18n MESSAGES replaced or moved to custom messages due to UCP removing many messages
 	-Added support for fetching legacy messages on UCP wiki
 	-i18n() now uses I18nKey as an arguement to ensure all translation IDs are typed correctly and expected.
+	-Moved all custom translation messages (i18n.TEXT) to I18n-js. See details at end of this version notes
 -Discussion-based Comments now load thier page names as expected! Big thanks to MarkusRost for pointing out how, and thanks to KockaAdmiralac for pointing out a proxy could get around the CORS issue.
 -Updated code to use JQuery typing, custom MediaWiki typing, and an extended window; window calls no longer use <any>
 -Added wikia-chiclet-button to CSS for UCP support
@@ -11,6 +12,28 @@
 -Converted rc "arr_" images to CSS as uri data. This was done for 2 reasons:
 	-Encase those png image are ever removed (since they are no longer used on UCP)
 	-To be more efficient (better than manually having an img tag each time)
+-As translation data is now in a JSON and can't have comments, I'm putting all the names of people who translated in the past here:
+	[be] Беларуская (BELARUSIAN)                     @author: Mix Gerder
+	[ca] Català (CATALAN)                            @author: Josep Maria Roca Peña
+	[de] Deutsch (German)                            @author: Cyanide3, Dragon Rainbow, SpacePucky
+	[es] Español (SPANISH)                           @author: Paynekiller92
+	[gl] Galego (GALICIAN)                           @author: Josep Maria Roca Peña
+	[it] Italiano (ITALIAN)                          @author: Leviathan 89
+	[ja] 日本語 (JAPANESE)                            @author: [anonymous]
+	[nl] Nederlands (DUTCH)                          @author: Mainframe98
+	[oc] Occitan (OCCITAN)                           @author: Josep Maria Roca Peña
+	[pl] Polski (POLISH)                             @author: Szynka013, Matik7
+	[pt] Português europeu (PORTUGUESE EUROPE)       @author: Josep Maria Roca Peña
+	[pt-br] Português brasileiro (PORTUGUESE BRAZIL) @author: DannielaServer
+	[ro] Română (ROMANIAN)                           @author: Josep Maria Roca Peña
+	[ru] Русский (RUSSIAN)                           @author: Mix Gerder
+	[tr] Türkçe (TURKISH)                            @author: BaRaN6161TURK
+	[uk] Українська (UKRAINIAN)                      @author: Mix Gerder
+	[val] Valencià (VALENCIAN)                       @author: Josep Maria Roca Peña
+	[vi] Vietnamese                                  @author: Dai ca superman
+	[zh] 中文 (CHINESE)                               @author: TsukiYaksha
+	[zh-hant] 中文 (繁體) (CHINESE TRADITIONAL)       @author: TsukiYaksha
+
 
 == V2.13b - 22 August 2020 ==
 -Modals now use Modal.js and reworked to work on UCP
