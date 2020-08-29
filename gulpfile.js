@@ -46,6 +46,7 @@ gulp.task('core_comments', ['core'], function() {
  * Author: Fewfre
  *
  * Uses ajax loading to view the Special:RecentChanges of multiple wikis all on one page.
+ * PLEASE DON'T EDIT DIRECTLY WITHOUT INFORMING ME! If you do so it will likely be overwritten at a later date, as this script is pre-compiled and stored at https://github.com/fewfre/RecentChangesMultiple
  */\n`
 	))
 	.pipe(insert.append('//</syntaxhighlight>\n'))

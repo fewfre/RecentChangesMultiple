@@ -102,7 +102,7 @@ class Main
 		tLoadPromises[tLoadPromises.length] = mw.loader.using([
 			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
 			...(ConstantsApp.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
-			ConstantsApp.isUcpWiki ? "mediawiki.diff.styles" : 'mediawiki.action.history.diff', // AjaxDiff css
+			...(ConstantsApp.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.runtimeStyles"] : ['mediawiki.action.history.diff']), // AjaxDiff css
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
@@ -304,7 +304,7 @@ class Main
 			.fail((pData) => {
 				if(this.numLangLoadErrors < 15) {
 					this.numLangLoadErrors++;
-					this._loadLangMessages().then(resolve).catch(reject);
+					this._loadLangMessages().then(resolve)["catch"](reject); // NEED to do ["catch"] as otherwise fandom throws a hissy fit
 				} else {
 					mw.log("ERROR: "+JSON.stringify(pData));
 					alert(`ERROR: RecentChanges text not loaded properly (${this.numLangLoadErrors} tries); defaulting to English.`);
