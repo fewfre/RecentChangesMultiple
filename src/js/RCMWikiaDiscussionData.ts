@@ -89,7 +89,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.uniqueID = pData.threadId; // By default; make change based on this.type.
 		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
 		this.threadHref = `${this.wikiInfo.scriptpath}/d/p/${this.threadId}`;
-		this.href = this.threadHref + (pData.isReply ? `#reply-${pData.id}` : "");
+		this.href = this.threadHref + (pData.isReply ? `/r/${pData.id}` : "");
 		this.hrefBasic = this.href;
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
@@ -179,23 +179,24 @@ export default class RCMWikiaDiscussionData extends RCData
 	getCommentForumNameLink() : string {
 		// If already loaded and saved
 		if(this.forumName) { return `[${this.href} ${this.forumName}]`; }
+		
+		const tSetDataAfterLoad = (title, relativeUrl)=>{
+			this.forumName = title;
+			this.threadHref = this.wikiInfo.server+Utils.escapeCharactersLink(relativeUrl)+`?threadId=${this.threadId}#articleComments`;
+			this.href = this.threadHref;
+		}
+		
 		// If loaded but page not updated for some reason
 		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
 			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
-			this.forumName = title;
-			this.threadHref = this.wikiInfo.server+relativeUrl+`?threadId=${this.threadId}#articleComments`;
-			this.href = this.threadHref;
-			
+			tSetDataAfterLoad(title, relativeUrl);
 			return `[${this.href} ${this.forumName}]`;
 		}
 		
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
 		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
-			this.forumName = title;
-			this.threadHref = this.wikiInfo.server+relativeUrl+`?threadId=${this.threadId}#articleComments`;
-			this.href = this.threadHref;
-			
+			tSetDataAfterLoad(title, relativeUrl);
 			$(`.rcm${uniqID} a`).attr("href", this.href).text(this.forumName);
 		} });
 		
@@ -215,8 +216,10 @@ export default class RCMWikiaDiscussionData extends RCData
 				callback: (data) => {
 					// Pass data to all waiting items
 					this.wikiInfo.discCommentPageNamesNeeded.forEach((o)=>{
-						if(data.articleNames[Number(o.pageID)])
+						if(data.articleNames[Number(o.pageID)]) {
 							o.cb(data.articleNames[Number(o.pageID)]);
+							this.wikiInfo.discCommentPageNames.set(o.pageID, data.articleNames[Number(o.pageID)])
+						}
 					});
 					// List cleared of waiting items
 					this.wikiInfo.discCommentPageNamesNeeded = [];
