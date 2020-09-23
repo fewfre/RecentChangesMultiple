@@ -221,7 +221,7 @@ export default class RCMOptions
 		.appendTo(pParent);
 		
 		// Seems the old MultiSelectDropdown system was only really designed for a single use (makes sense) so a custom namespace needs to be made for each RCM manager instance
-		return (new WikiaMultiSelectDropdown($dropdown, { eventNamespace: 'WikiaMultiSelectDropdown'+this.manager.modID, maxHeight:100 })).init();
+		return (new WikiaMultiSelectDropdown($dropdown, { eventNamespace: 'WikiaMultiSelectDropdown'+this.manager.modID, minHeight:100, maxHeight:100 })).init();
 	}
 	
 	// Add / set the values of the fields.
