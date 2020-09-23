@@ -2,6 +2,7 @@ import ConstantsApp from "./ConstantsApp";
 import RCMManager from "./RCMManager";
 import Utils from "./Utils";
 import i18n from "./i18n";
+import { WikiaMultiSelectDropdown } from "./lib/WikiaMultiSelectDropdown";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -21,7 +22,7 @@ export default class RCMOptions
 	 * Data
 	 ***************************/
 	rcParams			: any;
-	discussionsEnabled	: boolean;
+	discNamespaces		: { FORUM:boolean, WALL:boolean, ARTICLE_COMMENT:boolean };
 	
 	/***************************
 	 * Fields
@@ -40,6 +41,8 @@ export default class RCMOptions
 	groupedChangesCheckbox		: HTMLInputElement;
 	logsCheckbox				: HTMLInputElement;
 	
+	discussionsDropdown			: WikiaMultiSelectDropdown;
+	
 	// Constructor
 	constructor(pManager:RCMManager) {
 		this.manager = pManager;
@@ -53,6 +56,7 @@ export default class RCMOptions
 		this.root = null;
 		
 		this.rcParams = null;
+		this.discNamespaces = null;
 		
 		this.settingsSaveCookieCheckbox	= null;
 		this.settingsShowDiscussionsCheckbox= null;
@@ -73,12 +77,15 @@ export default class RCMOptions
 		this.root = <HTMLElement>pElem;
 		
 		let tSave = this.getSave();
+		
 		this.rcParams = tSave.options || {};//$.extend({}, this.manager.rcParamsBase);
 		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
-		this.discussionsEnabled = tSave.discussionsEnabled;
-		if(this.discussionsEnabled != null) {
-			this.manager.discussionsEnabled = this.discussionsEnabled;
-		}
+		
+		// By default we want them all enabled
+		const bool = this.manager.discussionsEnabled;
+		this.discNamespaces = $.extend({ FORUM:bool, WALL:bool, ARTICLE_COMMENT:bool }, (tSave.discNamespaces || {}));
+		this.manager.discNamespaces = { ...this.discNamespaces };
+		this.manager.discussionsEnabled = Object.keys(this.discNamespaces).filter(key=>this.discNamespaces[key]).length > 0;
 		
 		this._addElements();
 		
@@ -95,10 +102,10 @@ export default class RCMOptions
 		 ***************************/
 		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
 		tSettingsPanel.innerHTML = ConstantsApp.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
-		var tSettingsPanelContent = <HTMLInputElement>Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
+		var tSettingsPanelContent = Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
 		
 		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
-		this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tSettingsPanelContent);
+		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tSettingsPanelContent);
 		
 		/***************************
 		 * First line of choices (numbers)
@@ -107,9 +114,9 @@ export default class RCMOptions
 		var tRow1 = Utils.newElement("div", {  }, tContent);
 		
 		Utils.addTextTo(tRow1Text[0], tRow1);
-		this.limitField = <HTMLSelectElement>Utils.newElement("select", {}, tRow1);
+		this.limitField = Utils.newElement("select", {}, tRow1);
 		Utils.addTextTo(tRow1Text[1], tRow1);
-		this.daysField = <HTMLSelectElement>Utils.newElement("select", {}, tRow1);
+		this.daysField = Utils.newElement("select", {}, tRow1);
 		Utils.addTextTo(tRow1Text[2]||"", tRow1);
 		
 		/***************************
@@ -154,17 +161,20 @@ export default class RCMOptions
 		/***************************
 		 * Third line of choices (discussions)
 		 ***************************/
-		// let tRow3 = Utils.newElement("div", {  }, tContent);
+		Utils.newElement("hr", null, tContent);
+		
+		let tRow3 = Utils.newElement("table", { className:"mw-recentchanges-table" }, tContent);
+		let tRow3Row = Utils.newElement("row", { className:"mw-recentchanges-table" }, tRow3);
 		
 		// Utils.addTextTo("<b>Discussions:</b> ", tRow3);
+		Utils.newElement("td", { className:"mw-label", innerHTML:i18n("discussions")+":" }, tRow3Row);
 		
-		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('allmessages-filter-all'), this.manager.discussionsEnabled, tRow3);
-		// Utils.addTextTo(" | ", tRow2);
-		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('discussions'), this.manager.discussionsEnabled, tRow3);
-		// Utils.addTextTo(" | ", tRow2);
-		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('message-wall'), this.manager.discussionsEnabled, tRow3);
-		// Utils.addTextTo(" | ", tRow2);
-		// this.settingsShowDiscussionsCheckbox = this._createNewSettingsOption(i18n('comments'), this.manager.discussionsEnabled, tRow3);
+		let tRow3RowTdInput = Utils.newElement("td", { className:"mw-input" }, tRow3Row);
+		this.discussionsDropdown = this._createNewMultiSelectDropdown([
+			{ label:i18n('discussions'), value:"FORUM" },
+			{ label:i18n('message-wall'), value:"WALL" },
+			{ label:i18n('comments'), value:"ARTICLE_COMMENT" },
+		], this.manager.discNamespaces, tRow3RowTdInput);
 		
 		/***************************
 		 * Finish - make this work!
@@ -177,7 +187,7 @@ export default class RCMOptions
 	
 	private _newCheckbox(pText:string, pParent:HTMLElement) : HTMLInputElement {
 		let tLabel = Utils.newElement("label", null, pParent);
-		let tCheckbox = <HTMLInputElement>Utils.newElement("input", { type:"checkbox" }, tLabel);
+		let tCheckbox = Utils.newElement("input", { type:"checkbox" }, tLabel);
 		Utils.addTextTo(pText, tLabel);
 		return tCheckbox;
 	}
@@ -186,6 +196,32 @@ export default class RCMOptions
 		let tCheckbox = this._newCheckbox(pText, pParent);
 		tCheckbox.checked = pChecked;
 		return tCheckbox;
+	}
+	
+	private _createNewMultiSelectDropdown(pList:Array<{ label:string, value:string|number }>, pChecked:any, pParent:HTMLElement) {
+		const $dropdown = $(`<div class="WikiaDropdown MultiSelect disc">
+			<div class="selected-items">
+				<span class="selected-items-list"></span>
+				<img class="arrow" src="data:image/gif;base64,R0lGODlhAQABAIABAAAAAP///yH5BAEAAAEALAAAAAABAAEAQAICTAEAOw%3D%3D" />
+			</div>
+			<div class="dropdown">
+				<div class="toolbar">
+					<label><input type="checkbox" name="select-all" class="select-all" value="all">${i18n("listusers-select-all")}</label>
+				</div>
+				<ul class="dropdown-list">
+					${pList.map((o,i)=>{
+						const checked = pChecked[o.value];// || pChecked.indexOf(o.value) > -1;
+						return `<li class="dropdown-item ${checked ? "selected" : ""}">
+							<label><input type="checkbox" name="namespace[]" value="${o.value}" ${checked ? "checked" : ""}>${o.label}</label>
+						</li>`;
+					}).join("")}
+				</ul>
+			</div>
+		</div>`)
+		.appendTo(pParent);
+		
+		// Seems the old MultiSelectDropdown system was only really designed for a single use (makes sense) so a custom namespace needs to be made for each RCM manager instance
+		return (new WikiaMultiSelectDropdown($dropdown, { eventNamespace: 'WikiaMultiSelectDropdown'+this.manager.modID, maxHeight:100 })).init();
 	}
 	
 	// Add / set the values of the fields.
@@ -230,11 +266,14 @@ export default class RCMOptions
 		this.myEditsCheckbox.checked = !this.manager.rcParams.hidemyself;
 		this.groupedChangesCheckbox.checked = !this.manager.rcParams.hideenhanced;
 		this.logsCheckbox.checked = !this.manager.rcParams.hidelogs;
+		
+		Object.keys(this.discNamespaces).forEach((ns)=>{
+			this.discussionsDropdown.$dropdown.find(`[value=${ns}]`).attr("checked", this.discNamespaces[ns]);
+		});
 	}
 	
 	addEventListeners() : void {
 		this.settingsSaveCookieCheckbox.addEventListener("change", this._onChange_settingsSaveCookie);
-		this.settingsShowDiscussionsCheckbox.addEventListener("change", this._onChange_settingsShowDiscussions);
 		
 		this.limitField.addEventListener("change", this._onChange_limit);
 		this.daysField.addEventListener("change", this._onChange_days);
@@ -246,11 +285,13 @@ export default class RCMOptions
 		this.myEditsCheckbox.addEventListener("change", this._onChange_hidemyself);
 		this.groupedChangesCheckbox.addEventListener("change", this._onChange_hideenhanced);
 		this.logsCheckbox.addEventListener("change", this._onChange_hidelogs);
+		
+		this.discussionsDropdown.on("change", this._onChange_discussionsDropdown);
+		this.discussionsDropdown.$selectAll.on("change", this._onChange_discussionsDropdown);
 	}
 	
 	removeEventListeners() : void {
 		this.settingsSaveCookieCheckbox.removeEventListener("change", this._onChange_settingsSaveCookie);
-		this.settingsShowDiscussionsCheckbox.removeEventListener("change", this._onChange_settingsShowDiscussions);
 		
 		this.limitField.removeEventListener("change", this._onChange_limit);
 		this.daysField.removeEventListener("change", this._onChange_days);
@@ -321,9 +362,16 @@ export default class RCMOptions
 		}
 	}
 	
-	private _onChange_settingsShowDiscussions = (pEvent:Event) : void => {
-		this.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
-		this.manager.discussionsEnabled = (<HTMLInputElement>pEvent.target).checked;
+	private _onChange_discussionsDropdown = (pEvent:any) : void => {
+		const dropdown = this.discussionsDropdown;
+		
+		this.discussionsDropdown.$dropdown.find(`.dropdown-item input`).each((i, o)=>{
+			const checkbox = (<HTMLInputElement>o);
+			this.discNamespaces[checkbox.value] = checkbox.checked;
+			this.manager.discNamespaces[checkbox.value] = checkbox.checked;
+		});
+		
+		this.manager.discussionsEnabled = dropdown.getSelectedItems().length > 0;
 		this.manager.hardRefresh(true);
 		this.save();
 	}
@@ -348,7 +396,8 @@ export default class RCMOptions
 	
 	save() : void {
 		if(this.settingsSaveCookieCheckbox.checked) {
-			localStorage.setItem(this.localStorageID, JSON.stringify({ options:this.rcParams, discussionsEnabled:this.discussionsEnabled }));
+			const { rcParams:options, discNamespaces } = this;
+			localStorage.setItem(this.localStorageID, JSON.stringify({ options, discNamespaces }));
 		}
 	}
 	

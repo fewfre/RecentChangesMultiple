@@ -55,6 +55,7 @@ export default class RCMManager
 	notificationsHideusers	: string[]; // Don't send notifications when these users edit.
 	
 	makeLinksAjax			: boolean; // Make the diff/gallery link behave as the ajax icons do.
+	discNamespaces			: { FORUM:boolean, WALL:boolean, ARTICLE_COMMENT:boolean }; // What discussion namespaces (container types) to show
 	discussionsEnabled		: boolean; // Whether to load Wikia discussions
 	
 	/***************************
@@ -455,7 +456,7 @@ export default class RCMManager
 		}
 	}
 	
-	private _parseWikiDiscussions(pData, pWikiData:WikiData) : void {
+	private _parseWikiDiscussions(pData:any[], pWikiData:WikiData) : void {
 		// Check if wiki doesn't have any recent changes
 		if(pData.length <= 0) {
 			this._onDiscussionParsingFinished(pWikiData);
@@ -476,6 +477,13 @@ export default class RCMManager
 			if(pWikiData.rcParams.hidemyself && ConstantsApp.username == tUser) { return; }
 			// Skip if goes past the RC "changes in last _ days" value.
 			if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
+			
+			
+			try {
+				const containerType = pRCData._embedded.thread[0].containerType;
+				console.log(containerType, this.discNamespaces[ containerType ], this.discNamespaces);
+				if(!this.discNamespaces[ containerType ]) { return; }
+			} catch(e){}
 			
 			this.itemsToAddTotal++;
 			tNewRC = new RCMWikiaDiscussionData( pWikiData, this );

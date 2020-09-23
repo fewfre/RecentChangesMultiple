@@ -1,3 +1,11 @@
+== V2.14b ===
+-UCP tweaks / bug fixes
+-Fixed word wrap issue based on script's talk page
+-Discussion-based comments now link correctly
+-Changing dev i18n translation data to use my wiki2html for parsing over the dev script's version to avoid it's html escaping
+-Added dropdown for discussion type filtering
+
+
 == V2.14 - 26 August 2020 ==
 -I18n revamp
 	-Translation system reworked to use I18n-js for easier translating

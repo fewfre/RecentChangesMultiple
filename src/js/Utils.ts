@@ -3,6 +3,23 @@ import ConstantsApp from "./ConstantsApp";
 let $ = window.jQuery;
 let mw = window.mediaWiki;
 
+interface CommonElementAttributes {
+	// Special mapped ones
+	style?: string;
+	// Normal
+	id?: string;
+	className?: string;
+	title?: string;
+	innerHTML?: string|number;
+	htmlFor?: string;
+	name?: string;
+	type?: string;
+	value?: string|number;
+	selected?: string;
+	rel?: string;
+	href?: string;
+}
+
 //######################################
 // General Helper Methods - STATIC
 //######################################
@@ -14,10 +31,16 @@ export default class Utils
 	// Allows forEach even on nodelists
 	static forEach(collection, callback, pScope?:any) : void { if(collection != undefined) { Array.prototype.forEach.call(collection, callback, pScope); } }
 	
+	// newElement method overloads
+	static newElement(tag:"div", attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLDivElement;
+	static newElement(tag:"span", attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLSpanElement;
+	static newElement(tag:"input", attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLInputElement;
+	static newElement(tag:"select", attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLSelectElement;
+	static newElement(tag:string, attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLElement;
 	// Creates a new HTML element (not jQuery) with specific attributes
-	static newElement(tag:string, attributes?:any, parent?:HTMLElement|Element) : HTMLElement {
+	static newElement(tag:string, attributes?:CommonElementAttributes|null, parent?:HTMLElement|Element) : HTMLElement {
 		var element = document.createElement(tag);
-		if(attributes != undefined) {
+		if(!!attributes) {
 			for(var key in attributes) {
 				if(key == "style") {
 					element.style.cssText = attributes[key];

@@ -75,11 +75,14 @@ interface i18nInterface {
 	wiki2html: (pText:string, ...pArgs:(string|number)[]) => string
 }
 var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
+	let tText:string;
 	let devMsg = i18n.devI18n.msg(pKey, ...pArgs);
 	if(devMsg.exists) {
-		return devMsg.parse();
+		// return devMsg.parse();
+		tText = devMsg.plain();
+	} else {
+		tText = i18n.MESSAGES[pKey];
 	}
-	let tText = i18n.MESSAGES[pKey];
 	if(tText == undefined) {
 		mw.log(`[RecentChangesMultiple.i18n]() '${pKey}' is undefined.`);
 		return pKey;
@@ -324,6 +327,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'forum-related-discussion-heading': 'Discussions about $1',
 	'embeddable-discussions-loading': 'Loading Discussions...',
 	'allmessages-filter-all': 'All',
+	'listusers-select-all': 'Select all',
 	
 	/***************************
 	* AbuseFilter
@@ -684,15 +688,15 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 	return pText
 		// bold
 		.replace(/'''(.*?)'''/g, function (m, l) {
-			return '<strong>' + l + '</strong>';
+			return `<strong>${l}</strong>`;
 		})
 		// italic
 		.replace(/''(.*?)''/g, function (m, l) {
-			return '<em>' + l + '</em>';
+			return `<em>${l}</em>`;
 		})
 		// normal link
 		.replace(/[^\[](http[^\[\s]*)/g, function (m, l) {
-			return '<a href="' + l + '">' + l + '</a>';
+			return `<a href="${l}">${l}</a>`;
 		})
 		// format string by replacing wiki $1 string vars with text.
 		.replace(/\$(\d+)/g, function(match, number) {
@@ -707,14 +711,14 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 			// 	// no support for images - since it looks up the source from the wiki db
 			// 	return m;
 			// } else {
-				return '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
+				return `<a href="${link}">${(p.length ? p.join('|') : link)}</a>`;
 			// }
 		})
 		// external link
 		.replace(/[\[](https?:\/\/.*|\/\/.*)[!\]]/g, function (m, l) {
 			let p = l.replace(/[\[\]]/g, '').split(/ /);
 			let link = p.shift();
-			return '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>';
+			return `<a href="${link}">${(p.length ? p.join(' ') : link)}</a>`;
 		})
 		/*******************************************************************************
 		 * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.language

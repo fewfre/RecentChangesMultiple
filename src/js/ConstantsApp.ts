@@ -7,7 +7,7 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class ConstantsApp
 {
-	static readonly version					: string = "2.14";
+	static readonly version					: string = "2.14b";
 	static readonly lastVersionDateString	: string = "Aug 27 2020 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
@@ -94,7 +94,7 @@ export default class ConstantsApp
 	/*************************************
 	* SVGs - Inline SVG allows icon to use font color.
 	**************************************/
-	static getSymbol(pID:string, pWidth:string|number=15, pHeight:string|number=pWidth) : string {
+	static getSymbol(pID:/*"rcm-loading"|"rcm-loading-large"|*/"rcm-columns"|"rcm-picture"|"rcm-preview"|"rcm-upvote-tiny"|"rcm-lock"|"rcm-report"|"rcm-settings-gear"|"rcm-disc-page"|"rcm-disc-envelope"|"rcm-disc-reply", pWidth:string|number=15, pHeight:string|number=pWidth) : string {
 		return `<svg width="${pWidth}" height="${pHeight}" class='rcm-svg-icon'><use xlink:href="#${pID}" width="${pWidth}" height="${pHeight}" /></svg>`;
 	}
 	
@@ -182,6 +182,13 @@ export default class ConstantsApp
 		`<symbol id="rcm-settings-gear" viewBox="0 0 24 24" enable-background="new 0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
 			<path style="fill:currentColor" d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z"/>
 		</symbol>`,
+		
+		// [wds-icons-page-tiny] Used for discussion stuff
+		`<symbol id="rcm-disc-page" viewBox="0 0 12 12"><path d="M5 7v3H3V2h6v4H6a1 1 0 0 0-1 1m5.935.326c.03-.086.047-.175.053-.265.001-.022.012-.04.012-.061V1a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4a.985.985 0 0 0 .383-.077.986.986 0 0 0 .325-.217l3.998-3.998.004-.005a.958.958 0 0 0 .19-.283c.015-.03.023-.062.035-.094" fill-rule="evenodd"></path></symbol>`,
+		// [wds-icons-envelope-tiny] Used for discussion stuff
+		`<symbol id="rcm-disc-envelope" viewBox="0 0 12 12"><path d="M10 9H2V4.414l3.293 3.293a.999.999 0 0 0 1.414 0L10 4.414V9zM8.586 3L6 5.586 3.414 3h5.172zm3.339-1.381A1.003 1.003 0 0 0 11.003 1H.997a.988.988 0 0 0-.704.293A1.003 1.003 0 0 0 0 1.997V10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V1.997a.988.988 0 0 0-.075-.378z" fill-rule="evenodd"></path></symbol>`,
+		// [wds-icons-reply-tiny] Used for discussion stuff
+		`<symbol id="rcm-disc-reply" viewBox="0 0 12 12"><path id="reply-tiny" d="M4.998 4H3.412l2.293-2.293A.999.999 0 1 0 4.291.293l-3.999 4a1 1 0 0 0 0 1.415l3.999 4a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.415L3.412 6h1.586c2.757 0 5 2.243 5 5a1 1 0 1 0 2 0c0-3.86-3.141-7-7-7"></path></symbol>`,
 	];
 	
 	// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.

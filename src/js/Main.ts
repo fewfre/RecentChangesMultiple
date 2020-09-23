@@ -4,7 +4,7 @@ import Utils from "./Utils";
 import i18n, { legacyMessagesRemovedContent } from "./i18n";
 import RCParams from "./types/RCParams";
 import RCMModal from "./RCMModal";
-import addMakeCollapsible from "./makeCollapsible";
+import addMakeCollapsible from "./lib/makeCollapsible";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -36,6 +36,10 @@ class Main
 	init(pScriptConfig:any) : void {
 		mw.loader.using(['mediawiki.util', 'mediawiki.language', 'mediawiki.user', 'user.options']).done(()=>{
 			ConstantsApp.init(pScriptConfig);
+			
+			if(ConstantsApp.debug) {
+				mw.log = <any>console.log;
+			}
 			
 			$(document).ready($.proxy(this._ready, this));
 			$(document).on("unload", $.proxy(this._unload, this));

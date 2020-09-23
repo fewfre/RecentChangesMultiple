@@ -31,6 +31,7 @@ export default class RCMWikiaDiscussionData extends RCData
 	isLocked		: string;
 	isReported		: string;
 	rawContent		: string;
+	isReply			: boolean;
 	
 	threadHref		: string;
 	forumPage		: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched seperately)
@@ -88,6 +89,7 @@ export default class RCMWikiaDiscussionData extends RCData
 		this.titleNoNS = this.title;//(this.namespace != 0 && this.title.indexOf(":") > -1) ? this.title.split(":")[1] : this.title;
 		this.uniqueID = pData.threadId; // By default; make change based on this.type.
 		this.hrefTitle = Utils.escapeCharactersLink( pData.title );
+		this.isReply = pData.isReply;
 		this.threadHref = `${this.wikiInfo.scriptpath}/d/p/${this.threadId}`;
 		this.href = this.threadHref + (pData.isReply ? `/r/${pData.id}` : "");
 		this.hrefBasic = this.href;
@@ -182,7 +184,10 @@ export default class RCMWikiaDiscussionData extends RCData
 		
 		const tSetDataAfterLoad = (title, relativeUrl)=>{
 			this.forumName = title;
-			this.threadHref = this.wikiInfo.server+Utils.escapeCharactersLink(relativeUrl)+`?threadId=${this.threadId}#articleComments`;
+			this.threadHref = this.wikiInfo.server+Utils.escapeCharactersLink(relativeUrl)+`?commentId=${this.threadId}`;
+			if(this.isReply) {
+				this.threadHref += `&replyId=${this.pageid}`
+			}
 			this.href = this.threadHref;
 		}
 		

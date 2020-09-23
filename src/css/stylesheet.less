@@ -65,6 +65,9 @@ table.mw-enhanced-rc {
 .rcm-results ul.special li {
 	position: relative;
 }
+.rcm-results .comment {
+	word-break: break-word;
+}
 
 //#############################
 // Wiki list info strips
@@ -298,13 +301,7 @@ table.mw-enhanced-rc {
 }
 
 /**************************
- * ## Some Special:RecentChanges css, since it's not loaded on normal pages ##
- **************************/
-/* extensions/wikia/RecentChanges/css/RecentChanges.scss */
-.rc-conntent{min-height:200px}.mw-recentchanges-table{zoom:1}.mw-recentchanges-table:after{clear:both;content:" ";display:block;height:0;overflow:hidden;visibility:hidden}.mw-recentchanges-table td.mw-label,.mw-recentchanges-table td.mw-input{vertical-align:middle}.mw-recentchanges-table .WikiaDropdown{float:left;margin-top:1px;margin-right:10px}.mw-recentchanges-table .WikiaDropdown .toolbar{background-color:#ccdee6;border-bottom:1px solid #bcc1c4;line-height:30px;padding:0 10px}.mw-recentchanges-table .WikiaDropdown .toolbar input[type="checkbox"]{margin-right:10px}.mw-recentchanges-table .WikiaDropdown .toolbar input[type="checkbox"].modified{opacity:.5}.mw-recentchanges-table .WikiaDropdown .toolbar label{display:block}
-/* mediawiki.special.changelist */
-table.mw-enhanced-rc{border:0;border-spacing:0}table.mw-enhanced-rc th,table.mw-enhanced-rc td{padding:0;vertical-align:top}td.mw-enhanced-rc{white-space:nowrap;font-family:monospace}.mw-enhanced-rc-time{font-family:monospace}table.mw-enhanced-rc td.mw-enhanced-rc-nested{padding-left:1em} .mw-enhanced-rc .collapsible-expander{float:none} .mw-enhanced-rc .mw-rc-openarrow{visibility:hidden}.mw-enhanced-rc.mw-made-collapsible .mw-rc-openarrow,.mw-enhanced-rc .mw-rc-closearrow{visibility:visible;display:none}.mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-collapsed .mw-rc-openarrow,.mw-enhanced-rc.mw-made-collapsible .mw-collapsible-toggle-expanded .mw-rc-closearrow{display:inline}
-/* skins/oasis/css/oasis.scss - removed from wikia css, so re-adding here */
-.banner-notification{box-shadow:0 2px 5px 0 #e0e0e0;padding:8px 10px}.banner-notification.confirm{background:#92CD8E;border:1px solid #7EB37D;border-top-width:0;color:#28482E}.banner-notification.confirm .close{background-color:#161f15}.banner-notification.confirm a{color:#3d6341}.banner-notification.notify{background:#7ABFDD;border:1px solid #6DA8C1;border-top-width:0;color:#22424F}.banner-notification.notify .close{background-color:#121d21}.banner-notification.notify a{color:#345b6b}.banner-notification.error{background:#E56667;border:1px solid #C859CA;border-top-width:0;color:#511616}.banner-notification.error .close{background-color:#220f0f}.banner-notification.error a{color:#6f2626}.banner-notification.warn{background:#F2CF60;border:1px solid #D2B554;border-top-width:0;color:#524616}.banner-notification.warn .close{background-color:#241f0e}.banner-notification.warn a{color:#726125}.banner-notification .msg{font-size:13px;line-height:16px}.banner-notification .msg a{text-decoration:underline}.banner-notification .close{float:right;height:14px;margin:0;width:14px}.banner-notification .close img{background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAnklEQVR42q2SUQ2FMAwAsVALWJiFWXgWsIAFLGABC1iYBSwgYaVLjqQJe2QQSO6ja69ZOzpVfc03cs65N6IRuspXciA1WYzNUBp48cf5WuKLTFEwlCbCWW/sIH9likcaLMSrv82tjLAgnOJIqkFmfj/nEzkiKrOGFtkvaHNbToa0yAkhEk/E841MoVtQpeFQlUuCguQ8//47hM/+7dccsoYmxqM9qkcAAAAASUVORK5CYII=");background-position:center center;background-repeat:no-repeat;background-size:12px 11px;content:"";display:block;height:100%;width:100%}.banner-notification.non-dismissible .close{display:none}.banner-notification a.wikia-button{text-decoration:none}.banner-notifications-wrapper{margin:0 auto;transition:top 200ms linear;width:958px;z-index:5000101}.banner-notifications-wrapper.float{left:50%;margin-left:-515px;position:fixed} .wikia-grid .banner-notifications-wrapper{width:988px}.wikia-grid .banner-notifications-wrapper.float{margin-left:-505px}@media screen and (max-width:1020px){.wikia-grid .banner-notifications-wrapper.float{width:-webkit-calc(100% - 20px);width:calc(100% - 20px);left:0;margin:0}} .modalWrapper .banner-notifications-wrapper{box-shadow:0 0 0 0 #000;margin:auto;width:auto}.modalWrapper .banner-notifications-wrapper .close{display:none}.modalWrapper .banner-notifications-wrapper.float{left:0;margin:0;padding:0;position:absolute;width:100%}.modalWrapper .banner-notifications-wrapper .msg{padding:8px 10px}.modal .banner-notifications-wrapper{width:100%}.modal .banner-notifications-wrapper .close{display:none}.ve-ui-window-body .banner-notifications-wrapper{box-sizing:border-box;position:absolute;width:100%}.ve-ui-window-body .banner-notifications-wrapper .close{position:absolute;right:15px}
-.wikia-chiclet-button{background-image:none;border:0;border-radius:0;cursor:pointer;display:inline-block;height:19px;opacity:0.3;padding:0;position:relative;width:19px}.wikia-chiclet-button img{height:15px;left:2px;position:absolute;top:2px;width:15px}.wikia-chiclet-button:hover{opacity:1;background-image:none}button.wikia-chiclet-button{line-height:1px}button.wikia-chiclet-button img{position:static;vertical-align:middle}
+* ## Some Special:RecentChanges css, since it's not loaded on normal pages ##
+***************************/
+@import "fandom.less";
 /* </syntaxhighlight> */
