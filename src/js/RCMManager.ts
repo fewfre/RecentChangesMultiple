@@ -482,7 +482,6 @@ export default class RCMManager
 			
 			try {
 				const containerType = pRCData._embedded.thread[0].containerType;
-				console.log(containerType, this.discNamespaces[ containerType ], this.discNamespaces);
 				if(!this.discNamespaces[ containerType ]) { return; }
 			} catch(e){}
 			

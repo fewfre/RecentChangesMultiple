@@ -211,6 +211,14 @@ export default class RCDataLog extends RCData
 				}
 				break;
 			}
+			case "protect": {
+				if(this.wikiInfo.useOutdatedLogSystem == false) {
+					if(!this.log_info_0 && tLogParams) {
+						this.log_info_0 = tLogParams.description;
+					}
+				}
+				break;
+			}
 		}
 		
 		tLogParams = null;
