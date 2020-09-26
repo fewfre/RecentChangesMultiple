@@ -5,6 +5,7 @@ import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
 import Global from "./Global";
+import {previewDiff,previewImages,previewPage} from "./GlobalModal";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
 
 let $ = window.jQuery;
@@ -269,7 +270,7 @@ export default class RCList
 				newRev:{ user:pToRC.userDetails(), summary:pToRC.getSummary(), date:pToRC.date, minor:pToRC.isMinorEdit },
 			};
 			
-			this._addAjaxClickListener(pElem, () => { RCData.previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo); });
+			this._addAjaxClickListener(pElem, () => { previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo); });
 			
 			pFromRC = null;
 			pToRC = null;
@@ -292,7 +293,7 @@ export default class RCList
 			var ajaxLink = this.wikiInfo.scriptpath+"/api.php?action=query&prop=imageinfo&format=json&redirects&iiprop=url|size";
 			var articlepath = this.wikiInfo.articlepath;
 			
-			this._addAjaxClickListener(pElem, () => { RCData.previewImages(ajaxLink, tImageNames, articlepath); });
+			this._addAjaxClickListener(pElem, () => { previewImages(ajaxLink, tImageNames, articlepath); });
 			
 			// tImageNames = null;
 			pImageRCs = null;
@@ -312,7 +313,7 @@ export default class RCList
 			}
 			let serverLink = this.wikiInfo.server;
 			
-			this._addAjaxClickListener(pElem, () => { RCData.previewPage(ajaxLink, pageName, pageHref, serverLink); });
+			this._addAjaxClickListener(pElem, () => { previewPage(ajaxLink, pageName, pageHref, serverLink); });
 		}
 	}
 	

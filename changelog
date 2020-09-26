@@ -1,5 +1,6 @@
 ==  ==
 -Renamed some JS classes
+-Moved static RCData modal helper functions to thier own file GlobalModal
 
 
 == V2.14b - 23 September 2020 ===
