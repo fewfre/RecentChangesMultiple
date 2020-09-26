@@ -45,7 +45,7 @@ export default class RCDataFandomDiscussion extends RCData
 		super.dispose();
 	}
 	
-	/*override*/ init(pData:any, pAllData:any) : this {
+	/*override*/ init(pData:any) : this {
 		this.type = TYPE.DISCUSSION;
 		this.containerType = "FORUM";
 		let embeddedThread:any = null;

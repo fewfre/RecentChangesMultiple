@@ -5,6 +5,7 @@ import Global from "./Global";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
 import RCData from "./RCData";
+import RCDataLog from "./RCDataLog";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
 // import RCDataAbuseLog from "./RCDataAbuseLog";
 import RCList from "./RCList";
@@ -487,7 +488,7 @@ export default class RCMManager
 			
 			this.itemsToAddTotal++;
 			tNewRC = new RCDataFandomDiscussion( pWikiData, this );
-			tNewRC.init(pRCData, pData);
+			tNewRC.init(pRCData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.discussionsCount++;
 		});
@@ -677,7 +678,11 @@ export default class RCMManager
 			if(this._changeShouldBePrunedBasedOnOptions(pRCData.user, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
-			tNewRC = new RCData( pWikiData, this ).init(pRCData, pLogData);
+			if(pRCData.logtype && pRCData.logtype != "0") { // It's a "real" log. "0" signifies a wall/board.)
+				tNewRC = new RCDataLog( pWikiData, this ).initLog(pRCData, pLogData);
+			} else {
+				tNewRC = new RCData( pWikiData, this ).init(pRCData);
+			}
 			this._addRCDataToList(tNewRC);
 			pWikiData.resultsCount++;
 		});
@@ -1023,11 +1028,8 @@ export default class RCMManager
 				} else { break; }
 			}
 			Main.blinkWindowTitle(i18n("notification-new")+" "+i18n("nchanges", tNumNewChanges));
-			let tEditTitle = tMostRecentEntry.title;
-			if(tMostRecentEntry.type == RC_TYPE.LOG) {
-				tEditTitle = tMostRecentEntry.logTitle()+(tEditTitle ? " - "+tEditTitle : "");
-			}
-			else if(tEditTitle == null) {
+			let tEditTitle = tMostRecentEntry.getNotificationTitle();
+			if(tEditTitle == null) {
 				tEditTitle = this.recentChangesEntries[0].getExistingThreadTitle();
 				tEditTitle = tEditTitle ? i18n('discussions')+" - "+tEditTitle : i18n('discussions');
 			}

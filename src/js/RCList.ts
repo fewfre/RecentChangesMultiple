@@ -7,6 +7,7 @@ import RC_TYPE from "./types/RC_TYPE";
 import Global from "./Global";
 import {previewDiff,previewImages,previewPage} from "./GlobalModal";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
+import RCDataLog from "./RCDataLog";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -394,10 +395,11 @@ export default class RCList
 		var html = "";
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				html += pRC.logTitleLink();
+				let tRC = <RCDataLog>pRC;
+				html += tRC.logTitleLink();
 				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += RCList.SEP;
-				html += pRC.logActionText();
+				html += tRC.logActionText();
 				break;
 			}
 			case RC_TYPE.WALL:
@@ -490,7 +492,7 @@ export default class RCList
 		var html = "";
 		switch(this.type) {
 			case RC_TYPE.LOG: {
-				html += this.newest.logTitleLink();
+				html += (<RCDataLog>this.newest).logTitleLink();
 				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
 				break;
 			}
@@ -573,10 +575,11 @@ export default class RCList
 		
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>"
-				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
+				let tRC = <RCDataLog>pRC;
+				html += "<span class='mw-enhanced-rc-time'>"+tRC.time()+"</span>"
+				if(tRC.logtype=="upload") { html += this.getAjaxImageButton(); }
 				html += RCList.SEP;
-				html += pRC.logActionText();
+				html += tRC.logActionText();
 				break;
 			}
 			case RC_TYPE.WALL:
@@ -653,11 +656,12 @@ export default class RCList
 		var html = "";
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				html += pRC.logTitleLink();
-				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
-				html += i18n("semicolon-separator")+pRC.time();
+				let tRC = <RCDataLog>pRC;
+				html += tRC.logTitleLink();
+				if(tRC.logtype=="upload") { html += this.getAjaxImageButton(); }
+				html += i18n("semicolon-separator")+tRC.time();
 				html += RCList.SEP;
-				html += pRC.logActionText();
+				html += tRC.logActionText();
 				break;
 			}
 			case RC_TYPE.WALL:
