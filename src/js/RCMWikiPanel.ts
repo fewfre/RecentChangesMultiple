@@ -1,6 +1,6 @@
 import RCMManager from "./RCMManager";
 import WikiData from "./WikiData";
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
 
@@ -134,13 +134,13 @@ export default class RCMWikiPanel
 				+ "<td>"
 				+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
 				+ "<tr>"
-					+ `<td>${tLinkNum("Special:AllPages", (ConstantsApp.isUcpWiki ? "articles" : "awc-metrics-articles"), pWikiInfo.statistics.articles)}</td>`
+					+ `<td>${tLinkNum("Special:AllPages", (Global.isUcpWiki ? "articles" : "awc-metrics-articles"), pWikiInfo.statistics.articles)}</td>`
 					+ `<td>${tLinkNum("Special:ListFiles", "prefs-files", pWikiInfo.statistics.images)}</td>`
 					+ `<td>${tLinkNum("Special:ListUsers", "group-user", pWikiInfo.statistics.activeusers)}</td>`
 					+ `<td>${tLinkNum("Special:ListAdmins", "group-sysop", pWikiInfo.statistics.admins)}</td>`
 					+ `<td>${tLinkNum("Special:Statistics", "edits", pWikiInfo.statistics.edits)}</td>`
 				
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n(ConstantsApp.isUcpWiki ? "articles" : "awc-metrics-articles")+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
+					// + "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n(Global.isUcpWiki ? "articles" : "awc-metrics-articles")+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
 					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListFiles'>"+i18n("prefs-files")+"</a>: <b>" + pWikiInfo.statistics.images +"</b></td>"
 					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListUsers'>"+i18n("group-user")+"</a>: <b>" + pWikiInfo.statistics.activeusers +"</b></td>"
 					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListAdmins'>"+i18n("group-sysop")+"</a>: <b>" + pWikiInfo.statistics.admins +"</b></td>"
@@ -168,7 +168,7 @@ export default class RCMWikiPanel
 		let btn = <HTMLElement>document.querySelector("#"+(<any>(<HTMLElement>e.currentTarget).dataset).infoid);
 		if(btn) {
 			if(!Utils.elemIsVisible(btn)) {
-				let tScrollOffset = ConstantsApp.config.skin == "oasis" ? -46 : 0;
+				let tScrollOffset = Global.config.skin == "oasis" ? -46 : 0;
 				// $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
 				$('html, body').scrollTop( $(btn).offset().top + tScrollOffset - 6 );
 			}

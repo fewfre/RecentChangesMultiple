@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMManager from "./RCMManager";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
@@ -15,7 +15,7 @@ let mw = window.mediaWiki;
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-export default class RCMWikiaDiscussionData extends RCData
+export default class RCDataFandomDiscussion extends RCData
 {
 	// Sometimes user data needs to be manually fetched; when it is it is stored in here to avoid having to fetch it again
 	static users	: { [id:string]: { name:string, avatarUrl:string, loadIndex?:string } } = {};
@@ -109,8 +109,8 @@ export default class RCMWikiaDiscussionData extends RCData
 		// If it's a wall discussion, then we need to set the wall's owner as the forum page
 		if(this.containerType == "WALL") {
 			if(this.forumName) this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; kind be relied upon since they may translate it for other languages eventually
-			if(RCMWikiaDiscussionData.users[pData.forumId]) {
-				this.forumPage = RCMWikiaDiscussionData.users[pData.forumId].name;
+			if(RCDataFandomDiscussion.users[pData.forumId]) {
+				this.forumPage = RCDataFandomDiscussion.users[pData.forumId].name;
 			}
 		}
 		// This is a fake page name, so if we see it we want to treat it as unknown
@@ -214,7 +214,7 @@ export default class RCMWikiaDiscussionData extends RCData
 					let ids = this.wikiInfo.discCommentPageNamesNeeded.map(o=>o.pageID).filter((o,i,a)=>a.indexOf(o)==i).join(",");
 					let url = `${this.wikiInfo.scriptpath}/wikia.php?controller=FeedsAndPosts&method=getArticleNamesAndUsernames&stablePageIds=${ids}&format=json`;
 					Utils.logUrl("(getCommentForumNameLink)", url);
-					url = `${ConstantsApp.PROXY}${url.split("//")[1]}`
+					url = `${Global.PROXY}${url.split("//")[1]}`
 					return url;
 				},
 				dataType: "json",
@@ -238,13 +238,13 @@ export default class RCMWikiaDiscussionData extends RCData
 	getUpvoteCount() : string {
 		// Only forum-type discussions have upvotes
 		if(this.containerType != "FORUM") { return ""; }
-		return `<span class="rcm-upvotes"> (${ConstantsApp.getSymbol("rcm-upvote-tiny")} ${this.upvoteCount})</span>`;
+		return `<span class="rcm-upvotes"> (${Global.getSymbol("rcm-upvote-tiny")} ${this.upvoteCount})</span>`;
 	}
 	
 	getThreadStatusIcons() : string {
 		return ""
-			+ (this.isLocked ? ConstantsApp.getSymbol("rcm-lock") : "")
-			+ (this.isReported ? ConstantsApp.getSymbol("rcm-report") : "")
+			+ (this.isLocked ? Global.getSymbol("rcm-lock") : "")
+			+ (this.isReported ? Global.getSymbol("rcm-report") : "")
 		;
 	}
 	
@@ -260,8 +260,8 @@ export default class RCMWikiaDiscussionData extends RCData
 				if(tSpan) {
 					tSpan.innerHTML = this.threadTitle;
 					let tIcons = "";
-					if(data.isLocked) { tIcons += ConstantsApp.getSymbol("rcm-lock"); }
-					if(data.isReported) { tIcons += ConstantsApp.getSymbol("rcm-report"); }
+					if(data.isLocked) { tIcons += Global.getSymbol("rcm-lock"); }
+					if(data.isReported) { tIcons += Global.getSymbol("rcm-report"); }
 					if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
 				}
 			}

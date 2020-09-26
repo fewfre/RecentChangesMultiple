@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMManager from "./RCMManager";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
@@ -30,7 +30,7 @@ https://runescape.fandom.com/wiki/Special:AbuseLog?offset=20181019171027&limit=5
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-export default class RCMAbuseLogData extends RCData
+export default class RCDataAbuseLog extends RCData
 {
 	// Constructor
 	constructor(pWikiInfo:WikiData, pManager:RCMManager) {

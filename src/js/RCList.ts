@@ -4,8 +4,8 @@ import WikiData from "./WikiData";
 import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
-import ConstantsApp from "./ConstantsApp";
-import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
+import Global from "./Global";
+import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -147,7 +147,7 @@ export default class RCList
 				contribs[rc.author].count++;
 			} else {
 				contribs[rc.author] = { count:1, userEdited:rc.userEdited };
-				contribs[rc.author].avatar = (rc.type == RC_TYPE.DISCUSSION ? (<RCMWikiaDiscussionData>rc).getCreatorAvatarImg() : "");
+				contribs[rc.author].avatar = (rc.type == RC_TYPE.DISCUSSION ? (<RCDataFandomDiscussion>rc).getCreatorAvatarImg() : "");
 			}
 		});
 		
@@ -221,7 +221,7 @@ export default class RCList
 				});
 			} else {
 				if(tTitle == null) {
-					(<RCMWikiaDiscussionData>this.newest).handleSecondaryLoad(tElemID);
+					(<RCDataFandomDiscussion>this.newest).handleSecondaryLoad(tElemID);
 				} else {
 					tReturnText = tTitle;
 				}
@@ -236,15 +236,15 @@ export default class RCList
 	}
 	
 	getAjaxDiffButton() : string {
-		return ` <span class="rcm-ajaxIcon rcm-ajaxDiff">${ConstantsApp.getSymbol("rcm-columns")}</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxDiff">${Global.getSymbol("rcm-columns")}</span>`;
 	}
 	
 	getAjaxImageButton() : string {
-		return ` <span class="rcm-ajaxIcon rcm-ajaxImage">${ConstantsApp.getSymbol("rcm-picture")}</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxImage">${Global.getSymbol("rcm-picture")}</span>`;
 	}
 	
 	getAjaxPagePreviewButton() : string {
-		return ` <span class="rcm-ajaxIcon rcm-ajaxPage">${ConstantsApp.getSymbol("rcm-preview")}</span>`;
+		return ` <span class="rcm-ajaxIcon rcm-ajaxPage">${Global.getSymbol("rcm-preview")}</span>`;
 	}
 	
 	// https://www.mediawiki.org/wiki/API:Revisions
@@ -418,7 +418,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				let tRC = <RCMWikiaDiscussionData>pRC;
+				let tRC = <RCDataFandomDiscussion>pRC;
 				html += tRC.getThreadStatusIcons();
 				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
 				html += RCList.SEP;
@@ -512,7 +512,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				html += (<RCMWikiaDiscussionData>this.newest).discussionTitleText( this.getThreadTitle(), true );
+				html += (<RCDataFandomDiscussion>this.newest).discussionTitleText( this.getThreadTitle(), true );
 				html += " ("+this._changesText()+")";
 				break;
 			}
@@ -602,7 +602,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				let tRC = <RCMWikiaDiscussionData>pRC;
+				let tRC = <RCDataFandomDiscussion>pRC;
 				html += "<span class='mw-enhanced-rc-time'><a href='"+tRC.href+"' title='"+tRC.title+"'>"+tRC.time()+"</a></span>";
 				html += tRC.getThreadStatusIcons();
 				html += tRC.getUpvoteCount();
@@ -683,7 +683,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				let tRC = <RCMWikiaDiscussionData>pRC;
+				let tRC = <RCDataFandomDiscussion>pRC;
 				html += tRC.getThreadStatusIcons();
 				html += tRC.discussionTitleText( this.getThreadTitle() );
 				html += i18n("semicolon-separator")+pRC.time();

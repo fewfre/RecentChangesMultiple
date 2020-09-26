@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -93,10 +93,10 @@ i18n.defaultLang = "en";
 
 i18n.init = function(pLang?:string) : void {
 	// Set default lang for script
-	i18n.defaultLang = pLang ? pLang.toLowerCase() : ConstantsApp.config.wgUserLanguage;
+	i18n.defaultLang = pLang ? pLang.toLowerCase() : Global.config.wgUserLanguage;
 	// split("-") checks for the "default" form of a language encase the specialized version isn't available for mwLanguageData (ex: zh and zh-tw)
 	i18n.mwLanguageData = $.extend(i18n.mwLanguageData.en, i18n.mwLanguageData[i18n.defaultLang] || i18n.mwLanguageData[i18n.defaultLang.split("-")[0]]);
-	mw.language.setData(ConstantsApp.config.wgUserLanguage, i18n.mwLanguageData); // Gets mw.language.convertPlural() to work.
+	mw.language.setData(Global.config.wgUserLanguage, i18n.mwLanguageData); // Gets mw.language.convertPlural() to work.
 }
 
 i18n.exists = function(pKey:string) : boolean {
@@ -727,7 +727,7 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		.replace(/{{GENDER:(.*?)}}/g, function(m, l) {
 			let p = l.split("|");
 			let user = p.shift(); // Remove user object from list
-			return mw.language.gender(ConstantsApp.userOptions.gender, p);
+			return mw.language.gender(Global.userOptions.gender, p);
 		})
 		// {{PLURAL}} - only does default support
 		.replace(/{{PLURAL:(.*?)}}/g, function(m, l) {

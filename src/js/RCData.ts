@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMManager from "./RCMManager";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
@@ -782,7 +782,7 @@ export default class RCData
 		
 		Utils.logUrl("(previewImages)", tCurAjaxUrl, pImageNames);
 		
-		let tTitle = i18n(ConstantsApp.isUcpWiki ? "images" : "awc-metrics-images");
+		let tTitle = i18n(Global.isUcpWiki ? "images" : "awc-metrics-images");
 		let tButtons = [];
 		
 		let tAddLoadMoreButton = () => {
@@ -796,7 +796,7 @@ export default class RCData
 				tButton.addEventListener("click", () => {
 					tCurAjaxUrl = pAjaxUrl + "&titles="+tImagesInLog.splice(0, 50).join("|");
 					Utils.logUrl("(previewImages) click", tCurAjaxUrl);
-					tCont.innerHTML = ConstantsApp.getLoader(25);
+					tCont.innerHTML = Global.getLoader(25);
 					
 					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: tCurAjaxUrl,
 						success: (pData) => {
@@ -845,7 +845,7 @@ export default class RCData
 		} else if(tImage == null) {
 			tInvalidImage = {
 				thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
-				thumbText: ConstantsApp.isUcpWiki
+				thumbText: Global.isUcpWiki
 					? i18n('redirectto')+" "+tTitle
 					: i18n('shared_help_was_redirect', tTitle) // LEGACY
 			};
@@ -898,7 +898,7 @@ export default class RCData
 				imageStyle:`width:${tScaledWidth}px;`,
 				caption: `<a href="${tImage.descriptionurl}">${tPageTitleNoNS}</a>`
 					// Icon to open link to actual image
-					+` &#32; <a class="rcm-ajaxIcon" href="${tImage.url}" target="_blank">${ConstantsApp.getSymbol("rcm-picture")}</a>`,
+					+` &#32; <a class="rcm-ajaxIcon" href="${tImage.url}" target="_blank">${Global.getSymbol("rcm-picture")}</a>`,
 			});
 		}
 	}

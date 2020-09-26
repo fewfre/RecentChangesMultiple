@@ -1,4 +1,8 @@
-== V2.14b ===
+==  ==
+-Renamed some JS classes
+
+
+== V2.14b - 23 September 2020 ===
 -UCP tweaks / bug fixes
 -Fixed word wrap issue based on script's talk page
 -Discussion-based comments now link correctly

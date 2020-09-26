@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMManager from "./RCMManager";
 import RCParams from "./types/RCParams";
 import UserData from "./UserData";
@@ -248,8 +248,8 @@ export default class WikiData
 			}
 		}
 		
-		if(!this.username && this.isWikiaWiki && ConstantsApp.username) {
-			this.username = ConstantsApp.username;
+		if(!this.username && this.isWikiaWiki && Global.username) {
+			this.username = Global.username;
 		}
 		
 		this.scriptpath =  `//${this.servername}${this.scriptdir}`;
@@ -358,7 +358,7 @@ export default class WikiData
 		 * Favicon fallback - may not be needed now with "pQuery.pages" backup.
 		 ***************************/
 		if(this.favicon == null) {
-			this.favicon = ConstantsApp.FAVICON_BASE+this.scriptpath;
+			this.favicon = Global.FAVICON_BASE+this.scriptpath;
 		}
 		
 		return this;

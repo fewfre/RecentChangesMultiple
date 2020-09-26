@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMManager from "./RCMManager";
 import Utils from "./Utils";
 import i18n from "./i18n";
@@ -46,7 +46,7 @@ export default class RCMOptions
 	// Constructor
 	constructor(pManager:RCMManager) {
 		this.manager = pManager;
-		this.localStorageID = ConstantsApp.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", "");
+		this.localStorageID = Global.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", "");
 	}
 	
 	dispose() : void {
@@ -101,7 +101,7 @@ export default class RCMOptions
 		 * RCMOptions settings
 		 ***************************/
 		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
-		tSettingsPanel.innerHTML = ConstantsApp.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
+		tSettingsPanel.innerHTML = Global.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
 		var tSettingsPanelContent = Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
 		
 		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
@@ -138,21 +138,21 @@ export default class RCMOptions
 		
 		Utils.addTextTo(" | ", tRow2);
 		this.myEditsCheckbox = this._newCheckbox(i18n('rcshowhidemine', t1Text), tRow2);
-		if(ConstantsApp.username && this.manager.hideusers.indexOf(ConstantsApp.username) != -1) {
+		if(Global.username && this.manager.hideusers.indexOf(Global.username) != -1) {
 			this.myEditsCheckbox.disabled = true;
 			this.myEditsCheckbox.checked = false;
 			this.myEditsCheckbox.title = i18n('optionspanel-hideusersoverride');
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		if(ConstantsApp.isUcpWiki) {
+		if(Global.isUcpWiki) {
 			this.groupedChangesCheckbox = this._newCheckbox(" "+i18n('rcfilters-group-results-by-page').toLowerCase(), tRow2);
 		} else {
 			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', t1Text), tRow2);
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		if(ConstantsApp.isUcpWiki) {
+		if(Global.isUcpWiki) {
 			this.logsCheckbox = this._newCheckbox(" "+i18n('rcfilters-filter-logactions-label').toLowerCase(), tRow2);
 		} else {
 			this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', t1Text), tRow2);

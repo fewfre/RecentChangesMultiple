@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -89,17 +89,17 @@ export default class Utils
 	/***************************
 	* Date Methods
 	***************************/
-	static getSeconds(pDate:Date) : number{ return ConstantsApp.timezone == "utc" ? pDate.getUTCSeconds() : pDate.getSeconds(); }
-	static getMinutes(pDate:Date) : number{ return ConstantsApp.timezone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
-	static getHours(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
-	static getDate(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
-	static getMonth(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
-	static getYear(pDate:Date) : number	{ return ConstantsApp.timezone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
+	static getSeconds(pDate:Date) : number{ return Global.timezone == "utc" ? pDate.getUTCSeconds() : pDate.getSeconds(); }
+	static getMinutes(pDate:Date) : number{ return Global.timezone == "utc" ? pDate.getUTCMinutes() : pDate.getMinutes(); }
+	static getHours(pDate:Date) : number	{ return Global.timezone == "utc" ? pDate.getUTCHours() : pDate.getHours(); }
+	static getDate(pDate:Date) : number	{ return Global.timezone == "utc" ? pDate.getUTCDate() : pDate.getDate(); }
+	static getMonth(pDate:Date) : number	{ return Global.timezone == "utc" ? pDate.getUTCMonth() : pDate.getMonth(); }
+	static getYear(pDate:Date) : number	{ return Global.timezone == "utc" ? pDate.getUTCFullYear() : pDate.getFullYear(); }
 	
 	static formatWikiTimeStamp(pDate:Date, pShowTime:boolean=true) : string {
 		let tDateString = Utils.formatWikiTimeStampDateOnly(pDate),
 			tTime = pShowTime ? Utils.formatWikiTimeStampTimeOnly(pDate) : "";
-		if(ConstantsApp.userOptions.date != "ISO 8601") {
+		if(Global.userOptions.date != "ISO 8601") {
 			if(tTime) { tTime = tTime+", "; }
 			tDateString = tTime+tDateString;
 		} else {
@@ -111,9 +111,9 @@ export default class Utils
 	static formatWikiTimeStampDateOnly(pDate:Date) : string {
 		let tYear = Utils.getYear(pDate),
 			tMonth = Utils.getMonth(pDate)+1,
-			tMonthName = ConstantsApp.config.wgMonthNames[tMonth],
+			tMonthName = Global.config.wgMonthNames[tMonth],
 			tDay = Utils.getDate(pDate);
-		switch(ConstantsApp.userOptions.date) {
+		switch(Global.userOptions.date) {
 			case "mdy": default: return `${tMonthName} ${tDay}, ${tYear}`;
 			case "dmy": return `${tDay} ${tMonthName} ${tYear}`;
 			case "ymd": return `${tYear} ${tMonthName} ${tDay}`;
@@ -126,12 +126,12 @@ export default class Utils
 			tSeconds = Utils.getSeconds(pDate),
 			tSuffix = "",
 			tTime;
-		if(ConstantsApp.timeFormat == "12") {
+		if(Global.timeFormat == "12") {
 			tSuffix = tHours >= 12 ? "PM":"AM";
 			tHours = ((tHours + 11) % 12 + 1);
 		}
 		tTime = Utils.pad( tHours, 2 )+ ":" +Utils.pad( tMinutes, 2 );
-		if(!pNoSeconds && ConstantsApp.userOptions.date == "ISO 8601") {
+		if(!pNoSeconds && Global.userOptions.date == "ISO 8601") {
 			tTime += ":" +Utils.pad( tSeconds, 2 );
 		}
 		tTime += tSuffix;
@@ -199,7 +199,7 @@ export default class Utils
 	}
 	
 	static uniqID() : string {
-		return "id"+(++ConstantsApp.uniqID);
+		return "id"+(++Global.uniqID);
 	}
 	
 	static getFirstItemFromObject(pData:any) : any {

@@ -3,9 +3,9 @@ import Utils from './Utils';
 let mw = window.mediaWiki;
 
 //###########################################################
-// #### ConstantsApp - static class for script-wide data ####
+// #### Global - static class for script-wide data ####
 //###########################################################
-export default class ConstantsApp
+export default class Global
 {
 	static readonly version					: string = "2.14b";
 	static readonly lastVersionDateString	: string = "Aug 27 2020 00:00:00 GMT";
@@ -22,17 +22,17 @@ export default class ConstantsApp
 		"wgVersion",
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
-	static readonly debug					: boolean = ConstantsApp.config.debug || mw.util.getParamValue("useuserjs")=="0";
+	static readonly debug					: boolean = Global.config.debug || mw.util.getParamValue("useuserjs")=="0";
 	static isUcpWiki						: boolean = false;
 	
-	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + ConstantsApp.config.wgPageName;
-	static OPTIONS_SETTINGS_LOCAL_STORAGE_ID: string = "RecentChangesMultiple-saveoptionscookie-" + ConstantsApp.config.wgPageName;
+	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + Global.config.wgPageName;
+	static OPTIONS_SETTINGS_LOCAL_STORAGE_ID: string = "RecentChangesMultiple-saveoptionscookie-" + Global.config.wgPageName;
 	static FAVICON_BASE						: string = "//www.google.com/s2/favicons?domain="; // Fallback option (encase all other options are unavailable)
 	static LOADER_IMG						: string = "//images.wikia.nocookie.net/__cb1421922474/common/skins/common/images/ajax.gif";
 	static NOTIFICATION_ICON				: string = "//vignette.wikia.nocookie.net/fewfre/images/4/44/RecentChangesMultiple_Notification_icon.png/revision/latest?cb=20161013043805";
 	static PROXY							: string = "https://cors-anywhere.herokuapp.com/";
 	
-	static readonly username				: string = ConstantsApp.config.wgUserName;
+	static readonly username				: string = Global.config.wgUserName;
 	
 	// These may be update at given points.
 	static uniqID							: number = 0;
@@ -43,15 +43,15 @@ export default class ConstantsApp
 	
 	// Initialize
 	static init(pScriptConfig:any) : void {
-		ConstantsApp.FAVICON_BASE = pScriptConfig.FAVICON_BASE || ConstantsApp.FAVICON_BASE;
-		ConstantsApp.LOADER_IMG = pScriptConfig.LOADER_IMG || ConstantsApp.LOADER_IMG;
-		ConstantsApp.NOTIFICATION_ICON = pScriptConfig.NOTIFICATION_ICON || ConstantsApp.NOTIFICATION_ICON;
+		Global.FAVICON_BASE = pScriptConfig.FAVICON_BASE || Global.FAVICON_BASE;
+		Global.LOADER_IMG = pScriptConfig.LOADER_IMG || Global.LOADER_IMG;
+		Global.NOTIFICATION_ICON = pScriptConfig.NOTIFICATION_ICON || Global.NOTIFICATION_ICON;
 		
-		ConstantsApp.userOptions = mw.user.options.get([
+		Global.userOptions = mw.user.options.get([
 			"date", // Date format
 			"gender", // System messages
 		])
-		ConstantsApp.isUcpWiki = ConstantsApp.config.wgVersion !== '1.19.24';
+		Global.isUcpWiki = Global.config.wgVersion !== '1.19.24';
 		// For Testing CSS
 		// mw.util.addCSS(`
 		// `);
@@ -61,8 +61,8 @@ export default class ConstantsApp
 	* Get loading asset
 	**************************************/
 	static getLoader(pSize:string|number=15) : string {
-		// return `<img src='${ConstantsApp.LOADER_IMG}' />`;
-		// return ConstantsApp.getSymbol('rcm-loading', pSize, pSize);
+		// return `<img src='${Global.LOADER_IMG}' />`;
+		// return Global.getSymbol('rcm-loading', pSize, pSize);
 		// Chrome doesn't like animations in <use> tags.
 		return `<svg width="${pSize}" height="${pSize}" id="rcm-loading" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" xmlns="http://www.w3.org/2000/svg">
 			<g transform="translate(20 50)">
@@ -78,8 +78,8 @@ export default class ConstantsApp
 	}
 	
 	static getLoaderLarge(pSize:string|number=75) : string {
-		// return `<img src='${ConstantsApp.LOADER_IMG}' />`;
-		// return ConstantsApp.getSymbol('rcm-loading-large', pSize, pSize);
+		// return `<img src='${Global.LOADER_IMG}' />`;
+		// return Global.getSymbol('rcm-loading-large', pSize, pSize);
 		// Chrome doesn't like animations in <use> tags.
 		return `<svg width="${pSize}" height="${pSize}" id="rcm-loading-large" viewBox="0 0 100 100">
 			<g transform="translate(-20,-20)">
@@ -194,11 +194,11 @@ export default class ConstantsApp
 	// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
 	// Due to how symbols work, this only needs to be injected once per script.
 	static initSymbols() : string {
-		if(!ConstantsApp.SVG_SYMBOLS) { return; }
+		if(!Global.SVG_SYMBOLS) { return; }
 		let tSVG = `<svg xmlns:dc="http://purl.org/dc/elements/1.1/" style="height: 0px; width: 0px; position: absolute; overflow: hidden;">'
-			${ConstantsApp.SVG_SYMBOLS.join("")}
+			${Global.SVG_SYMBOLS.join("")}
 		</svg>`;
-		delete ConstantsApp.SVG_SYMBOLS;
+		delete Global.SVG_SYMBOLS;
 		return tSVG;
 	}
 	
@@ -206,7 +206,7 @@ export default class ConstantsApp
 	* Method for adding update message to an RCMManager
 	**************************************/
 	static showUpdateMessage(pMessageCont:HTMLElement) {
-		ConstantsApp._addUpdateMessage(pMessageCont, {
+		Global._addUpdateMessage(pMessageCont, {
 			messageID: "rcm-news-V2-14-i18n-rework",
 			messageColor: "gold",
 			endDate: "Sep 28 2020 00:00:00 GMT",

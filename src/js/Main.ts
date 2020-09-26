@@ -1,5 +1,5 @@
 import RCMManager from "./RCMManager";
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import Utils from "./Utils";
 import i18n, { legacyMessagesRemovedContent } from "./i18n";
 import RCParams from "./types/RCParams";
@@ -35,9 +35,9 @@ class Main
 	// Should only be called once.
 	init(pScriptConfig:any) : void {
 		mw.loader.using(['mediawiki.util', 'mediawiki.language', 'mediawiki.user', 'user.options']).done(()=>{
-			ConstantsApp.init(pScriptConfig);
+			Global.init(pScriptConfig);
 			
-			if(ConstantsApp.debug) {
+			if(Global.debug) {
 				mw.log = <any>console.log;
 			}
 			
@@ -56,11 +56,11 @@ class Main
 		let tFirstWrapper = <HTMLElement>document.querySelector('.rc-content-multiple, #rc-content-multiple');
 		let tDataset:any = tFirstWrapper.dataset;
 		i18n.init(tDataset.lang);
-		if(tDataset.localsystemmessages === "false") { ConstantsApp.useLocalSystemMessages = false; }
+		if(tDataset.localsystemmessages === "false") { Global.useLocalSystemMessages = false; }
 		// Set load delay (needed for scripts that load large numbers of wikis)
-		if(tDataset.loaddelay) { ConstantsApp.loadDelay = tDataset.loaddelay; }
-		if(tDataset.timezone) { ConstantsApp.timezone = tDataset.timezone.toLowerCase(); }
-		if(tDataset.timeformat) { ConstantsApp.timeFormat = tDataset.timeformat.toLowerCase(); }
+		if(tDataset.loaddelay) { Global.loadDelay = tDataset.loaddelay; }
+		if(tDataset.timezone) { Global.timezone = tDataset.timezone.toLowerCase(); }
+		if(tDataset.timeformat) { Global.timeFormat = tDataset.timeformat.toLowerCase(); }
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
 		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
 		tDataset = null;
@@ -91,11 +91,11 @@ class Main
 		tLoadPromises[tLoadPromises.length] = new Promise((resolve)=>{
 			mw.hook('dev.i18n').add(function () {
 				// Convert version to a number
-				let [,ma,mi,ch] = ConstantsApp.version.match(/(\d*)\.(\d*)(\w*)/);
+				let [,ma,mi,ch] = Global.version.match(/(\d*)\.(\d*)(\w*)/);
 				ch = ch ? String("a".charCodeAt(0)-96) : "0";
 				let versionAsNum = Number([ma,mi,ch].map(n=>Utils.pad(n, 3, "0")).join(""));
 				
-				window.dev.i18n.loadMessages("RecentChangesMultiple", { cacheVersion:versionAsNum, language:i18n.defaultLang, noCache:ConstantsApp.debug }).done((devI18n) => {
+				window.dev.i18n.loadMessages("RecentChangesMultiple", { cacheVersion:versionAsNum, language:i18n.defaultLang, noCache:Global.debug }).done((devI18n) => {
 					i18n.devI18n = devI18n;
 					resolve();
 				});
@@ -105,8 +105,8 @@ class Main
 		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
 		tLoadPromises[tLoadPromises.length] = mw.loader.using([
 			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
-			...(ConstantsApp.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
-			...(ConstantsApp.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.runtimeStyles"] : ['mediawiki.action.history.diff']), // AjaxDiff css
+			...(Global.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
+			...(Global.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.runtimeStyles"] : ['mediawiki.action.history.diff']), // AjaxDiff css
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
@@ -118,7 +118,7 @@ class Main
 		/***************************
 		* Setup SVG symbols
 		***************************/
-		$("body").append($( ConstantsApp.initSymbols() ));
+		$("body").append($( Global.initSymbols() ));
 
 		/***************************
 		* Get rcParams from url
@@ -182,7 +182,7 @@ class Main
 			let tRCMManager = new RCMManager(pNode, pI);
 			this.rcmList.push( tRCMManager );
 			
-			tRCMManager.resultCont.innerHTML = `<center>${ConstantsApp.getLoaderLarge()}</center>`;
+			tRCMManager.resultCont.innerHTML = `<center>${Global.getLoaderLarge()}</center>`;
 			// Don't init managers until all translation info is loaded.
 			pInitDef.done(()=>{
 				tRCMManager.init();
@@ -237,7 +237,7 @@ class Main
 
 			// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
 			function tRCM_loadLangMessage(pMessages) {
-				let tScriptPath = ConstantsApp.useLocalSystemMessages ? ConstantsApp.config.wgServer + ConstantsApp.config.wgScriptPath : "//community.fandom.com";
+				let tScriptPath = Global.useLocalSystemMessages ? Global.config.wgServer + Global.config.wgScriptPath : "//community.fandom.com";
 				let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
 				Utils.logUrl("", url);
 
@@ -257,7 +257,7 @@ class Main
 						}
 					}),
 					// Manually fetch LEGACY messages, even on a UCP wiki.
-					(!ConstantsApp.isUcpWiki ? null : (()=>{
+					(!Global.isUcpWiki ? null : (()=>{
 						// Whatever wiki that still uses the legacy system
 						let legacyWikiPath = "//community.fandom.com";
 						let legacyMessages = legacyMessagesRemovedContent;
@@ -346,7 +346,7 @@ class Main
 	addNotification(pTitle:string, pOptions:{ icon?:string, body?:string }) : void {
 		if(Notification.permission !== "granted") { return; }
 		pOptions = pOptions || {};
-		pOptions.icon = pOptions.icon || ConstantsApp.NOTIFICATION_ICON;
+		pOptions.icon = pOptions.icon || Global.NOTIFICATION_ICON;
 		let tNotification = new Notification(pTitle, pOptions);
 		this._notifications.push(tNotification);
 		// Make sure on click it brings you back to page (needed for Chrome) https://stackoverflow.com/a/40964355/1411473
@@ -369,7 +369,7 @@ class Main
 	}
 	
 	importArticles({ type, articles }:{ type:string, articles:string[] }) : Promise<any> {
-		if(ConstantsApp.isUcpWiki) {
+		if(Global.isUcpWiki) {
 			return window.importArticles({
 				type: 'script',
 				articles

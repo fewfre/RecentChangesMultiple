@@ -1,4 +1,4 @@
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import i18n from "./i18n";
 
 let $ = window.jQuery;
@@ -43,7 +43,7 @@ export default class RCMModal
 		mw.hook('dev.modal').add(function(module) {
 			RCMModal.modalFactory = module;
 		});
-		if(ConstantsApp.isUcpWiki) {
+		if(Global.isUcpWiki) {
 			try {
 				// At this time the Modal.js script doesn't trigger close callback correctly, so manually calling it here
 				window.dev.modal._windowManager.on("closing", function(modal){
@@ -108,7 +108,7 @@ export default class RCMModal
 		// Update/Show modal
 		let modal = await RCMModal.createModal({
 			id: RCMModal.MODAL_ID,
-			size: ConstantsApp.isUcpWiki ? 'larger' : 'content-size',
+			size: Global.isUcpWiki ? 'larger' : 'content-size',
 			close: function(){ RCMModal.isOpen = false; return true; },
 			
 			title: pData.title,
@@ -124,7 +124,7 @@ export default class RCMModal
 	static async showLoadingModal(pData:RCMModalProp) : Promise<void> {
 		// While we are waiting for results, open loading window to acknowledge user's input
 		// if (!RCMModal.isModalOpen()) {
-			pData.content = "<div style='text-align:center; padding:10px;'>"+ConstantsApp.getLoaderLarge()+"</div>";
+			pData.content = "<div style='text-align:center; padding:10px;'>"+Global.getLoaderLarge()+"</div>";
 			await RCMModal.showModal(pData);
 		// }
 	}
@@ -142,7 +142,7 @@ export default class RCMModal
 		// }
 		
 		// Update window size to fit new content
-		if(ConstantsApp.isUcpWiki) {
+		if(Global.isUcpWiki) {
 			try {
 				window.dev.modal._windowManager.windows[RCMModal.MODAL_ID].updateSize();
 			}

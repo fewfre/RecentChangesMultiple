@@ -1,12 +1,12 @@
 import Main from "./Main";
 import RCMWikiPanel from "./RCMWikiPanel";
 import RCMOptions from "./RCMOptions";
-import ConstantsApp from "./ConstantsApp";
+import Global from "./Global";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
 import RCData from "./RCData";
-import RCMWikiaDiscussionData from "./RCMWikiaDiscussionData";
-// import RCMAbuseLogData from "./RCMAbuseLogData";
+import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
+// import RCDataAbuseLog from "./RCDataAbuseLog";
 import RCList from "./RCList";
 import RCParams from "./types/RCParams";
 import Utils from "./Utils";
@@ -95,7 +95,7 @@ export default class RCMManager
 		
 		this.makeLinksAjax				= false;
 		this.ajaxID						= 0;
-		this.autoRefreshLocalStorageID	= ConstantsApp.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
+		this.autoRefreshLocalStorageID	= Global.AUTO_REFRESH_LOCAL_STORAGE_ID + "-" + this.modID;
 		this.extraLoadingEnabled		= true;
 		this.flagWikiDataIsLoaded		= false;
 		this.isHardRefresh				= true;
@@ -155,7 +155,7 @@ export default class RCMManager
 		this.hideusers = []; // {array}
 		if(tDataset.hideusers) { this.hideusers = tDataset.hideusers.replace(/_/g, " ").split(","); }
 		// if(this.rcParams.hidemyself) {
-		// 	var tUsername = ConstantsApp.username;
+		// 	var tUsername = Global.username;
 		// 	if(tUsername) { this.hideusers.push(tUsername); }
 		// }
 		this.hideusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
@@ -200,7 +200,7 @@ export default class RCMManager
 		this.optionsNode	= new RCMOptions(this).init(Utils.newElement("div", { className:"rcm-options" }, this.resultCont));
 		this.statusNode		= Utils.newElement("div", { className:"rcm-status" }, this.resultCont);
 		this.wikisNode		= new RCMWikiPanel(this).init(Utils.newElement("div", { className:"rcm-wikis" }, this.resultCont));
-		ConstantsApp.showUpdateMessage(this.resultCont);
+		Global.showUpdateMessage(this.resultCont);
 		this.resultsNode	= Utils.newElement("div", { className:"rcm-results rc-conntent" }, this.resultCont);
 		this.footerNode		= Utils.newElement("div", { className:"rcm-footer" }, this.resultCont);
 		
@@ -208,10 +208,10 @@ export default class RCMManager
 		* Setup
 		***************************/
 		// Footer never changes, so set here
-		let tEndNewMessageDate = new Date(ConstantsApp.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
+		let tEndNewMessageDate = new Date(Global.lastVersionDateString); tEndNewMessageDate.setDate(tEndNewMessageDate.getDate() + 3);
 		let tNewVersion = tEndNewMessageDate > new Date() ? '<sup class="rcm-new-version">'+i18n("notification-new")+'</sup>' : "";
 		
-		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "[https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog "+ConstantsApp.version+"]VERSION", "REPLACE")
+		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "[https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog "+Global.version+"]VERSION", "REPLACE")
 			.replace("VERSION", tNewVersion)
 			.replace("REPLACE", "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
 		
@@ -287,16 +287,16 @@ export default class RCMManager
 		
 		if(this.chosenWikis.length > 0) {
 			Utils.forEach(this.chosenWikis, (tWikiData:WikiData, i:number) => {
-				this._loadWikiData(tWikiData, 0, this.ajaxID, (i+1) * ConstantsApp.loadDelay);
+				this._loadWikiData(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
 			});
 			this.totalItemsToLoad = this.chosenWikis.length;
 			this.wikisLeftToLoad = this.totalItemsToLoad;
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 		} else {
 			// If the RCM has no wikis listed, there is nothing to run, and the user should be informed.
 			Utils.removeElement(this.statusNode);
 			Utils.removeElement(this.wikisNode.root);
-			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n(ConstantsApp.isUcpWiki ? "expand_templates_input_missing" : "wikiacuratedcontent-content-empty-section")+"</div>";
+			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n(Global.isUcpWiki ? "expand_templates_input_missing" : "wikiacuratedcontent-content-empty-section")+"</div>";
 		}
 	}
 	
@@ -359,7 +359,7 @@ export default class RCMManager
 				this._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
 		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		let tHandlerRemove = (pEvent:MouseEvent) => {
@@ -367,11 +367,11 @@ export default class RCMManager
 			tHandlerRemove = null;
 			
 			this.chosenWikis.splice(this.chosenWikis.indexOf(pWikiData), 1);
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 			this._onWikiDataParsingFinished(null);
 		};
 		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { innerHTML:i18n(ConstantsApp.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
+		Utils.newElement("button", { innerHTML:i18n(Global.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	
@@ -408,7 +408,7 @@ export default class RCMManager
 		Utils.forEach(this.chosenWikis, (tWikiData:WikiData, i:number) => {
 			if(tWikiData.usesWikiaDiscussions !== false) {
 				this.totalItemsToLoad++;
-				this._loadWikiaDiscussions(tWikiData, 0, pID, this.totalItemsToLoad * ConstantsApp.loadDelay);
+				this._loadWikiaDiscussions(tWikiData, 0, pID, this.totalItemsToLoad * Global.loadDelay);
 			}
 		});
 		// If no discussions are being loaded, skip it and tell manager to not even bother in the future.
@@ -418,7 +418,7 @@ export default class RCMManager
 			return;
 		}
 		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+		this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
 	
 	private _loadWikiaDiscussions(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
@@ -468,13 +468,13 @@ export default class RCMManager
 			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
 		});
 		pWikiData.updateLastDiscussionDate(Utils.getFirstItemFromObject(pData));
-		var tNewRC:RCMWikiaDiscussionData, tDate, tChangeAdded;
+		var tNewRC:RCDataFandomDiscussion, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
 			let tUser = pRCData.createdBy.name;
 			if(this._changeShouldBePrunedBasedOnOptions(tUser, pWikiData)) { return; }
 			// If hideself set
-			if(pWikiData.rcParams.hidemyself && ConstantsApp.username == tUser) { return; }
+			if(pWikiData.rcParams.hidemyself && Global.username == tUser) { return; }
 			// Skip if goes past the RC "changes in last _ days" value.
 			if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
 			
@@ -486,7 +486,7 @@ export default class RCMManager
 			} catch(e){}
 			
 			this.itemsToAddTotal++;
-			tNewRC = new RCMWikiaDiscussionData( pWikiData, this );
+			tNewRC = new RCDataFandomDiscussion( pWikiData, this );
 			tNewRC.init(pRCData, pData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.discussionsCount++;
@@ -519,11 +519,11 @@ export default class RCMManager
 		
 		this.chosenWikis.forEach((tWikiData:WikiData, i:number) => {
 			if(pUpdateParams) { tWikiData.setupRcParams(); } // Encase it was changed via RCMOptions
-			this._loadWiki(tWikiData, 0, this.ajaxID, (i+1) * ConstantsApp.loadDelay);
+			this._loadWiki(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
 		});
 		this.totalItemsToLoad = this.chosenWikis.length;
 		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>0%</span>)";
+		this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
 	
 	// Refresh and add new changes to top
@@ -653,7 +653,7 @@ export default class RCMManager
 				this._loadWiki(obj.wikiInfo, obj.tries, obj.id);
 			});
 			this.erroredWikis = [];
-			this.statusNode.innerHTML = ConstantsApp.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
 		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
@@ -707,7 +707,7 @@ export default class RCMManager
 	// 		if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
 			
 	// 		this.itemsToAddTotal++;
-	// 		this._addRCDataToList( new RCMAbuseLogData( pWikiData, this ).init(pLogData) );
+	// 		this._addRCDataToList( new RCDataAbuseLog( pWikiData, this ).init(pLogData) );
 	// 		pWikiData.resultsCount++;
 	// 	});
 	// }
@@ -1220,7 +1220,7 @@ export default class RCMManager
 			},
 		});
 		
-		setTimeout(() => { this._loadExtraInfo(pID); }, ConstantsApp.loadDelay);
+		setTimeout(() => { this._loadExtraInfo(pID); }, Global.loadDelay);
 	}
 	
 	/***************************
