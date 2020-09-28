@@ -22,32 +22,30 @@
 	//######################################
 	// Pre-script load check: Find RCM container(s), and only continue loading if one is found (needed for script to function)
 	//######################################
-	if(document.querySelector('.rc-content-multiple, #rc-content-multiple')) {
+	if(scriptDataExists(document)) {
 		startLoad();
 	} else {
-		if(document.querySelector('[id^=flytabs_]')) {
-			mw.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found; waiting for Tab Views to load.');
-			mw.hook('wikipage.content').add(checkSectionHooked);
+		mw.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found.');
+		// If none found, add a listener for any new content added (needed for VisualEditor)
+		mw.hook('wikipage.content').add(onNewPageContent);
+	}
+	
+	function onNewPageContent(pContent) {
+		if(scriptDataExists(pContent[0])) {
+			startLoad();
+			// Main script loads additional tabs, only first one is needed to "start" the script.
+			mw.hook('wikipage.content').remove(onNewPageContent);
 		} else {
-			mw.log('[RecentChangesMultiple] No "rc-content-multiple" container(s) found.');
+			// mw.log('[RecentChangesMultiple] No "rc-content-multiple" container found in new content.');
 		}
 	}
 	
-	function checkSectionHooked(pSection) {
-		// If page has at least one "Tab view" wait for it to finish.
-		if(pSection[0].classList && pSection[0].classList.contains("tabBody")) {
-			if(pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
-				startLoad(pSection[0]);
-				// Main script loads additional tabs, only first one is needed to "start" the script.
-				mw.hook('wikipage.content').remove(checkSectionHooked);
-			} else {
-				mw.log('[RecentChangesMultiple] No "rc-content-multiple" container found in tab.');
-				return;
-			}
-		}
+	// Check if the main script should be loaded
+	function scriptDataExists(elem) {
+		return elem.querySelector('.rc-content-multiple, #rc-content-multiple') != null;
 	}
 	
-	function startLoad(pCont) {
+	function startLoad() {
 		// Don't load this code twice on the same page
 		if(module.loaded) {
 			// mw.log("[RecentChangesMultiple] Script already loaded; exiting.");
@@ -57,16 +55,11 @@
 		module.loaded = true;
 		
 		//######################################
-		// Create script list
-		//######################################
-		var scripts = [
-			"u:dev:MediaWiki:RecentChangesMultiple/core.js"
-		];
-		
-		//######################################
 		// Load the scripts
 		//######################################
-		window.importArticles({ type:'script', articles: scripts });
+		window.importArticles({ type:'script', articles: [
+			"u:dev:MediaWiki:RecentChangesMultiple/core.js"
+		] });
 	}
 	
 })(window.jQuery, document, window.mediaWiki, (window.dev = window.dev || {}).RecentChangesMultiple = dev.RecentChangesMultiple || {});

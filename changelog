@@ -1,8 +1,9 @@
-==  ==
+== 2.14c - 27 September 2020 ==
+-Fixed bug preventing "protect" logs from showing details on modern wikis (UCP)
+-Script updated so it will fire after VisualEditor edits (both before and after core script is loaded)
 -Renamed some JS classes
 -Moved static RCData modal helper functions to thier own file GlobalModal
 -Moved log data in RCData to RCDataLog
--Fixed bug preventing "protect" logs from showing details on modern wikis (UCP)
 
 
 == V2.14b - 23 September 2020 ===

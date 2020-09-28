@@ -1,9 +1,11 @@
-﻿- add diff view for new pages collapsed into "(# changes)" - still useful
+﻿- allow disabling a wiki
+	-Idea: when opening wiki details, along the bottom is "hide wiki" and "show only this wiki"
+		-if hidden, "show wiki"
+	-When wiki is hidden, it's added to a new "Hidden wikis: " list, and at the end of list is "unhide all"
+- add diff view for new pages collapsed into "(# changes)" - still useful
 - change design somewhat to follow more modern recent changes?
-- allow disabling a wiki
 - syntax highlight for css/js/lua page previews
 - show abuse logs (NOT abuse filter logs; they already show)
-- in gallery view changing clicking image to show file page, and make a seperate thing to see full image
 
 ############################################
 ## PRIMARY

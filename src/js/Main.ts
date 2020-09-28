@@ -160,15 +160,11 @@ class Main
 		/***************************
 		* Listen for new Managers
 		***************************/
-		// Add additional Managers that are need from any "Tab view" loads.
+		// Add additional Managers that are needed from new content added to that page (usually after a VisualEditor edit)
 		setTimeout(() => {
-			// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/extensions/wikia/TabView/js/TabView.js
 			mw.hook('wikipage.content').add((pSection) => {
-				// mw.log(pSection[0], pSection[0].classList.contains("tabBody"), pSection[0].innerHTML);
-				if(pSection[0].classList && pSection[0].classList.contains("tabBody")) {
-					if(pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
-						this._parsePage(pSection[0], pInitDef);
-					}
+				if(pSection[0].querySelector('.rc-content-multiple, #rc-content-multiple')) {
+					this._parsePage(pSection[0], pInitDef);
 				}
 			});
 		}, 0);

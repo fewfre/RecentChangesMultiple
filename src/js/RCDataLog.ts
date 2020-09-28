@@ -1,4 +1,3 @@
-import Global from "./Global";
 import RCMManager from "./RCMManager";
 import WikiData from "./WikiData";
 import Utils from "./Utils";
@@ -6,8 +5,9 @@ import i18n, {I18nKey} from "./i18n";
 import RCData from "./RCData";
 import TYPE from "./types/RC_TYPE";
 
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+// TODO:
+// https://github.com/Wikia/app/blob/9ece43e540fbd5e351534b2041b9edef045a8d72/includes/wikia/VariablesBase.php#L5575
+// https://github.com/Wikia/app/blob/1e4ea22073c29ec97beeccda86d068915366d0c5/includes/logging/LogFormatter.php
 	
 //######################################
 // #### Recent Change Data ####
