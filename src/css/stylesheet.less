@@ -49,7 +49,8 @@
 	bottom: 0;
 	left: 0;
 	right: 0;
-	z-index: -1;
+	// z-index: -1;
+	pointer-events: none;
 	background-size:16px;
 	background-attachment: fixed;
 }
@@ -282,11 +283,13 @@ table.mw-enhanced-rc {
 	.mw-rc-closearrow & {
 		// https://images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_d.png
 		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAAAPFBMVEUAAACJqeMmWrqhuum/v79xl97Q3fQnXL4jUqoHEiUoXcEAAAC4y+4xMTFLS0sbQIRDTmJKdMQkVrJZZXnWnqA4AAAAAXRSTlMAQObYZgAAAD9JREFUeF5VyUcOgEAQxMAJm8jp/39FFuoDdbNsf+4raiUyYsa5U33gWArhA9NmaKGBSwN5a6AzxBnSHoaUb7zKgQJWLojhGwAAAABJRU5ErkJggg==);
+		cursor: pointer;
 	}
 	
 	.mw-rc-openarrow & {
 		// https://images.wikia.nocookie.net/__cb1422546004/common/skins/common/images/Arr_r.png
 		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAAAPFBMVEVBKNAjUqomWrqhuukbQIQoXcGJqeO/v78AAADQ3fRxl94nXL4HEiW4y+4xMTFKdMQkVrJZZXlDTmJLS0uIOtQKAAAAAXRSTlMAQObYZgAAAEBJREFUeF5VyVkOgDAMQ0GSdN+B+9+1aYUl+r488nXm5A/OLgKVibjLB0va0BvQzO0BU0LbwNSSxVx41kQv5tkEhgIB2MI2BjIAAAAASUVORK5CYII=);
+		cursor: pointer;
 	}
 }
 

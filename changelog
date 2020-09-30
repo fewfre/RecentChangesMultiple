@@ -1,3 +1,7 @@
+==  ==
+-Fixed small CSS issue on UCP regarding wiki backgrounds
+
+
 == 2.14c - 27 September 2020 ==
 -Fixed bug preventing "protect" logs from showing details on modern wikis (UCP)
 -Script updated so it will fire after VisualEditor edits (both before and after core script is loaded)
