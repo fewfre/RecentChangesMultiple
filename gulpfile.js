@@ -1,25 +1,15 @@
-var gulp = require('gulp');
-var concat = require('gulp-concat');
-var insert = require('gulp-insert');
-var replace = require('gulp-replace');
-// var jshint = require('gulp-jshint');
-var less = require('gulp-less');
-var path = require('path');
-var browserify = require("browserify");
-var source = require('vinyl-source-stream');
-var tsify = require("tsify");
+const gulp = require('gulp');
+const concat = require('gulp-concat');
+const insert = require('gulp-insert');
+const replace = require('gulp-replace');
+const less = require('gulp-less');
+const strip = require('gulp-strip-comments');
+const path = require('path');
+const browserify = require("browserify");
+const source = require('vinyl-source-stream');
+const tsify = require("tsify");
 
-// gulp.task('core', function() {
-// 	// Make sure these are ordered from least reliant to most reliant.
-// 	return gulp.src(['src/js/Utils.js', 'src/js/WikiData.js', 'src/js/i18n.js', 'src/js/RCMOptions.js', 'src/js/RCMWikiPanel.js',  'src/js/RCMModal.js', 'src/js/RCData.js', 'src/js/RCList.js', , 'src/js/RCMManager.js', 'src/js/Main.js'])
-// 		// .pipe(jshint())
-// 		// .pipe(jshint.reporter('default', {  }))
-// 		.pipe(concat('core.js'))
-// 		.pipe(gulp.dest("build"))
-// 	;
-// });
-
-gulp.task('core', function() {
+function core() {
 	return browserify({
 		basedir: '.',
 		// debug: true,
@@ -30,12 +20,15 @@ gulp.task('core', function() {
 	.plugin(tsify)
 	.bundle()
 	.pipe(source('core.js'))
-	.pipe(gulp.dest("build"))
+	// .pipe(rename('core.js'))
+	// .pipe(buffer())
+	.pipe(gulp.dest("dist"))
 	;
-});
+};
 
-gulp.task('core_comments', ['core'], function() {
-	return gulp.src('build/core.js', {base: './'})
+function core_comments() {
+	return gulp.src('dist/core.js', {base: './'})
+	.pipe(strip())
 	// This is needed for the script to validate on Wikia
 	.pipe(replace(/\.default(\W)/g, '["default"]$1'))
 	// Surround code with comments
@@ -52,29 +45,24 @@ gulp.task('core_comments', ['core'], function() {
 	.pipe(insert.append('//</syntaxhighlight>\n'))
 	.pipe(gulp.dest("./"))
 	;
-});
+};
 
-gulp.task('loader', function() {
+function loader() {
 	return gulp.src(['src/js/loader.js'])
 		.pipe(concat('code.2.js'))
-		.pipe(gulp.dest("build"))
+		.pipe(gulp.dest("dist"))
 	;
-});
+};
 
-gulp.task('css', function() {
+function css() {
 	return gulp.src(['src/css/stylesheet.less'])
 		.pipe(less({ paths: [ path.join(__dirname, 'less', 'includes') ] }))
 		.pipe(concat('stylesheet.css'))
-		.pipe(gulp.dest("build"))
+		.pipe(gulp.dest("dist"))
 	;
-});
-
-// gulp.task('typescript', function() {
-// 	return tsProject.src()
-// 		.pipe(tsProject())
-// 		.js.pipe(gulp.dest("dist"));
-// 	;
-// });
+};
 
 // place code for your default task here
-gulp.task('default', [ 'core', 'core_comments', 'loader', 'css' ]);
+let coreBuild = gulp.series(core, core_comments);
+gulp.task('default', gulp.parallel(coreBuild, loader, css) );
+// gulp.task('default', [ 'core', 'core_comments', 'loader', 'css' ]);

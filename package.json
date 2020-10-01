@@ -1,20 +1,19 @@
 {
-  "name": "recent-changes-multiple",
-  "version": "0.0.0",
-  "dependencies": {
-    "natives": "^1.1.6"
-  },
-  "devDependencies": {
-    "@types/jquery": "^3.5.1",
-    "browserify": "^13.1.1",
-    "gulp": "^3.9.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-insert": "^0.5.0",
-    "gulp-less": "^4.0.1",
-    "gulp-replace": "^1.0.0",
-    "gulp-typescript": "^5.0.1",
-    "tsify": "^2.0.2",
-    "typescript": "^2.9.2",
-    "vinyl-source-stream": "^1.1.0"
-  }
+	"name": "recent-changes-multiple",
+	"version": "2.0.0",
+	"dependencies": {
+		"@types/jquery": "^3.5.1"
+	},
+	"devDependencies": {
+		"browserify": "^16.5.2",
+		"gulp": "^4.0.2",
+		"gulp-concat": "^2.6.1",
+		"gulp-insert": "^0.5.0",
+		"gulp-less": "^4.0.1",
+		"gulp-replace": "^1.0.0",
+		"gulp-strip-comments": "^2.5.2",
+		"tsify": "^2.0.2",
+		"typescript": "^2.9.2",
+		"vinyl-source-stream": "^2.0.0"
+	}
 }
