@@ -493,24 +493,22 @@ export default class WikiData
 	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
 	getWikiDataApiUrl() : string {
 		if(!this.needsSiteinfoData || !this.needsUserData) { return null; }
-		var tReturnText = "https:"+this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
-		var tUrlList = [];
-		var tMetaList = [];
-		var tPropList = [];
+		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
 		
 		/***************************
 		* Siteinfo Data - https://www.mediawiki.org/wiki/API:Siteinfo
 		* Get the site info (Once per RCMManager)
 		***************************/
 		tMetaList.push("siteinfo");
-		tReturnText += "&siprop=" + ["general", "namespaces", "statistics", "variables"].join("|");
+		params["siprop"] = ["general", "namespaces", "statistics", "variables"].join("|");
 		
 		/***************************
 		* Imageinfo Data - https://www.mediawiki.org/wiki/API:Imageinfo
 		* Get favicon url for wiki (needed for wikis below V1.23 [Added to siteinfo at that point]) (Once per RCMManager)
 		***************************/
 		tPropList.push("imageinfo");
-		tReturnText += "&iiprop=url&titles=File:Favicon.ico";
+		params["iiprop"] = "url";
+		params["titles"] = "File:Favicon.ico";
 		
 		/***************************
 		* User Data - https://www.mediawiki.org/wiki/API:Users
@@ -518,7 +516,8 @@ export default class WikiData
 		***************************/
 		if(this.username) {
 			tUrlList.push("users");
-			tReturnText += "&ususers="+this.username+"&usprop=rights";
+			params["ususers"] = this.username;
+			params["usprop"] = "rights";
 		} else {
 			this.needsUserData = false;
 		}
@@ -526,9 +525,11 @@ export default class WikiData
 		/***************************
 		* Finish building url
 		***************************/
-		if(tUrlList.length > 0){ tReturnText += "&list="+tUrlList.join("|"); }
-		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
-		if(tPropList.length > 0){ tReturnText += "&prop="+tPropList.join("|"); }
+		if(tUrlList.length > 0){ params["list"] = tUrlList.join("|"); }
+		if(tMetaList.length > 0){ params["meta"] = tMetaList.join("|"); }
+		if(tPropList.length > 0){ params["prop"] = tPropList.join("|"); }
+		
+		var tReturnText = "https:"+this.scriptpath+"/api.php?action=query&format=json&continue=&"+Utils.objectToUrlQueryData(params);
 		tReturnText.replace(/ /g, "_");
 		
 		tMetaList = null;
@@ -545,7 +546,16 @@ export default class WikiData
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
 		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
-		var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?limit=${tLimit}&page=0&since=${tEndDate.toISOString()}&responseGroup=small&reported=false&viewableOnly=${!this.user.rights.block}`;
+		
+		let params = {
+			limit: tLimit,
+			page: 0,
+			since: tEndDate.toISOString(),
+			responseGroup: "small",
+			reported: "false",
+			viewableOnly: !this.user.rights.block,
+		};
+		var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?${Utils.objectToUrlQueryData(params)}`;
 		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}
@@ -560,35 +570,32 @@ export default class WikiData
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
 	// https://www.mediawiki.org/wiki/API:RecentChanges
 	getApiUrl() : string {
-		var tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue="; // don't assume http:// or https://
-		var tUrlList = [];
-		var tMetaList = [];
-		var tPropList = [];
+		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
 		
 		// Get results up to this time stamp.
-		var tEndDate = this.lastChangeDate;//this.getEndDate();
+		let tEndDate = this.lastChangeDate;//this.getEndDate();
 		
 		/***************************
 		* Recent Changes Data - https://www.mediawiki.org/wiki/API:RecentChanges
 		***************************/
 		tUrlList.push("recentchanges");
-		tReturnText += "&rcprop="+WikiData.RC_PROPS; // What data to retrieve.
+		params["rcprop"] = WikiData.RC_PROPS; // What data to retrieve.
 		
 		// How many results to retrieve
-		tReturnText += "&rclimit="+this.rcParams.limit;
-		tReturnText += "&rcend="+tEndDate.toISOString();
+		params["rclimit"] = this.rcParams.limit;
+		params["rcend"] = tEndDate.toISOString();
 		
 		var tRcShow = [];
 		if(this.rcParams.hideminor) { tRcShow.push("!minor"); }
 		if(this.rcParams.hidebots) { tRcShow.push("!bot"); }
 		if(this.rcParams.hideanons) { tRcShow.push("!anon"); }
 		if(this.rcParams.hideliu) { tRcShow.push("anon"); } // Hide users
-		tReturnText += "&rcshow="+tRcShow.join("|");
+		params["rcshow"] = tRcShow.join("|");
 		tRcShow = null;
 		
 		var tRcType = ["edit", "new"]; // external
 		if(this.rcParams.hidelogs == false) { tRcType.push("log"); }
-		tReturnText += "&rctype="+tRcType.join("|");
+		params["rctype"] = tRcType.join("|");
 		tRcType = null;
 		
 		// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
@@ -600,10 +607,10 @@ export default class WikiData
 		} else if(this.hideusers) {
 			tUser = this.hideusers[0];
 		}
-		if(tUser != null) { tReturnText += "&rcexcludeuser="+tUser; }
+		if(tUser != null) { params["rcexcludeuser"] = tUser; }
 		
 		if(this.rcParams.namespace || this.rcParams.namespace === "0") {
-			tReturnText += "&rcnamespace="+this.rcParams.namespace; // Already separated by "|"
+			params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
 		}
 		
 		/***************************
@@ -613,12 +620,12 @@ export default class WikiData
 		***************************/
 		if(this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
 			tUrlList.push("logevents");
-			tReturnText += "&leprop=" + ["details", "user", "title", "timestamp", "type", "ids"].join("|");
-			tReturnText += "&letype=" + ["rights", "move", "delete", "block", "merge"].join("|");
+			params["leprop"] = ["details", "user", "title", "timestamp", "type", "ids"].join("|");
+			params["letype"] = ["rights", "move", "delete", "block", "merge"].join("|");
 			
 			// How many results to retrieve
-			tReturnText += "&lelimit="+this.rcParams.limit;
-			tReturnText += "&leend="+tEndDate.toISOString();
+			params["lelimit"] = this.rcParams.limit;
+			params["leend"] = tEndDate.toISOString();
 		}
 		
 		// /***************************
@@ -630,20 +637,25 @@ export default class WikiData
 		// if(true/*TODO*/ && this.rcParams.hidelogs == false && this.user.rights.abusefilter_log && this.user.rights.abusefilter_view) {
 		// 	if(this.needsAbuseFilterFilters) {
 		// 		tUrlList.push("abusefilters");
-		// 		tReturnText += "&abflimit=500&abfshow=enabled&abfprop=id|description|private";//|actions
+		// 		params["abflimit"] = 500;
+		// 		params["abfshow"] = "enabled";
+		// 		params["abfprop"] = "id|description|private";//|actions
 		// 	}
 		// 	tUrlList.push("abuselog");
-		// 	tReturnText += "&afllimit="+this.rcParams.limit;
-		// 	tReturnText += "&aflend="+tEndDate.toISOString();
-		// 	tReturnText += "&aflprop=ids|user|title|action|result|timestamp";
+		// 	params["afllimit"] = this.rcParams.limit;
+		// 	params["aflend"] = tEndDate.toISOString();
+		// 	params["aflprop"] = "ids|user|title|action|result|timestamp";
 		// }
 		
 		/***************************
 		* Finish building url
 		***************************/
-		tReturnText += "&list="+tUrlList.join("|");
-		if(tMetaList.length > 0){ tReturnText += "&meta="+tMetaList.join("|"); }
-		if(tPropList.length > 0){ tReturnText += "&prop="+tPropList.join("|"); }
+		params["list"] = tUrlList.join("|");
+		if(tMetaList.length > 0){ params["meta"] = tMetaList.join("|"); }
+		if(tPropList.length > 0){ params["prop"] = tPropList.join("|"); }
+		
+		
+		let tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue=&"+Utils.objectToUrlQueryData(params);
 		tReturnText.replace(/ /g, "_");
 		
 		tUrlList = null;

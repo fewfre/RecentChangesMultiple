@@ -207,6 +207,15 @@ export default class Utils
 		return pData[tKey];
 	}
 	
+	// { foo=1, bar=2 } -> "foo=1&bar=2"
+	static objectToUrlQueryData(data:any) : string {
+		const ret = [];
+		for (let d in data) {
+			ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+		}
+		return ret.join('&');
+	}
+	
 	static removeFromArray(pArray:any[], pData:any) : any {
 		let i = pArray.indexOf(pData);
 		if(i != -1) {
