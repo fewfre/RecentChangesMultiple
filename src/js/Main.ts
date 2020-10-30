@@ -298,7 +298,7 @@ class Main
 			.done((pData) => {
 				resolve();
 				if(tMissing.length > 0) {
-					console.log(tMissing);
+					console.log("[RCM] missing messages: ", tMissing);
 				}
 			})
 			.fail((pData) => {

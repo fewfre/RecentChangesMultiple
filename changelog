@@ -3,6 +3,7 @@
 -Updated build packages / removed unused ones
 	-Changed build output from `build/` to `dist/`
 	-During build comments are now removed from output
+-Small WikiData rewrite
 
 
 == 2.14c - 27 September 2020 ==

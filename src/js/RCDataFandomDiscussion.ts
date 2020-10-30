@@ -184,7 +184,8 @@ export default class RCDataFandomDiscussion extends RCData
 		
 		const tSetDataAfterLoad = (title, relativeUrl)=>{
 			this.forumName = title;
-			this.threadHref = this.wikiInfo.server+Utils.escapeCharactersLink(relativeUrl)+`?commentId=${this.threadId}`;
+			// relativeUrl is already encoded
+			this.threadHref = this.wikiInfo.server+relativeUrl+`?commentId=${this.threadId}`;
 			if(this.isReply) {
 				this.threadHref += `&replyId=${this.pageid}`
 			}
