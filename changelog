@@ -1,9 +1,11 @@
-==  ==
+== 2.14d - 31 October 2020 ==
 -Fixed small CSS issue on UCP regarding wiki backgrounds
 -Updated build packages / removed unused ones
 	-Changed build output from `build/` to `dist/`
 	-During build comments are now removed from output
 -Small WikiData rewrite
+-Fixed bug with fandom comment page names being double encoded in urls
+-discussion-based posts done by anons now properly uses their IPs
 
 
 == 2.14c - 27 September 2020 ==
