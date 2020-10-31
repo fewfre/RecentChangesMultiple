@@ -54,8 +54,12 @@ export default class RCDataFandomDiscussion extends RCData
 			this.containerType = embeddedThread.containerType || "FORUM";
 		} catch(e){}
 		this.date = new Date(0); /*Epoch*/ this.date.setUTCSeconds((pData.modificationDate || pData.creationDate).epochSecond);
-		this.userEdited = true; // Currently anons cannot edit
+		this.userEdited = true;
 		this.author = pData.createdBy.name;
+		if(!this.author && pData.creatorIp) {
+			this.author = pData.creatorIp.replace("/","");
+			this.userEdited = false;
+		}
 		this.userhidden = false;//pData.userhidden == "";
 		this.title = pData.title;//Utils.escapeCharacters( pData.title.split("/@comment")[0] );
 		this.namespace = -5234; // Has no namespace. This should probably be unique
@@ -124,22 +128,30 @@ export default class RCDataFandomDiscussion extends RCData
 	/*override*/ userDetails() : string {
 		if(this.userhidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		let blockText = this.wikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
-		// if(this.userEdited) {
-		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
-		// } else {
-		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
-		// }
-		let tUserContribsLink = `${this.wikiInfo.scriptpath}/d/u/${this.user_id}`;
-		return Utils.formatString(""
-			+"<span class='mw-usertoollinks'>"
-				+this.getCreatorAvatarImg()+`<a href='{0}User:{1}' class='${this.wikiInfo.getUserClass(this.author)}' ${this.wikiInfo.getUserClassDataset(this.author)}>{2}</a>`
-				+" (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"
-				+i18n("pipe-separator")
-				+`<a href='${tUserContribsLink}'>${i18n("contribslink")}</a>`
-				+blockText+")"
-			+"</span>",
-		this.wikiInfo.articlepath, Utils.escapeCharactersLink(this.author), this.author);
+		const articlepath = this.wikiInfo.articlepath, author = Utils.escapeCharactersLink(this.author), authorNotUrlSafe = this.author;
+		
+		// Links that appear between the ()s
+		const toolLinks = [
+			`<a href='${articlepath}User_talk:${author}'>${i18n("talkpagelinktext")}</a>`,
+		];
+		// If user isn't anon then add contributions link, as it's not needed for anon users as their name itself links to contributions
+		if(this.userEdited) {
+			// For discussion posts link to discussion contributions, but since walls/comments are part of wiki, list to wiki contribs
+			let tUserContribsLink = this.containerType === "FORUM" ? `${this.wikiInfo.scriptpath}/d/u/${this.user_id}` : `${this.wikiInfo.articlepath}Special:Contributions/${this.author}`;
+			toolLinks.push(`<a href='${tUserContribsLink}'>${i18n("contribslink")}</a>`);
+		}
+		// Only add block link for users that can use it
+		if(this.wikiInfo.user.rights.block) {
+			toolLinks.push(`<a href='${articlepath}Special:Block/${author}'>${i18n("blocklink")}</a>`);
+		}
+		
+		return [
+		"<span class='mw-usertoollinks'>",
+			this.getCreatorAvatarImg(),
+			`<a href='${articlepath}${this.userEdited ? "User:" : "Special:Contributions/"}${author}' class='${this.wikiInfo.getUserClass(this.author)}' ${this.wikiInfo.getUserClassDataset(this.author)}>${authorNotUrlSafe}</a>`,
+			` (${toolLinks.join(i18n("pipe-separator"))})`,
+		"</span>",
+		].join("");
 	}
 	
 	getCreatorAvatarImg() : string {
