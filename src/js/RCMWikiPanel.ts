@@ -20,69 +20,126 @@ export default class RCMWikiPanel
 	/***************************
 	 * HTML Elements/Nodes
 	 ***************************/
-	listNode		: HTMLElement;
-	infoNode		: HTMLElement;
+	wikisNode		: HTMLElement; // Where info about all the wikis in the parent manager are listed
+	infoNode		: HTMLElement; // Where info about the specific wiki shows up
+	
+	loadedNode		: HTMLElement;
+	loadedListNode	: HTMLUListElement;
+	hiddenNode		: HTMLElement;
+	hiddenListNode	: HTMLUListElement;
 	
 	/***************************
 	 * Storage
 	 ***************************/
 	singleWiki		: boolean; // If this panel's manager only contains one wiki.
-	count			: number;
+	loadedWikis		: string[]; // List of ids for wikis that have finished loading
 	
 	// Constructor
 	constructor(pManager:RCMManager) {
 		this.manager = pManager;
 		
 		this.singleWiki = this.manager.chosenWikis.length == 1;
-		this.count = 0;
+		this.loadedWikis = [];
 	}
 	
 	dispose() : void {
 		this.manager	= null;
 		this.root		= null;
 		
-		this.listNode	= null;
+		this.wikisNode	= null;
 		this.infoNode	= null;
+		
+		this.loadedNode	= null;
+		this.loadedListNode	= null;
+		this.hiddenNode	= null;
+		this.hiddenListNode	= null;
+		
+		this.loadedWikis = null;
 	}
 	
 	// Should only be called once.
 	init(pElem:HTMLElement) : RCMWikiPanel {
 		this.root = pElem;
 		
-		if(!this.singleWiki) this.listNode = Utils.newElement("span", { className:"rcm-wikis-list" }, this.root);
+		// For RCMs with only one wiki, we don't want to show a list
+		if(!this.singleWiki) {
+			// Hide initially as we don't want to show it while loading wiki data
+			this.wikisNode = Utils.newElement("div", { style:"display:none;" }, this.root);
+			
+			this.loadedNode = Utils.newElement("span", { className:"loaded-wikis" }, this.wikisNode);
+			this.loadedNode.innerHTML += `<span class="rcm-wikisloaded-title" title="${i18n('wikipanel-wikisloaded-tooltip')}">${i18n('wikipanel-wikisloaded')}</span>: `;
+			this.loadedListNode = Utils.newElement("ul", { className:"rcm-wikis-list" }, this.loadedNode) as HTMLUListElement;
+			
+			this.hiddenNode = Utils.newElement("span", { className:"hidden-wikis", style:"display:none;" }, this.wikisNode);
+			this.hiddenNode.innerHTML += `${i18n('abusefilter-history-hidden')}: `
+			this.hiddenListNode = Utils.newElement("ul", { className:"rcm-wikis-list" }, this.hiddenNode) as HTMLUListElement;
+			Utils.addTextTo(" ", this.hiddenNode);
+			// Utils.newElement("a", { innerHTML:`(${i18n('show')})`, href:"#" }, this.hiddenNode).addEventListener("click", (e)=>{
+			// 	e.preventDefault();
+			// 	this.manager.chosenWikis.forEach(wiki=>{ wiki.hidden = false; });
+			// 	this.manager.hardRefresh();
+			// 	return false;
+			// });
+			Utils.newElement("button", { className:"rcm-btn-short", innerHTML:i18n('show') }, this.hiddenNode).addEventListener("click", (e)=>{
+				e.preventDefault();
+				this.manager.chosenWikis.forEach(wiki=>{ wiki.hidden = false; });
+				this.manager.hardRefresh();
+				return false;
+			});
+		}
 		this.infoNode = Utils.newElement("div", { className:"rcm-wikis-info" }, this.root);
 		
 		return this;
 	}
 	
-	// Clear panel (on refresh).
-	populate() : void {
+	onWikiDataLoaded() : void {
 		if(!this.singleWiki) {
-			this.listNode.innerHTML = i18n('wikipanel-wikisloaded');
+			this.wikisNode.style.display = "block";
 		}
 	}
 	
-	// Clear panel (on refresh).
+	// Clear panel (on refresh) - don't need to clear it if only one wiki, as it never changes
 	clear() : void {
 		if(!this.singleWiki) {
-			this.listNode.innerHTML = "";
+			this.loadedListNode.innerHTML = "";
+			this.hiddenListNode.innerHTML = "";
+			this.hiddenNode.style.display = "none";
 			this.infoNode.innerHTML = "";
+			this.loadedWikis = [];
 		}
-		this.count = 0;
+	}
+	
+	refresh() {
+		// For RCMs that only use a single wiki, we only want to show the wiki's info
+		// and since it never changes, we don't need to refresh it past the first time
+		if(this.singleWiki) {
+			if(!this.infoNode.innerHTML) {
+				this.onIconClick(this.manager.chosenWikis[0], null);
+			}
+			return;
+		}// Else add the list
+		
+		this.loadedListNode.innerHTML = "";
+		this.hiddenListNode.innerHTML = "";
+		this.manager.chosenWikis.filter(w=>!w.needsSiteinfoData && (w.hidden || this.loadedWikis.indexOf(w.htmlName) > -1)).forEach(wiki=>{
+			this._addWiki(wiki);
+		});
+		// If at least 1 wiki is hidden, then show it on the list
+		this.hiddenNode.style.display = this.manager.chosenWikis.some(wiki=>wiki.hidden) ? "initial" : "none";
 	}
 	
 	// Clear panel (on refresh).
-	addWiki(pWikiInfo:WikiData) : void {
-		if(this.singleWiki) {
-			if(!this.infoNode.innerHTML) this.onIconClick(pWikiInfo, null);
-		} else {
-			if(this.count > 0) {
-				Utils.addTextTo(":", this.listNode);
-			}
-			let favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, this.listNode);
-			favicon.addEventListener("click", (e) => { this.onIconClick(pWikiInfo, e); });
-		}
-		this.count++;
+	private _addWiki(pWikiInfo:WikiData) : void {
+		const ul = pWikiInfo.hidden ? this.hiddenListNode : this.loadedListNode;
+		// const li = Utils.newElement("li", null, ul);
+		// const favicon = Utils.newElement("span", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, li);
+		const favicon = Utils.newElement("li", { id:pWikiInfo.infoID, className: "favicon", innerHTML: pWikiInfo.getFaviconHTML() }, ul);
+		favicon.addEventListener("click", (e) => { this.onIconClick(pWikiInfo, e); });
+	}
+	
+	onWikiLoaded(pWikiInfo:WikiData) : void {
+		this.loadedWikis.push(pWikiInfo.htmlName);
+		this.refresh();
 	}
 	
 	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
@@ -93,68 +150,110 @@ export default class RCMWikiPanel
 		} else {
 			const tLink=(page:string, key:I18nKey)=>"<a href='"+pWikiInfo.articlepath+page+"'>"+i18n(key)+"</a>";
 			const tLinkNum=(page:string, key:I18nKey, num:string|number)=>tLink(page, key)+`: <b>${num}</b>`;
+			
+			///////////////////////////////
+			// Wiki Links
+			///////////////////////////////
 			// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
-			this.infoNode.innerHTML = ""+
-			`<div class='banner-notification warn' data-wiki='${pWikiInfo.servername}'>`
-			+ (this.singleWiki ? "" : "<button class='close wikia-chiclet-button'><img></button>")
-			+ "<div class='msg'>"
+			const wikiLinksList = [
+				tLink("Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString, "recentchanges"),
+				tLink("Special:NewPages", "newpages"),
+				tLink("Special:NewFiles", "newimages"),
+				tLink("Special:Log", "log"),
+				pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && tLink("Special:Insights", "insights"),
+				pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
+				tLink("Special:Random", "randompage"),
+				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
+				
+				
+				// "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n("recentchanges")+"</a>",
+				// "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n("newpages")+"</a>",
+				// "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n("newimages")+"</a>",
+				// "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n("log")+"</a>",
+				// pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && "<a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>",
+				// pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && "<a href='"+pWikiInfo.articlepath+"Special:Analytics'>"+i18n("admindashboard-control-analytics-label")+"</a>",
+				// "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>",
+				// pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>"
+			].filter(o=>!!o);
+			
+			const buttons = [];
+			if(!this.singleWiki) {
+				if(!pWikiInfo.hidden) {
+					buttons.push(`<button id="rcm-hide-cur-wiki" class="rcm-btn-short">${i18n('hide')}</button>`);
+					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
+				} else {
+					buttons.push(`<button id="rcm-show-cur-wiki" class="rcm-btn-short">${i18n('show')}</button>`);
+					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
+				}
+			}
+			
+			///////////////////////////////
+			// Wiki Statistics
+			///////////////////////////////
+			let statsHTML = ""
+			+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
+			+ "<tr>"
+				+ `<td>${tLinkNum("Special:AllPages", (Global.isUcpWiki ? "articles" : "awc-metrics-articles"), pWikiInfo.statistics.articles)}</td>`
+				+ `<td>${tLinkNum("Special:ListFiles", "prefs-files", pWikiInfo.statistics.images)}</td>`
+				+ `<td>${tLinkNum("Special:ListUsers", "statistics-users-active", pWikiInfo.statistics.activeusers)}</td>`
+				+ `<td>${tLinkNum("Special:ListAdmins", "group-sysop", pWikiInfo.statistics.admins)}</td>`
+				+ `<td>${tLinkNum("Special:Statistics", "edits", pWikiInfo.statistics.edits)}</td>`
+			+ "</tr>"
+			+ "</table>";
+			
+			///////////////////////////////
+			// Add to page
+			///////////////////////////////
+			const siteLink = `<a href='${pWikiInfo.articlepath+Utils.escapeCharactersLink(pWikiInfo.mainpage)}'>${pWikiInfo.sitename}</a>`;
+			let html = ""
 			+ "<table class='rcm-wiki-infotable'>"
 			+ "<tr>"
-			+ "<td rowspan='2' class='rcm-title-cell'>"
-			+ pWikiInfo.getFaviconHTML()
-			+ " "
-			+ "<b><a href='"+pWikiInfo.articlepath+Utils.escapeCharactersLink(pWikiInfo.mainpage)+"'>"+pWikiInfo.sitename+"</a></b>"
-			+ " : "
-			+ "</td>"
-			+ "<td>"
-				+ [
-					tLink("Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString, "recentchanges"),
-					tLink("Special:NewPages", "newpages"),
-					tLink("Special:NewFiles", "newimages"),
-					tLink("Special:Log", "log"),
-					pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && tLink("Special:Insights", "insights"),
-					pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
-					tLink("Special:Random", "randompage"),
-					pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
-					
-					
-					// "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n("recentchanges")+"</a>",
-					// "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n("newpages")+"</a>",
-					// "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n("newimages")+"</a>",
-					// "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n("log")+"</a>",
-					// pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && "<a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>",
-					// pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && "<a href='"+pWikiInfo.articlepath+"Special:Analytics'>"+i18n("admindashboard-control-analytics-label")+"</a>",
-					// "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>",
-					// pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>"
-				].filter(o=>!!o).join(" - ")
-			+ "</td>"
+				+ `<td rowspan='2' class='rcm-favicon-cell'>${pWikiInfo.getFaviconHTML(false, 32)}</td>`
+				+ `<td class="rcm-titlelinks-cell">`
+					+ `<div class="rcm-wiki-title"><b>${siteLink}</b></div>`
+					+ `<div class="rcm-links">${wikiLinksList.join(" - ")}</div>`
+					+ (buttons.length > 0 ? `<div class="rcm-buttons">${buttons.join(" ")}</div>` : "")
+				+`</td>`
 			+ "</tr>"
 			// Now for the statistics
-				+ "<tr>"
-				+ "<td>"
-				+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
-				+ "<tr>"
-					+ `<td>${tLinkNum("Special:AllPages", (Global.isUcpWiki ? "articles" : "awc-metrics-articles"), pWikiInfo.statistics.articles)}</td>`
-					+ `<td>${tLinkNum("Special:ListFiles", "prefs-files", pWikiInfo.statistics.images)}</td>`
-					+ `<td>${tLinkNum("Special:ListUsers", "group-user", pWikiInfo.statistics.activeusers)}</td>`
-					+ `<td>${tLinkNum("Special:ListAdmins", "group-sysop", pWikiInfo.statistics.admins)}</td>`
-					+ `<td>${tLinkNum("Special:Statistics", "edits", pWikiInfo.statistics.edits)}</td>`
-				
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:AllPages'>"+i18n(Global.isUcpWiki ? "articles" : "awc-metrics-articles")+"</a>: <b>" + pWikiInfo.statistics.articles +"</b></td>"
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListFiles'>"+i18n("prefs-files")+"</a>: <b>" + pWikiInfo.statistics.images +"</b></td>"
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListUsers'>"+i18n("group-user")+"</a>: <b>" + pWikiInfo.statistics.activeusers +"</b></td>"
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:ListAdmins'>"+i18n("group-sysop")+"</a>: <b>" + pWikiInfo.statistics.admins +"</b></td>"
-					// + "<td><a href='"+pWikiInfo.articlepath+"Special:Statistics'>"+i18n("edits")+"</a>: <b>" + pWikiInfo.statistics.edits +"</b></td>"
-				+ "</tr>"
-				+ "</table>"
-				+ "</td>"
-				+ "</tr>"
-			+ "</table>"
-			+ "</div>";
-			+ "</div>";
-			if(!this.singleWiki) {
-				this.infoNode.querySelector(".banner-notification .close").addEventListener("click", this.closeInfo.bind(this));
-			}
+			+ "<tr>"
+				+ `<td>${statsHTML}</td>`
+			+ "</tr>"
+			+ "</table>";
+			
+			this.addBanner(html, !this.singleWiki, `data-wiki='${pWikiInfo.servername}'`);
+			
+			// Add events
+			
+			$("#rcm-hide-cur-wiki").on("click", ()=>{
+				pWikiInfo.hidden = true;
+				this.manager.hardRefresh();
+			});
+			
+			$("#rcm-showonly-cur-wiki").on("click", ()=>{
+				this.manager.chosenWikis.forEach(wiki=>{ wiki.hidden = true; });
+				pWikiInfo.hidden = false;
+				this.manager.hardRefresh();
+			});
+			
+			$("#rcm-show-cur-wiki").on("click", ()=>{
+				pWikiInfo.hidden = false;
+				this.manager.hardRefresh();
+			});
+		}
+	}
+	
+	private addBanner(contents:string, addCloseButton:boolean, params:string="") {
+		var html = [
+			`<div class='banner-notification warn' ${params}>`,
+				(addCloseButton ? "<button class='close wikia-chiclet-button'><img></button>" : ""),
+				`<div class='msg'>${contents}</div>`,
+			"</div>",
+		].filter(o=>!!o).join("");
+		
+		this.infoNode.innerHTML = html;
+		if(addCloseButton) {
+			this.infoNode.querySelector(".banner-notification .close").addEventListener("click", this.closeInfo.bind(this));
 		}
 	}
 	

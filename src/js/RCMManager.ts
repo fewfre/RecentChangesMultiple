@@ -393,6 +393,8 @@ export default class RCMManager
 		});
 		mw.util.addCSS(tCSS);
 		
+		this.wikisNode.onWikiDataLoaded();
+		
 		this._start(true);
 	}
 	
@@ -406,7 +408,8 @@ export default class RCMManager
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		
 		this.totalItemsToLoad = 0;
-		Utils.forEach(this.chosenWikis, (tWikiData:WikiData, i:number) => {
+		const wikis = this.chosenWikis.filter(w=>!w.hidden);
+		wikis.forEach((tWikiData:WikiData, i:number) => {
 			if(tWikiData.usesWikiaDiscussions !== false) {
 				this.totalItemsToLoad++;
 				this._loadWikiaDiscussions(tWikiData, 0, pID, this.totalItemsToLoad * Global.loadDelay);
@@ -506,7 +509,7 @@ export default class RCMManager
 	***************************/
 	private _start(pUpdateParams:boolean=false) : void {
 		clearTimeout(this.autoRefreshTimeoutID);
-		this.wikisNode.populate();
+		this.wikisNode.clear();
 		
 		this.newRecentChangesEntries = [];
 		this.ajaxCallbacks = [];
@@ -517,11 +520,19 @@ export default class RCMManager
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
-		this.chosenWikis.forEach((tWikiData:WikiData, i:number) => {
+		const wikis = this.chosenWikis.filter(w=>!w.hidden);
+		// This happens if someone hides all wikis
+		if(wikis.length == 0) {
+			Utils.newElement("div", { className:"rcm-noNewChanges", innerHTML:"<strong>"+i18n('nonewchanges')+"</strong>" }, this.resultsNode);
+			this.wikisNode.refresh();
+			return;
+		}
+		
+		wikis.forEach((tWikiData:WikiData, i:number) => {
 			if(pUpdateParams) { tWikiData.setupRcParams(); } // Encase it was changed via RCMOptions
 			this._loadWiki(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
 		});
-		this.totalItemsToLoad = this.chosenWikis.length;
+		this.totalItemsToLoad = wikis.length;
 		this.wikisLeftToLoad = this.totalItemsToLoad;
 		this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>0%</span>)";
 	}
@@ -532,7 +543,6 @@ export default class RCMManager
 		this.isHardRefresh = false;
 		this.statusNode.innerHTML = "";
 		// this.resultsNode.innerHTML = "";
-		this.wikisNode.clear();
 		
 		// Remove except if auto refresh is on, window doesn't have focus, and the window wasn't clicked and then lost focus again (by checking lastLoadDateTime)
 		if(this.rcmNewChangesMarker && (!this.isAutoRefreshEnabled() || (document.hasFocus() || this.lastLoadDateTime >= this.recentChangesEntries[0].date))) {
@@ -565,7 +575,6 @@ export default class RCMManager
 		this.resultsNode.innerHTML = "";
 		this.rcmNewChangesMarker = null;
 		this.rcmNoNewChangesMarker = null;
-		this.wikisNode.clear();
 		
 		this.chosenWikis.forEach((tWikiData:WikiData) => {
 			tWikiData.lastChangeDate = tWikiData.getEndDate();
@@ -824,7 +833,7 @@ export default class RCMManager
 	
 	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
 	private _onWikiParsingFinished(pWikiData:WikiData) : void {
-		this.wikisNode.addWiki(pWikiData);
+		this.wikisNode.onWikiLoaded(pWikiData);
 		this._onParsingFinished(() => { this._onAllWikisParsed() });
 	}
 	

@@ -33,6 +33,8 @@ type I18nDevKeys =
 | "autorefresh-tooltip"
 
 | "wikipanel-wikisloaded"
+| "wikipanel-wikisloaded-tooltip"
+| "wikipanel-showonly"
 
 | "previouslyloaded"
 | "nonewchanges"
@@ -167,6 +169,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'randompage' : 'Random page',
 	'group-sysop' : 'Administrators',
 	'group-user' : 'Users',
+	'statistics-users-active' : 'Active users',
 	'prefs-files' : 'Files',
 	'awc-metrics-articles' : 'Articles', // LEGACY
 	'articles' : 'Articles',
@@ -183,6 +186,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'wall-message-remove': 'Remove',
 	'undeletelink': 'view/restore',
 	'admindashboard-control-analytics-label': 'Analytics',
+	'abusefilter-history-hidden': 'Hidden',
 	
 	/***************************
 	* Diff Modal

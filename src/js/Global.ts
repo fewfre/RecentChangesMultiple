@@ -7,8 +7,8 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class Global
 {
-	static readonly version					: string = "2.14d";
-	static readonly lastVersionDateString	: string = "Aug 27 2020 00:00:00 GMT";
+	static readonly version					: string = "2.15";
+	static readonly lastVersionDateString	: string = "Nov 2 2020 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
 		"skin",

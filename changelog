@@ -1,3 +1,14 @@
+== 2.15 - 1 November 2020 ==
+-Added option to hide wikis
+	-Added buttons for hiding/showing the wiki to the panel as well as wiki list (to show all hidden ones at once)
+	-Hidden wikis show up in a new section to the right of loaded wikis
+-Code rewrite and small redesign for wiki info panel
+	-Wiki name now appears above stat table instead of to the left
+	-Wiki favicon now shows up on the left by itself, and is twice the size
+-Loaded wikis now always show up in the same order (instead of in the order of when they loaded), to make it easier to find the one you want to click
+-"Wikis Loaded" now has a tooltip to make it more obvious wiki icons are clickable
+
+
 == 2.14d - 31 October 2020 ==
 -Fixed small CSS issue on UCP regarding wiki backgrounds
 -Updated build packages / removed unused ones

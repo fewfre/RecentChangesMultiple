@@ -53,6 +53,7 @@ export default class WikiData
 	htmlName				: string; // A unique identifier for this wiki. Just the server name with dashes for the dots.
 	infoID					: string; // Element ID for the wiki's info banner.
 	rcClass					: string; // Class name for this wiki's RC entries.
+	hidden					: boolean; // If changes for this wiki should be displayed
 	
 	/***************************
 	* Siteinfo Data
@@ -135,6 +136,8 @@ export default class WikiData
 		
 		// this.abuseFilterFilters		= {};
 		// this.needsAbuseFilterFilters = true;
+		
+		this.hidden = false;
 		
 		// Initial values set in setupRcParams() due to needing "days" value.
 		this.lastChangeDate			= null;
@@ -415,9 +418,9 @@ export default class WikiData
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
-	getFaviconHTML(pOpenInfoBanner:boolean=false) : string {
-		var html = "<img src='"+this.favicon+"' title='"+this.sitename+"' width='16' height='16' />";
-		if(pOpenInfoBanner) { html = "<span class='rcm-favicon-goto-button' data-infoid='"+this.infoID+"'>"+html+"</span>"; }
+	getFaviconHTML(pOpenInfoBanner:boolean=false, pSize:number=16) : string {
+		let html = `<img src='${this.favicon}' title='${this.sitename}' width='${pSize}' height='${pSize}' />`;
+		if(pOpenInfoBanner) { html = `<span class='rcm-favicon-goto-button' data-infoid='${this.infoID}'>${html}</span>`; }
 		return html;
 	}
 	

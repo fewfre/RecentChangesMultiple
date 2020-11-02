@@ -18,10 +18,6 @@
 .rcm-wikis {
 	padding:4px 0;
 	border-bottom:2px dotted currentColor;
-	
-	img {
-		vertical-align: middle;
-	}
 }
 .rcm-footer {
 	text-align: right;
@@ -159,6 +155,45 @@ table.mw-enhanced-rc {
 //#############################
 // Wiki Data / Infotable section
 //#############################
+.rcm-wikisloaded-title {
+	border-bottom: 1px dotted currentColor;
+	cursor: help;
+}
+.rcm-wikis {
+	img {
+		vertical-align: middle;
+	}
+	.hidden-wikis:before {
+		content: " — ";
+		margin-left: 5px;
+	}
+	.rcm-wikis-list {
+		display: inline;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		li {
+			display: inline-block;
+			line-height: 1;
+		}
+		// li+li::before {
+		// 	content:":";
+		// }
+		li+li {
+			margin-left: 2px;
+		}
+		.favicon { cursor: pointer; }
+		img {
+			box-shadow: 0 0 1px rgba(255,255,255,0.35);
+		}
+	}
+	button.rcm-btn-short {
+		height: 16px;
+		line-height: 16px;
+		padding: 0 7px;
+	}
+}
+
 .rcm-wikis-info {
 	margin-top: 2px;
 	
@@ -170,14 +205,37 @@ table.mw-enhanced-rc {
 	width: ~"calc(100% - 20px)";
 	
 	td { padding: 2px; }
+	.rcm-favicon-cell {
+		padding-right: 8px;
+		img {
+			image-rendering: -moz-crisp-edges;
+			image-rendering: -o-crisp-edges;
+			image-rendering: -webkit-optimize-contrast;
+			image-rendering: crisp-edges;
+			image-rendering: pixelated;
+			-ms-interpolation-mode: nearest-neighbor;
+		}
+	}
+	.rcm-titlelinks-cell {
+		display: flex;
+	}
+	.rcm-wiki-title {
+		white-space: nowrap;
+		font-size: 120%;
+		margin-right: 18px;
+	}
+	.rcm-links {
+		flex: 1;
+	}
 	.statisticstable { table-layout: fixed; }
 }
+// depreciated - kept in so stuff doesn't break while script is being reviewed
 .rcm-title-cell {
 	white-space: nowrap;
 	
 	&+td { width: 100%; }
 }
-.rcm-favicon-goto-button, .rcm-wikis-list .favicon { cursor: pointer; }
+.rcm-favicon-goto-button { cursor: pointer; }
 
 //#############################
 // Icons / SVGs
