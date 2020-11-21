@@ -110,9 +110,9 @@ class Main
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
-			if(!$.fn.makeCollapsible) {
+			// if(!$.fn.makeCollapsible) {
 				addMakeCollapsible();
-			}
+			// }
 		});
 		
 		/***************************

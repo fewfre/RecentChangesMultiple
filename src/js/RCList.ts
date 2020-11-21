@@ -483,7 +483,7 @@ export default class RCList
 			tBlockHead.querySelector("tbody").appendChild( this._toHTMLBlockLine(this.list[i]) );
 		}
 		// Make "blocks" collapsible - for this to work, make sure neither this NOR IT'S PARENT is modified via innerHTML after this has been added (to avoid event being "eaten").
-		if($(tBlockHead).makeCollapsible) { $(tBlockHead).makeCollapsible(); }
+		if($(tBlockHead).makeCollapsibleRCM) { $(tBlockHead).makeCollapsibleRCM(); }
 		return <HTMLElement>tBlockHead;
 	}
 	
@@ -534,13 +534,13 @@ export default class RCList
 		html += RCList.SEP;
 		html += this._contributorsCountText();
 		
-		var tTable = Utils.newElement("table", { className:"mw-collapsible mw-enhanced-rc mw-collapsed "+this.newest.wikiInfo.rcClass+" "+this.newest.getNSClass() }); // mw-made-collapsible
+		var tTable = Utils.newElement("table", { className:"rcmmw-collapsible mw-enhanced-rc rcmmw-collapsed "+this.newest.wikiInfo.rcClass+" "+this.newest.getNSClass() }); // mw-made-collapsible
 		Utils.newElement("caption", { className:this._getBackgroundClass() }, tTable); // Needed for CSS background.
 		var tTbody = Utils.newElement("tbody", {}, tTable); // tbody is needed for $.makeCollapsible() to work.
 		var tRow = Utils.newElement("tr", {}, tTbody);
 		if(this._showFavicon()) { Utils.newElement("td", { innerHTML:this.newest.wikiInfo.getFaviconHTML(true) }, tRow); }
 		var td1 = Utils.newElement("td", {}, tRow);
-			Utils.newElement("span", { className:"mw-collapsible-toggle", innerHTML:''
+			Utils.newElement("span", { className:"rcmmw-collapsible-toggle", innerHTML:''
 				+'<span class="mw-rc-openarrow"><a title="'+i18n("rc-enhanced-expand")+'">'// href="#"
 					+'<span class="rcm-arr" title="'+i18n("rc-enhanced-expand")+'">+</span>'
 				+'</a></span>'

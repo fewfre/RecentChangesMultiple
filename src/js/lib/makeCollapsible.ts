@@ -1,10 +1,10 @@
 export default function(){
 	// Originally an import using 'mediawiki.special.recentchanges' on older wiki version, which included it as 'jquery.makeCollapsible'
 	(function ($, mw) {
-		$.fn.makeCollapsible = function () {
+		$.fn.makeCollapsibleRCM = function () {
 		  return this.each(function () {
-			var _fn = 'jquery.makeCollapsible> ';
-			var $that = $(this).addClass('mw-collapsible'),
+			var _fn = 'jquery.makeCollapsibleRCM> ';
+			var $that = $(this).addClass('rcmmw-collapsible'),
 			that = this,
 			collapsetext = $(this).attr('data-collapsetext'),
 			expandtext = $(this).attr('data-expandtext'),
@@ -47,7 +47,7 @@ export default function(){
 					}
 				  }
 				} else {
-				  var $collapsibleContent = $collapsible.find('> .mw-collapsible-content');
+				  var $collapsibleContent = $collapsible.find('> .rcmmw-collapsible-content');
 				  if ($collapsibleContent.length) {
 					if (instantHide) {
 					  $collapsibleContent.hide();
@@ -78,7 +78,7 @@ export default function(){
 					$containers.stop(true, true).slideDown();
 				  }
 				} else {
-				  var $collapsibleContent = $collapsible.find('> .mw-collapsible-content');
+				  var $collapsibleContent = $collapsible.find('> .rcmmw-collapsible-content');
 				  if ($collapsibleContent.length) {
 					$collapsibleContent.slideDown();
 				  } else {
@@ -96,11 +96,11 @@ export default function(){
 			},
 			toggleLinkDefault = function (that, e) {
 			  var $that = $(that),
-			  $collapsible = $that.closest('.mw-collapsible.mw-made-collapsible').toggleClass('mw-collapsed');
+			  $collapsible = $that.closest('.rcmmw-collapsible.rcmmw-made-collapsible').toggleClass('rcmmw-collapsed');
 			  e.preventDefault();
 			  e.stopPropagation();
-			  if (!$that.hasClass('mw-collapsible-toggle-collapsed')) {
-				$that.removeClass('mw-collapsible-toggle-expanded').addClass('mw-collapsible-toggle-collapsed');
+			  if (!$that.hasClass('rcmmw-collapsible-toggle-collapsed')) {
+				$that.removeClass('rcmmw-collapsible-toggle-expanded').addClass('rcmmw-collapsible-toggle-collapsed');
 				if ($that.find('> a').length) {
 				  $that.find('> a').text(expandtext);
 				} else {
@@ -108,7 +108,7 @@ export default function(){
 				}
 				toggleElement($collapsible, 'collapse', $that);
 			  } else {
-				$that.removeClass('mw-collapsible-toggle-collapsed').addClass('mw-collapsible-toggle-expanded');
+				$that.removeClass('rcmmw-collapsible-toggle-collapsed').addClass('rcmmw-collapsible-toggle-expanded');
 				if ($that.find('> a').length) {
 				  $that.find('> a').text(collapsetext);
 				} else {
@@ -119,17 +119,17 @@ export default function(){
 			  return;
 			},
 			toggleLinkPremade = function ($that, e) {
-			  var $collapsible = $that.eq(0).closest('.mw-collapsible.mw-made-collapsible').toggleClass('mw-collapsed');
+			  var $collapsible = $that.eq(0).closest('.rcmmw-collapsible.rcmmw-made-collapsible').toggleClass('rcmmw-collapsed');
 			  if ($(e.target).is('a')) {
 				return true;
 			  }
 			  e.preventDefault();
 			  e.stopPropagation();
-			  if (!$that.hasClass('mw-collapsible-toggle-collapsed')) {
-				$that.removeClass('mw-collapsible-toggle-expanded').addClass('mw-collapsible-toggle-collapsed');
+			  if (!$that.hasClass('rcmmw-collapsible-toggle-collapsed')) {
+				$that.removeClass('rcmmw-collapsible-toggle-expanded').addClass('rcmmw-collapsible-toggle-collapsed');
 				toggleElement($collapsible, 'collapse', $that);
 			  } else {
-				$that.removeClass('mw-collapsible-toggle-collapsed').addClass('mw-collapsible-toggle-expanded');
+				$that.removeClass('rcmmw-collapsible-toggle-collapsed').addClass('rcmmw-collapsible-toggle-expanded');
 				toggleElement($collapsible, 'expand', $that);
 			  }
 			  return;
@@ -139,12 +139,12 @@ export default function(){
 				e.preventDefault();
 				e.stopPropagation();
 			  }
-			  var action = $collapsible.hasClass('mw-collapsed') ? 'expand' : 'collapse';
-			  $collapsible.toggleClass('mw-collapsed');
+			  var action = $collapsible.hasClass('rcmmw-collapsed') ? 'expand' : 'collapse';
+			  $collapsible.toggleClass('rcmmw-collapsed');
 			  toggleElement($collapsible, action, $that);
 			},
 			buildDefaultToggleLink = function () {
-			  return $('<a href="#"></a>').text(collapsetext).wrap('<span class="mw-collapsible-toggle"></span>').parent().prepend('&nbsp;[').append(']&nbsp;').on('click.mw-collapse', function (e) {
+			  return $('<a href="#"></a>').text(collapsetext).wrap('<span class="rcmmw-collapsible-toggle"></span>').parent().prepend('&nbsp;[').append(']&nbsp;').on('click.rcmmw-collapse', function (e) {
 				toggleLinkDefault(this, e);
 			  });
 			};
@@ -154,70 +154,70 @@ export default function(){
 			if (!expandtext) {
 			  expandtext = mw.msg('collapsible-expand');
 			}
-			if ($that.hasClass('mw-made-collapsible')) {
+			if ($that.hasClass('rcmmw-made-collapsible')) {
 			  return;
 			} else {
-			  $that.addClass('mw-made-collapsible');
+			  $that.addClass('rcmmw-made-collapsible');
 			}
-			if (($that.attr('id') || '').indexOf('mw-customcollapsible-') === 0) {
+			if (($that.attr('id') || '').indexOf('rcmmw-customcollapsible-') === 0) {
 			  var thatId = $that.attr('id'),
-			  $customTogglers = $('.' + thatId.replace('mw-customcollapsible', 'mw-customtoggle'));
+			  $customTogglers = $('.' + thatId.replace('rcmmw-customcollapsible', 'rcmmw-customtoggle'));
 			  mw.log(_fn + 'Found custom collapsible: #' + thatId);
 			  if ($customTogglers.length) {
-				$customTogglers.on('click.mw-collapse', function (e) {
+				$customTogglers.on('click.rcmmw-collapse', function (e) {
 				  toggleLinkCustom($(this), e, $that);
 				});
 			  } else {
 				mw.log(_fn + '#' + thatId + ': Missing toggler!');
 			  }
-			  if ($that.hasClass('mw-collapsed')) {
-				$that.removeClass('mw-collapsed');
+			  if ($that.hasClass('rcmmw-collapsed')) {
+				$that.removeClass('rcmmw-collapsed');
 				toggleLinkCustom($customTogglers, null, $that);
 			  }
 			} else {
 			  if ($that.is('table')) {
 				var $firstRowCells = $('tr:first th, tr:first td', that),
-				$toggle = $firstRowCells.find('> .mw-collapsible-toggle');
+				$toggle = $firstRowCells.find('> .rcmmw-collapsible-toggle');
 				if (!$toggle.length) {
 				  $toggleLink = buildDefaultToggleLink();
 				  $firstRowCells.eq( - 1).prepend($toggleLink);
 				} else {
-				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.rcmmw-collapse').on('click.rcmmw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
 			  } else if ($that.is('ul') || $that.is('ol')) {
 				var $firstItem = $('li:first', $that),
-				$toggle = $firstItem.find('> .mw-collapsible-toggle');
+				$toggle = $firstItem.find('> .rcmmw-collapsible-toggle');
 				if (!$toggle.length) {
 				  var firstval = $firstItem.attr('value');
 				  if (firstval === undefined || !firstval || firstval == '-1') {
 					$firstItem.attr('value', '1');
 				  }
 				  $toggleLink = buildDefaultToggleLink();
-				  $that.prepend($toggleLink.wrap('<li class="mw-collapsible-toggle-li"></li>').parent());
+				  $that.prepend($toggleLink.wrap('<li class="rcmmw-collapsible-toggle-li"></li>').parent());
 				} else {
-				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.rcmmw-collapse').on('click.rcmmw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
 			  } else {
-				var $toggle = $that.find('> .mw-collapsible-toggle');
-				if (!$that.find('> .mw-collapsible-content').length) {
-				  $that.wrapInner('<div class="mw-collapsible-content"></div>');
+				var $toggle = $that.find('> .rcmmw-collapsible-toggle');
+				if (!$that.find('> .rcmmw-collapsible-content').length) {
+				  $that.wrapInner('<div class="rcmmw-collapsible-content"></div>');
 				}
 				if (!$toggle.length) {
 				  $toggleLink = buildDefaultToggleLink();
 				  $that.prepend($toggleLink);
 				} else {
-				  $toggleLink = $toggle.off('click.mw-collapse').on('click.mw-collapse', function (e) {
+				  $toggleLink = $toggle.off('click.rcmmw-collapse').on('click.rcmmw-collapse', function (e) {
 					toggleLinkPremade($toggle, e);
 				  });
 				}
 			  }
 			}
-			if ($that.hasClass('mw-collapsed') && ($that.attr('id') || '').indexOf('mw-customcollapsible-') !== 0) {
-			  $that.removeClass('mw-collapsed');
+			if ($that.hasClass('rcmmw-collapsed') && ($that.attr('id') || '').indexOf('rcmmw-customcollapsible-') !== 0) {
+			  $that.removeClass('rcmmw-collapsed');
 			  toggleElement($that, 'collapse', $toggleLink.eq(0), true);
 			  $toggleLink.eq(0).click();
 			}

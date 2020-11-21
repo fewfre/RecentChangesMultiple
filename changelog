@@ -1,3 +1,6 @@
+== 2.15b - 21 November 2020 ==
+-my fix to UCP removing "collapsible" for RC style tables conflicted with default collapsible behavior due to class names. fixed this by updating class names to not conflict
+
 == 2.15 - 1 November 2020 ==
 -Added option to hide wikis
 	-Added buttons for hiding/showing the wiki to the panel as well as wiki list (to show all hidden ones at once)
