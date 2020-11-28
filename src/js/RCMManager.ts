@@ -155,8 +155,8 @@ export default class RCMManager
 		const socialEnabled = this.discussionsEnabled = socialStatus !== "false";
 		this.discNamespaces = { FORUM:socialEnabled, WALL:socialEnabled, ARTICLE_COMMENT:socialEnabled };
 		// Check if specific discussion types were specified
-		if(socialEnabled && socialStatus && socialStatus !== "true") {
-			let dns = (socialStatus as string).split("|");
+		if(socialEnabled && socialStatus && socialStatus !== "true" && socialStatus !== "false") {
+			let dns = (socialStatus as string).split(",");
 			this.discNamespaces.FORUM = dns.indexOf("FORUM") != -1;
 			this.discNamespaces.WALL = dns.indexOf("WALL") != -1;
 			this.discNamespaces.ARTICLE_COMMENT = dns.indexOf("ARTICLE_COMMENT") != -1;
