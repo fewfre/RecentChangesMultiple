@@ -82,8 +82,8 @@ export default class RCMOptions
 		this.manager.rcParams = $.extend(this.manager.rcParams, this.rcParams);
 		
 		// By default we want them all enabled
-		const bool = this.manager.discussionsEnabled;
-		this.discNamespaces = $.extend({ FORUM:bool, WALL:bool, ARTICLE_COMMENT:bool }, (tSave.discNamespaces || {}));
+		const dns = this.manager.discNamespaces;
+		this.discNamespaces = $.extend({ FORUM:dns.FORUM, WALL:dns.WALL, ARTICLE_COMMENT:dns.ARTICLE_COMMENT }, (tSave.discNamespaces || {}));
 		this.manager.discNamespaces = { ...this.discNamespaces };
 		this.manager.discussionsEnabled = Object.keys(this.discNamespaces).filter(key=>this.discNamespaces[key]).length > 0;
 		

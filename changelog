@@ -1,6 +1,7 @@
 == 2.15c - 28 November 2020 ==
 -On options panel changed "discussions" to "social activity"
 -If nothing in "social activity" is selected, it now says "(none)" instead of being blank
+-`data-discussions-enabled` now can accept values to only enabled certain social activities by default
 
 
 == 2.15b - 21 November 2020 ==

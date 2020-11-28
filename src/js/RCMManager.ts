@@ -150,7 +150,17 @@ export default class RCMManager
 		this.autoRefreshTimeoutNum = (tDataset.autorefresh ? parseInt(tDataset.autorefresh) : 60) * 1000; // {int} number of milliseconds to wait before refreshing.
 		this.autoRefreshEvenOnFocus = tDataset.autorefreshEvenonfocus == "false" ? false : true;
 		
-		this.discussionsEnabled = tDataset.discussionsEnabled !== "false";
+		// Check discussion / social activity related fields
+		const socialStatus = tDataset.discussionsEnabled;
+		const socialEnabled = this.discussionsEnabled = socialStatus !== "false";
+		this.discNamespaces = { FORUM:socialEnabled, WALL:socialEnabled, ARTICLE_COMMENT:socialEnabled };
+		// Check if specific discussion types were specified
+		if(socialEnabled && socialStatus && socialStatus !== "true") {
+			let dns = (socialStatus as string).split("|");
+			this.discNamespaces.FORUM = dns.indexOf("FORUM") != -1;
+			this.discNamespaces.WALL = dns.indexOf("WALL") != -1;
+			this.discNamespaces.ARTICLE_COMMENT = dns.indexOf("ARTICLE_COMMENT") != -1;
+		}
 		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
