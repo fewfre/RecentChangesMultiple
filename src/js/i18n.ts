@@ -332,6 +332,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'embeddable-discussions-loading': 'Loading Discussions...',
 	'allmessages-filter-all': 'All',
 	'listusers-select-all': 'Select all',
+	'socialactivity-page-title': 'Social Activity',
 	
 	/***************************
 	* AbuseFilter

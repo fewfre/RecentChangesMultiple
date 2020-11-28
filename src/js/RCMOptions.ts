@@ -167,7 +167,7 @@ export default class RCMOptions
 		let tRow3Row = Utils.newElement("row", { className:"mw-recentchanges-table" }, tRow3);
 		
 		// Utils.addTextTo("<b>Discussions:</b> ", tRow3);
-		Utils.newElement("td", { className:"mw-label", innerHTML:i18n("discussions")+":" }, tRow3Row);
+		Utils.newElement("td", { className:"mw-label", innerHTML:i18n(Global.isUcpWiki ? "socialactivity-page-title" : "discussions")+":" }, tRow3Row);
 		
 		let tRow3RowTdInput = Utils.newElement("td", { className:"mw-input" }, tRow3Row);
 		this.discussionsDropdown = this._createNewMultiSelectDropdown([
