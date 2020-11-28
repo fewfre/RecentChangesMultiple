@@ -269,8 +269,7 @@ export class WikiaMultiSelectDropdown
 		this.$dropdown.height(dropdownHeight);
 	}
 	updateSelectedItemsList() {
-		var all,
-		remaining,
+		var remaining,
 		items = this.getItems(),
 		maxDisplayed = 3,
 		selected = [
@@ -285,11 +284,11 @@ export class WikiaMultiSelectDropdown
 				selected.push($element.find('label').text());
 			}
 		});
-		all = (items.length == selected.length);
-		this.$selectedItemsList.append($('<strong>').text(all ? i18n('allmessages-filter-all') : selected.slice(0, maxDisplayed).join(', ')));
-		if (!all && (remaining = selected.length - maxDisplayed) > 0) {
-			// this.$selectedItemsList.html($.msg('wikiastyleguide-dropdown-selected-items-list', this.$selectedItemsList.html(), remaining));
-		}
+		var all = (items.length == selected.length);
+		this.$selectedItemsList.append($('<strong>').text(all ? i18n('allmessages-filter-all') : selected.length > 0 ? selected.slice(0, maxDisplayed).join(', ') : i18n('rightsnone')));
+		// if (!all && (remaining = selected.length - maxDisplayed) > 0) {
+		// 	this.$selectedItemsList.html($.msg('wikiastyleguide-dropdown-selected-items-list', this.$selectedItemsList.html(), remaining));
+		// }
 		this.$dropdown.css('width', this.$selectedItems.outerWidth());
 		this.fire('update');
 	}
