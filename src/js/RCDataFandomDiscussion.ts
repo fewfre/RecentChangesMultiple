@@ -214,6 +214,9 @@ export default class RCDataFandomDiscussion extends RCData
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
 		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
+			// Skip if it has been disposed
+			if(!this || !this.date) { return; }
+			
 			tSetDataAfterLoad(title, relativeUrl);
 			$(`.rcm${uniqID} a`).attr("href", this.href).text(this.forumName);
 		} });
@@ -231,6 +234,7 @@ export default class RCDataFandomDiscussion extends RCData
 					return url;
 				},
 				dataType: "json",
+				skipRefreshSanity: true,
 				callback: (data) => {
 					// Pass data to all waiting items
 					this.wikiInfo.discCommentPageNamesNeeded.forEach((o)=>{

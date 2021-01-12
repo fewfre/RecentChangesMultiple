@@ -1,3 +1,8 @@
+== 2.15d - 11 January 2021 ==
+- Fixed error in secondary loading when loading over 50 users' data
+- Secondary loading now retries if loading error
+
+
 == 2.15c - 28 November 2020 ==
 -On options panel changed "discussions" to "social activity"
 -If nothing in "social activity" is selected, it now says "(none)" instead of being blank

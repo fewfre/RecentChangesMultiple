@@ -450,30 +450,36 @@ export default class WikiData
 	}
 	
 	checkForSecondaryLoading() : void {
-		let tUrl = this.getUsersApiUrl();
-		if(tUrl) {
-			this.manager.secondaryWikiData.push({
-				url: tUrl,
-				callback: (data) => {
-					data.query.users.forEach((user, i)=>{
-						let username = user.name;
-						if(user.invalid === "" || user.missing === "") { Utils.removeFromArray(this.usersNeeded, username); return; }
-						// Keep track of data for future use.
-						this.users[username] = new UserData(this, this.manager).init(user);
-						Utils.removeFromArray(this.usersNeeded, username);
-						// Update data on the page.
-						let tNeededClass = "rcm-user-needed";
-						let tUserNodes = this.manager.resultsNode.querySelectorAll(`.${this.rcClass} .${tNeededClass}[data-username="${username.replace(/"/g, '&quot;')}"]`);
-						// loop through them and add classes
-						Utils.forEach(tUserNodes, (pUserNode)=>{
-							pUserNode.className += " "+this.users[username].getClassNames();
-							pUserNode.classList.remove(tNeededClass);
-						});
-						// TODO: Add classes directly to anchor? or always put a wrapper and add "username" class?
-					});
-				}
-			});
+		const MAX = 50, loops = Math.ceil(this.usersNeeded.length/MAX);
+		for (let i = 0; i < loops; i++) {
+			let url = UserData.getUsersApiUrl(this.usersNeeded.slice(i*MAX, (i+1)*MAX), this.scriptpath);
+			this.checkForSecondaryLoading_doUsersLoad(url);
 		}
+	}
+	
+	checkForSecondaryLoading_doUsersLoad(pUrl:any) : void {
+		this.manager.secondaryWikiData.push({
+			url: pUrl,
+			callback: (data) => {
+				if(!data.query || !data.query.users) { return; }
+				data.query.users.forEach((user, i)=>{
+					let username = user.name;
+					if(user.invalid === "" || user.missing === "") { Utils.removeFromArray(this.usersNeeded, username); return; }
+					// Keep track of data for future use.
+					this.users[username] = new UserData(this, this.manager).init(user);
+					Utils.removeFromArray(this.usersNeeded, username);
+					// Update data on the page.
+					let tNeededClass = "rcm-user-needed";
+					let tUserNodes = this.manager.resultsNode.querySelectorAll(`.${this.rcClass} .${tNeededClass}[data-username="${username.replace(/"/g, '&quot;')}"]`);
+					// loop through them and add classes
+					Utils.forEach(tUserNodes, (pUserNode)=>{
+						pUserNode.className += " "+this.users[username].getClassNames();
+						pUserNode.classList.remove(tNeededClass);
+					});
+					// TODO: Add classes directly to anchor? or always put a wrapper and add "username" class?
+				});
+			}
+		});
 	}
 	
 	updateLastChangeDate(pData:any) : void {
@@ -561,13 +567,6 @@ export default class WikiData
 		var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?${Utils.objectToUrlQueryData(params)}`;
 		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
-	}
-	
-	getUsersApiUrl() : string {
-		if(this.usersNeeded.length > 0) {
-			return UserData.getUsersApiUrl(this.usersNeeded, this.scriptpath);
-		}
-		return null;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
