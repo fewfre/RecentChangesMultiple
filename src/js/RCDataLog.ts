@@ -219,6 +219,14 @@ export default class RCDataLog extends RCData
 				}
 				break;
 			}
+			case "chatban": {
+				if(this.wikiInfo.useOutdatedLogSystem == false) {
+					if(!this.log_info_0 && tLogParams) {
+						this.log_info_0 = [ tLogParams["0"],tLogParams["1"],tLogParams["2"],tLogParams["3"],tLogParams["4"] ].join("\n");
+					}
+				}
+				break;
+			}
 		}
 		
 		tLogParams = null;

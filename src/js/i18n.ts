@@ -240,6 +240,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'block-log-flags-hiddenname'      : 'username hidden',
 	// Delete
 	'logentry-delete-delete'              : '$1 deleted page $3',
+	'logentry-delete-delete_redir'        : '$1 {{GENDER:$2|deleted}} redirect $3 by overwriting',
 	'logentry-delete-restore'             : '$1 restored page $3',
 	'logentry-delete-event'               : '$1 changed visibility of {{PLURAL:$5|a log event|$5 log events}} on $3: $4',
 	'logentry-delete-revision'            : '$1 changed visibility of {{PLURAL:$5|a revision|$5 revisions}} on page $3: $4',

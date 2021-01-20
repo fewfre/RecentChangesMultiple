@@ -1,3 +1,8 @@
+== 2.15e - 20 January 2021 ==
+- Fixed issue with chat logs on UCP
+- Added missing log into i18n (`logentry-delete-delete_redir`)
+
+
 == 2.15d - 11 January 2021 ==
 - Fixed error in secondary loading when loading over 50 users' data
 - Secondary loading now retries if loading error
