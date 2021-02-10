@@ -80,7 +80,7 @@ export default class RCMWikiPanel
 			// 	this.manager.hardRefresh();
 			// 	return false;
 			// });
-			Utils.newElement("button", { className:"rcm-btn-short", innerHTML:i18n('show') }, this.hiddenNode).addEventListener("click", (e)=>{
+			Utils.newElement("button", { className:"rcm-btn rcm-btn-short", innerHTML:i18n('show') }, this.hiddenNode).addEventListener("click", (e)=>{
 				e.preventDefault();
 				this.manager.chosenWikis.forEach(wiki=>{ wiki.hidden = false; });
 				this.manager.hardRefresh();
@@ -179,11 +179,11 @@ export default class RCMWikiPanel
 			const buttons = [];
 			if(!this.singleWiki) {
 				if(!pWikiInfo.hidden) {
-					buttons.push(`<button id="rcm-hide-cur-wiki" class="rcm-btn-short">${i18n('hide')}</button>`);
-					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
+					buttons.push(`<button id="rcm-hide-cur-wiki" class="rcm-btn rcm-btn-short">${i18n('hide')}</button>`);
+					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
 				} else {
-					buttons.push(`<button id="rcm-show-cur-wiki" class="rcm-btn-short">${i18n('show')}</button>`);
-					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
+					buttons.push(`<button id="rcm-show-cur-wiki" class="rcm-btn rcm-btn-short">${i18n('show')}</button>`);
+					buttons.push(`<button id="rcm-showonly-cur-wiki" class="rcm-btn rcm-btn-short">${i18n('wikipanel-showonly')}</button>`);
 				}
 			}
 			

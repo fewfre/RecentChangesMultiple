@@ -352,6 +352,49 @@ table.mw-enhanced-rc {
 }
 
 //#############################
+// Custom version of old wikia stuff
+//#############################
+/*wikia buttons*/
+.rc-content-multiple, #rc-content-multiple {
+    .rcm-btn {
+        background-color:var(--themed-button-background);
+        // background-image:linear-gradient(to bottom,@theme-gradient 35%,@theme-buttons 65%);
+        border:1px solid var(--themed-button-background);
+        
+        border-radius:4px;
+        box-sizing:content-box;
+        color:var(--themed-button-label);
+        cursor:pointer;
+        display:inline-block;
+        font-family:Helvetica,Arial,sans-serif;
+        font-size:12px;
+        height:19px;
+        line-height:20px;
+        margin:0;
+        padding:0 10px;
+        text-decoration:none;
+        white-space:nowrap;
+        
+        &:hover {
+            background-color:var(--themed-button-background--hover);//darken(@theme-buttons, 4%);
+            // background-image:linear-gradient(to bottom,darken(@theme-gradient,4%) 35%,darken(@theme-buttons,4%) 65%);
+            text-decoration:none;
+            // box-shadow: 0 0 5px lighten(@theme-buttons, 10%);
+            // border-color:lighten(@theme-buttons, 7%);
+        }
+        &.disabled,&[disabled] {
+            cursor:default;
+            opacity:0.5;
+            
+            &:active {
+                background-color:var(--themed-button-background);//@theme-buttons;
+                // background-image:linear-gradient(to bottom,@theme-gradient 35%,@theme-buttons 65%);
+            }
+        }
+    }
+}
+
+//#############################
 // CSS that effects other sections of the pages
 //#############################
 /* Hide the rail if this class is present */

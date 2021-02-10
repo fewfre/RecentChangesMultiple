@@ -372,7 +372,7 @@ export default class RCMManager
 			this.erroredWikis = [];
 			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
-		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		let tHandlerRemove = (pEvent:MouseEvent) => {
 			if(pEvent) { pEvent.target.removeEventListener("click", tHandlerRemove); }
 			tHandlerRemove = null;
@@ -382,7 +382,7 @@ export default class RCMManager
 			this._onWikiDataParsingFinished(null);
 		};
 		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { innerHTML:i18n(Global.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n(Global.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	
@@ -674,7 +674,7 @@ export default class RCMManager
 			this.erroredWikis = [];
 			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
 		};
-		Utils.newElement("button", { innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = window.setTimeout(() => { if(tHandler) { tHandler(null); } }, 20000); }
 	}
@@ -1260,7 +1260,7 @@ export default class RCMManager
 		
 		pParent.appendChild(document.createTextNode(" "));
 		
-		Utils.newElement("button", { innerHTML:i18n('status-refresh') }, pParent).addEventListener("click", function tHandler(e){
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n('status-refresh') }, pParent).addEventListener("click", function tHandler(e){
 			e.target.removeEventListener("click", tHandler);
 			self.refresh();
 		});
