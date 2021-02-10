@@ -7,7 +7,7 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class Global
 {
-	static readonly version					: string = "2.15e";
+	static readonly version					: string = "2.15f";
 	static readonly lastVersionDateString	: string = "Nov 2 2020 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
@@ -225,7 +225,7 @@ export default class Global
 			var tMessage = Utils.newElement("div", { className:"rcm-update-message rcm-um-"+messageID, innerHTML:message}, pMessageCont);
 			tMessage.style.cssText = `border:5px double ${messageColor}; padding:2px 6px; overflow-y: hidden;`;
 			
-			var tButton = Utils.newElement("button", { innerHTML:"Dismiss Message" }, tMessage);
+			var tButton = Utils.newElement("button", { className:"rcm-btn", innerHTML:"Dismiss Message" }, tMessage);
 			
 			tButton.addEventListener("click", () => {
 				// Remove all messages with this ID encase it was added to multiple RCMManagers
