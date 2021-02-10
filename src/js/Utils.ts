@@ -114,8 +114,14 @@ export default class Utils
 			tMonthName = Global.config.wgMonthNames[tMonth],
 			tDay = Utils.getDate(pDate);
 		switch(Global.userOptions.date) {
+			case "mdyts":
+			case "mdyt":
 			case "mdy": default: return `${tMonthName} ${tDay}, ${tYear}`;
+			case "dmyts":
+			case "dmyt":
 			case "dmy": return `${tDay} ${tMonthName} ${tYear}`;
+			case "ymdts":
+			case "ymdt":
 			case "ymd": return `${tYear} ${tMonthName} ${tDay}`;
 			case "ISO 8601": return `${tYear}-${Utils.pad(tMonth, 2, 0)}-${Utils.pad(tDay, 2, 0)}`;
 		}
