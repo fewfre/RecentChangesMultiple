@@ -261,6 +261,13 @@ export function previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServe
 				tCont = <HTMLElement>tModalCont.querySelector("#mw-content-text");
 				tCont.innerHTML = "";
 				
+				// This is done up here for a really dumb reason:
+				// Even though tPreviewHead is never added to the page right away, simply parsing head data into the dom
+				// is enough to let it override the favicon. Rather than try and replace it in string form
+				// (defeating the purpose of us parsing it like this), moving it up here simply lets tCurPageHead (right below)
+				// immediately re-update the favicon back to correct one. hacky workaround for hacky problem; yay!
+				let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
+				
 				// Convert <link> tags (not supported in shadow dom) to <style> tags via @import (bad, but neccisary)
 				// Do it for current wiki head first (since shadow dom strips all css)
 				let tCurPageHead = <HTMLElement>document.querySelector("head").cloneNode(true);
@@ -271,7 +278,6 @@ export function previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServe
 				Utils.forEach(tCurPageHead.querySelectorAll("link"), (o, i, a) => { Utils.removeElement(o); });
 				
 				// Add page info
-				let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
 				Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
 					tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 				});
