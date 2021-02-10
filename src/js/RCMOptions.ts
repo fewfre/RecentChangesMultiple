@@ -123,21 +123,20 @@ export default class RCMOptions
 		 * Second line of choices (checkboxes)
 		 ***************************/
 		var tRow2 = Utils.newElement("div", {  }, tContent);
-		var t1Text = "";//i18n('show');
 		
-		this.minorEditsCheckbox = this._newCheckbox(i18n('rcshowhideminor', t1Text), tRow2);
-		
-		Utils.addTextTo(" | ", tRow2);
-		this.botsCheckbox = this._newCheckbox(i18n('rcshowhidebots', t1Text), tRow2);
+		this.minorEditsCheckbox = this._newCheckbox(i18n('rcshowhideminor', ""), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.anonsCheckbox = this._newCheckbox(i18n('rcshowhideanons', t1Text), tRow2);
+		this.botsCheckbox = this._newCheckbox(i18n('rcshowhidebots', ""), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.usersCheckbox = this._newCheckbox(i18n('rcshowhideliu', t1Text), tRow2);
+		this.anonsCheckbox = this._newCheckbox(i18n('rcshowhideanons', ""), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.myEditsCheckbox = this._newCheckbox(i18n('rcshowhidemine', t1Text), tRow2);
+		this.usersCheckbox = this._newCheckbox(i18n('rcshowhideliu', ""), tRow2);
+		
+		Utils.addTextTo(" | ", tRow2);
+		this.myEditsCheckbox = this._newCheckbox(i18n('rcshowhidemine', ""), tRow2);
 		if(Global.username && this.manager.hideusers.indexOf(Global.username) != -1) {
 			this.myEditsCheckbox.disabled = true;
 			this.myEditsCheckbox.checked = false;
@@ -146,16 +145,16 @@ export default class RCMOptions
 		
 		Utils.addTextTo(" | ", tRow2);
 		if(Global.isUcpWiki) {
-			this.groupedChangesCheckbox = this._newCheckbox(" "+i18n('rcfilters-group-results-by-page').toLowerCase(), tRow2);
+			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcfilters-group-results-by-page'), tRow2);
 		} else {
-			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', t1Text), tRow2);
+			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', ""), tRow2);
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
 		if(Global.isUcpWiki) {
-			this.logsCheckbox = this._newCheckbox(" "+i18n('rcfilters-filter-logactions-label').toLowerCase(), tRow2);
+			this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
 		} else {
-			this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', t1Text), tRow2);
+			this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', ""), tRow2);
 		}
 		
 		/***************************
@@ -188,7 +187,7 @@ export default class RCMOptions
 	private _newCheckbox(pText:string, pParent:HTMLElement) : HTMLInputElement {
 		let tLabel = Utils.newElement("label", null, pParent);
 		let tCheckbox = Utils.newElement("input", { type:"checkbox" }, tLabel);
-		Utils.addTextTo(pText, tLabel);
+		Utils.addTextTo(" "+Utils.ucfirst(pText.trim()), tLabel);
 		return tCheckbox;
 	}
 	
