@@ -7,7 +7,7 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class Global
 {
-	static readonly version					: string = "2.15f";
+	static readonly version					: string = "2.15g";
 	static readonly lastVersionDateString	: string = "Nov 2 2020 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
@@ -22,7 +22,7 @@ export default class Global
 		"wgVersion",
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
-	static readonly debug					: boolean = Global.config.debug || mw.util.getParamValue("useuserjs")=="0";
+	static readonly debug					: boolean = Global.config.debug || mw.util.getParamValue("useuserjs")=="0" || mw.util.getParamValue("safemode")=="1";
 	static isUcpWiki						: boolean = false;
 	
 	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + Global.config.wgPageName;

@@ -88,7 +88,7 @@ class Main
 		// Load Translations from Wiki database.
 		tLoadPromises[tLoadPromises.length] = this._loadLangMessages();
 		// I18n-js loading
-		tLoadPromises[tLoadPromises.length] = new Promise((resolve)=>{
+		tLoadPromises[tLoadPromises.length] = new Promise<void>((resolve)=>{
 			mw.hook('dev.i18n').add(function () {
 				// Convert version to a number
 				let [,ma,mi,ch] = Global.version.match(/(\d*)\.(\d*)(\w*)/);
@@ -372,7 +372,7 @@ class Main
 			})
 		} else {
 			// On legacy wikis, importArticles doesn't have a way to know when it is finished
-			return new Promise((resolve)=>{
+			return new Promise<void>((resolve)=>{
 				$.when(...articles.map(name=>$.getScript(`/load.php?mode=articles&articles=${name}&only=scripts`))).done(function(){
 					mw.hook('dev.i18n').add(function (i18n) {
 						resolve();

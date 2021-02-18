@@ -224,7 +224,7 @@ export default class RCMManager
 		
 		this.footerNode.innerHTML = "[<a href='//dev.fandom.com/wiki/RecentChangesMultiple'>RecentChangesMultiple</a>] " + i18n('footer', "[https://github.com/fewfre/RecentChangesMultiple/blob/master/changelog "+Global.version+"]VERSION", "REPLACE")
 			.replace("VERSION", tNewVersion)
-			.replace("REPLACE", "<img src='https://fewfre.com/images/avatar.jpg?tag=rcm' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>");
+			.replace("REPLACE", `<img src='https://fewfre.com/images/avatar.jpg?tag=rcm&pref=${encodeURIComponent(window.location.href.split("#")[0])}' width='14' height='14' /> <a href='https://fewfre.fandom.com/wiki/Fewfre_Wiki'>Fewfre</a>`);
 		
 		$( this.resultsNode ).on("click", ".rcm-favicon-goto-button", this.wikisNode.goToAndOpenInfo);
 		

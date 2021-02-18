@@ -164,6 +164,7 @@ export default class RCMWikiPanel
 				pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
 				tLink("Special:Random", "randompage"),
 				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
+				pWikiInfo.isWikiaWiki && tLink("Special:SocialActivity", "socialactivity-page-title"),
 				
 				
 				// "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n("recentchanges")+"</a>",
@@ -211,7 +212,7 @@ export default class RCMWikiPanel
 				+ `<td rowspan='2' class='rcm-favicon-cell'>${pWikiInfo.getFaviconHTML(false, 32)}</td>`
 				+ `<td class="rcm-titlelinks-cell">`
 					+ `<div class="rcm-wiki-title"><b>${siteLink}</b></div>`
-					+ `<div class="rcm-links">${wikiLinksList.join(" - ")}</div>`
+					+ `<div class="rcm-links">${wikiLinksList.join(" • ")}</div>`
 					+ (buttons.length > 0 ? `<div class="rcm-buttons">${buttons.join(" ")}</div>` : "")
 				+`</td>`
 			+ "</tr>"
