@@ -37,6 +37,7 @@ class Main
 		mw.loader.using(['mediawiki.util', 'mediawiki.language', 'mediawiki.user', 'user.options']).done(()=>{
 			Global.init(pScriptConfig);
 			
+			// Needed due to UCP breaking default "debug" option, thus disabling mw.log messages
 			if(Global.debug) {
 				mw.log = <any>console.log;
 			}

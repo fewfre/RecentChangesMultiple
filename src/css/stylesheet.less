@@ -357,13 +357,13 @@ table.mw-enhanced-rc {
 /*wikia buttons*/
 .rc-content-multiple, #rc-content-multiple {
     .rcm-btn {
-        background-color:var(--themed-button-background);
+        background-color:var(--theme-accent-color);
         // background-image:linear-gradient(to bottom,@theme-gradient 35%,@theme-buttons 65%);
-        border:1px solid var(--themed-button-background);
+        border:1px solid var(--theme-accent-color);
         
         border-radius:4px;
         box-sizing:content-box;
-        color:var(--themed-button-label);
+        color:var(--theme-accent-label-color);
         cursor:pointer;
         display:inline-block;
         font-family:Helvetica,Arial,sans-serif;
@@ -376,7 +376,7 @@ table.mw-enhanced-rc {
         white-space:nowrap;
         
         &:hover {
-            background-color:var(--themed-button-background--hover);//darken(@theme-buttons, 4%);
+            background-color:var(--theme-accent-color--hover);//darken(@theme-buttons, 4%);
             // background-image:linear-gradient(to bottom,darken(@theme-gradient,4%) 35%,darken(@theme-buttons,4%) 65%);
             text-decoration:none;
             // box-shadow: 0 0 5px lighten(@theme-buttons, 10%);
@@ -387,7 +387,7 @@ table.mw-enhanced-rc {
             opacity:0.5;
             
             &:active {
-                background-color:var(--themed-button-background);//@theme-buttons;
+                background-color:var(--theme-accent-color);//@theme-buttons;
                 // background-image:linear-gradient(to bottom,@theme-gradient 35%,@theme-buttons 65%);
             }
         }

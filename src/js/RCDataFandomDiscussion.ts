@@ -228,10 +228,8 @@ export default class RCDataFandomDiscussion extends RCData
 			this.manager.secondaryWikiData.push({
 				url: ()=>{
 					let ids = this.wikiInfo.discCommentPageNamesNeeded.map(o=>o.pageID).filter((o,i,a)=>a.indexOf(o)==i).join(",");
-					// let url = `${this.wikiInfo.scriptpath}/wikia.php?controller=FeedsAndPosts&method=getArticleNamesAndUsernames&stablePageIds=${ids}&format=json`;
-					let url = `https://projects.fewfre.com/rcm/fandomCommentsGetArticleNames.php?wiki=${this.wikiInfo.scriptpath}&stablePageIds=${ids}`;
+					let url = `${this.wikiInfo.scriptpath}/wikia.php?controller=FeedsAndPosts&method=getArticleNamesAndUsernames&stablePageIds=${ids}&format=json`;
 					Utils.logUrl("(getCommentForumNameLink)", url);
-					// url = `${Global.PROXY}${url.split("//")[1]}`;
 					return url;
 				},
 				dataType: "json",
