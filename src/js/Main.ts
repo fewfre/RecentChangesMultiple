@@ -106,7 +106,7 @@ class Main
 		tLoadPromises[tLoadPromises.length] = mw.loader.using([
 			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
 			...(Global.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
-			...(Global.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.runtimeStyles"] : ['mediawiki.action.history.diff']), // AjaxDiff css
+			...(Global.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.css"] : ['mediawiki.action.history.diff']), // AjaxDiff css
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
