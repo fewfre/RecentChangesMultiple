@@ -112,7 +112,7 @@ export default class RCDataFandomDiscussion extends RCData
 		
 		// If it's a wall discussion, then we need to set the wall's owner as the forum page
 		if(this.containerType == "WALL") {
-			if(this.forumName) this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; kind be relied upon since they may translate it for other languages eventually
+			if(this.forumName) this.forumPage = this.forumName.replace(" Message Wall", ""); // Temp way; can't be relied upon since they may translate it for other languages eventually
 			if(RCDataFandomDiscussion.users[pData.forumId]) {
 				this.forumPage = RCDataFandomDiscussion.users[pData.forumId].name;
 			}
@@ -266,21 +266,23 @@ export default class RCDataFandomDiscussion extends RCData
 	
 	// Fetch data that may not be passed (like thread title)
 	handleSecondaryLoad(pElemID:string) {
-		this.manager.secondaryWikiData.push({
-			// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
-			url: `https://services.fandom.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${this.threadId}`,
-			dataType: "json",
-			callback: (data) => {
-				this.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
-				let tSpan:HTMLElement = document.getElementById(pElemID);
-				if(tSpan) {
-					tSpan.innerHTML = this.threadTitle;
-					let tIcons = "";
-					if(data.isLocked) { tIcons += Global.getSymbol("rcm-lock"); }
-					if(data.isReported) { tIcons += Global.getSymbol("rcm-report"); }
-					if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
-				}
-			}
-		});
+		// NOT NEEDED? - discussions now include "thread" info that always seems to include the title and icons
+		// this.manager.secondaryWikiData.push({
+		// 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/ThreadsApi.php
+		// 	// url: `https://services.fandom.com/discussion/${this.wikiInfo.wikiaCityID}/threads/${this.threadId}`,
+		// 	url: `${this.wikiInfo.scriptpath}/wikia.php?controller=DiscussionThread&method=update&threadId=${this.threadId}`,
+		// 	dataType: "json",
+		// 	callback: (data) => {
+		// 		this.threadTitle = data.title || (data.rawContent.slice(0, 35).trim()+"..."); // If no title, use part of original message.
+		// 		let tSpan:HTMLElement = document.getElementById(pElemID);
+		// 		if(tSpan) {
+		// 			tSpan.innerHTML = this.threadTitle;
+		// 			let tIcons = "";
+		// 			if(data.isLocked) { tIcons += Global.getSymbol("rcm-lock"); }
+		// 			if(data.isReported) { tIcons += Global.getSymbol("rcm-report"); }
+		// 			if(tIcons) { tSpan.parentNode.insertBefore(Utils.newElement("span", { innerHTML:tIcons }), tSpan); }
+		// 		}
+		// 	}
+		// });
 	}
 }

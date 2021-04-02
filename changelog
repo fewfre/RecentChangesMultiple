@@ -1,3 +1,7 @@
+== 2.15h - 2 April 2021 ==
+- Fandom changed how to access discussion API, so script updated in kind
+
+
 == 2.15g - 18 February 2021 ==
 - Free proxy is unreliable, making my own proxy script
 - Added link to Social Activity for fandom wiki panels

@@ -67,9 +67,7 @@ export default class WikiData
 	langCode				: string; // Language code sent from siteinfo
 	namespaces				: any[]; // A data object with all namespaces on the wiki by number = { "1":{ -data- } }
 	statistics				: any; // A data object with statistics about number of articles / files / users there are on the wiki.
-	wikiaCityID				: string; // wgCityId - used to retrieve Wikia Disccusion changes.
 	
-	// TODO: Once all Wikia wikis have this, set it to true as soon as wikiaCityID is found.
 	usesWikiaDiscussions	: boolean; // To save on pointless requests that would timeout, if the first fetch fails then don't fetch them again. Undefined means it's not known yet.
 	
 	/***************************
@@ -322,9 +320,8 @@ export default class WikiData
 			if(!!pQuery.variables) {
 				// This is only for Wikia wikis. Other wikis can ignore this.
 				let wgCityIdObj = $.grep(pQuery.variables, function(o:any){ return o.id === "wgCityId" })[0];
-				if(wgCityIdObj) {
-					this.wikiaCityID = wgCityIdObj["*"];
-				} else {
+				if(!wgCityIdObj) {
+					// Don't bother checking for discussions if it's not a wikia wiki
 					this.usesWikiaDiscussions = false;
 				}
 			}
@@ -564,7 +561,8 @@ export default class WikiData
 			reported: "false",
 			viewableOnly: !this.user.rights.block,
 		};
-		var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?${Utils.objectToUrlQueryData(params)}`;
+		// var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?${Utils.objectToUrlQueryData(params)}`;
+		var tReturnText = `${this.scriptpath}/wikia.php?controller=DiscussionPost&method=getPosts&${Utils.objectToUrlQueryData(params)}`;
 		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}
