@@ -33,7 +33,7 @@ function core_comments() {
 	.pipe(replace(/\.default(\W)/g, '["default"]$1'))
 	// Surround code with comments
 	.pipe(insert.prepend(
-	`//<syntaxhighlight lang="javascript">
+	`//<pre>
 /*
  * Script: RecentChangesMultiple
  * Author: Fewfre
@@ -42,7 +42,7 @@ function core_comments() {
  * PLEASE DON'T EDIT DIRECTLY WITHOUT INFORMING ME! If you do so it will likely be overwritten at a later date, as this script is pre-compiled and stored at https://github.com/fewfre/RecentChangesMultiple
  */\n`
 	))
-	.pipe(insert.append('//</syntaxhighlight>\n'))
+	.pipe(insert.append('//</pre>\n'))
 	.pipe(gulp.dest("./"))
 	;
 };

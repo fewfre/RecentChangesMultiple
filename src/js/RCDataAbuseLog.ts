@@ -42,6 +42,7 @@ export default class RCDataAbuseLog extends RCData
 	}
 	
 	/*override*/ init(pData:any) : this {
+		if(!pData.title) { pData.title = ""; } // Small fix to prevent weird errors if title doesn't exist
 		this.type = TYPE.LOG;
 		this.date = new Date(pData.timestamp);
 		

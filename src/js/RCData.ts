@@ -78,6 +78,7 @@ export default class RCData
 	}
 	
 	init(pData:any) : this {
+		if(!pData.title) { pData.title = ""; } // Small fix to prevent weird errors if title doesn't exist
 		this.date = new Date(pData.timestamp);
 		this.userEdited = pData.user != "" && pData.anon != "";
 		this.author = this.userEdited ? pData.user : (pData.anon ? pData.anon : pData.user);
