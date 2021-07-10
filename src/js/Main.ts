@@ -109,7 +109,6 @@ class Main
 			'mediawiki.special.changeslist',
 			'mediawiki.special.changeslist.enhanced',
 			
-			'skin.oasis.css',
 			'skin.oasis.recentChanges.css',
 			
 			...(Global.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
