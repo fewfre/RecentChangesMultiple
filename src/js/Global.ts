@@ -7,7 +7,7 @@ let mw = window.mediaWiki;
 //###########################################################
 export default class Global
 {
-	static readonly version					: string = "2.15h";
+	static readonly version					: string = "2.15i";
 	static readonly lastVersionDateString	: string = "Nov 2 2020 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([

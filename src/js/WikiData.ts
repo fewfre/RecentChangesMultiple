@@ -174,7 +174,7 @@ export default class WikiData
 		this.firstSeperator = "?";
 		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
-		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1);
+		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1) || (this.servername.indexOf(".gamepedia.") > -1);
 		this.isLegacyWikiaWiki = this.isWikiaWiki;
 		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
@@ -228,7 +228,8 @@ export default class WikiData
 							this.favicon = "//"+this.favicon;
 						} else {
 							// [depreciated]
-							this.favicon = "//vignette.wikia.nocookie.net/"+this.favicon+"/images/6/64/Favicon.ico"
+							// this.favicon = "//vignette.wikia.nocookie.net/"+this.favicon+"/images/6/64/Favicon.ico";
+							this.favicon = "//vignette.wikia.nocookie.net/"+this.favicon+"/images/4/4a/Site-favicon.ico";
 						}
 						break;
 					}
@@ -300,17 +301,11 @@ export default class WikiData
 				}
 				// Should work for all Wikia wikis
 				else if(!!pQuery.pages) {
-					var tPageID;
-					for (tPageID in pQuery.pages) break; // A trick to get the one (and only) page entry in the object
-					if(pQuery.pages[tPageID] && pQuery.pages[tPageID].imageinfo) {
-						this.favicon = pQuery.pages[tPageID].imageinfo[0].url;
+					// map to get a data array, remove missing, get longer one (site-favicon) first if it exists, then return first one.
+					const page = Object.keys(pQuery.pages).map(key=>pQuery.pages[key]).filter(p=>p.missing !== "").sort((a,b)=>b.title.length-a.title.length).shift();
+					if(page && page.imageinfo) {
+						this.favicon = page.imageinfo[0].url;
 					}
-					// for (var tPageID in pQuery.pages) {
-					// 	if(pQuery.pages[tPageID] && pQuery.pages[tPageID].ns == 6 && pQuery.pages[tPageID].title.split(":")[1] == "Favicon.ico") {
-					// 		if(pQuery.pages[tPageID].imageinfo) { this.favicon = pQuery.pages[tPageID].imageinfo[0].url; }
-					// 		break;
-					// 	}
-					// }
 				}
 			}
 			
@@ -514,7 +509,7 @@ export default class WikiData
 		***************************/
 		tPropList.push("imageinfo");
 		params["iiprop"] = "url";
-		params["titles"] = "File:Favicon.ico";
+		params["titles"] = "File:Favicon.ico|File:Site-favicon.ico";
 		
 		/***************************
 		* User Data - https://www.mediawiki.org/wiki/API:Users

@@ -1,3 +1,8 @@
+== 2.15i - 28 July 2021 ==
+- Updated workaround for fetching fandom-based favicons caused by fandomdesktop theme (since fandom has still not fixed favicon returned in siteinfo api call)
+- Marked gamepedia as a "isWikiaWiki" domain - this fixes gamepedia links have wrong favicon since thier api is now busted due issue above due to now being fandom wikis.
+
+
 == 2.15h - 2 April 2021 ==
 - Fandom changed how to access discussion API, so script updated in kind
 
