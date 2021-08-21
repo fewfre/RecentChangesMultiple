@@ -1,6 +1,9 @@
 == 2.16 - 21 August 2021 ==
 - Changed how CSS loads so that it works on gamepedia wikis
 - Tweaked CSS for wiki info banner - no longer hardcoded to yellow, now uses dynamic wiki CSS variables for colors
+- Switch Arrow images to those used by UCP (thanks Caburum)
+	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-collapsed-ltr.png
+	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-expanded.png
 
 
 == 2.15i - 28 July 2021 ==
