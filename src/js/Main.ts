@@ -73,7 +73,7 @@ class Main
 		let tLoadPromises = [];
 		
 		// Load the css for module
-		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"/load.php?mode=articles&articles=u:dev:MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
+		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"https://dev.fandom.com/load.php?mode=articles&articles=MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
 		
 		// Load dev helper scripts
 		tLoadPromises[tLoadPromises.length] = this.importArticles({

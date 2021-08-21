@@ -143,7 +143,7 @@ export default class RCMWikiPanel
 	}
 	
 	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
-		let infoBanner = <HTMLElement>this.infoNode.querySelector(".banner-notification");
+		let infoBanner = <HTMLElement>this.infoNode.querySelector(".rcm-wiki-info-banner");
 		// If already open for that wiki, then close it.
 		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
 			this.closeInfo();
@@ -246,20 +246,20 @@ export default class RCMWikiPanel
 	
 	private addBanner(contents:string, addCloseButton:boolean, params:string="") {
 		var html = [
-			`<div class='banner-notification warn' ${params}>`,
-				(addCloseButton ? "<button class='close wikia-chiclet-button'><img></button>" : ""),
+			`<div class='rcm-wiki-info-banner banner-notification' ${params}>`,
+				(addCloseButton ? "<button class='close wikia-chiclet-button'></button>" : ""),
 				`<div class='msg'>${contents}</div>`,
 			"</div>",
 		].filter(o=>!!o).join("");
 		
 		this.infoNode.innerHTML = html;
 		if(addCloseButton) {
-			this.infoNode.querySelector(".banner-notification .close").addEventListener("click", this.closeInfo.bind(this));
+			this.infoNode.querySelector(".rcm-wiki-info-banner .close").addEventListener("click", this.closeInfo.bind(this));
 		}
 	}
 	
 	closeInfo() : void {
-		$(this.infoNode.querySelector(".banner-notification")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
+		$(this.infoNode.querySelector(".rcm-wiki-info-banner")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
 			$(this).remove();
 		});
 	}

@@ -3,16 +3,16 @@
 // Styling for the core script elements
 //#############################
 .rc-content-multiple, #rc-content-multiple {
-	padding:4px 5px;
-	background:rgba(0,0,0,0.05);
+	padding: 4px 5px;
+	border: 1px solid var(--theme-border-color);
 }
 .rcm-status {
-	text-align:center;
-	padding:15px 5px;
-	background:rgba(0,0,0,0.05);
+	text-align: center;
+	padding: 15px 5px;
+	background: var(--theme-page-background-color--secondary);
 	
 	.rcm-error {
-		color:red;
+		color: red;
 	}
 }
 .rcm-wikis {
@@ -199,6 +199,31 @@ table.mw-enhanced-rc {
 	
 	table { margin: 0; }
 	.banner-notification { padding: 4px 8px; }
+	
+	.rcm-wiki-info-banner {
+		background: var(--theme-page-background-color--secondary);
+		border: 1px solid var(--theme-border-color);
+		
+		.close {
+			background-color: var(--theme-page-background-color);
+			color: var(--theme-page-text-color);
+			border: 1px solid currentColor;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			
+			&:before {
+				content: '✕';
+				font-size: 10px;
+				font-weight: bold;
+				line-height: 0;
+			}
+		}
+		
+		table.wikitable {
+			background-color: var(--theme-page-background-color);
+		}
+	}
 }
 .rcm-wiki-infotable {
 	width: 95%;
