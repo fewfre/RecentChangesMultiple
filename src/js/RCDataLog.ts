@@ -513,7 +513,7 @@ export default class RCDataLog extends RCData
 						this.userDetails(),
 						filterIdLink,
 						this.logaction,
-						this.title,
+						`<a href='${this.href}'>${this.title}</a>`,
 						resultString,
 						filter,
 						[
@@ -528,7 +528,7 @@ export default class RCDataLog extends RCData
 						undefined,
 						this.userDetails(),
 						this.logaction,
-						this.title,
+						`<a href='${this.href}'>${this.title}</a>`,
 						resultString,
 						filter,
 						undefined,
