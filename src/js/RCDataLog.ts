@@ -42,6 +42,10 @@ export default class RCDataLog extends RCData
 		}
 		// Depreciated (fandom removed chat)
 		| { type:"chatban" }
+		| { type:"contentmodel",
+			oldmodel: string, // name of old model type
+			newmodel: string, // name of new model type
+		}
 		| { type:"delete",
 			revisions_num:number, // Number of revisions
 			new_bitmask:string, // action taken on visibility change
@@ -293,6 +297,14 @@ export default class RCDataLog extends RCData
 				};
 				break;
 			}
+			case "contentmodel": {
+				this.logParams = {
+					type:"contentmodel",
+					oldmodel: tLogParams.oldmodel,
+					newmodel: tLogParams.newmodel,
+				};
+				break;
+			}
 		}
 		
 		tLogParams = null;
@@ -310,6 +322,7 @@ export default class RCDataLog extends RCData
 			case "block"		: return i18n("blocklogpage");
 			// Depreciated (fandom removed chat)
 			case "chatban"		: return i18n("chat-chatban-log");
+			case "contentmodel"	: return i18n("log-name-contentmodel");
 			case "delete"		: return i18n("dellogpage");
 			case "import"		: return i18n("importlogpage");
 			case "merge"		: return i18n("mergelog");
@@ -527,6 +540,26 @@ export default class RCDataLog extends RCData
 				}
 				// we don't use the date, so remove it - remove whole '$1: ' if it exists (most langugaes), otherwise settle for removing the $1
 				tLogMessage = tLogMessage.replace("$1: ", "").replace("$1", "");
+				break;
+			}
+			case 'contentmodel': {
+				const { oldmodel, newmodel } = this.logParams;
+				
+				switch(this.logaction) {
+					case "new":
+					case "change":
+					{
+						// logaction assumed: new, change
+						tLogMessage += i18n("logentry-contentmodel-"+this.logaction as I18nKey,
+							this.userDetails(),
+							undefined, // Don't know if male / female.
+							`<a href='${this.href}'>${this.title}</a>`,
+							oldmodel,
+							newmodel,
+						);
+						break;
+					}
+				}
 				break;
 			}
 		}

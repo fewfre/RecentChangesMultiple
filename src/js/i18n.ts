@@ -223,6 +223,8 @@ const MESSAGES = i18n.MESSAGES = {
 	// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	'abusefilter-log'					: 'Abuse filter log',
 	'abuselog'							: 'Abuse log',
+	// Content model
+	'log-name-contentmodel'				: 'Content model change log',
 
 	/***************************
 	* Log Actions -
@@ -357,6 +359,12 @@ const MESSAGES = i18n.MESSAGES = {
 	'abusefilter-action-throttle': 'Throttle',
 	'abusefilter-action-warn': 'Warn',
 	'abusefilter-log-noactions': 'none',
+	
+	/***************************
+	* Content Model
+	****************************/
+	'logentry-contentmodel-new': '$1 {{GENDER:$2|created}} the page $3 using a non-default content model \"$5\"',
+	'logentry-contentmodel-change': '$1 {{GENDER:$2|changed}} the content model of the page $3 from \"$4\" to \"$5\"',
 };
 
 export const legacyMessagesRemovedContent = [
