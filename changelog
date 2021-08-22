@@ -4,6 +4,7 @@
 - Switch Arrow images to those used by UCP (thanks Caburum)
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-collapsed-ltr.png
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-expanded.png
+- added support for some logs: abusefilter, and Special:AbuseLog
 
 
 == 2.15i - 28 July 2021 ==

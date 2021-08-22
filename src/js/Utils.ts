@@ -230,6 +230,13 @@ export default class Utils
 		return null;
 	}
 	
+	static arrayFind<T>(pArray:T[], pFunc:(o:T)=>boolean) : T|null {
+		for (var i = 0; i < pArray.length; ++i) {
+			if(pFunc(pArray[i])) { return pArray[i]; }
+		}
+		return null;
+	}
+	
 	// Assumes the file has already been checked to be in namespace 6
 	static isFileAudio(pTitle:string) : boolean {
 		var tExt = null, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia

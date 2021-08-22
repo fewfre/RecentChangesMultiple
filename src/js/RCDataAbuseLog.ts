@@ -1,11 +1,10 @@
 import Global from "./Global";
 import RCMManager from "./RCMManager";
-import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
-import RCData from "./RCData";
 import Utils from "./Utils";
 import i18n from "./i18n";
 import TYPE from "./types/RC_TYPE";
+import RCDataLog from "./RCDataLog";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -14,9 +13,9 @@ let mw = window.mediaWiki;
 
 // Unused, can't get abuse log data due to requiring user logged in
 /*
-https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=500&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&letype=rights|move|delete|block|merge&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=recentchanges|logevents|abuselog&aflprop=ids|user|title|action|result|timestamp&afllimit=500
-https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=500&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&letype=rights|move|delete|block|merge&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=abuselog&aflprop=ids|user|title|action|result|timestamp&afllimit=500&aflstart=2018-10-19T17:10:27Z
-https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=250&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&letype=rights|move|delete|block|merge&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=abusefilters&abflimit=500&abfshow=enabled&abfprop=id|description|actions|private
+https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=500&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=recentchanges|logevents|abuselog&aflprop=ids|user|title|action|result|timestamp&afllimit=500
+https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=500&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=abuselog&aflprop=ids|user|title|action|result|timestamp&afllimit=500&aflstart=2018-10-19T17:10:27Z
+https://runescape.fandom.com/api.php?action=query&format=json&continue=&rcprop=user|flags|title|ids|sizes|timestamp|loginfo|parsedcomment|comment&rclimit=250&rcshow=!bot&rctype=edit|new|log&rcexcludeuser=Fewfre&leprop=details|user|title|timestamp|type|ids&lelimit=250&leend=2019-03-04T02:04:09.864Z&list=abusefilters&abflimit=500&abfshow=enabled&abfprop=id|description|actions|private
 https://runescape.fandom.com/api.php?action=query&meta=allmessages&format=jsonfm&amfilter=abusefilter
 https://www.mediawiki.org/wiki/Extension:AbuseFilter
 https://dev.fandom.com/wiki/AbuseLogRC
@@ -30,7 +29,7 @@ https://runescape.fandom.com/wiki/Special:AbuseLog?offset=20181019171027&limit=5
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-export default class RCDataAbuseLog extends RCData
+export default class RCDataAbuseLog extends RCDataLog
 {
 	// Constructor
 	constructor(pWikiInfo:WikiData, pManager:RCMManager) {
@@ -55,16 +54,16 @@ export default class RCDataAbuseLog extends RCData
 		this.author = pData.user;
 		this.title = Utils.escapeCharacters( pData.title.split("/@comment")[0] );
 		this.namespace = pData.ns;
-		this.logtype = "abuse";
-		// this.logaction = pData.logaction;
+		this.logtype = "abuse"; // DIFFERENT
+		this.logaction = pData.action; // DIFFERENT
 		// this.newlen = pData.newlen;
 		// this.oldlen = pData.oldlen;
 		
-		this.summary = pData.rawContent;
-		if(this.summary.length > 175) {
-			this.summary = this.summary.slice(0, 175)+"...";
-		}
-		this.unparsedComment = this.summary;
+		// this.summary = pData.rawContent;
+		// if(this.summary.length > 175) {
+		// 	this.summary = this.summary.slice(0, 175)+"...";
+		// }
+		// this.unparsedComment = this.summary;
 		
 		this.pageid = pData.id;//pData.pageid;
 		// this.revid = pData.revid;
@@ -80,12 +79,9 @@ export default class RCDataAbuseLog extends RCData
 		this.hrefBasic = this.href.split("/@comment")[0];
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
+		this.actionhidden = pData.actionhidden == "";
+		this._initLog(pData, []);
+		
 		return this; // Return self for chaining or whatnot.
-	}
-	
-	/*override*/ logActionText() : string {
-		var tLogMessage = "";
-		tLogMessage = i18n('abusefilter-log-entry', "DATE", "USER");
-		return tLogMessage;
 	}
 }

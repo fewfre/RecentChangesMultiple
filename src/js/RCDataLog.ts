@@ -26,10 +26,49 @@ export default class RCDataLog extends RCData
 	 * Log Info - info for specific logs that require additional info via API:Logevents.
 	 * THESE ARE USED, but not instantiated since no reason to take up the memory until used (since logs might not be present).
 	 ***************************/
-	log_move_newTitle			: string; // Name of new page after page moved.
-	log_move_noredirect			: string; // If redirect is suppressed, should be "-noredirect" else ""
+	logParams:
+		{ type:"abuse",
+			result: string, // what happened as a result of this filter being triggered - separated by commas
+			filter: string, // filter description
+			filter_id: string,
+		}
+		| { type:"abusefilter",
+			newId:string, // filter id
+			historyId:number, // history id for that filter change
+		}
+		| { type:"block",
+			duration:string, // how long the block is for
+			flags:string, // string of block flags separated by commas
+		}
+		// Depreciated (fandom removed chat)
+		| { type:"chatban" }
+		| { type:"delete",
+			revisions_num:number, // Number of revisions
+			new_bitmask:string, // action taken on visibility change
+		}
+		| { type:"import" }
+		| { type:"merge",
+			destination:string, // title of the page being merged into.
+			mergepoint:string, // timestamp the merge is up to.
+		}
+		| { type:"move",
+			newTitle:string, // Name of new page after page moved.
+			noredirect:string, // If redirect is suppressed, should be "-noredirect" else ""
+		}
+		| { type:"protect" }
+		| { type:"upload" }
+		| { type:"useravatar" }
+		| { type:"newusers" }
+		| { type:"renameuser" }
+		| { type:"rights",
+			oldgroups:string, // string of all groups separated by commas
+			newgroups:string, // string of all groups separated by commas
+		}
+		| { type:"wikifeatures" }
+	;
 	log_rights_oldgroups		: string; // string of all groups separated by commas
 	log_rights_newgroups		: string; // string of all groups separated by commas
+	
 	log_delete_revisions_num	: number; // Number of revisions
 	log_delete_new_bitmask		: string; // action taken on visibility change
 	log_block_duration			: string; // how long the block is for
@@ -64,7 +103,7 @@ export default class RCDataLog extends RCData
 	}
 	
 	// If it's a log, init data if needed for that type.
-	private _initLog(pRCData:any, pLogDataArray:any[]) : void {
+	protected _initLog(pRCData:any, pLogDataArray:any[]) : void {
 		if(this.actionhidden) { return; }
 		
 		var tLogParams = null;
@@ -85,29 +124,38 @@ export default class RCDataLog extends RCData
 			tLogParams = pRCData.logparams;
 		}
 		
+		// @ts-ignore
+		this.logParams = { type:this.logtype };
+		
 		/////////////////////////////////////
 		// Store important info for a log
 		/////////////////////////////////////
-		switch(this.logtype) {
+		switch(this.logParams.type) {
 			case "move": {
-				this.log_move_newTitle = "";
+				let log_move_newTitle = "";
 				let is_log_move_noredirect = false;
 				if(this.wikiInfo.useOutdatedLogSystem == false) {
 					if(tLogParams) {
-						this.log_move_newTitle = Utils.escapeCharacters( tLogParams.target_title );
+						log_move_newTitle = Utils.escapeCharacters( tLogParams.target_title );
 						is_log_move_noredirect = tLogParams.suppressredirect=="";
 						// target_ns
 					}
 				} else {
 					tLogParams = tLogParams.move;
 					if(tLogParams) {
-						this.log_move_newTitle = Utils.escapeCharacters( tLogParams.new_title );
+						log_move_newTitle = Utils.escapeCharacters( tLogParams.new_title );
 						is_log_move_noredirect = tLogParams.suppressedredirect=="";
 						// new_ns
 					}
 				}
 				// If true, add a flag for it.
-				this.log_move_noredirect = is_log_move_noredirect ? "-noredirect" : "";
+				// this.log_move_noredirect = is_log_move_noredirect ? "-noredirect" : "";
+				
+				this.logParams = {
+					type:"move",
+					noredirect: is_log_move_noredirect ? "-noredirect" : "",
+					newTitle: log_move_newTitle,
+				};
 				break;
 			}
 			case "rights": {
@@ -219,6 +267,7 @@ export default class RCDataLog extends RCData
 				}
 				break;
 			}
+			// Depreciated (fandom removed chat)
 			case "chatban": {
 				if(this.wikiInfo.useOutdatedLogSystem == false) {
 					if(!this.log_info_0 && tLogParams) {
@@ -227,19 +276,39 @@ export default class RCDataLog extends RCData
 				}
 				break;
 			}
+			case "abusefilter": {
+				this.logParams = {
+					type: "abusefilter",
+					historyId: tLogParams.historyId,
+					newId: tLogParams.newId,
+				};
+				break;
+			}
+			case "abuse": {
+				this.logParams = {
+					type: "abuse",
+					result: pRCData.result,
+					filter: pRCData.filter,
+					filter_id: pRCData.filter_id,
+				};
+				break;
+			}
 		}
 		
 		tLogParams = null;
 	}
 	
 	logTitleLink() : string {
-		return `(<a class='rc-log-link' href='${this.wikiInfo.articlepath}Special:Log/${this.logtype}'>${this.logTitle()}</a>)`;
+		const logPage = this.logtype === "abuse" ? "Special:AbuseLog" : `Special:Log/${this.logtype}`;
+		return `(<a class='rc-log-link' href='${this.wikiInfo.articlepath}${logPage}'>${this.logTitle()}</a>)`;
 	}
 	
 	logTitle() : string {
 		switch(this.logtype) {
+			case "abuse"		: return i18n("abuselog");
 			case "abusefilter"	: return i18n("abusefilter-log");
 			case "block"		: return i18n("blocklogpage");
+			// Depreciated (fandom removed chat)
 			case "chatban"		: return i18n("chat-chatban-log");
 			case "delete"		: return i18n("dellogpage");
 			case "import"		: return i18n("importlogpage");
@@ -259,14 +328,14 @@ export default class RCDataLog extends RCData
 	// Returns text explaining what the log did. Also returns user details (since it's a part of some of their wiki text).
 	// Some info is only present in the edit summary for some logtypes, so these parts won't be translated.
 	logActionText() : string {
-		var tLogMessage = "";
+		let tLogMessage = "";
 		
 		if(this.actionhidden) {
 			tLogMessage = `<span class="history-deleted">${i18n("rev-deleted-event")}</span>`;
 			tLogMessage += this.getSummary();
 		}
 		
-		switch(this.logtype) {
+		switch(this.logParams.type) {
 			case "block": {
 				tLogMessage += this.userDetails()+" ";
 				switch(this.logaction) {
@@ -307,11 +376,11 @@ export default class RCDataLog extends RCData
 			}
 			case "move": {
 				// logactions assumed: move, move-noredirect, move_redir, move_redir-noredirect
-				tLogMessage += i18n(<I18nKey>("logentry-move-"+this.logaction+(this.log_move_noredirect || ""/*band-aid fix*/)),
+				tLogMessage += i18n(<I18nKey>("logentry-move-"+this.logaction+(this.logParams.noredirect || ""/*band-aid fix*/)),
 					this.userDetails(),
 					undefined, // Don't know if male / female.
 					`<a href='${this.hrefFS}redirect=no'>${this.title}</a>`,
-					`<a href='${this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.log_move_newTitle)}'>${this.log_move_newTitle}</a>`
+					`<a href='${this.wikiInfo.articlepath + Utils.escapeCharactersLink(this.logParams.newTitle)}'>${this.logParams.newTitle}</a>`
 				);
 				break;
 			}
@@ -362,6 +431,7 @@ export default class RCDataLog extends RCData
 				tLogMessage += this.userDetails()+" wikifeatures"; // Rest of the info is in the edit summary (so won't be translated by script).
 				break;
 			}
+			// Depreciated (fandom removed chat)
 			case "chatban": {
 				var tChatData = this.log_info_0.split("\n");
 				var t$3 = undefined;
@@ -375,22 +445,90 @@ export default class RCDataLog extends RCData
 				tChatData = null;
 				break;
 			}
-			// case "abusefilter": {
-			// 	var tAbusePage = this.log_info_0.split("\n");
-			// 	var tAbuseItem = tAbusePage.shift();
+			case "abusefilter": {
+				const { newId:filterId, historyId } = this.logParams;
 				
-			// 	tLogMessage += this.userDetails()+" ";
-			// 	switch(this.logaction) {
-			// 		case "modify": {
-			// 			tLogMessage += i18n("abusefilter-log-entry-modify",
-			// 				`<a href='${this.href}'>${this.title}</a>`,
-			// 				`<a href='${this.wikiInfo.articlepath}Special:AbuseFilter/history/${tAbusePage}/diff/prev/${tAbuseItem}'>${i18n("abusefilter-log-detailslink")}</a>`
-			// 			);
-			// 			break;
-			// 		}
-			// 	}
-			// 	break;
-			// }
+				// If a filter is modified, re-grab the filter data
+				this.wikiInfo.needsAbuseFilterFilters = true;
+				
+				switch(this.logaction) {
+					case "create":
+					case "modify":
+					{
+						// logaction assumed: create, modify
+						tLogMessage += i18n("abusefilter-logentry-"+this.logaction as I18nKey,
+							this.userDetails(),
+							undefined, // Don't know if male / female.
+							undefined,
+							`<a href='${this.href}'>${this.title}</a>`,
+							`<a href='${this.wikiInfo.getUrl(`Special:AbuseFilter/history/${filterId}/diff/prev/${historyId}`)}'>${i18n("abusefilter-log-detailslink")}</a>`
+						);
+						break;
+					}
+				}
+				break;
+			}
+			case "abuse": {
+				const { result, filter, filter_id } = this.logParams;
+				let filterFromDesc: { id?:number, private?:boolean, found:number } = { found:0 };
+				if(filter.trim() != "") {
+					Object.keys(this.wikiInfo.abuseFilterFilters).forEach((i)=>{
+						if(this.wikiInfo.abuseFilterFilters[i].description == filter) {
+							filterFromDesc.found++;
+							filterFromDesc.id = Number(i);
+							filterFromDesc.private = this.wikiInfo.abuseFilterFilters[i].private;
+						}
+					});
+				}
+				// We only trust the result if it's exactly 1
+				if(filterFromDesc.found !== 1) {
+					filterFromDesc.id = filterFromDesc.private = undefined;
+				}
+				filterFromDesc.private = filterFromDesc.private !== undefined ? filterFromDesc.private : true; // If undefined we can't trust the filter values
+				
+				const resultString = result === ""
+					? i18n('abusefilter-log-noactions')
+					: result.split(",").map(r=>i18n('abusefilter-action-'+r as I18nKey)).join(", ");
+				const filterIdLink = !filterFromDesc.private && filterFromDesc.id
+					? `<a href='${this.wikiInfo.getUrl('Special:AbuseFilter/'+filterFromDesc.id)}'>${i18n('abusefilter-log-detailedentry-local', filterFromDesc.id)}</a>`
+					: i18n('abusefilter-log-detailedentry-local', filterFromDesc.id !== undefined ? filterFromDesc.id : "?");
+				// If user can view detailed logs, then link to them + the filter
+				if(this.wikiInfo.user.rights.abusefilter_log_detail) {
+					// let action = i18n('abusefilter-action-'+this.logaction as I18nKey);
+					tLogMessage = i18n('abusefilter-log-detailedentry-meta',
+						undefined,
+						this.userDetails(),
+						filterIdLink,
+						this.logaction,
+						this.title,
+						resultString,
+						filter,
+						[
+							`<a href='${this.wikiInfo.getUrl(`Special:AbuseLog/${this.pageid}`)}'>${i18n('abusefilter-log-detailslink')}</a>`,
+							`<a href='${this.wikiInfo.getUrl(`Special:AbuseFilter/examine/log/${this.pageid}`)}'>${i18n('abusefilter-changeslist-examine')}</a>`,
+						].join(" | "),
+						undefined, // Don't know if male / female.
+					);
+				} else {
+					// let action = i18n('abusefilter-action-'+this.logaction as I18nKey);
+					tLogMessage = i18n('abusefilter-log-entry',
+						undefined,
+						this.userDetails(),
+						this.logaction,
+						this.title,
+						resultString,
+						filter,
+						undefined,
+						undefined, // Don't know if male / female.
+					);
+					if(filterFromDesc.id !== undefined && !filterFromDesc.private) {
+						tLogMessage += ` (${filterIdLink})`;
+					}
+				}
+				// we don't use the date, so remove it - remove whole '$1: ' if it exists (most langugaes), otherwise settle for removing the $1
+				tLogMessage = tLogMessage.replace("$1: ", "").replace("$1", "");
+				break;
+			}
 		}
 		if(tLogMessage == "") {
 			tLogMessage += this.userDetails()+` ??? (${this.logtype} - ${this.logaction}) `;

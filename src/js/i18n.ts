@@ -217,10 +217,12 @@ const MESSAGES = i18n.MESSAGES = {
 	// https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
 	'wikifeatures-log-name'				: 'Wiki Features log',
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Chat2/Chat.i18n.php
+	// Depreciated (fandom removed chat)
 	'chat-chatban-log'					: 'Chat ban log',
 	// ## Extensions ##
 	// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	'abusefilter-log'					: 'Abuse filter log',
+	'abuselog'							: 'Abuse log',
 
 	/***************************
 	* Log Actions -
@@ -289,10 +291,6 @@ const MESSAGES = i18n.MESSAGES = {
 	'chat-chatbanadd-log-entry' : 'banned $1 from chat with an expiry time of $2, ends $3',
 	'chat-chatbanremove-log-entry' : 'unbanned $1 from chat',
 	'chat-chatbanchange-log-entry' : 'changed ban settings for $1 with an expiry time of $2, ends $3',
-	// // ## Extensions ##
-	// // Abuse Filter - https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
-	// "abusefilter-log-entry-modify" : "modified $1 ($2)",
-	// "abusefilter-log-detailslink" : "details",
 
 	/***************************
 	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
@@ -338,9 +336,18 @@ const MESSAGES = i18n.MESSAGES = {
 	/***************************
 	* AbuseFilter
 	****************************/
-	'abusefilter-log-detailedentry-meta': '$1: $2 triggered $3, performing the action \"$4\" on $5.\nActions taken: $6;\nFilter description: $7 ($8)',
-	'abusefilter-log-entry': '$1: $2 triggered an abuse filter, performing the action \"$3\" on $4.\nActions taken: $5;\nFilter description: $6',
+	// Filter Logs
+	"abusefilter-logentry-create" : "$1 {{GENDER:$2|created}} $4 ($5)",
+	"abusefilter-logentry-modify" : "$1 {{GENDER:$2|modified}} $4 ($5)",
+	"abusefilter-log-detailslink": "details",
 	
+	// Logs (when abuse filter triggered)
+	'abusefilter-log-entry': '$1: $2 {{GENDER:$8|triggered}} an abuse filter, {{GENDER:$8|performing}} the action \"$3\" on $4.\nActions taken: $5;\nFilter description: $6',
+	'abusefilter-log-detailedentry-meta': '$1: $2 {{GENDER:$9|triggered}} $3, {{GENDER:$9|performing}} the action \"$4\" on $5.\nActions taken: $6;\nFilter description: $7 ($8)',
+	"abusefilter-log-detailedentry-local": "filter $1",
+	"abusefilter-changeslist-examine": "examine",
+	
+	// Trigger results
 	'abusefilter-action-block': 'Block',
 	'abusefilter-action-blockautopromote': 'Block autopromote',
 	'abusefilter-action-degroup': 'Remove from groups',
@@ -349,9 +356,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'abusefilter-action-tag': 'Tag',
 	'abusefilter-action-throttle': 'Throttle',
 	'abusefilter-action-warn': 'Warn',
-	
-	"abusefilter-log-detailslink": "details",
-	"abusefilter-changeslist-examine": "examine",
+	'abusefilter-log-noactions': 'none',
 };
 
 export const legacyMessagesRemovedContent = [
@@ -744,7 +749,7 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		// {{GRAMMAR}}
 		.replace(/{{GRAMMAR:(.*?)}}/g, function(m, l) {
 			let p = l.split("|");
-			//let num = p.shift();
+			//let gram = p.shift();
 			return mw.language.convertGrammar(p[1], p[0]);
 		})
 	;

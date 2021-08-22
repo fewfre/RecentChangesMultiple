@@ -7,7 +7,7 @@ import WikiData from "./WikiData";
 import RCData from "./RCData";
 import RCDataLog from "./RCDataLog";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
-// import RCDataAbuseLog from "./RCDataAbuseLog";
+import RCDataAbuseLog from "./RCDataAbuseLog";
 import RCList from "./RCList";
 import RCParams from "./types/RCParams";
 import Utils from "./Utils";
@@ -58,6 +58,7 @@ export default class RCMManager
 	makeLinksAjax			: boolean; // Make the diff/gallery link behave as the ajax icons do.
 	discNamespaces			: { FORUM:boolean, WALL:boolean, ARTICLE_COMMENT:boolean }; // What discussion namespaces (container types) to show
 	discussionsEnabled		: boolean; // Whether to load Wikia discussions
+	abuseLogsAllowed		: boolean; // Whether to allow wikis to load abuse filter logs (if wiki has them)
 	
 	/***************************
 	 * Storage
@@ -161,6 +162,8 @@ export default class RCMManager
 			this.discNamespaces.WALL = dns.indexOf("WALL") != -1;
 			this.discNamespaces.ARTICLE_COMMENT = dns.indexOf("ARTICLE_COMMENT") != -1;
 		}
+		
+		this.abuseLogsAllowed = true;
 		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
@@ -650,7 +653,8 @@ export default class RCMManager
 		// pWikiData.initAfterLoad(pData.query);
 		
 		this.ajaxCallbacks.push(() => {
-			// this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
+			pWikiData.initAbuseFilterFilters(pData.query);
+			this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
 			this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
 		});
 		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
@@ -717,23 +721,23 @@ export default class RCMManager
 		return false;
 	}
 	
-	// private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
-	// 	// Check if wiki doesn't have any logs
-	// 	if(!pLogs || pLogs.length <= 0) {
-	// 		// this._onWikiParsingFinished(pWikiData);
-	// 		return;
-	// 	}
+	private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
+		// Check if wiki doesn't have any logs
+		if(!pLogs || pLogs.length <= 0) {
+			// this._onWikiParsingFinished(pWikiData);
+			return;
+		}
 		
-	// 	pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pLogs));
-	// 	// Add each entry from the wiki to the list in a sorted order
-	// 	pLogs.forEach((pLogData) => {
-	// 		if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
+		pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pLogs));
+		// Add each entry from the wiki to the list in a sorted order
+		pLogs.forEach((pLogData) => {
+			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
 			
-	// 		this.itemsToAddTotal++;
-	// 		this._addRCDataToList( new RCDataAbuseLog( pWikiData, this ).init(pLogData) );
-	// 		pWikiData.resultsCount++;
-	// 	});
-	// }
+			this.itemsToAddTotal++;
+			this._addRCDataToList( new RCDataAbuseLog( pWikiData, this ).init(pLogData) );
+			pWikiData.resultsCount++;
+		});
+	}
 	
 	// TODO: Make it more efficient if using hideenhanced by ignoring some calls.
 	private _addRCDataToList(pNewRC:RCData) : void {

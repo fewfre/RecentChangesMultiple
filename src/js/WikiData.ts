@@ -12,7 +12,9 @@ interface CurrentUser {
 	rights:{
 		block:boolean, undelete:boolean, rollback:boolean,
 		analytics:boolean,
-		// abusefilter_view:boolean, abusefilter_log:boolean, abusefilter_log_detail:boolean, abusefilter_log_private:boolean
+		abusefilter_view:boolean, // Can view filters
+		abusefilter_log:boolean, // Can view filter logs (the page)
+		abusefilter_log_detail:boolean, // Can view 
 	}
 }
 
@@ -91,8 +93,9 @@ export default class WikiData
 	// /***************************
 	// * AbuseFilter
 	// ****************************/
-	// abuseFilterFilters		: { [id: number]: { description:string, private:boolean } };
-	// needsAbuseFilterFilters	: boolean;
+	isAbuseLogEnabled		: boolean;
+	abuseFilterFilters		: { [id: number]: { description:string, private:boolean } };
+	needsAbuseFilterFilters	: boolean;
 	
 	/***************************
 	* Other
@@ -120,7 +123,7 @@ export default class WikiData
 		this.user					= { rights:{
 			block:false, undelete:false, rollback:true,
 			analytics: false,
-			// abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false, abusefilter_log_private:false,
+			abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false,
 		} };
 		this.isWikiaWiki			= true;
 		this.isLegacyWikiaWiki		= true;
@@ -132,8 +135,9 @@ export default class WikiData
 		this.discCommentPageNames	= new Map();
 		this.discCommentPageNamesNeeded = [];
 		
-		// this.abuseFilterFilters		= {};
-		// this.needsAbuseFilterFilters = true;
+		this.isAbuseLogEnabled = false; // assume it's off until we check
+		this.abuseFilterFilters		= {};
+		this.needsAbuseFilterFilters = false;
 		
 		this.hidden = false;
 		
@@ -327,26 +331,11 @@ export default class WikiData
 		 ***************************/
 		if(this.needsUserData && !!pQuery.users){
 			this.needsUserData = false;
-			// this.user.rights.block = false;
-			// this.user.rights.undelete = false;
-			// this.user.rights.rollback = false;
-			// for(var i in pQuery.users[0].rights) {
-			// 	if(pQuery.users[0].rights[i] == "block") { this.user.rights.block = true; }
-			// 	if(pQuery.users[0].rights[i] == "undelete") { this.user.rights.undelete = true; }
-			// 	else if(pQuery.users[0].rights[i] == "rollback") { this.user.rights.rollback = true; }
-			// }
-			let tRightList = pQuery.users[0].rights;
-			this.user.rights = {
-				block:		tRightList.indexOf("block") > -1,
-				undelete:	tRightList.indexOf("undelete") > -1,
-				rollback:	tRightList.indexOf("rollback") > -1,
-				analytics:	tRightList.indexOf("analytics") > -1,
-				
-				// abusefilter_view:			tRightList.indexOf("abusefilter-view") > -1,
-				// abusefilter_log:			tRightList.indexOf("abusefilter-log") > -1,
-				// abusefilter_log_detail:		tRightList.indexOf("abusefilter-log-detail") > -1,
-				// abusefilter_log_private:	tRightList.indexOf("abusefilter-log-private") > -1,
-			};
+			this._setUserRights(pQuery.users[0].rights);
+		}
+		else if(this.needsUserData && !!pQuery.userinfo){
+			this.needsUserData = false;
+			this._setUserRights(pQuery.userinfo.rights);
 		}
 		
 		/***************************
@@ -358,20 +347,38 @@ export default class WikiData
 		
 		return this;
 	}
-	
-	// initAbuseFilterFilters(pQuery) : this {
-	// 	if(this.needsAbuseFilterFilters && !!pQuery.abusefilters){
-	// 		this.needsAbuseFilterFilters = false;
-	// 		this.abuseFilterFilters = {};
-	// 		let tFilter;
-	// 		for (let i = 0; i < pQuery.abusefilters.length; i++) {
-	// 			tFilter = pQuery.abusefilters[i];
-	// 			this.abuseFilterFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
-	// 		}
-	// 	}
+	private _setUserRights(rightsList:string[]) : void {
+		this.user.rights = {
+			block:		rightsList.indexOf("block") > -1,
+			undelete:	rightsList.indexOf("undelete") > -1,
+			rollback:	rightsList.indexOf("rollback") > -1,
+			analytics:	rightsList.indexOf("analytics") > -1,
+			
+			abusefilter_view:			rightsList.indexOf("abusefilter-view") > -1,
+			abusefilter_log:			rightsList.indexOf("abusefilter-log") > -1,
+			abusefilter_log_detail:		rightsList.indexOf("abusefilter-log-detail") > -1,
+		};
 		
-	// 	return this;
-	// }
+		if(this.manager.abuseLogsAllowed) {
+			// Check if wiki has any abusefilter rights; if so, it's probably enabled (and accessable)
+			this.isAbuseLogEnabled = this.user.rights.abusefilter_log;//!!Utils.arrayFind(rightsList, r=>r.indexOf("abusefilter") > -1);
+			this.needsAbuseFilterFilters = this.isAbuseLogEnabled;
+		}
+	}
+	
+	initAbuseFilterFilters(pQuery) : this {
+		if(this.needsAbuseFilterFilters && !!pQuery.abusefilters){
+			this.needsAbuseFilterFilters = false;
+			this.abuseFilterFilters = {};
+			let tFilter;
+			for (let i = 0; i < pQuery.abusefilters.length; i++) {
+				tFilter = pQuery.abusefilters[i];
+				this.abuseFilterFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
+			}
+		}
+		
+		return this;
+	}
 	
 	setupRcParams() : void {
 		this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
@@ -439,6 +446,17 @@ export default class WikiData
 	getUserClassDataset(pUser:string) : string {
 		if(!pUser) { return ""; }
 		return `data-username=\"${pUser.replace(/"/g, "&quot;")}\"`;
+	}
+	
+	/**
+	 * Get the link to a page name (relative to wgServer) - based on `mw.util.getUrl()`
+	 * @param pageName name of the wiki page
+	 * @param params A mapping of query parameter names to values, e.g. `{ action: 'edit' }`
+	 * @returns Url of the page with name of `pageName`
+	 */
+	getUrl(pageName:string, params?:{ [key:string]:string|number }) : string {
+		let query = params ? this.firstSeperator+$.param(params) : "";
+		return `${this.articlepath}${pageName}${query}`;
 	}
 	
 	checkForSecondaryLoading() : void {
@@ -520,7 +538,10 @@ export default class WikiData
 			params["ususers"] = this.username;
 			params["usprop"] = "rights";
 		} else {
-			this.needsUserData = false;
+			// if anon, we still want to know what rights they have on this wiki by default
+			tMetaList.push("userinfo");
+			params["uiprop"] = "rights";
+			// this.needsUserData = false;
 		}
 		
 		/***************************
@@ -623,24 +644,23 @@ export default class WikiData
 			params["leend"] = tEndDate.toISOString();
 		}
 		
-		// /***************************
-		// * Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
-		// * Each wiki has it's own list of abuse filters
-		// ***************************/
-		// // Checking for both rights should assure this wiki has logs the user can potentially see.
-		// mw.log("[WikiData](getApiUrl) Abuse filter: ", this.rcParams.hidelogs == false , this.user.rights , this.user.rights.abusefilter_log , this.user.rights.abusefilter_view);
-		// if(true/*TODO*/ && this.rcParams.hidelogs == false && this.user.rights.abusefilter_log && this.user.rights.abusefilter_view) {
-		// 	if(this.needsAbuseFilterFilters) {
-		// 		tUrlList.push("abusefilters");
-		// 		params["abflimit"] = 500;
-		// 		params["abfshow"] = "enabled";
-		// 		params["abfprop"] = "id|description|private";//|actions
-		// 	}
-		// 	tUrlList.push("abuselog");
-		// 	params["afllimit"] = this.rcParams.limit;
-		// 	params["aflend"] = tEndDate.toISOString();
-		// 	params["aflprop"] = "ids|user|title|action|result|timestamp";
-		// }
+		/***************************
+		* Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
+		* Each wiki has it's own list of abuse filters
+		***************************/
+		if(this.isAbuseLogEnabled && this.manager.abuseLogsAllowed && this.rcParams.hidelogs == false && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
+			// Grab filters just once (so we have them on-hand)
+			if(this.needsAbuseFilterFilters) {
+				tUrlList.push("abusefilters");
+				params["abflimit"] = 500;
+				params["abfshow"] = "enabled";
+				params["abfprop"] = "id|description|private";//|actions
+			}
+			tUrlList.push("abuselog");
+			params["afllimit"] = this.rcParams.limit;
+			params["aflend"] = tEndDate.toISOString();
+			params["aflprop"] = "ids|filter|user|title|action|result|timestamp|hidden|revid";//|details - sadly can't ever use details, since `abusefilter-log-detail` right will always be false due to not being logged in
+		}
 		
 		/***************************
 		* Finish building url
