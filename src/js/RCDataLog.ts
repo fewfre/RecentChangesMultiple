@@ -560,6 +560,9 @@ export default class RCDataLog extends RCData
 						break;
 					}
 				}
+				if(this.logaction == "change" && this.wikiInfo.user.rights.editcontentmodel) {
+					tLogMessage += ` (<a href='${this.wikiInfo.getUrl('Special:ChangeContentModel', { pagetitle:this.hrefTitle, model:oldmodel, reason:i18n('logentry-contentmodel-change-revert') })}'>${i18n('logentry-contentmodel-change-revertlink')}</a>)`
+				}
 				break;
 			}
 		}

@@ -12,9 +12,10 @@ interface CurrentUser {
 	rights:{
 		block:boolean, undelete:boolean, rollback:boolean,
 		analytics:boolean,
+		editcontentmodel:boolean, // can edit content models
 		abusefilter_view:boolean, // Can view filters
 		abusefilter_log:boolean, // Can view filter logs (the page)
-		abusefilter_log_detail:boolean, // Can view 
+		abusefilter_log_detail:boolean, // Can view extra info for abuse logs
 	}
 }
 
@@ -123,6 +124,7 @@ export default class WikiData
 		this.user					= { rights:{
 			block:false, undelete:false, rollback:true,
 			analytics: false,
+			editcontentmodel: false,
 			abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false,
 		} };
 		this.isWikiaWiki			= true;
@@ -353,6 +355,7 @@ export default class WikiData
 			undelete:	rightsList.indexOf("undelete") > -1,
 			rollback:	rightsList.indexOf("rollback") > -1,
 			analytics:	rightsList.indexOf("analytics") > -1,
+			editcontentmodel:	rightsList.indexOf("editcontentmodel") > -1,
 			
 			abusefilter_view:			rightsList.indexOf("abusefilter-view") > -1,
 			abusefilter_log:			rightsList.indexOf("abusefilter-log") > -1,

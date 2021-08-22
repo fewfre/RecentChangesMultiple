@@ -365,6 +365,8 @@ const MESSAGES = i18n.MESSAGES = {
 	****************************/
 	'logentry-contentmodel-new': '$1 {{GENDER:$2|created}} the page $3 using a non-default content model \"$5\"',
 	'logentry-contentmodel-change': '$1 {{GENDER:$2|changed}} the content model of the page $3 from \"$4\" to \"$5\"',
+	'logentry-contentmodel-change-revert': 'revert',
+	'logentry-contentmodel-change-revertlink': 'revert',
 };
 
 export const legacyMessagesRemovedContent = [
