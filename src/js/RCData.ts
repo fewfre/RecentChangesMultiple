@@ -218,8 +218,8 @@ export default class RCData
 	
 	static formatParsedComment(pParsedComment:string, pDeleted:boolean, pWikiInfo:WikiData) : string {
 		if(!pDeleted) {
-			// pParsedComment = pParsedComment.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
-			pParsedComment = pParsedComment.replace(/<a href="\//g, "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+			// pParsedComment = pParsedComment?.replace("<a href=\"/", "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
+			pParsedComment = pParsedComment?.replace(/<a href="\//g, "<a href=\""+pWikiInfo.server+"/"); // Make links point to correct wiki.
 		} else {
 			pParsedComment = `<span class="history-deleted">${i18n("rev-deleted-comment")}</span>`;
 		}

@@ -116,7 +116,7 @@ export default class RCDataLog extends RCData
 		/////////////////////////////////////
 		switch(this.logParams.type) {
 			case "abuse": {
-				const { result, filter, filter_id } = pRCData;
+				const { result, filter, filter_id } = pRCData.logparams ?? {};
 				this.logParams = {
 					type: "abuse",
 					result: result,
@@ -537,5 +537,43 @@ export default class RCDataLog extends RCData
 	
 	getLogTimeStamp(pDate) : string {
 		return RCData.getFullTimeStamp(pDate);
+	}
+	
+	// Since we want to treat abuse logs like normal logs, this converts them to the same structure as normal logs
+	static abuseLogDataToNormalLogFormat(log:any) : any {
+		/* Some abuse log related links
+		https://runescape.fandom.com/api.php?action=query&meta=allmessages&format=jsonfm&amfilter=abusefilter
+		https://www.mediawiki.org/wiki/Extension:AbuseFilter
+		https://dev.fandom.com/wiki/AbuseLogRC
+		https://runescape.fandom.com/wiki/Special:AbuseLog?offset=20181019171027&limit=500
+		*/
+		return {
+			// Normal stuff
+			type: "log",
+			ns: log.ns,
+			title: log.title,
+			timestamp: log.timestamp,
+			user: log.user,
+			pageid: log.id,
+			
+			// Blank stuff
+			oldlen: 0,
+			newlen: 0,
+			revid: 0,
+			old_revid: 0,
+			rcid: 0, // nothing uses, but eh
+			comment: undefined,
+			parsedcomment: undefined,
+			
+			// Log stuff
+			logid: log.id,
+			logtype: "abuse",
+			logaction: log.action,
+			logparams: {
+				filter: log.filter,
+				filter_id: log.filter_id,
+				result: log.result,
+			}
+		};
 	}
 }

@@ -7,7 +7,6 @@ import WikiData from "./WikiData";
 import RCData from "./RCData";
 import RCDataLog from "./RCDataLog";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
-import RCDataAbuseLog from "./RCDataAbuseLog";
 import RCList from "./RCList";
 import RCParams from "./types/RCParams";
 import Utils from "./Utils";
@@ -734,7 +733,7 @@ export default class RCMManager
 			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
-			this._addRCDataToList( new RCDataAbuseLog( pWikiData, this ).init(pLogData) );
+			this._addRCDataToList( new RCDataLog( pWikiData, this ).initLog(RCDataLog.abuseLogDataToNormalLogFormat(pLogData)) );
 			pWikiData.resultsCount++;
 		});
 	}
