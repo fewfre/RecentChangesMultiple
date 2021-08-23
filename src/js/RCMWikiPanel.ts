@@ -160,21 +160,10 @@ export default class RCMWikiPanel
 				tLink("Special:NewPages", "newpages"),
 				tLink("Special:NewFiles", "newimages"),
 				tLink("Special:Log", "log"),
-				pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && tLink("Special:Insights", "insights"),
 				pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
 				tLink("Special:Random", "randompage"),
 				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
 				pWikiInfo.isWikiaWiki && tLink("Special:SocialActivity", "socialactivity-page-title"),
-				
-				
-				// "<a href='"+pWikiInfo.articlepath+"Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString+"'>"+i18n("recentchanges")+"</a>",
-				// "<a href='"+pWikiInfo.articlepath+"Special:NewPages'>"+i18n("newpages")+"</a>",
-				// "<a href='"+pWikiInfo.articlepath+"Special:NewFiles'>"+i18n("newimages")+"</a>",
-				// "<a href='"+pWikiInfo.articlepath+"Special:Log'>"+i18n("log")+"</a>",
-				// pWikiInfo.isWikiaWiki && pWikiInfo.isLegacyWikiaWiki && "<a href='"+pWikiInfo.articlepath+"Special:Insights'>"+i18n("insights")+"</a>",
-				// pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && "<a href='"+pWikiInfo.articlepath+"Special:Analytics'>"+i18n("admindashboard-control-analytics-label")+"</a>",
-				// "<a href='"+pWikiInfo.articlepath+"Special:Random'>"+i18n("randompage")+"</a>",
-				// pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>"
 			].filter(o=>!!o);
 			
 			const buttons = [];

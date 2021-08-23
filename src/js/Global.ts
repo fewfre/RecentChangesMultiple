@@ -2,6 +2,9 @@ import Utils from './Utils';
 
 let mw = window.mediaWiki;
 
+// Since gender info isn't exposed, we can't know it - this constant should be used in such places to keep track of places that want the info
+export const UNKNOWN_GENDER_TYPE = undefined;
+
 //###########################################################
 // #### Global - static class for script-wide data ####
 //###########################################################

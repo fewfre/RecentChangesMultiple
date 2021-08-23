@@ -80,7 +80,7 @@ export default class RCDataAbuseLog extends RCDataLog
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
 		this.actionhidden = pData.actionhidden == "";
-		this._initLog(pData, []);
+		this._initLog(pData);
 		
 		return this; // Return self for chaining or whatnot.
 	}

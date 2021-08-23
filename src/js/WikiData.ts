@@ -102,8 +102,6 @@ export default class WikiData
 	* Other
 	****************************/
 	isWikiaWiki				: boolean; // Is this wiki a wikia wiki
-	isLegacyWikiaWiki		: boolean; // Old system using outdated mediawiki version - pre UCP
-	useOutdatedLogSystem	: boolean; // Newer mediawikis return "logparams". older wikis (aka, Wikia as of July 2015) needs to have them retrieved separately.
 	
 	/***************************
 	* Dynamic Data
@@ -128,8 +126,6 @@ export default class WikiData
 			abusefilter_view:false, abusefilter_log:false, abusefilter_log_detail:false,
 		} };
 		this.isWikiaWiki			= true;
-		this.isLegacyWikiaWiki		= true;
-		this.useOutdatedLogSystem	= false;
 		
 		this.users					= {};
 		this.usersNeeded			= [];
@@ -181,8 +177,6 @@ export default class WikiData
 		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
 		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1) || (this.servername.indexOf(".gamepedia.") > -1);
-		this.isLegacyWikiaWiki = this.isWikiaWiki;
-		this.useOutdatedLogSystem = this.isWikiaWiki;
 		
 		// todo - allow / - consequences?
 		// if(this.servername.indexOf("/") > -1) {
@@ -291,12 +285,6 @@ export default class WikiData
 			this.mainpage = pQuery.general.mainpage;
 			this.mwversion = pQuery.general.generator;
 			this.langCode = pQuery.general.lang;
-			
-			// For wikia/fandom wikis, check if it is a UCP wiki (updated mediawiki version). If it is old, then also use old log system; otherwise use default
-			if(this.isWikiaWiki) {
-				this.isLegacyWikiaWiki = this.mwversion == "MediaWiki 1.19.24";
-				this.useOutdatedLogSystem = this.isLegacyWikiaWiki;
-			}
 			
 			if(this.favicon == null) {
 				// Requires MediaWiki V1.23+  -- currently has to be hardcoded off for UCP wikis as well, since it shows wrong favicon for this setting
@@ -632,20 +620,20 @@ export default class WikiData
 			params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
 		}
 		
-		/***************************
-		* Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
-		* Get info for logs that don't return all necessary info through "Recent Changes" api.
-		* To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
-		***************************/
-		if(this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
-			tUrlList.push("logevents");
-			params["leprop"] = ["details", "user", "title", "timestamp", "type", "ids"].join("|");
-			params["letype"] = ["rights", "move", "delete", "block", "merge"].join("|");
+		// /***************************
+		// * Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
+		// * Get info for logs that don't return all necessary info through "Recent Changes" api.
+		// * To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
+		// ***************************/
+		// if(this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
+		// 	tUrlList.push("logevents");
+		// 	params["leprop"] = ["details", "user", "title", "timestamp", "type", "ids"].join("|");
+		// 	params["letype"] = ["rights", "move", "delete", "block", "merge"].join("|");
 			
-			// How many results to retrieve
-			params["lelimit"] = this.rcParams.limit;
-			params["leend"] = tEndDate.toISOString();
-		}
+		// 	// How many results to retrieve
+		// 	params["lelimit"] = this.rcParams.limit;
+		// 	params["leend"] = tEndDate.toISOString();
+		// }
 		
 		/***************************
 		* Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter

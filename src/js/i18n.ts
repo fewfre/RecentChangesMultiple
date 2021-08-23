@@ -160,12 +160,12 @@ const MESSAGES = i18n.MESSAGES = {
 	'rev-deleted-event' : '(log action removed)',
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/ArticleComments/ArticleComments.i18n.php
 	'and' : '&#32;and',
+	'word-separator' : ' ',
 	// Wiki Infobar
 	'recentchanges' : 'Recent changes',
 	'newpages' : 'New pages',
 	'newimages' : 'New photos', // There is no text for "New Files"; this was closest I could find. Alts: prefs-files (Files), listfiles (File list), statistics-files (Uploaded files)
 	'log' : 'Logs',
-	'insights' : 'Insights',
 	'randompage' : 'Random page',
 	'group-sysop' : 'Administrators',
 	'group-user' : 'Users',
@@ -216,9 +216,6 @@ const MESSAGES = i18n.MESSAGES = {
 	// ## Wiki Features ##
 	// https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
 	'wikifeatures-log-name'				: 'Wiki Features log',
-	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Chat2/Chat.i18n.php
-	// Depreciated (fandom removed chat)
-	'chat-chatban-log'					: 'Chat ban log',
 	// ## Extensions ##
 	// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	'abusefilter-log'					: 'Abuse filter log',
@@ -231,9 +228,9 @@ const MESSAGES = i18n.MESSAGES = {
 	****************************/
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/languages/messages/MessagesEn.php
 	// Block
-	'blocklogentry'                   : 'blocked [[$1]] with an expiry time of $2 $3',
-	'reblock-logentry'                : 'changed block settings for [[$1]] with an expiry time of $2 $3',
-	'unblocklogentry'                 : 'unblocked $1',
+	'logentry-block-block'            : '$1 {{GENDER:$2|blocked}} {{GENDER:$4|$3}} with an expiration time of $5 $6',
+	'logentry-block-reblock'          : '$1 {{GENDER:$2|changed}} block settings for {{GENDER:$4|$3}} with an expiration time of $5 $6',
+	'logentry-block-unblock'          : '$1 {{GENDER:$2|unblocked}} {{GENDER:$4|$3}}',
 
 	'block-log-flags-anononly'        : 'anonymous users only',
 	'block-log-flags-nocreate'        : 'account creation disabled',
@@ -245,17 +242,21 @@ const MESSAGES = i18n.MESSAGES = {
 	// Delete
 	'logentry-delete-delete'              : '$1 deleted page $3',
 	'logentry-delete-delete_redir'        : '$1 {{GENDER:$2|deleted}} redirect $3 by overwriting',
-	'logentry-delete-restore'             : '$1 restored page $3',
+	'logentry-delete-restore'             : '$1 restored page $3 ($4)',
+	'logentry-delete-restore-nocount'     : '$1 restored page $3',
 	'logentry-delete-event'               : '$1 changed visibility of {{PLURAL:$5|a log event|$5 log events}} on $3: $4',
 	'logentry-delete-revision'            : '$1 changed visibility of {{PLURAL:$5|a revision|$5 revisions}} on page $3: $4',
 	'logentry-delete-event-legacy'        : '$1 changed visibility of log events on $3',
 	'logentry-delete-revision-legacy'     : '$1 changed visibility of revisions on page $3',
 
+	'restore-count-files'                 : '{{PLURAL:$1|1 file|$1 files}}',
+	'restore-count-revisions'             : '{{PLURAL:$1|1 revision|$1 revisions}}',
+	
 	'revdelete-content-hid'               : 'content hidden',
 	'revdelete-summary-hid'               : 'edit summary hidden',
 	// Import
-	'import-logentry-upload'           : 'imported [[$1]] by file upload',
-	'import-logentry-interwiki'        : 'transwikied $1',
+	'logentry-import-upload'              : '$1 {{GENDER:$2|imported}} $3 by file upload',
+	'logentry-import-interwiki'           : '$1 {{GENDER:$2|imported}} $3 from another wiki',
 	// Merge
 	'pagemerge-logentry'	: 'merged [[$1]] into [[$2]] (revisions up to $3)',
 	// Move
@@ -264,21 +265,25 @@ const MESSAGES = i18n.MESSAGES = {
 	'logentry-move-move_redir'            : '$1 moved page $3 to $4 over redirect',
 	'logentry-move-move_redir-noredirect' : '$1 moved page $3 to $4 over a redirect without leaving a redirect',
 	// Protect
-	'protectedarticle'            : 'protected "[[$1]]"',
-	'modifiedarticleprotection'   : 'changed protection level for "[[$1]]"',
-	'unprotectedarticle'          : 'removed protection from "[[$1]]"',
-	'movedarticleprotection'      : 'moved protection settings from "[[$2]]" to "[[$1]]"',
+	'logentry-protect-modify'          : '$1 {{GENDER:$2|changed}} protection level for $3 $4',
+	'logentry-protect-modify-cascade'  : '$1 {{GENDER:$2|changed}} protection level for $3 $4 [cascading]',
+	'logentry-protect-move_prot'       : '$1 {{GENDER:$2|moved}} protection settings from $4 to $3',
+	'logentry-protect-protect'         : '$1 {{GENDER:$2|protected}} $3 $4',
+	'logentry-protect-protect-cascade' : '$1 {{GENDER:$2|protected}} $3 $4 [cascading]',
+	'logentry-protect-unprotect'       : '$1 {{GENDER:$2|removed}} protection from $3',
 	// Upload
-	'uploadedimage'               : 'uploaded "[[$1]]"',
-	'overwroteimage'              : 'uploaded a new version of "[[$1]]"',
+	'logentry-upload-overwrite'   : '$1 {{GENDER:$2|uploaded}} a new version of $3',
+	'logentry-upload-revert'      : '$1 {{GENDER:$2|reverted}} $3 to an old version',
+	'logentry-upload-upload'      : '$1 {{GENDER:$2|uploaded}} $3',
 	// New User
 	'logentry-newusers-newusers'          : '$1 created a user account',
 	'logentry-newusers-create'            : '$1 created a user account',
 	'logentry-newusers-create2'           : '$1 created a user account $3',
 	'logentry-newusers-autocreate'        : 'Account $1 was created automatically',
 	// Rights
-	'rightslogentry'             : 'changed group membership for $1 from $2 to $3',
-	'rightslogentry-autopromote' : 'was automatically promoted from $2 to $3',
+	'logentry-rights-autopromote'         : '$1 was automatically {{GENDER:$2|promoted}} from $4 to $5',
+	'logentry-rights-rights'              : '$1 {{GENDER:$2|changed}} group membership for {{GENDER:$6|$3}} from $4 to $5',
+	'logentry-rights-rights-legacy'       : '$1 {{GENDER:$2|changed}} group membership for $3',
 	'rightsnone'                 : '(none)',
 	// ## Non-standard Mediawiki logs ##
 	// User Avatar - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserProfilePageV3/UserProfilePage.i18n.php
@@ -288,11 +293,6 @@ const MESSAGES = i18n.MESSAGES = {
 	'userrenametool-success' : 'The user "$1" has been renamed to "$2".',
 	// ## Wiki Features ##
 	// Wiki Features - https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
-
-	// Chat - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Chat2/Chat.i18n.php
-	'chat-chatbanadd-log-entry' : 'banned $1 from chat with an expiry time of $2, ends $3',
-	'chat-chatbanremove-log-entry' : 'unbanned $1 from chat',
-	'chat-chatbanchange-log-entry' : 'changed ban settings for $1 with an expiry time of $2, ends $3',
 
 	/***************************
 	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
@@ -370,17 +370,11 @@ const MESSAGES = i18n.MESSAGES = {
 };
 
 export const legacyMessagesRemovedContent = [
-	"insights", // Feature removed on UCP
 	// Old Logs
 	"useravatar-log",
 	"wikifeatures-log-name",
 	"blog-avatar-changed-log",
 	"blog-avatar-removed-log",
-	// Chat logs (chat removed in UCP)
-	"chat-chatban-log",
-	"chat-chatbanadd-log-entry",
-	"chat-chatbanremove-log-entry",
-	"chat-chatbanchange-log-entry",
 	// Wall logs (Thread-style walls removed in UCP)
 	"wall-recentchanges-edit",
 	"wall-recentchanges-removed-thread",

@@ -655,7 +655,7 @@ export default class RCMManager
 		this.ajaxCallbacks.push(() => {
 			pWikiData.initAbuseFilterFilters(pData.query);
 			this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
-			this._parseWiki(pData.query.recentchanges, pData.query.logevents, pWikiData);
+			this._parseWiki(pData.query.recentchanges, pWikiData);
 		});
 		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
@@ -684,7 +684,7 @@ export default class RCMManager
 	}
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
-	private _parseWiki(pData, pLogData, pWikiData:WikiData) : void {
+	private _parseWiki(pData, pWikiData:WikiData) : void {
 		// Check if wiki doesn't have any recent changes
 		if(pData.length <= 0) {
 			this._onWikiParsingFinished(pWikiData);
@@ -701,7 +701,7 @@ export default class RCMManager
 			
 			this.itemsToAddTotal++;
 			if(pRCData.logtype && pRCData.logtype != "0") { // It's a "real" log. "0" signifies a wall/board.)
-				tNewRC = new RCDataLog( pWikiData, this ).initLog(pRCData, pLogData);
+				tNewRC = new RCDataLog( pWikiData, this ).initLog(pRCData);
 			} else {
 				tNewRC = new RCData( pWikiData, this ).init(pRCData);
 			}
