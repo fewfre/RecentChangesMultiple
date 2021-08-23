@@ -144,18 +144,10 @@ export default class RCMOptions
 		}
 		
 		Utils.addTextTo(" | ", tRow2);
-		if(Global.isUcpWiki) {
-			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcfilters-group-results-by-page'), tRow2);
-		} else {
-			this.groupedChangesCheckbox = this._newCheckbox(i18n('rcshowhideenhanced', ""), tRow2);
-		}
+		this.groupedChangesCheckbox = this._newCheckbox(i18n('rcfilters-group-results-by-page'), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		if(Global.isUcpWiki) {
-			this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
-		} else {
-			this.logsCheckbox = this._newCheckbox(i18n('rcshowhidelogs', ""), tRow2);
-		}
+		this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
 		
 		/***************************
 		 * Third line of choices (discussions)
@@ -166,7 +158,7 @@ export default class RCMOptions
 		let tRow3Row = Utils.newElement("row", { className:"mw-recentchanges-table" }, tRow3);
 		
 		// Utils.addTextTo("<b>Discussions:</b> ", tRow3);
-		Utils.newElement("td", { className:"mw-label", innerHTML:i18n(Global.isUcpWiki ? "socialactivity-page-title" : "discussions")+":" }, tRow3Row);
+		Utils.newElement("td", { className:"mw-label", innerHTML:i18n("socialactivity-page-title")+":" }, tRow3Row);
 		
 		let tRow3RowTdInput = Utils.newElement("td", { className:"mw-input" }, tRow3Row);
 		this.discussionsDropdown = this._createNewMultiSelectDropdown([

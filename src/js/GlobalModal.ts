@@ -110,7 +110,7 @@ export function previewImages(pAjaxUrl:string, pImageNames:string[], pArticlePat
 	
 	Utils.logUrl("(previewImages)", tCurAjaxUrl, pImageNames);
 	
-	let tTitle = i18n(Global.isUcpWiki ? "images" : "awc-metrics-images");
+	let tTitle = i18n("images");
 	let tButtons = [];
 	
 	let tAddLoadMoreButton = () => {
@@ -169,9 +169,7 @@ function previewImages_getGalleryItem(pPage:any, pArticlePath:string, pSize:numb
 	} else if(tImage == null) {
 		tInvalidImage = {
 			thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
-			thumbText: Global.isUcpWiki
-				? i18n('redirectto')+" "+tTitle
-				: i18n('shared_help_was_redirect', tTitle) // LEGACY
+			thumbText: i18n('redirectto')+" "+tTitle
 		};
 	} else if(Utils.isFileAudio(tTitle)) {
 		tInvalidImage = {

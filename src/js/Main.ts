@@ -111,8 +111,8 @@ class Main
 			
 			'skin.oasis.recentChanges.css',
 			
-			...(Global.isUcpWiki ? ['ext.fandom.photoGallery.gallery.css'] : []),
-			...(Global.isUcpWiki ? ["mediawiki.diff.styles", "skin.oasis.diff.css"] : ['mediawiki.action.history.diff']), // AjaxDiff css
+			'ext.fandom.photoGallery.gallery.css',
+			"mediawiki.diff.styles", "skin.oasis.diff.css", // AjaxDiff css
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
@@ -243,44 +243,18 @@ class Main
 				let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
 				Utils.logUrl("", url);
 
-				return $.when(
-					// Normal
-					$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
-						success: (pData) => {
-							if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
-							$.each( (pData.query || {}).allmessages, (index, message) => {
-								if( message.missing !== '' ) {
-									i18n.MESSAGES[message.name] = message['*'];
-								} else {
-									if(legacyMessagesRemovedContent.indexOf(message.name) == -1)
-										tMissing.push([message.name, i18n.MESSAGES[message.name]]);
-								}
-							});
-						}
-					}),
-					// Manually fetch LEGACY messages, even on a UCP wiki.
-					(!Global.isUcpWiki ? null : (()=>{
-						// Whatever wiki that still uses the legacy system
-						let legacyWikiPath = "//community.fandom.com";
-						let legacyMessages = legacyMessagesRemovedContent;
-						
-						let url2 = `${legacyWikiPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${legacyMessages.join("|")}`;
-						Utils.logUrl("Legacy Messages", url2);
-				
-						return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url2,
-							success: (pData) => {
-								if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
-								$.each( (pData.query || {}).allmessages, (index, message) => {
-									if( message.missing !== '' ) {
-										i18n.MESSAGES[message.name] = message['*'];
-									} else {
-										tMissing.push([message.name, i18n.MESSAGES[message.name]]);
-									}
-								});
+				$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
+					success: (pData) => {
+						if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
+						$.each( (pData.query || {}).allmessages, (index, message) => {
+							if( message.missing !== '' ) {
+								i18n.MESSAGES[message.name] = message['*'];
+							} else {
+								tMissing.push([message.name, i18n.MESSAGES[message.name]]);
 							}
-						})
-					})()),
-				);
+						});
+					}
+				});
 			}
 
 			// Loads messages in increments of 50.
@@ -371,21 +345,10 @@ class Main
 	}
 	
 	importArticles({ type, articles }:{ type:string, articles:string[] }) : Promise<any> {
-		if(Global.isUcpWiki) {
-			return window.importArticles({
-				type: 'script',
-				articles
-			})
-		} else {
-			// On legacy wikis, importArticles doesn't have a way to know when it is finished
-			return new Promise<void>((resolve)=>{
-				$.when(...articles.map(name=>$.getScript(`/load.php?mode=articles&articles=${name}&only=scripts`))).done(function(){
-					mw.hook('dev.i18n').add(function (i18n) {
-						resolve();
-					});
-				});
-			});
-		}
+		return window.importArticles({
+			type: 'script',
+			articles
+		});
 	}
 }
 // We want Main to be an instance class.

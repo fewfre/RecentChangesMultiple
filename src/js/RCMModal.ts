@@ -43,17 +43,16 @@ export default class RCMModal
 		mw.hook('dev.modal').add(function(module) {
 			RCMModal.modalFactory = module;
 		});
-		if(Global.isUcpWiki) {
-			try {
-				// At this time the Modal.js script doesn't trigger close callback correctly, so manually calling it here
-				window.dev.modal._windowManager.on("closing", function(modal){
-					if(modal.elementId == RCMModal.MODAL_ID) {
-						RCMModal.isOpen = false;
-					}
-				});
-			}
-			catch(e){}
+		// TODO: check if still an issue
+		try {
+			// At this time the Modal.js script doesn't trigger close callback correctly, so manually calling it here
+			window.dev.modal._windowManager.on("closing", function(modal){
+				if(modal.elementId == RCMModal.MODAL_ID) {
+					RCMModal.isOpen = false;
+				}
+			});
 		}
+		catch(e){}
 	}
 	
 	private static async createModal(pData:ModalJsProp) : Promise<any> {
@@ -108,7 +107,7 @@ export default class RCMModal
 		// Update/Show modal
 		let modal = await RCMModal.createModal({
 			id: RCMModal.MODAL_ID,
-			size: Global.isUcpWiki ? 'larger' : 'content-size',
+			size: 'larger',
 			close: function(){ RCMModal.isOpen = false; return true; },
 			
 			title: pData.title,
@@ -142,12 +141,10 @@ export default class RCMModal
 		// }
 		
 		// Update window size to fit new content
-		if(Global.isUcpWiki) {
-			try {
-				window.dev.modal._windowManager.windows[RCMModal.MODAL_ID].updateSize();
-			}
-			catch(e){}
+		try {
+			window.dev.modal._windowManager.windows[RCMModal.MODAL_ID].updateSize();
 		}
+		catch(e){}
 	}
 
 	static isModalOpen() : boolean {

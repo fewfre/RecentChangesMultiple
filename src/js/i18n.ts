@@ -127,9 +127,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'rcshowhideanons'		: '$1 anonymous users', // 2051
 	// 'rcshowhidepatr'		: '$1 patrolled edits', // 2052
 	'rcshowhidemine'		: '$1 my edits', // 2053
-	'rcshowhideenhanced'	: '$1 grouped recent changes', // LEGACY
 	'rcfilters-group-results-by-page'	: 'Group results by page',
-	'rcshowhidelogs'		: '$1 logs', // LEGACY
 	'rcfilters-filter-logactions-label' : 'Logged actions',
 	'diff' : 'diff', // L2055
 	'hist' : 'hist', // L2056
@@ -171,18 +169,13 @@ const MESSAGES = i18n.MESSAGES = {
 	'group-user' : 'Users',
 	'statistics-users-active' : 'Active users',
 	'prefs-files' : 'Files',
-	'awc-metrics-articles' : 'Articles', // LEGACY
 	'articles' : 'Articles',
 	'edits' : 'Edits',
 	// Other
 	'filedelete-success' : "'''$1''' has been deleted.",
-	'shared_help_was_redirect' : 'This page is a redirect to $1', // LEGACY
 	'redirectto' : 'Redirect to:',
-	'awc-metrics-images' : 'Images', // LEGACY
 	'images' : 'Images',
-	'wikiacuratedcontent-content-empty-section' : 'This section needs some items', // LEGACY
 	'expand_templates_input_missing' : 'You need to provide at least some input wikitext.',
-	'wikia-hubs-remove': 'Remove', // LEGACY
 	'wall-message-remove': 'Remove',
 	'undeletelink': 'view/restore',
 	'admindashboard-control-analytics-label': 'Analytics',

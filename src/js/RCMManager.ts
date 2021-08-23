@@ -309,7 +309,7 @@ export default class RCMManager
 			// If the RCM has no wikis listed, there is nothing to run, and the user should be informed.
 			Utils.removeElement(this.statusNode);
 			Utils.removeElement(this.wikisNode.root);
-			this.resultsNode.innerHTML = "<div class='banner-notification error center'>"+i18n(Global.isUcpWiki ? "expand_templates_input_missing" : "wikiacuratedcontent-content-empty-section")+"</div>";
+			this.resultsNode.innerHTML = `<div class='banner-notification error center'>${i18n("expand_templates_input_missing")}</div>`;
 		}
 	}
 	
@@ -324,7 +324,7 @@ export default class RCMManager
 		// Make sure results are valid
 		if(!!pData && pData.error && pData.query == null) {
 			console.error(pData , pData.error , pData.query == null);
-			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
+			this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${pWikiData.servername}</div>${JSON.stringify(pData.error)}</div>`;
 			throw "Wiki returned error";
 		}
 		else if(pFailStatus == "timeout") {
@@ -384,7 +384,7 @@ export default class RCMManager
 			this._onWikiDataParsingFinished(null);
 		};
 		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n(Global.isUcpWiki ? "wall-message-remove" : "wikia-hubs-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("wall-message-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	

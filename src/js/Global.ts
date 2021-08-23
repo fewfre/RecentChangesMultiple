@@ -26,7 +26,6 @@ export default class Global
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
 	static readonly debug					: boolean = Global.config.debug || mw.util.getParamValue("useuserjs")=="0" || mw.util.getParamValue("safemode")=="1";
-	static isUcpWiki						: boolean = false;
 	
 	static AUTO_REFRESH_LOCAL_STORAGE_ID	: string = "RecentChangesMultiple-autorefresh-" + Global.config.wgPageName;
 	static OPTIONS_SETTINGS_LOCAL_STORAGE_ID: string = "RecentChangesMultiple-saveoptionscookie-" + Global.config.wgPageName;
@@ -53,7 +52,6 @@ export default class Global
 			"date", // Date format
 			"gender", // System messages
 		])
-		Global.isUcpWiki = Global.config.wgVersion !== '1.19.24';
 		// For Testing CSS
 		// mw.util.addCSS(`
 		// `);

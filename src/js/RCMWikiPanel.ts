@@ -148,7 +148,7 @@ export default class RCMWikiPanel
 		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
 			this.closeInfo();
 		} else {
-			const tLink=(page:string, key:I18nKey)=>"<a href='"+pWikiInfo.articlepath+page+"'>"+i18n(key)+"</a>";
+			const tLink=(page:string, key:I18nKey)=>`<a href='${pWikiInfo.getUrl(page)}'>${i18n(key)}</a>`;
 			const tLinkNum=(page:string, key:I18nKey, num:string|number)=>tLink(page, key)+`: <b>${num}</b>`;
 			
 			///////////////////////////////
@@ -183,7 +183,7 @@ export default class RCMWikiPanel
 			let statsHTML = ""
 			+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
 			+ "<tr>"
-				+ `<td>${tLinkNum("Special:AllPages", (Global.isUcpWiki ? "articles" : "awc-metrics-articles"), pWikiInfo.statistics.articles)}</td>`
+				+ `<td>${tLinkNum("Special:AllPages", "articles", pWikiInfo.statistics.articles)}</td>`
 				+ `<td>${tLinkNum("Special:ListFiles", "prefs-files", pWikiInfo.statistics.images)}</td>`
 				+ `<td>${tLinkNum("Special:ListUsers", "statistics-users-active", pWikiInfo.statistics.activeusers)}</td>`
 				+ `<td>${tLinkNum("Special:ListAdmins", "group-sysop", pWikiInfo.statistics.admins)}</td>`
