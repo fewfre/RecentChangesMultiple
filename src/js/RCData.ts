@@ -167,11 +167,21 @@ export default class RCData
 	
 	shouldBeRemoved(pDate:Date) : boolean {
 		// First remove items past "days" (needs to be done first since it can change number allowed by "limit").
-		// Then start checking if enough items are listed for the wiki to go past it's "limit".
-		return this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400) // days*24*60*60 = days->seconds
-			|| this.type != TYPE.DISCUSSION && this.wikiInfo.resultsCount > this.wikiInfo.rcParams.limit
-			|| this.type == TYPE.DISCUSSION && this.wikiInfo.discussionsCount > Math.min(this.wikiInfo.rcParams.limit, 50)
-			;
-		// return this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400); // days*24*60*60 = days->seconds
+		if(this.date.getSeconds() < pDate.getSeconds()-(this.wikiInfo.rcParams.days * 86400)) { // days*24*60*60 = days->seconds)
+			return true;
+		}
+		// Next start checking if enough items are listed for the wiki to go past it's "limit".
+		// We have different things to check because some things use different api calls (normal RCs, discussions, and abuse logs)
+		switch(this.getRemovalType()) {
+			case "normal": return this.wikiInfo.resultsCount > this.wikiInfo.rcParams.limit;
+			case "discussion": return this.wikiInfo.discussionsCount > Math.min(this.wikiInfo.rcParams.limit, 50);
+			case "abuselog": return this.wikiInfo.abuseLogCount > this.wikiInfo.rcParams.limit;
+		}
+	}
+	
+	getRemovalType() {
+		if(this.type == TYPE.DISCUSSION) { return "discussion"; }
+		else if(this.type == TYPE.LOG && this.logtype=="abuse") { return "abuselog"; }
+		else { return "normal"; }
 	}
 }

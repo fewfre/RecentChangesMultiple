@@ -18,6 +18,7 @@ interface DiffTableInfoProp {
 	hrefFS: string;
 	newRev: { user:string, summary:string, date:Date, minor:boolean }
 }
+// Note: don't pass the RCData object directly, as it may have been deleted between the time this is called and content is loaded
 export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:DiffTableInfoProp) : void {
 	Utils.logUrl("(previewDiff)", pAjaxUrl); mw.log(pDiffLink); mw.log(pUndoLink);
 	
@@ -51,55 +52,56 @@ export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:str
 			let tRevDate = new Date(tRevision.timestamp);
 			let tNewRevDate = pDiffTableInfo.newRev.date;
 			// TODO: Find out if new revision is most recent, and have timestamp message show the "most recent revision" message. Also make edit button not have "oldid" in the url.
-			var tModalContent = ''
-			+"<div id='rcm-diff-view'>"
-			+"<table class='diff'>"
-				+"<colgroup>"
-					+"<col class='diff-marker'>"
-					+"<col class='diff-content'>"
-					+"<col class='diff-marker'>"
-					+"<col class='diff-content'>"
-				+"</colgroup>"
-				+"<tbody>"
-					+"<tr class='diff-header' valign='top'>"
-						+"<td class='diff-otitle' colspan='2'>"
-							+"<div class='mw-diff-otitle1'>"
-								+"<strong>"
-									+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>"
-										+i18n('revisionasof', RCData.getFullTimeStamp(tRevDate), Utils.formatWikiTimeStampDateOnly(tRevDate), Utils.formatWikiTimeStampTimeOnly(tRevDate))
-									+"</a>"
-									+" <span class='mw-rev-head-action'>"
-										+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`
-									+"</span>"
-								+"</strong>"
-							+"</div>"
-							+"<div class='mw-diff-otitle2'>"+RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>"
-							+"<div class='mw-diff-otitle3'>"+tOMinor+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>"
-							// +"<div class='mw-diff-otitle4'></div>"
-						+"</td>"
-						+"<td class='diff-ntitle' colspan='2'>"
-							+"<div class='mw-diff-ntitle1'>"
-								+"<strong>"
-									+"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>"
-										+i18n('revisionasof', RCData.getFullTimeStamp(tNewRevDate), Utils.formatWikiTimeStampDateOnly(tNewRevDate), Utils.formatWikiTimeStampTimeOnly(tNewRevDate))
-									+"</a>"
-									+" <span class='mw-rev-head-action'>"
-										+`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`
-									+"</span>"
-									+"<span class='mw-rev-head-action'>"
-										+`(<a href="${pDiffTableInfo.hrefFS}action=edit&undoafter=${tRevision.diff.to}&undo=${tRevision.diff.to}" data-action="undo">${i18n('editundo')}</a>)`
-									+"</span>"
-								+"</strong>"
-							+"</div>"
-							+"<div class='mw-diff-ntitle2'>"+pDiffTableInfo.newRev.user+"</div>"
-							+"<div class='mw-diff-ntitle3'>"+tNMinor+pDiffTableInfo.newRev.summary+"</div>"
-							// +"<div class='mw-diff-ntitle4'></div>"
-						+"</td>"
-					+"</tr>"
-					+tRevision.diff["*"]
-				+"</tbody>"
-			+"</table>";
-			+"</div>";
+			var tModalContent = [
+			"<div id='rcm-diff-view'>",
+			"<table class='diff'>",
+				"<colgroup>",
+					"<col class='diff-marker'>",
+					"<col class='diff-content'>",
+					"<col class='diff-marker'>",
+					"<col class='diff-content'>",
+				"</colgroup>",
+				"<tbody>",
+					"<tr class='diff-header' valign='top'>",
+						"<td class='diff-otitle' colspan='2'>",
+							"<div class='mw-diff-otitle1'>",
+								"<strong>",
+									"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>",
+										i18n('revisionasof', RCData.getFullTimeStamp(tRevDate), Utils.formatWikiTimeStampDateOnly(tRevDate), Utils.formatWikiTimeStampTimeOnly(tRevDate)),
+									"</a>",
+									" <span class='mw-rev-head-action'>",
+										`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`,
+									"</span>",
+								"</strong>",
+							"</div>",
+							"<div class='mw-diff-otitle2'>"+RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>",
+							"<div class='mw-diff-otitle3'>"+tOMinor+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>",
+							// +"<div class='mw-diff-otitle4'></div>",
+						"</td>",
+						"<td class='diff-ntitle' colspan='2'>",
+							"<div class='mw-diff-ntitle1'>",
+								"<strong>",
+									"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>",
+										i18n('revisionasof', RCData.getFullTimeStamp(tNewRevDate), Utils.formatWikiTimeStampDateOnly(tNewRevDate), Utils.formatWikiTimeStampTimeOnly(tNewRevDate)),
+									"</a>",
+									" <span class='mw-rev-head-action'>",
+										`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`,
+									"</span>",
+									"<span class='mw-rev-head-action'>",
+										`(<a href="${pDiffTableInfo.hrefFS}action=edit&undoafter=${tRevision.diff.to}&undo=${tRevision.diff.to}" data-action="undo">${i18n('editundo')}</a>)`,
+									"</span>",
+								"</strong>",
+							"</div>",
+							"<div class='mw-diff-ntitle2'>"+pDiffTableInfo.newRev.user+"</div>",
+							"<div class='mw-diff-ntitle3'>"+tNMinor+pDiffTableInfo.newRev.summary+"</div>",
+							// "<div class='mw-diff-ntitle4'></div>",
+						"</td>",
+					"</tr>",
+					tRevision.diff["*"],
+				"</tbody>",
+			"</table>",
+			"</div>",
+			].join("");
 			// RCMModal.showModal({ title:tTitle, content:tModalContent, rcm_buttons:tButtons });
 			RCMModal.setModalContent(tModalContent);
 		});

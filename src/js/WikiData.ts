@@ -94,7 +94,7 @@ export default class WikiData
 	// /***************************
 	// * AbuseFilter
 	// ****************************/
-	isAbuseLogEnabled		: boolean;
+	wikiUsesAbuseLogs		: boolean;
 	abuseFilterFilters		: { [id: number]: { description:string, private:boolean } };
 	needsAbuseFilterFilters	: boolean;
 	
@@ -108,8 +108,10 @@ export default class WikiData
 	****************************/
 	lastChangeDate			: Date;
 	lastDiscussionDate		: Date;
+	lastAbuseLogDate		: Date;
 	resultsCount			: number;
 	discussionsCount		: number;
+	abuseLogCount			: number;
 	
 	// Constructor
 	constructor(pManager:RCMManager) {
@@ -133,7 +135,7 @@ export default class WikiData
 		this.discCommentPageNames	= new Map();
 		this.discCommentPageNamesNeeded = [];
 		
-		this.isAbuseLogEnabled = false; // assume it's off until we check
+		this.wikiUsesAbuseLogs = false; // assume it's off until we check
 		this.abuseFilterFilters		= {};
 		this.needsAbuseFilterFilters = false;
 		
@@ -142,8 +144,10 @@ export default class WikiData
 		// Initial values set in setupRcParams() due to needing "days" value.
 		this.lastChangeDate			= null;
 		this.lastDiscussionDate		= null;
+		this.lastAbuseLogDate		= null;
 		this.resultsCount			= 0;
 		this.discussionsCount		= 0;
+		this.abuseLogCount			= 0;
 	}
 	
 	dispose() : void {
@@ -159,6 +163,7 @@ export default class WikiData
 		
 		this.lastChangeDate = null;
 		this.lastDiscussionDate = null;
+		this.lastAbuseLogDate = null;
 	}
 	// misc todo - fix discussions not using lang code - only when scriptdir used?
 	
@@ -350,10 +355,10 @@ export default class WikiData
 			abusefilter_log_detail:		rightsList.indexOf("abusefilter-log-detail") > -1,
 		};
 		
+		// Check if wiki has any abusefilter rights; if so, it's probably enabled (and accessable)
+		this.wikiUsesAbuseLogs = this.user.rights.abusefilter_log;//!!Utils.arrayFind(rightsList, r=>r.indexOf("abusefilter") > -1);
 		if(this.manager.abuseLogsAllowed) {
-			// Check if wiki has any abusefilter rights; if so, it's probably enabled (and accessable)
-			this.isAbuseLogEnabled = this.user.rights.abusefilter_log;//!!Utils.arrayFind(rightsList, r=>r.indexOf("abusefilter") > -1);
-			this.needsAbuseFilterFilters = this.isAbuseLogEnabled;
+			this.needsAbuseFilterFilters = this.wikiUsesAbuseLogs;
 		}
 	}
 	
@@ -387,10 +392,14 @@ export default class WikiData
 			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
 		// }
 		
-		if(!this.lastChangeDate) {
+		// For some reason I added this `if`, but idr why; setupRcParams() is only called one place, and every
+		// time it's called we'd want to refresh the end times (like encase days dropdown is changed).. I think?
+		// If there IS a reason this was was added, leave a message when you enable it! You lazy idiot (aka me)
+		// if(!this.lastChangeDate) {
 			this.lastChangeDate = this.getEndDate();
 			this.lastDiscussionDate = this.getEndDate();
-		}
+			this.lastAbuseLogDate = this.getEndDate();
+		// }
 	}
 	
 	// Get the string for use with Special:RecentChanges link for this wiki.
@@ -490,6 +499,15 @@ export default class WikiData
 		this.lastChangeDate.setSeconds(this.lastChangeDate.getSeconds()+1);
 		this.lastChangeDate.setMilliseconds(1);
 		//this.lastChangeDate.setMilliseconds(this.lastChangeDate.getMilliseconds()+1001);
+	}
+	
+	updateLastAbuseLogDate(pData:any) : void {
+		if(new Date(pData.timestamp) < this.lastAbuseLogDate) { return; }
+		this.lastAbuseLogDate = new Date(pData.timestamp);
+		// Add 1 millisecond to avoid getting this change again.
+		this.lastAbuseLogDate.setSeconds(this.lastAbuseLogDate.getSeconds()+1);
+		this.lastAbuseLogDate.setMilliseconds(1);
+		//this.lastAbuseLogDate.setMilliseconds(this.lastAbuseLogDate.getMilliseconds()+1001);
 	}
 	
 	updateLastDiscussionDate(pData:any) : void {
@@ -606,15 +624,15 @@ export default class WikiData
 		tRcType = null;
 		
 		// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
-		var tUser = null;
+		let tUserToHide = null;
 		if(this.rcParams.hidemyself && this.username) {
-			tUser = this.username;
+			tUserToHide = this.username;
 		} else if(this.manager.hideusers.length > 0) {
-			tUser = this.manager.hideusers[0];
+			tUserToHide = this.manager.hideusers[0];
 		} else if(this.hideusers) {
-			tUser = this.hideusers[0];
+			tUserToHide = this.hideusers[0];
 		}
-		if(tUser != null) { params["rcexcludeuser"] = tUser; }
+		if(tUserToHide != null) { params["rcexcludeuser"] = tUserToHide; }
 		
 		if(this.rcParams.namespace || this.rcParams.namespace === "0") {
 			params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
@@ -639,7 +657,7 @@ export default class WikiData
 		* Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
 		* Each wiki has it's own list of abuse filters
 		***************************/
-		if(this.isAbuseLogEnabled && this.manager.abuseLogsAllowed && this.rcParams.hidelogs == false && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
+		if(this.wikiUsesAbuseLogs && this.manager.abuseLogsAllowed && this.rcParams.hidelogs == false && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
 			// Grab filters just once (so we have them on-hand)
 			if(this.needsAbuseFilterFilters) {
 				tUrlList.push("abusefilters");
@@ -649,7 +667,7 @@ export default class WikiData
 			}
 			tUrlList.push("abuselog");
 			params["afllimit"] = this.rcParams.limit;
-			params["aflend"] = tEndDate.toISOString();
+			params["aflend"] = this.lastAbuseLogDate.toISOString();
 			params["aflprop"] = "ids|filter|user|title|action|result|timestamp|hidden|revid";//|details - sadly can't ever use details, since `abusefilter-log-detail` right will always be false due to not being logged in
 		}
 		

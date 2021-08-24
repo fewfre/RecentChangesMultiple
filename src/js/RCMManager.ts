@@ -162,7 +162,7 @@ export default class RCMManager
 			this.discNamespaces.ARTICLE_COMMENT = dns.indexOf("ARTICLE_COMMENT") != -1;
 		}
 		
-		this.abuseLogsAllowed = true;
+		this.abuseLogsAllowed = false;
 		
 		// List of users to hide across whole RCMManager
 		this.hideusers = []; // {array}
@@ -494,7 +494,7 @@ export default class RCMManager
 			// Skip if goes past the RC "changes in last _ days" value.
 			if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
 			
-			
+			// Skip if discussion type is one user doesn't want
 			try {
 				const containerType = pRCData._embedded.thread[0].containerType;
 				if(!this.discNamespaces[ containerType ]) { return; }
@@ -591,8 +591,10 @@ export default class RCMManager
 		this.chosenWikis.forEach((tWikiData:WikiData) => {
 			tWikiData.lastChangeDate = tWikiData.getEndDate();
 			tWikiData.lastDiscussionDate = tWikiData.getEndDate();
+			tWikiData.lastAbuseLogDate = tWikiData.getEndDate();
 			tWikiData.resultsCount = 0;
 			tWikiData.discussionsCount = 0;
+			tWikiData.abuseLogCount = 0;
 		});
 		
 		// if(this.rcData != null) {
@@ -727,14 +729,14 @@ export default class RCMManager
 			return;
 		}
 		
-		pWikiData.updateLastChangeDate(Utils.getFirstItemFromObject(pLogs));
+		pWikiData.updateLastAbuseLogDate(Utils.getFirstItemFromObject(pLogs));
 		// Add each entry from the wiki to the list in a sorted order
 		pLogs.forEach((pLogData) => {
 			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
 			this._addRCDataToList( new RCDataLog( pWikiData, this ).initLog(RCDataLog.abuseLogDataToNormalLogFormat(pLogData)) );
-			pWikiData.resultsCount++;
+			pWikiData.abuseLogCount++;
 		});
 	}
 	
@@ -941,10 +943,10 @@ export default class RCMManager
 			if((tWikiI = tWikisToCheck.indexOf(tRcCombo.data.wikiInfo)) == -1) { continue; }
 			// First remove items past "days" (needs to be done first since it can change number allowed by "limit")
 			if(tRcCombo.data.shouldBeRemoved(pDate)) {
-				if(tRcCombo.data.type != RC_TYPE.DISCUSSION) {
-					tRcCombo.data.wikiInfo.resultsCount--;
-				} else {
-					tRcCombo.data.wikiInfo.discussionsCount--;
+				switch(tRcCombo.data.getRemovalType()) {
+					case "normal": tRcCombo.data.wikiInfo.resultsCount--; break;
+					case "discussion": tRcCombo.data.wikiInfo.discussionsCount--; break;
+					case "abuselog": tRcCombo.data.wikiInfo.abuseLogCount--; break;
 				}
 				// if(this.rcData[i].data != tRcCombo.list.list[tRcCombo.list.list.length-1]) {
 				// 	mw.log("MISMATCH:", tRcCombo.list.list.indexOf(tRcCombo.data), tRcCombo.list.list.length-1, this.rcData[i].data.wikiInfo, this.rcData[i] , tRcCombo.list.list[tRcCombo.list.list.length-1], tRcCombo.list.list);
@@ -956,7 +958,10 @@ export default class RCMManager
 				// Mark changed lists as dirty. Edit / remove them after encase multiple datas were removed.
 				if(this.rcParams.hideenhanced || tDirtyLists.indexOf(tRcCombo.list) == -1) { tDirtyLists.push(tRcCombo.list); }
 				tRcCombo.data == null; tRcCombo.list = null;
-			} else if(tRcCombo.data.wikiInfo.resultsCount <= tRcCombo.data.wikiInfo.rcParams.limit && tRcCombo.data.wikiInfo.discussionsCount <= Math.min(tRcCombo.data.wikiInfo.rcParams.limit, 50)) {
+			} else if(tRcCombo.data.wikiInfo.resultsCount <= tRcCombo.data.wikiInfo.rcParams.limit
+				&& tRcCombo.data.wikiInfo.discussionsCount <= Math.min(tRcCombo.data.wikiInfo.rcParams.limit, 50)
+				&& tRcCombo.data.wikiInfo.abuseLogCount <= tRcCombo.data.wikiInfo.rcParams.limit
+				) {
 				// Stop checking a specific wiki, and if all have been checked exit (for efficency when dealing with high numbers of results).
 				tWikisToCheck.splice(tWikiI, 1);
 				if(tWikisToCheck.length == 0) { break; }
@@ -1012,6 +1017,7 @@ export default class RCMManager
 		// 			// TODO: Discussions
 		// 			break;
 		// 		}
+		// TODO: abuseLogCount--;
 		// 	} while(tRCList.list.length > 0 && tRCList.oldest.shouldBeRemoved(pDate));
 		// 	if(tDirty) {
 		// 		if(tRCList.list.length <= 0) {

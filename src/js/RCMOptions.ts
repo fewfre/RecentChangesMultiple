@@ -40,6 +40,7 @@ export default class RCMOptions
 	myEditsCheckbox				: HTMLInputElement;
 	groupedChangesCheckbox		: HTMLInputElement;
 	logsCheckbox				: HTMLInputElement;
+	abuseLogsCheckbox			: HTMLInputElement;
 	
 	discussionsDropdown			: WikiaMultiSelectDropdown;
 	
@@ -71,6 +72,7 @@ export default class RCMOptions
 		this.myEditsCheckbox			= null;
 		this.groupedChangesCheckbox		= null;
 		this.logsCheckbox				= null;
+		this.abuseLogsCheckbox			= null;
 	}
 	
 	init(pElem:HTMLElement|Element) : RCMOptions {
@@ -86,6 +88,8 @@ export default class RCMOptions
 		this.discNamespaces = $.extend({ FORUM:dns.FORUM, WALL:dns.WALL, ARTICLE_COMMENT:dns.ARTICLE_COMMENT }, (tSave.discNamespaces || {}));
 		this.manager.discNamespaces = { ...this.discNamespaces };
 		this.manager.discussionsEnabled = Object.keys(this.discNamespaces).filter(key=>this.discNamespaces[key]).length > 0;
+		
+		this.manager.abuseLogsAllowed = tSave.abuseLogsAllowed ?? this.manager.abuseLogsAllowed;
 		
 		this._addElements();
 		
@@ -148,6 +152,9 @@ export default class RCMOptions
 		
 		Utils.addTextTo(" | ", tRow2);
 		this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
+		
+		Utils.addTextTo(" | ", tRow2);
+		this.abuseLogsCheckbox = this._newCheckbox(i18n('abuselog'), tRow2);
 		
 		/***************************
 		 * Third line of choices (discussions)
@@ -257,6 +264,7 @@ export default class RCMOptions
 		this.myEditsCheckbox.checked = !this.manager.rcParams.hidemyself;
 		this.groupedChangesCheckbox.checked = !this.manager.rcParams.hideenhanced;
 		this.logsCheckbox.checked = !this.manager.rcParams.hidelogs;
+		this.abuseLogsCheckbox.checked = this.manager.abuseLogsAllowed;
 		
 		Object.keys(this.discNamespaces).forEach((ns)=>{
 			this.discussionsDropdown.$dropdown.find(`[value=${ns}]`).attr("checked", this.discNamespaces[ns]);
@@ -276,6 +284,7 @@ export default class RCMOptions
 		this.myEditsCheckbox.addEventListener("change", this._onChange_hidemyself);
 		this.groupedChangesCheckbox.addEventListener("change", this._onChange_hideenhanced);
 		this.logsCheckbox.addEventListener("change", this._onChange_hidelogs);
+		this.abuseLogsCheckbox.addEventListener("change", this._onChange_abuselogs);
 		
 		this.discussionsDropdown.on("change", this._onChange_discussionsDropdown);
 		this.discussionsDropdown.$selectAll.on("change", this._onChange_discussionsDropdown);
@@ -294,59 +303,71 @@ export default class RCMOptions
 		this.myEditsCheckbox.removeEventListener("change", this._onChange_hidemyself);
 		this.groupedChangesCheckbox.removeEventListener("change", this._onChange_hideenhanced);
 		this.logsCheckbox.removeEventListener("change", this._onChange_hidelogs);
+		this.abuseLogsCheckbox.removeEventListener("change", this._onChange_abuselogs);
 	}
 	
 	/***************************
 	 * Events
 	 ***************************/
+	private getInput(pEvent:Event) { return pEvent.target as HTMLInputElement; }
+	
 	private _onChange_limit = (pEvent:Event) : void => {
-		this.afterChangeNumber("limit", parseInt((<HTMLInputElement>pEvent.target).value));
+		this.afterChangeNumber("limit", parseInt(this.getInput(pEvent).value));
 	}
 	
 	private _onChange_days = (pEvent:Event) : void => {
-		this.afterChangeNumber("days", parseInt((<HTMLInputElement>pEvent.target).value));
+		this.afterChangeNumber("days", parseInt(this.getInput(pEvent).value));
 	}
 	
 	private _onChange_hideminor = (pEvent:Event) : void => {
-		this.afterChangeBoolean("hideminor", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hideminor", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hidebots = (pEvent:Event) : void => {
-		this.afterChangeBoolean("hidebots", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hidebots", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hideanons = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
-		if((<HTMLInputElement>pEvent.target).checked == false && this.usersCheckbox.checked == false) {
+		if(this.getInput(pEvent).checked == false && this.usersCheckbox.checked == false) {
 			this.manager.rcParams["hideliu"] = false;
 			this.usersCheckbox.checked = true;
 		}
-		this.afterChangeBoolean("hideanons", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hideanons", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hideliu = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
-		if((<HTMLInputElement>pEvent.target).checked == false && this.anonsCheckbox.checked == false) {
+		if(this.getInput(pEvent).checked == false && this.anonsCheckbox.checked == false) {
 			this.manager.rcParams["hideanons"] = false;
 			this.anonsCheckbox.checked = true;
 		}
-		this.afterChangeBoolean("hideliu", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hideliu", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hidemyself = (pEvent:Event) : void => {
-		this.afterChangeBoolean("hidemyself", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hidemyself", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hideenhanced = (pEvent:Event) : void => {
-		this.afterChangeBoolean("hideenhanced", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hideenhanced", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_hidelogs = (pEvent:Event) : void => {
-		this.afterChangeBoolean("hidelogs", !(<HTMLInputElement>pEvent.target).checked);
+		this.afterChangeBoolean("hidelogs", !this.getInput(pEvent).checked);
+	}
+	
+	private _onChange_abuselogs = (pEvent:Event) : void => {
+		this.manager.abuseLogsAllowed = this.getInput(pEvent).checked;
+		if(this.manager.abuseLogsAllowed) {
+			this.manager.chosenWikis.forEach(w=>w.needsAbuseFilterFilters=true);
+		}
+		this.manager.hardRefresh(true);
+		this.save();
 	}
 	
 	private _onChange_settingsSaveCookie = (pEvent:Event) : void => {
-		if((<HTMLInputElement>pEvent.target).checked) {
+		if(this.getInput(pEvent).checked) {
 			this.save();
 		} else {
 			localStorage.removeItem(this.localStorageID);
@@ -388,7 +409,8 @@ export default class RCMOptions
 	save() : void {
 		if(this.settingsSaveCookieCheckbox.checked) {
 			const { rcParams:options, discNamespaces } = this;
-			localStorage.setItem(this.localStorageID, JSON.stringify({ options, discNamespaces }));
+			const abuseLogsAllowed = this.manager.abuseLogsAllowed;
+			localStorage.setItem(this.localStorageID, JSON.stringify({ options, discNamespaces, abuseLogsAllowed }));
 		}
 	}
 	

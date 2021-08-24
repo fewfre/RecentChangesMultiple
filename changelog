@@ -5,9 +5,11 @@
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-collapsed-ltr.png
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-expanded.png
 - added support for some logs: contentmodel, abusefilter, and Special:AbuseLog
-	- cleaned up code + updated some old translations to newer versions 
+	- cleaned up code + updated some old translations to newer versions
+	- added a toggle for abuse filters to wiki settings
 - removed old pre-UCP code
 - updated TypeScript version
+- removed old comment/wall/forum logic
 
 
 == 2.15i - 28 July 2021 ==
