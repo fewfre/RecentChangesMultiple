@@ -11,6 +11,7 @@
 - updated TypeScript version
 - removed old comment/wall/forum logic
 - fixed a bug where if you changed number of days, the result would always require a second hard refresh to actually show correct data
+- moved "group results by page" on same row as "show last" and "days" (to better reflect where it appears in updated RecentChanges page)
 
 
 == 2.15i - 28 July 2021 ==

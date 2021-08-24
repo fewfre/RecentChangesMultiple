@@ -123,6 +123,9 @@ export default class RCMOptions
 		this.daysField = Utils.newElement("select", {}, tRow1);
 		Utils.addTextTo(tRow1Text[2]||"", tRow1);
 		
+		Utils.addTextTo(" | ", tRow1);
+		this.groupedChangesCheckbox = this._newCheckbox(i18n('rcfilters-group-results-by-page'), tRow1);
+		
 		/***************************
 		 * Second line of choices (checkboxes)
 		 ***************************/
@@ -146,9 +149,6 @@ export default class RCMOptions
 			this.myEditsCheckbox.checked = false;
 			this.myEditsCheckbox.title = i18n('optionspanel-hideusersoverride');
 		}
-		
-		Utils.addTextTo(" | ", tRow2);
-		this.groupedChangesCheckbox = this._newCheckbox(i18n('rcfilters-group-results-by-page'), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
