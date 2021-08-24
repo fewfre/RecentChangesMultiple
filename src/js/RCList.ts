@@ -104,20 +104,30 @@ export default class RCList
 	
 	// Returns a url that compares the edits of two RCs (can be the same one twice, since a RC has info on the current and previous edit).
 	// If "pToRC" is null, it will link to newest edit.
-	getLink(pRC:RCData, pDiff:string|number, pOldId:string|number) : string {
-		return pRC.hrefFS + "curid=" + pRC.pageid + (pDiff||pDiff==0 ? "&diff="+pDiff : "") + (pOldId ? "&oldid="+pOldId : "");
+	getRcUrl(pRC:RCData, pDiff:string|number, pOldId:string|number) : string {
+		return this.wikiInfo.getUrl(pRC.hrefTitle, {
+			curid:	pRC.pageid,
+			...(pDiff||pDiff==0 ? { diff:pDiff } : {}),
+			...(pOldId ? { oldid:pOldId } : {}),
+		});
+		// return pRC.hrefFS + "curid=" + pRC.pageid + (pDiff||pDiff==0 ? "&diff="+pDiff : "") + (pOldId ? "&oldid="+pOldId : "");
 	}
 	
 	// Returns a url that compares the edits of two RCs (can be the same one twice, since a RC has info on the current and previous edit).
 	// If "pToRC" is null, it will link to newest edit.
-	getDiffLink(pFromRC:RCData, pToRC:RCData) : string {
-		return `${pFromRC.hrefFS}curid=${pFromRC.pageid}&diff=${pToRC ? pToRC.revid : 0}&oldid=${pFromRC.old_revid}`;
+	getRcDiffUrl(pFromRC:RCData, pToRC?:RCData|null) : string {
+		return this.wikiInfo.getUrl(pFromRC.hrefTitle, {
+			curid	: pFromRC.pageid,
+			diff	: pToRC?.revid || 0,
+			oldid	: pFromRC.old_revid,
+		});
+		// return `${pFromRC.hrefFS}curid=${pFromRC.pageid}&diff=${pToRC ? pToRC.revid : 0}&oldid=${pFromRC.old_revid}`;
 	}
 	
 	private _diffHist(pRC:RCData) : string {
 		var diffLink = i18n('diff');
 		if(pRC.isNewPage == false) {
-			diffLink = "<a class='rc-diff-link' href='"+this.getDiffLink(pRC, pRC)+"'>"+diffLink+"</a>"+this.getAjaxDiffButton();
+			diffLink = `<a class='rc-diff-link' href='${this.getRcDiffUrl(pRC, pRC)}'>${diffLink}</a>`+this.getAjaxDiffButton();
 		}
 		if(this.type == RC_TYPE.NORMAL && pRC.namespace == 6) {
 			diffLink += this.getAjaxImageButton();
@@ -166,7 +176,7 @@ export default class RCList
 	private _changesText() : string {
 		var returnText = i18n("nchanges", this.list.length);
 		if(this.type == RC_TYPE.NORMAL && this.oldest.isNewPage == false) {
-			returnText = "<a class='rc-changes-link' href='"+this.getDiffLink(this.oldest, this.newest)+"'>"+returnText+"</a>"+this.getAjaxDiffButton();
+			returnText = `<a class='rc-changes-link' href='${this.getRcDiffUrl(this.oldest, this.newest)}'>${returnText}</a>`+this.getAjaxDiffButton();
 		}
 		if(this.type == RC_TYPE.NORMAL && this.newest.namespace == 6) {
 			returnText += this.getAjaxImageButton();
@@ -184,7 +194,7 @@ export default class RCList
 	
 	getExistingThreadTitle() : string {
 		let tTitle = null;
-		this.list.some((rc:RCData) => {
+		this.list.some((rc:RCDataFandomDiscussion) => {
 			if(rc.threadTitle) {
 				tTitle = rc.threadTitle;
 				return true;
@@ -308,10 +318,6 @@ export default class RCList
 			let ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=parse&format=json&pageid=${pRC.pageid}&prop=text|headhtml&disabletoc=true`;
 			var pageName = pRC.title;
 			let pageHref = pRC.href;
-			if(pRC.type == RC_TYPE.WALL || pRC.type == RC_TYPE.BOARD || pRC.type == RC_TYPE.COMMENT) {
-				// TODO: This isn't -exactly- true, but it gives better results than just linking to the href (as of writing this).
-				pageHref = this.wikiInfo.articlepath + "Thread:" + pRC.pageid
-			}
 			let serverLink = this.wikiInfo.server;
 			
 			this._addAjaxClickListener(pElem, () => { previewPage(ajaxLink, pageName, pageHref, serverLink); });
@@ -402,24 +408,6 @@ export default class RCList
 				html += tRC.logActionText();
 				break;
 			}
-			case RC_TYPE.WALL:
-			case RC_TYPE.BOARD: {
-				if(pRC.isWallBoardAction) {
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
-				} else {
-					html += pRC.wallBoardTitleText( this.getThreadTitle() );
-					html += this.getAjaxPagePreviewButton();
-					html += " "+this._diffHist(pRC);
-					html += RCList.SEP;
-					html += this._diffSizeText(pRC);
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.getSummary();
-				}
-				break;
-			}
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += tRC.getThreadStatusIcons();
@@ -429,7 +417,6 @@ export default class RCList
 				html += tRC.getSummary();
 				break;
 			}
-			case RC_TYPE.COMMENT:
 			case RC_TYPE.NORMAL:
 			default: {
 				html += pRC.pageTitleTextLink();
@@ -504,30 +491,9 @@ export default class RCList
 				html += this._diffSizeText(this.newest, this.oldest);
 				break;
 			}
-			case RC_TYPE.WALL: {
-				html += this.newest.wallBoardTitleText( this.getThreadTitle() );
-				html += " ("+this._changesText()+")";
-				break;
-			}
-			case RC_TYPE.BOARD: {
-				html += this.newest.wallBoardTitleText( this.getThreadTitle() );
-				html += " ("+this._changesText()+")";
-				break;
-			}
 			case RC_TYPE.DISCUSSION: {
 				html += (<RCDataFandomDiscussion>this.newest).discussionTitleText( this.getThreadTitle(), true );
 				html += " ("+this._changesText()+")";
-				break;
-			}
-			case RC_TYPE.COMMENT: {
-				// Link to comments sections on main page. If in main namespace, add the namespace to the page (if requested, custom namespaces can have comments)
-				let tNameSpaceText = this.newest.namespace==1 ? "" : this.wikiInfo.namespaces[String(this.newest.namespace-1)]["*"]+":";
-				let tCommentUrl = this.wikiInfo.articlepath + Utils.escapeCharactersLink(tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments");
-				// html += i18n.wiki2html( i18n.MESSAGES["article-comments-rc-comments"].replace("$1", "$3|$1"), tNameSpaceText+this.newest.titleNoNS, undefined, this.wikiInfo.articlepath + tNameSpaceText + this.newest.titleNoNS+"#WikiaArticleComments" );
-				html += i18n("rc-comments", `[${tCommentUrl} ${tNameSpaceText+this.newest.titleNoNS}]`);
-				html += " ("+this._changesText()+")";
-				// html += SEP
-				// html += this._diffSizeText(this.newest, this.oldest);
 				break;
 			}
 		}
@@ -582,29 +548,6 @@ export default class RCList
 				html += tRC.logActionText();
 				break;
 			}
-			case RC_TYPE.WALL:
-			case RC_TYPE.BOARD: {
-				if(pRC.isWallBoardAction) {
-					html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>"
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
-				} else {
-					html += "<span class='mw-enhanced-rc-time'><a href='"+pRC.href+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>";
-					html += " (<a href='"+pRC.href+"'>"+i18n("cur")+"</a>";
-					html += this.getAjaxPagePreviewButton();
-					if(pRC.isNewPage == false) {
-						html += i18n("pipe-separator")+"<a href='"+this.getDiffLink(pRC, pRC)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
-					}
-					html += ")";
-					html += RCList.SEP;
-					html += this._diffSizeText(pRC);
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.getSummary();
-				}
-				break;
-			}
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += "<span class='mw-enhanced-rc-time'><a href='"+tRC.href+"' title='"+tRC.title+"'>"+tRC.time()+"</a></span>";
@@ -615,15 +558,11 @@ export default class RCList
 				html += pRC.getSummary();
 				break;
 			}
-			case RC_TYPE.COMMENT:
 			case RC_TYPE.NORMAL: {
-				html += "<span class='mw-enhanced-rc-time'><a href='"+this.getLink(pRC, null, pRC.revid)+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>"
-				html += " (<a href='"+this.getLink(pRC, 0, pRC.revid)+"'>"+i18n("cur")+"</a>";
-				if(pRC.type == RC_TYPE.COMMENT) {
-					html += this.getAjaxPagePreviewButton();
-				}
+				html += "<span class='mw-enhanced-rc-time'><a href='"+this.getRcUrl(pRC, null, pRC.revid)+"' title='"+pRC.title+"'>"+pRC.time()+"</a></span>"
+				html += " (<a href='"+this.getRcUrl(pRC, 0, pRC.revid)+"'>"+i18n("cur")+"</a>";
 				if(pRC.isNewPage == false) {
-					html += i18n("pipe-separator")+"<a href='"+this.getLink(pRC, pRC.revid, pRC.old_revid)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
+					html += i18n("pipe-separator")+"<a href='"+this.getRcUrl(pRC, pRC.revid, pRC.old_revid)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
 				}
 				html += ")";
 				html += RCList.SEP;
@@ -664,29 +603,6 @@ export default class RCList
 				html += tRC.logActionText();
 				break;
 			}
-			case RC_TYPE.WALL:
-			case RC_TYPE.BOARD: {
-				if(pRC.isWallBoardAction) {
-					html += pRC.wallBoardHistoryLink();
-					html += i18n("semicolon-separator")+pRC.time();
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.wallBoardActionMessageWithSummary( this.getThreadTitle() );
-				} else {
-					html += this._diffHist(pRC);
-					html += RCList.SEP;
-					html += this._getFlags(pRC, "")+" ";
-					html += pRC.wallBoardTitleText( this.getThreadTitle() );
-					html += this.getAjaxPagePreviewButton();
-					html += i18n("semicolon-separator")+pRC.time();
-					html += RCList.SEP;
-					html += this._diffSizeText(pRC);
-					html += RCList.SEP;
-					html += pRC.userDetails();
-					html += pRC.getSummary();
-				}
-				break;
-			}
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += tRC.getThreadStatusIcons();
@@ -697,7 +613,6 @@ export default class RCList
 				html += tRC.getSummary();
 				break;
 			}
-			case RC_TYPE.COMMENT:
 			case RC_TYPE.NORMAL:
 			default: {
 				html += this._diffHist(pRC);

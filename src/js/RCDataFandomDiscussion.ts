@@ -34,7 +34,8 @@ export default class RCDataFandomDiscussion extends RCData
 	isReply			: boolean;
 	
 	threadHref		: string;
-	forumPage		: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched seperately)
+	forumPage		: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
+	threadTitle		: string; // The name of the thread if known
 	
 	// Constructor
 	constructor(pWikiInfo:WikiData, pManager:RCMManager) {
@@ -96,7 +97,6 @@ export default class RCDataFandomDiscussion extends RCData
 		this.isReply = pData.isReply;
 		this.threadHref = `${this.wikiInfo.scriptpath}/d/p/${this.threadId}`;
 		this.href = this.threadHref + (pData.isReply ? `/r/${pData.id}` : "");
-		this.hrefBasic = this.href;
 		this.hrefFS	= this.href + this.wikiInfo.firstSeperator;
 		
 		this.threadTitle = embeddedThread ? (embeddedThread.title || pData.title) : pData.title;
@@ -188,6 +188,11 @@ export default class RCDataFandomDiscussion extends RCData
 			}
 		}
 		mw.log("(discussionTitleText) Unknown containerType:", this.containerType);
+	}
+	
+	// Check each entry for "threadTitle", else return default text.
+	getThreadTitle() : string {
+		return this.threadTitle || `<i>${i18n('unknownthreadname')}</i>`;
 	}
 	
 	getCommentForumNameLink() : string {

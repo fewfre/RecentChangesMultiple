@@ -3,6 +3,7 @@ import i18n, {I18nKey} from "./i18n";
 import Global from "./Global";
 import RCMModal from "./RCMModal";
 import RCData from "./RCData";
+import WikiData from './WikiData';
 
 let mw = window.mediaWiki;
 
@@ -12,7 +13,12 @@ let mw = window.mediaWiki;
 
 // https://www.mediawiki.org/wiki/API:Revisions
 // Inspired by http://dev.fandom.com/wiki/AjaxDiff / http://dev.fandom.com/wiki/LastEdited
-export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:any) : void {
+interface DiffTableInfoProp {
+	wikiInfo: WikiData;
+	hrefFS: string;
+	newRev: { user:string, summary:string, date:Date, minor:boolean }
+}
+export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:string, pDiffLink:string, pUndoLink:string, pDiffTableInfo:DiffTableInfoProp) : void {
 	Utils.logUrl("(previewDiff)", pAjaxUrl); mw.log(pDiffLink); mw.log(pUndoLink);
 	
 	var tTitle = `${pPageName} - ${i18n('modal-diff-title')}`;
