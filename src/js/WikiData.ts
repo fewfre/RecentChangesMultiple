@@ -392,8 +392,8 @@ export default class WikiData
 			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
 		// }
 		
-		// For some reason I added this `if`, but idr why; setupRcParams() is only called one place, and every
-		// time it's called we'd want to refresh the end times (like encase days dropdown is changed).. I think?
+		// For some reason I added this `if`, but idr why; setupRcParams() is only called in `_start` (when `pUpdateParams` is true),
+		// and every time it's called we'd want to refresh the end times (like encase days dropdown is changed).. I think?
 		// If there IS a reason this was was added, leave a message when you enable it! You lazy idiot (aka me)
 		// if(!this.lastChangeDate) {
 			this.lastChangeDate = this.getEndDate();
