@@ -253,6 +253,30 @@ export default class RCMManager
 			});
 		}, pDelayNum);
 	}
+	// private _loadP(pUrl:string, pDataType:string, tries:number, delay:number=0) : Promise<{ data:any, tries:number }> {
+	// 	const id = this.ajaxID;
+	// 	return new Promise((resolve, reject)=>{
+	// 		++tries;
+	// 		// A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
+	// 		// A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
+	// 		setTimeout(() => {
+	// 			$.ajax({ type: 'GET', dataType: pDataType, data: {},
+	// 				timeout: 15000, // Error out after 15s
+	// 				url: pUrl,
+	// 				success: (data) => {
+	// 					// Make sure this isn't something loaded before the script was last refreshed.
+	// 					if(id != this.ajaxID) { return; }
+	// 					resolve({ data, tries });
+	// 				},
+	// 				error: (data, status) => {
+	// 					// Make sure this isn't something loaded before the script was last refreshed.
+	// 					if(id != this.ajaxID) { return; }
+	// 					reject({ tries, status });
+	// 				},
+	// 			});
+	// 		}, delay);
+	// 	});
+	// }
 	
 	private _retryOrError(pWikiData:WikiData, pTries:number, pID:number, pFailStatus:string,
 						pLoadCallback:(pWikiData:WikiData, pTries:number, pID:number, pDelayNum?:number)=>void,
@@ -299,7 +323,7 @@ export default class RCMManager
 		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		
 		if(this.chosenWikis.length > 0) {
-			Utils.forEach(this.chosenWikis, (tWikiData:WikiData, i:number) => {
+			this.chosenWikis.forEach((tWikiData, i) => {
 				this._loadWikiData(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
 			});
 			this.totalItemsToLoad = this.chosenWikis.length;
@@ -331,7 +355,7 @@ export default class RCMManager
 			this._handleWikiDataLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
 			return;
 		}
-		else if(pData == null || pData.query == null || pData.query.general == null) {
+		else if(!pData?.query?.general) {
 			// mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
 			// //mw.log(pData);
 			// if(pTries < this.loadingErrorRetryNum) {

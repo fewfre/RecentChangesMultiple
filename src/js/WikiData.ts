@@ -460,18 +460,18 @@ export default class WikiData
 	}
 	
 	checkForSecondaryLoading() : void {
-		const MAX = 50, loops = Math.ceil(this.usersNeeded.length/MAX);
-		for (let i = 0; i < loops; i++) {
-			let url = UserData.getUsersApiUrl(this.usersNeeded.slice(i*MAX, (i+1)*MAX), this.scriptpath);
+		// Can't load more than 50 at a time, so break array into chunks of 50
+		Utils.chunkArray(this.usersNeeded, 50).forEach((users)=>{
+			let url = UserData.getUsersApiUrl(users, this.scriptpath);
 			this.checkForSecondaryLoading_doUsersLoad(url);
-		}
+		});
 	}
 	
 	checkForSecondaryLoading_doUsersLoad(pUrl:any) : void {
 		this.manager.secondaryWikiData.push({
 			url: pUrl,
 			callback: (data) => {
-				if(!data.query || !data.query.users) { return; }
+				if(!data.query?.users) { return; }
 				data.query.users.forEach((user, i)=>{
 					let username = user.name;
 					if(user.invalid === "" || user.missing === "") { Utils.removeFromArray(this.usersNeeded, username); return; }
@@ -479,7 +479,7 @@ export default class WikiData
 					this.users[username] = new UserData(this, this.manager).init(user);
 					Utils.removeFromArray(this.usersNeeded, username);
 					// Update data on the page.
-					let tNeededClass = "rcm-user-needed";
+					const tNeededClass = "rcm-user-needed";
 					let tUserNodes = this.manager.resultsNode.querySelectorAll(`.${this.rcClass} .${tNeededClass}[data-username="${username.replace(/"/g, '&quot;')}"]`);
 					// loop through them and add classes
 					Utils.forEach(tUserNodes, (pUserNode)=>{

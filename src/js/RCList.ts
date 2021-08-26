@@ -212,31 +212,10 @@ export default class RCList
 			let tElemID = Utils.uniqID();
 			tReturnText = `<span id='${tElemID}'><i>${tTitle ? tTitle : i18n('unknownthreadname')}</i></span>`;
 			
-			// These ajax requests are done here to condense number of requests; title is only needed per list, not per RCData.
-			if(this.type != RC_TYPE.DISCUSSION) {
-				this.manager.secondaryWikiData.push({
-					url: this.wikiInfo.scriptpath+"/api.php?action=query&format=json&prop=revisions&titles="+this.newest.uniqueID+"&rvprop=content",
-					callback: (data) => {
-						let tSpan = document.querySelector("#"+tElemID);
-						// Encase it doesn't exist anymore
-						if(!tSpan) { return; }
-						// for(var tPageIndex in data.query.pages)
-						// var tPage = data.query.pages[tPageIndex];
-						var tPage = Utils.getFirstItemFromObject(data.query.pages);
-						
-						(<HTMLAnchorElement>tSpan.parentNode).href = this.wikiInfo.articlepath + "Thread:" + tPage.pageid;
-						let tTitleData = /<ac_metadata title="(.*?)".*?>.*?<\/ac_metadata>/g.exec(tPage.revisions[0]["*"]);
-						if(tTitleData != null) {
-							tSpan.innerHTML = tTitleData[1];
-						}
-					}
-				});
+			if(tTitle == null) {
+				(<RCDataFandomDiscussion>this.newest).handleSecondaryLoad(tElemID);
 			} else {
-				if(tTitle == null) {
-					(<RCDataFandomDiscussion>this.newest).handleSecondaryLoad(tElemID);
-				} else {
-					tReturnText = tTitle;
-				}
+				tReturnText = tTitle;
 			}
 		} else {
 			if(tReturnText == null) {

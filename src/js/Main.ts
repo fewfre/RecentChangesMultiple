@@ -234,44 +234,29 @@ class Main
 	// TODO: Should probably have support to check if it ran into loading issues.
 	private _loadLangMessages() : Promise<void> {
 		return new Promise((resolve, reject)=>{
-			let tLangLoadAjaxPromises = [];
-			let tMissing = [];
+			let tMissing:[string,string][] = [];
 
 			// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
-			function tRCM_loadLangMessage(pMessages) {
+			function tRCM_loadLangMessage(pMessages:string[]) {
 				let tScriptPath = Global.useLocalSystemMessages ? Global.config.wgServer + Global.config.wgScriptPath : "//community.fandom.com";
-				let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages}`;
+				let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages.join("|")}`;
 				Utils.logUrl("", url);
 
-				$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url: url,
-					success: (pData) => {
-						if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
-						$.each( (pData.query || {}).allmessages, (index, message) => {
-							if( message.missing !== '' ) {
-								i18n.MESSAGES[message.name] = message['*'];
-							} else {
-								tMissing.push([message.name, i18n.MESSAGES[message.name]]);
-							}
-						});
-					}
+				$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url }).done(pData=>{
+					if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
+					$.each( pData.query?.allmessages, (index, message) => {
+						if( message.missing !== '' ) {
+							i18n.MESSAGES[message.name] = message['*'];
+						} else {
+							tMissing.push([message.name, i18n.MESSAGES[message.name]]);
+						}
+					});
 				});
 			}
-
-			// Loads messages in increments of 50.
-			let tMessages = "", tNumLoading = 0;
-			Object.keys(i18n.MESSAGES).forEach((key) => {
-				tMessages += (tNumLoading > 0 ? "|" : "")+key
-				tNumLoading++;
-				if(tNumLoading >= 50) {
-					tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
-					tMessages = "";
-					tNumLoading = 0;
-				}
-			}, this);
-			// Load last group of messages (if there are any)
-			if(tMessages != "") {
-				tLangLoadAjaxPromises.push(tRCM_loadLangMessage(tMessages));
-			}
+			
+			// split messages into arrays of 50, load them, and create array of promise for each load
+			let tLangLoadAjaxPromises = Utils.chunkArray(Object.keys(i18n.MESSAGES), 50)
+				.map(arr=>tRCM_loadLangMessage(arr));
 			
 			// When loading of all translated messages is done (or one failed) do this.
 			$.when(...tLangLoadAjaxPromises)

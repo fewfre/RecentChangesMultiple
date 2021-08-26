@@ -62,6 +62,7 @@ export default class UserData
 		return "rcm-usergroup-"+this.groups.join(" rcm-usergroup-") + (this.block ? " rcm-userblocked" : "");
 	}
 	
+	// Max value is 50
 	static getUsersApiUrl(pList:string[], pScriptpath:string) : string {
 		var tReturnText = pScriptpath+"/api.php?action=query&format=json&continue=&list=users";
 		tReturnText += "&usprop=" + ["blockinfo", "groups"].join("|"); // "editcount", "registration"

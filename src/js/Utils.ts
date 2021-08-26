@@ -185,7 +185,7 @@ export default class Utils
 	static ucfirst(s:string) : string { return s && s[0].toUpperCase() + s.slice(1); }
 	
 	/***************************
-	* Misc Methods
+	* Array Helpers
 	***************************/
 	// Based on: http://stackoverflow.com/a/9229821
 	// Remove duplicates
@@ -204,6 +204,41 @@ export default class Utils
 		return out;
 	}
 	
+	static removeFromArray<T>(pArray:T[], pData:T) : T {
+		let i = pArray.indexOf(pData);
+		if(i != -1) {
+			return pArray.splice(i, 1)[0];
+		}
+		return null;
+	}
+	
+	static arrayFind<T>(pArray:T[], pFunc:(o:T)=>boolean) : T|null {
+		for (var i = 0; i < pArray.length; ++i) {
+			if(pFunc(pArray[i])) { return pArray[i]; }
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns an array with arrays of the given size.
+	 *
+	 * @param myArray {Array} array to split
+	 * @param chunk_size {Integer} Size of every group
+	 */
+	 static chunkArray<T>(myArray:T[], chunk_size:number) : T[][] {
+		var index = 0, arrayLength = myArray.length, chunkedArray = [];
+		
+		for (index = 0; index < arrayLength; index += chunk_size) {
+			chunkedArray.push( myArray.slice(index, index+chunk_size) );
+		}
+
+		return chunkedArray;
+	}
+	
+	/***************************
+	* Misc Methods
+	***************************/
+	
 	static uniqID() : string {
 		return "id"+(++Global.uniqID);
 	}
@@ -220,21 +255,6 @@ export default class Utils
 			ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
 		}
 		return ret.join('&');
-	}
-	
-	static removeFromArray(pArray:any[], pData:any) : any {
-		let i = pArray.indexOf(pData);
-		if(i != -1) {
-			return pArray.splice(i, 1)[0];
-		}
-		return null;
-	}
-	
-	static arrayFind<T>(pArray:T[], pFunc:(o:T)=>boolean) : T|null {
-		for (var i = 0; i < pArray.length; ++i) {
-			if(pFunc(pArray[i])) { return pArray[i]; }
-		}
-		return null;
 	}
 	
 	// Assumes the file has already been checked to be in namespace 6
