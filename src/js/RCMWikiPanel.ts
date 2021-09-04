@@ -157,13 +157,13 @@ export default class RCMWikiPanel
 			// Front page|Site name - RecentChanges - New pages – New files – Logs – Insights
 			const wikiLinksList = [
 				tLink("Special:RecentChanges"+pWikiInfo.firstSeperator+pWikiInfo.rcParams.paramString, "recentchanges"),
+				pWikiInfo.isWikiaWiki && tLink("Special:SocialActivity", "socialactivity-page-title"),
 				tLink("Special:NewPages", "newpages"),
 				tLink("Special:NewFiles", "newimages"),
 				tLink("Special:Log", "log"),
 				pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
 				tLink("Special:Random", "randompage"),
 				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
-				pWikiInfo.isWikiaWiki && tLink("Special:SocialActivity", "socialactivity-page-title"),
 			].filter(o=>!!o);
 			
 			const buttons = [];

@@ -29,6 +29,14 @@ interface MediaWiki {
 	***************************************/
 	util: {
 		/**
+		 * Append a new style block to the head
+		 *
+		 * @param text string CSS to be appended
+		 * @return CSSStyleSheet
+		 */
+		addCSS(text:string) : CSSStyleSheet;
+		
+		/**
 		 * Grab the URL parameter value for the given parameter.
 		 * Returns null if not found.
 		 *
@@ -39,12 +47,11 @@ interface MediaWiki {
 		getParamValue(param:string, url?:string) : string|null;
 		
 		/**
-		 * Append a new style block to the head
-		 *
-		 * @param text string CSS to be appended
-		 * @return CSSStyleSheet
+		 * Check whether a string is an IP address
+		 * 
+		 * @param address String to check
 		 */
-		addCSS(text:string) : CSSStyleSheet;
+		isIPAddress(address:string) : boolean;
 		
 		/**
 		 * Encode page titles for use in a URL

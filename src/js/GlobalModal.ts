@@ -4,6 +4,7 @@ import Global from "./Global";
 import RCMModal from "./RCMModal";
 import RCData from "./RCData";
 import WikiData from './WikiData';
+import RCDataFandomDiscussion, { JsonModelDataProp } from './RCDataFandomDiscussion';
 
 let mw = window.mediaWiki;
 
@@ -309,6 +310,124 @@ export function previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServe
 			mw.hook('wikipage.content').fire($(tCont)); // Makes sure infoboxes tabs/section collapsing works.
 		});
 	});
+}
+
+export function previewDiscussionHTML(rc:RCDataFandomDiscussion) : void {
+	const { jsonModel, attachments, poll } = rc.previewData;
+	let html = "";
+	
+	if(poll) {
+		const { answers, question, totalVotes } = poll;
+		const isImagePoll = !!answers?.[0]?.image;
+		const customStyles = {
+			poll__answers:"display: flex; align-items: flex-end; flex-wrap: wrap; text-align: center;",
+			imageCont:"width: 175px; height: 175px; position: relative;",
+			image:"object-fit: cover; height: 100%; left: 0; position: absolute; top: 0; width: 100%;",
+		};
+		html = `
+		<section class="post-info">
+			<header class="post-info__title" role="presentation" itemprop="headline">
+				<!-- <a class="post-info__title-link" href="/f/p/${rc.threadId}">${question}</a> -->
+				<big class="post-info__title-link">${question}</big>
+			</header>
+			<div>
+				<div class="${isImagePoll ? 'image-poll' : 'post-poll'}" itemscope="" itemtype="http://schema.org/Question">
+					${!isImagePoll
+					? `
+						${answers.map(ans=>`
+						<div class="post-poll__answer" role="presentation" itemscope="" itemtype="http://schema.org/Answer">
+							<span class="post-poll__text" itemprop="text">${ans.text}</span>
+							<span class="post-poll__votes" itemprop="upvoteCount">${Math.floor(ans.votes / totalVotes)}%</span>
+						</div>
+						`).join("")}
+					`
+					: `
+					<div class="image-poll__answers image-poll__answers-4" style="${customStyles.poll__answers}">
+						${answers.map(ans=>`
+						<div class="image-poll__answer" role="presentation" itemscope="" itemtype="http://schema.org/Answer">
+							<div class="image-poll__image-wrapper"  style="${customStyles.imageCont}">
+								<img class="image-poll__image" style="${customStyles.image}" sizes="(max-width: 420px) 180px, 370px" src="${ans.image?.url}" alt="" loading="lazy">
+							</div>
+							<div class="image-poll__gradient-wrapper"></div>
+							<span class="image-poll__text" itemprop="text">${ans.text}</span>
+						</div>
+						`).join("")}
+					</div>
+					`}
+					<div class="post-poll__vote">
+						<p class="post-poll__total-votes" itemprop="answerCount" role="presentation">${totalVotes} Votes in Poll</p>
+					</div>
+				</div>
+			</div>
+		</section>
+		`;
+	} else {
+		// jsonModel makes heavy use of recursive data types, so lots of recursion in this
+		const jsonModelDataToString=(props:JsonModelDataProp):string => {
+			const recur = (content?:JsonModelDataProp[]) => content?.map(jsonModelDataToString).join("");
+			switch(props.type) {
+				case "doc": return `<div class="entity-content">${recur(props.content) ?? ""}</div>`;
+				case "paragraph": return `<p>${recur(props.content) ?? "<br />"}</p>`;
+				case "code_block": return `<pre><code>${recur(props.content) ?? "<br />"}</code></pre>`;
+				
+				case "bulletList": return `<ul>${recur(props.content) ?? ""}</ul>`;
+				case "orderedList": return `<ol>${recur(props.content) ?? ""}</ol>`;
+				case "listItem": return `<li>${recur(props.content) ?? ""}</li>`;
+				
+				case "image": return `<div class="post__image-wrapper"><img src="${attachments[0]?.contentImages[props.attrs.id]?.url}" style="max-width: 100%;" /></div>`;
+				case "text": {
+					let text = props.text ?? "";
+					props.marks?.forEach(mark=>{
+						switch(mark.type) {
+							case 'strong': text = `<strong>${text}</strong>`; break;
+							case 'em': text = `<em>${text}</em>`; break;
+							case 'link': text = `<a href="${mark.attrs.href}" ${mark.attrs.title ? `title="${mark.attrs.title}"` : ''} target="_blank">${text}</a>`; break;
+						}
+					});
+					return text;
+				}
+				case "openGraph": {
+					const graphData = attachments[0]?.openGraphs[props.attrs.id];
+					const customStyles = {
+						imageCont:"max-height: 175px; max-width: 175px;",
+						post__og:"line-height:0;",
+						post__og_link:"line-height:0; display: block;",
+						post__og_wrapper:"border: 1px solid var(--theme-border-color);",
+						post__og_summary:"white-space: normal;",
+						post__og_source:"white-space: normal;",
+					};
+					return `<div class="post__og" style="${customStyles.post__og}">
+						<a class="post__og-link" target="_blank" rel="noopener noreferrer" href="${graphData.url}" style="${customStyles.post__og_link}">
+							<span class="post__og-data-wrapper" itemscope="" itemtype="http://schema.org/Article" style="${customStyles.post__og_wrapper}">
+								<span class="post__og-image-container" style="${customStyles.imageCont}">
+									<img class="post__og-image" style="background-image: url(&quot;${graphData.imageUrl}&quot;);" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Doodle Champion Island Games!" itemprop="image" role="presentation" loading="lazy">
+								</span>
+								<span class="post__og-details">
+									<span class="post__og-summary" style="${customStyles.post__og_summary}">
+										<span class="post__og-title" itemprop="headline">${graphData.title}</span>
+									</span>
+									${graphData.siteName ? `<span class="post__og-source" itemprop="publisher" style="${customStyles.post__og_source}">
+										${graphData.siteName}
+										<svg class="wds-icon wds-icon-tiny"><use xlink:href="#wds-icons-external-tiny"></use></svg>
+									</span>` : ''}
+								</span>
+							</span>
+						</a>
+					</div>`;
+				}
+			}
+			mw.log("RCM: Unknown discussion preview type", rc.wikiInfo.servername, props);
+			return "";
+		};
+		
+		html = jsonModelDataToString(jsonModel);
+	}
+	
+	const title = rc.containerType != "ARTICLE_COMMENT" ? rc.getThreadTitle() : i18n("rc-comment", rc.forumName);;
+	let buttons = [
+		modalLinkButton('modal-preview-openpage', "view", rc.href),
+	];
+	RCMModal.showModal({ title, content:html, buttons });
 }
 
 //########################################################

@@ -6,6 +6,9 @@ import RCData from "./RCData";
 import TYPE from "./types/RC_TYPE";
 import { UNKNOWN_GENDER_TYPE } from "./Global";
 
+let $ = window.jQuery;
+let mw = window.mediaWiki;
+
 // TODO:
 // https://github.com/Wikia/app/blob/9ece43e540fbd5e351534b2041b9edef045a8d72/includes/wikia/VariablesBase.php#L5575
 // https://github.com/Wikia/app/blob/1e4ea22073c29ec97beeccda86d068915366d0c5/includes/logging/LogFormatter.php
@@ -67,7 +70,6 @@ export default class RCDataLog extends RCData
 			oldtitle_title:string, // used when moving protection
 		}
 		| { type:"upload" }
-		| { type:"useravatar" }
 		| { type:"newusers" }
 		| { type:"renameuser" }
 		| { type:"rights",
@@ -75,7 +77,6 @@ export default class RCDataLog extends RCData
 			oldgroups:string, // string of all groups separated by commas
 			newgroups:string, // string of all groups separated by commas
 		}
-		| { type:"wikifeatures" }
 	;
 	
 	// Constructor
@@ -232,8 +233,6 @@ export default class RCDataLog extends RCData
 			case "renameuser"	: return i18n("userrenametool-logpage");
 			case "rights"		: return i18n("rightslog");
 			case "upload"		: return i18n("uploadlogpage");
-			case "useravatar"	: return i18n("useravatar-log");
-			case "wikifeatures"	: return i18n("wikifeatures-log-name");
 			default				: return this.logtype; // At least display it as a log.
 		}
 	}
@@ -506,20 +505,6 @@ export default class RCDataLog extends RCData
 				);
 				break;
 			}
-			// Depretiated? doesn't seem to be used anymore
-			case "useravatar": {
-				tLogMessage += this.userDetails()+" ";
-				switch(this.logaction) {
-					case "avatar_chn": { tLogMessage += i18n("blog-avatar-changed-log"); break; } // 'Added or changed avatar'
-					case "avatar_rem": { tLogMessage += i18n("blog-avatar-removed-log", `<a href='${this.href}'>${this.title}</a>`); break; } // "Removed $1's avatars"
-				}
-				break;
-			}
-			// Depretiated? doesn't seem to be used anymore
-			case "wikifeatures": {
-				tLogMessage += this.userDetails()+" wikifeatures"; // Rest of the info is in the edit summary (so won't be translated by script).
-				break;
-			}
 		}
 		if(tLogMessage == "") {
 			tLogMessage += this.userDetails()+` ??? (${this.logtype} - ${this.logaction}) `;
@@ -540,7 +525,7 @@ export default class RCDataLog extends RCData
 	}
 	
 	// Since we want to treat abuse logs like normal logs, this converts them to the same structure as normal logs
-	static abuseLogDataToNormalLogFormat(log:any) : any {
+	static abuseLogDataToNormalLogFormat(log:any) {
 		/* Some abuse log related links
 		https://runescape.fandom.com/api.php?action=query&meta=allmessages&format=jsonfm&amfilter=abusefilter
 		https://www.mediawiki.org/wiki/Extension:AbuseFilter
@@ -555,6 +540,7 @@ export default class RCDataLog extends RCData
 			timestamp: log.timestamp,
 			user: log.user,
 			pageid: log.id,
+			anon: mw.util.isIPAddress(log.user) ? "" : undefined,
 			
 			// Blank stuff
 			oldlen: 0,

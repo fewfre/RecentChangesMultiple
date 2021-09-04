@@ -89,7 +89,7 @@ export default class RCMOptions
 		this.manager.discNamespaces = { ...this.discNamespaces };
 		this.manager.discussionsEnabled = Object.keys(this.discNamespaces).filter(key=>this.discNamespaces[key]).length > 0;
 		
-		this.manager.abuseLogsAllowed = tSave.abuseLogsAllowed ?? this.manager.abuseLogsAllowed;
+		this.manager.abuseLogsEnabled = tSave.abuseLogsEnabled ?? this.manager.abuseLogsEnabled;
 		
 		this._addElements();
 		
@@ -264,7 +264,7 @@ export default class RCMOptions
 		this.myEditsCheckbox.checked = !this.manager.rcParams.hidemyself;
 		this.groupedChangesCheckbox.checked = !this.manager.rcParams.hideenhanced;
 		this.logsCheckbox.checked = !this.manager.rcParams.hidelogs;
-		this.abuseLogsCheckbox.checked = this.manager.abuseLogsAllowed;
+		this.abuseLogsCheckbox.checked = this.manager.abuseLogsEnabled;
 		
 		Object.keys(this.discNamespaces).forEach((ns)=>{
 			this.discussionsDropdown.$dropdown.find(`[value=${ns}]`).attr("checked", this.discNamespaces[ns]);
@@ -358,8 +358,8 @@ export default class RCMOptions
 	}
 	
 	private _onChange_abuselogs = (pEvent:Event) : void => {
-		this.manager.abuseLogsAllowed = this.getInput(pEvent).checked;
-		if(this.manager.abuseLogsAllowed) {
+		this.manager.abuseLogsEnabled = this.getInput(pEvent).checked;
+		if(this.manager.abuseLogsEnabled) {
 			this.manager.chosenWikis.forEach(w=>w.needsAbuseFilterFilters=true);
 		}
 		this.manager.hardRefresh(true);
@@ -409,8 +409,8 @@ export default class RCMOptions
 	save() : void {
 		if(this.settingsSaveCookieCheckbox.checked) {
 			const { rcParams:options, discNamespaces } = this;
-			const abuseLogsAllowed = this.manager.abuseLogsAllowed;
-			localStorage.setItem(this.localStorageID, JSON.stringify({ options, discNamespaces, abuseLogsAllowed }));
+			const abuseLogsEnabled = this.manager.abuseLogsEnabled;
+			localStorage.setItem(this.localStorageID, JSON.stringify({ options, discNamespaces, abuseLogsEnabled }));
 		}
 	}
 	

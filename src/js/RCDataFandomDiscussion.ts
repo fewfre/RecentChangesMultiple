@@ -9,7 +9,33 @@ import TYPE from "./types/RC_TYPE";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
-	
+
+export type JsonModelDataProp = 
+	// Content types
+	  { type:'doc', content:JsonModelDataProp[] }
+	| { type:'paragraph', content?:JsonModelDataProp[] }
+	| { type:'code_block', content?:JsonModelDataProp[] }
+	// Lists
+	| { type:'orderedList', content?:JsonModelDataProp[], attrs:{ createdWith:unknown } }
+	| { type:'bulletList', content?:JsonModelDataProp[], attrs:{ createdWith:unknown } }
+	| { type:'listItem', content?:JsonModelDataProp[] }
+	// Actual data
+	| { type:'image', attrs:{ id:number } }
+	| { type:'text', text:string, marks?:JsonModelMarkProp[] }
+	| { type:'openGraph', attrs:{ id:number, url:string, wasAddedWithInlineLink:boolean } }
+;
+export type JsonModelMarkProp = 
+	  { type:'strong' }
+	| { type:'em' }
+	| { type:'link', attrs:{ href:string, title:string } }
+;
+export type PollProp = {
+	id: number,
+	question: string,
+	totalVotes: number,
+	answers: { id:number, text:string, position:number, votes:number, image?: { url:string, width:number, height:number, mediaType:string } }[],
+};
+
 //######################################
 // #### Recent Change Data ####
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
@@ -36,6 +62,7 @@ export default class RCDataFandomDiscussion extends RCData
 	threadHref		: string;
 	forumPage		: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
 	threadTitle		: string; // The name of the thread if known
+	previewData		: { jsonModel:JsonModelDataProp, attachments:any[], poll?:PollProp }; // Preview
 	
 	// Constructor
 	constructor(pWikiInfo:WikiData, pManager:RCMManager) {
@@ -80,6 +107,12 @@ export default class RCDataFandomDiscussion extends RCData
 			this.summary = this.summary.slice(0, 175)+"...";
 		}
 		this.unparsedComment = this.summary;
+		
+		if(pData.jsonModel || pData.poll) {
+			try {
+				this.previewData = { jsonModel:JSON.parse(pData.jsonModel), attachments:pData._embedded.attachments, poll:pData.poll };
+			} catch(e){};
+		}
 		
 		this.forumId = pData.forumId;
 		this.threadId = pData.threadId;

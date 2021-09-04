@@ -1,7 +1,7 @@
 import RCMManager from "./RCMManager";
 import Global from "./Global";
 import Utils from "./Utils";
-import i18n, { legacyMessagesRemovedContent } from "./i18n";
+import i18n from "./i18n";
 import RCParams from "./types/RCParams";
 import RCMModal from "./RCMModal";
 import addMakeCollapsible from "./lib/makeCollapsible";
@@ -178,24 +178,20 @@ class Main
 	
 	private _parsePage(pCont:HTMLElement|Document, pInitDef:JQueryPromise<any>) : void {
 		let tWrappers = <HTMLElement[]><any>pCont.querySelectorAll('.rc-content-multiple, #rc-content-multiple');
-		Utils.forEach(tWrappers, (pNode, pI, pArray) => {
+		Utils.forEach(tWrappers, (pNode, pI) => {
 			if((<any>pNode).rcm_wrapper_used) { mw.log("[Main](_parsePage) Wrapper already parsed; exiting."); return; }
 			(<any>pNode).rcm_wrapper_used = true;
 			let tRCMManager = new RCMManager(pNode, pI);
 			this.rcmList.push( tRCMManager );
 			
-			tRCMManager.resultCont.innerHTML = `<center>${Global.getLoaderLarge()}</center>`;
 			// Don't init managers until all translation info is loaded.
 			pInitDef.done(()=>{
 				tRCMManager.init();
 			});
 		});
-		
-		let refreshAllButton = <HTMLElement>pCont.querySelector(".rcm-refresh-all");
-		if(refreshAllButton) {
-			refreshAllButton.addEventListener("click", () => { this._refreshAllManagers(); });
-		}
 		tWrappers = null;
+		
+		$(".rcm-refresh-all").on("click", () => { this._refreshAllManagers(); });
 	}
 	
 	private _refreshAllManagers() : void {
@@ -237,14 +233,14 @@ class Main
 			let tMissing:[string,string][] = [];
 
 			// Loads the messages and updates the i18n with the new values (max messages that can be passed is 50)
-			function tRCM_loadLangMessage(pMessages:string[]) {
+			function tRCM_loadLangMessage(pMessages:string[]):JQuery.jqXHR<any> {
 				let tScriptPath = Global.useLocalSystemMessages ? Global.config.wgServer + Global.config.wgScriptPath : "//community.fandom.com";
 				let url = `${tScriptPath}/api.php?action=query&format=json&meta=allmessages&amlang=${i18n.defaultLang}&ammessages=${pMessages.join("|")}`;
 				Utils.logUrl("", url);
 
-				$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url }).done(pData=>{
-					if (typeof pData === 'undefined' || typeof pData.query === 'undefined') return; // Catch for wikis that restrict api access.
-					$.each( pData.query?.allmessages, (index, message) => {
+				return $.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url }).done(pData=>{
+					if (!pData?.query?.allmessages) return; // Catch for wikis that restrict api access.
+					$.each( pData.query.allmessages, (index, message) => {
 						if( message.missing !== '' ) {
 							i18n.MESSAGES[message.name] = message['*'];
 						} else {

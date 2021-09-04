@@ -5,7 +5,7 @@ import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
 import Global from "./Global";
-import {previewDiff,previewImages,previewPage} from "./GlobalModal";
+import {previewDiff,previewDiscussionHTML,previewImages,previewPage} from "./GlobalModal";
 import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
 import RCDataLog from "./RCDataLog";
 
@@ -292,14 +292,28 @@ export default class RCList
 	
 	// https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
 	addPreviewPageListener(pElem:HTMLElement|Element, pRC:RCData) : void {
-		if(pElem) {
-			// Initializing here since "rc" may be nulled by the time the event is triggered.
-			let ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=parse&format=json&pageid=${pRC.pageid}&prop=text|headhtml&disabletoc=true`;
-			var pageName = pRC.title;
-			let pageHref = pRC.href;
-			let serverLink = this.wikiInfo.server;
-			
-			this._addAjaxClickListener(pElem, () => { previewPage(ajaxLink, pageName, pageHref, serverLink); });
+		if(!pElem) { return; }
+		
+		switch(pRC.type) {
+			case RC_TYPE.DISCUSSION: {
+				this._addAjaxClickListener(pElem, () => {
+					// Since there's no ajax, we don't need to worry about the RC being deleted between click and modal opening, so we can pass it right in
+					previewDiscussionHTML(pRC as RCDataFandomDiscussion);
+				});
+				
+				break;
+			}
+			default:
+			case RC_TYPE.NORMAL: {
+				// Initializing here since "rc" may be nulled by the time the event is triggered.
+				const ajaxLink = this.wikiInfo.scriptpath+`/api.php?action=parse&format=json&pageid=${pRC.pageid}&prop=text|headhtml&disabletoc=true`;
+				const pageName = pRC.title;
+				const pageHref = pRC.href;
+				const serverLink = this.wikiInfo.server;
+				
+				this._addAjaxClickListener(pElem, () => { previewPage(ajaxLink, pageName, pageHref, serverLink); });
+				break;
+			}
 		}
 	}
 	
@@ -391,6 +405,7 @@ export default class RCList
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += tRC.getThreadStatusIcons();
 				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
+				if((this.newest as RCDataFandomDiscussion).previewData) html += this.getAjaxPagePreviewButton();
 				html += RCList.SEP;
 				html += tRC.userDetails();
 				html += tRC.getSummary();
@@ -530,6 +545,7 @@ export default class RCList
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += "<span class='mw-enhanced-rc-time'><a href='"+tRC.href+"' title='"+tRC.title+"'>"+tRC.time()+"</a></span>";
+				if((tRC as RCDataFandomDiscussion).previewData) html += this.getAjaxPagePreviewButton();
 				html += tRC.getThreadStatusIcons();
 				html += tRC.getUpvoteCount();
 				html += RCList.SEP;

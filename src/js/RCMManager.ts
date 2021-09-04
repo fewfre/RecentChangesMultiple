@@ -57,7 +57,7 @@ export default class RCMManager
 	makeLinksAjax			: boolean; // Make the diff/gallery link behave as the ajax icons do.
 	discNamespaces			: { FORUM:boolean, WALL:boolean, ARTICLE_COMMENT:boolean }; // What discussion namespaces (container types) to show
 	discussionsEnabled		: boolean; // Whether to load Wikia discussions
-	abuseLogsAllowed		: boolean; // Whether to allow wikis to load abuse filter logs (if wiki has them)
+	abuseLogsEnabled		: boolean; // Whether to allow wikis to load abuse filter logs (if wiki has them)
 	
 	/***************************
 	 * Storage
@@ -102,6 +102,9 @@ export default class RCMManager
 		this.isHardRefresh				= true;
 		
 		this._parseWikiList();
+		
+		// Setup initial loading view
+		this.resultCont.innerHTML = `<center>${Global.getLoaderLarge()}</center>`;
 	}
 	
 	dispose() : void {
@@ -162,36 +165,23 @@ export default class RCMManager
 			this.discNamespaces.ARTICLE_COMMENT = dns.indexOf("ARTICLE_COMMENT") != -1;
 		}
 		
-		this.abuseLogsAllowed = false;
+		this.abuseLogsEnabled = tDataset.abuselogsEnabled == "true";
+		
+		const splitNames = (str?:string) => str?.replace(/_/g, " ").split(",") ?? [];
+		const sanitiseNames = user => Utils.ucfirst(user.trim());
 		
 		// List of users to hide across whole RCMManager
-		this.hideusers = []; // {array}
-		if(tDataset.hideusers) { this.hideusers = tDataset.hideusers.replace(/_/g, " ").split(","); }
-		// if(this.rcParams.hidemyself) {
-		// 	var tUsername = Global.username;
-		// 	if(tUsername) { this.hideusers.push(tUsername); }
-		// }
-		this.hideusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
-		
-		this.notificationsHideusers = [];
-		if(tDataset.notificationsHideusers) { this.notificationsHideusers = tDataset.notificationsHideusers.replace(/_/g, " ").split(","); }
-		this.notificationsHideusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
+		this.hideusers = splitNames(tDataset.hideusers).map(sanitiseNames);
+		this.notificationsHideusers = splitNames(tDataset.notificationsHideusers).map(sanitiseNames);
 		
 		// Only show these users' edits across whole RCMManager
-		this.onlyshowusers = []; // {array}
-		if(tDataset.onlyshowusers) { this.onlyshowusers = tDataset.onlyshowusers.replace(/_/g, " ").split(","); }
-		this.onlyshowusers.forEach((o,i,a) => { a[i] = Utils.ucfirst(a[i].trim()); });
+		this.onlyshowusers = splitNames(tDataset.onlyshowusers).map(sanitiseNames);
 		
 		this.extraLoadingEnabled = tDataset.extraLoadingEnabled == "false" ? false : true;
 		this.makeLinksAjax = tDataset.ajaxlinks == "true" ? true : false;
 		
 		// Wikis for the script to load
-		this.chosenWikis = [];
-		// Utils.forEach(this.resultCont.querySelectorAll(">ul>li"), (pNode) => {
-		$(this.resultCont).find(">ul>li").each((i,pNode)=>{
-			this.chosenWikis.push( new WikiData(this).initListData(pNode) );
-		});
-		
+		this.chosenWikis = $(this.resultCont).find(">ul>li").toArray().map((pNode)=>new WikiData(this).initListData(pNode));
 		// Remove duplicates
 		this.chosenWikis = Utils.uniq_fast_key(this.chosenWikis, "scriptpath"); //todo - mke sure this now also checks /fr/ and such
 		
@@ -408,7 +398,7 @@ export default class RCMManager
 			this._onWikiDataParsingFinished(null);
 		};
 		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("wall-message-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
+		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("ooui-item-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
 	}
 	
@@ -511,19 +501,19 @@ export default class RCMManager
 		var tNewRC:RCDataFandomDiscussion, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
-			let tUser = pRCData.createdBy.name;
-			if(this._changeShouldBePrunedBasedOnOptions(tUser, pWikiData)) { return; }
-			// If hideself set
-			if(pWikiData.rcParams.hidemyself && Global.username == tUser) { return; }
-			// Skip if goes past the RC "changes in last _ days" value.
-			if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
-			
-			// Skip if discussion type is one user doesn't want
+			/////// Filters ///////
+			const tUser = pRCData.createdBy.name;
+			if(this._changeShouldBePrunedBasedOnOptions(tUser, !!tUser, pWikiData)) { return; }
 			try {
+				// Skip if goes past the RC "changes in last _ days" value.
+				if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
+				
+				// Skip if discussion type is one user doesn't want
 				const containerType = pRCData._embedded.thread[0].containerType;
 				if(!this.discNamespaces[ containerType ]) { return; }
 			} catch(e){}
 			
+			/////// Create RC ///////
 			this.itemsToAddTotal++;
 			tNewRC = new RCDataFandomDiscussion( pWikiData, this );
 			tNewRC.init(pRCData);
@@ -722,7 +712,8 @@ export default class RCMManager
 		let tNewRC, tDate, tChangeAdded;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
-			if(this._changeShouldBePrunedBasedOnOptions(pRCData.user, pWikiData)) { return; }
+			const userEdited = pData.user != "" && pData.anon != "";
+			if(this._changeShouldBePrunedBasedOnOptions(pRCData.user, userEdited, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
 			if(pRCData.logtype && pRCData.logtype != "0") { // It's a "real" log. "0" signifies a wall/board.)
@@ -737,12 +728,20 @@ export default class RCMManager
 		this._onWikiParsingFinished(pWikiData);
 	};
 	
-	private _changeShouldBePrunedBasedOnOptions(pUser:string, pWikiData:WikiData) : boolean {
+	private _changeShouldBePrunedBasedOnOptions(pUser:string, pUserEdited:boolean, pWikiData:WikiData) : boolean {
+		// Check if edits belonging to current user should be hidden (for normal RC this is handled by rcexcludeuser, but still needed for other RC types)
+		if(Global.username && pUser && pWikiData.rcParams.hidemyself && Global.username == pUser) { return true; }
 		// Skip if user is hidden for whole script or specific wiki
 		if(pUser && this.hideusers.indexOf(pUser) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pUser) > -1)) { return true; }
 		// Skip if user is NOT a specified user to show for whole script or specific wiki
 		if(pUser && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pUser) == -1)) { return true; }
 		if(pUser && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pUser) == -1)) { return true; }
+		
+		// Skip if anon post && we don't want anon
+		if(pWikiData.rcParams.hideanons && !pUserEdited) { return true; }
+		// Skip if user post && we don't want user posts
+		else if(pWikiData.rcParams.hideliu && pUserEdited) { return true; }
+		
 		return false;
 	}
 	
@@ -756,10 +755,12 @@ export default class RCMManager
 		pWikiData.updateLastAbuseLogDate(Utils.getFirstItemFromObject(pLogs));
 		// Add each entry from the wiki to the list in a sorted order
 		pLogs.forEach((pLogData) => {
-			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, pWikiData)) { return; }
+			pLogData = RCDataLog.abuseLogDataToNormalLogFormat(pLogData);
+			const userEdited = pLogData.anon != "";
+			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, userEdited, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
-			this._addRCDataToList( new RCDataLog( pWikiData, this ).initLog(RCDataLog.abuseLogDataToNormalLogFormat(pLogData)) );
+			this._addRCDataToList( new RCDataLog( pWikiData, this ).initLog(pLogData) );
 			pWikiData.abuseLogCount++;
 		});
 	}
@@ -1337,27 +1338,28 @@ export default class RCMManager
 		
 		if(!pData) { return tRcParams; }
 		var tRcParamsRawData = pData.split(pExplodeOn);
-		var tRcParamsDataSplit; // Split of raw data
+		var tRcParamsDataSplit, key, val; // Split of raw data
 		for(var i = 0; i < tRcParamsRawData.length; i++) {
 			tRcParamsDataSplit = tRcParamsRawData[i].split(pSplitOn);
 			if(tRcParamsDataSplit.length > 1) {
-				if(tRcParamsDataSplit[0] == "limit" && tRcParamsDataSplit[1]) {
-					tRcParams["limit"] = parseInt( tRcParamsDataSplit[1] );
+				[ key, val ] = tRcParamsDataSplit;
+				if(key == "limit" && val) {
+					tRcParams["limit"] = parseInt( val );
 				}
-				else if(tRcParamsDataSplit[0] == "days" && tRcParamsDataSplit[1]) {
-					tRcParams["days"] = parseInt( tRcParamsDataSplit[1] );
+				else if(key == "days" && val) {
+					tRcParams["days"] = parseInt( val );
 				}
-				else if(tRcParamsDataSplit[0] == "namespace" && (tRcParamsDataSplit[1] || tRcParamsDataSplit[1] === "0")) {
-					tRcParams["namespace"] = tRcParamsDataSplit[1];
+				else if(key == "namespace" && (val || val === "0")) {
+					tRcParams["namespace"] = val;
 				}
-				// else if(tRcParamsDataSplit[0] == "from" && tRcParamsDataSplit[1]) {
-				// 	tRcParams["from"] = tRcParamsDataSplit[1];
+				// else if(key == "from" && val) {
+				// 	tRcParams["from"] = val;
 				// }
 				// Check all the true / false ones
-				else if(tRcParamsDataSplit[1]) {
-					tRcParams[tRcParamsDataSplit[0]] = tRcParamsDataSplit[1]=="1";
+				else if(val) {
+					tRcParams[key] = val=="1";
 				}
-				paramStringArray.push(tRcParamsDataSplit[0]+"="+tRcParamsDataSplit[1]);
+				paramStringArray.push(key+"="+val);
 			}
 		}
 		tRcParams.paramString = paramStringArray.join("&");

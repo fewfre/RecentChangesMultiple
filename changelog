@@ -1,3 +1,17 @@
+== 2.16b - 31 August 2021 ==
+- removed old pre-UCP code
+- updated TypeScript version
+- removed old comment/wall/forum logic
+- [Bug] fixed a bug where if you changed number of days, the result would always require a second hard refresh to actually show correct data
+- moved "group results by page" on same row as "show last" and "days" (to better reflect where it appears in updated RecentChanges page)
+- logs:
+	- added a toggle for abuse filters to wiki settings
+	- cleaned up code + updated some old translations to newer versions
+- [Bug] "social activity" posts made by anons is no longer always hidden
+- [Bug] Neither discussions nor abuse log respected filtering based on anon/user status; this has been fixed
+- "social activity" posts can now be previewed just like normal pages can 
+
+
 == 2.16 - 21 August 2021 ==
 - Changed how CSS loads so that it works on gamepedia wikis
 - Tweaked CSS for wiki info banner - no longer hardcoded to yellow, now uses dynamic wiki CSS variables for colors
@@ -5,14 +19,6 @@
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-collapsed-ltr.png
 	https://community.fandom.com/resources-ucp/resources/src/mediawiki.icon/images/arrow-expanded.png
 - added support for some logs: contentmodel, abusefilter, and Special:AbuseLog
-	- cleaned up code + updated some old translations to newer versions
-	- added a toggle for abuse filters to wiki settings
-- removed old pre-UCP code
-- updated TypeScript version
-- removed old comment/wall/forum logic
-- fixed a bug where if you changed number of days, the result would always require a second hard refresh to actually show correct data
-- moved "group results by page" on same row as "show last" and "days" (to better reflect where it appears in updated RecentChanges page)
-
 
 == 2.15i - 28 July 2021 ==
 - Updated workaround for fetching fandom-based favicons caused by fandomdesktop theme (since fandom has still not fixed favicon returned in siteinfo api call)

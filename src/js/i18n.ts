@@ -176,7 +176,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'redirectto' : 'Redirect to:',
 	'images' : 'Images',
 	'expand_templates_input_missing' : 'You need to provide at least some input wikitext.',
-	'wall-message-remove': 'Remove',
+	'ooui-item-remove': 'Remove',
 	'undeletelink': 'view/restore',
 	'admindashboard-control-analytics-label': 'Analytics',
 	'abusefilter-history-hidden': 'Hidden',
@@ -201,14 +201,8 @@ const MESSAGES = i18n.MESSAGES = {
 	'uploadlogpage'						: 'Upload log', // L2115
 	'newuserlogpage'					: 'User creation log', // L2695
 	'rightslog'							: 'User rights log', // L1991
-	// ## Non-standard Mediawiki logs ##
-	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserProfilePageV3/UserProfilePage.i18n.php
-	'useravatar-log'					: 'User avatar log',
 	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserRenameTool/SpecialRenameuser.i18n.php
 	'userrenametool-logpage'			: 'User rename log',
-	// ## Wiki Features ##
-	// https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
-	'wikifeatures-log-name'				: 'Wiki Features log',
 	// ## Extensions ##
 	// https://git.wikimedia.org/blob/mediawiki%2Fextensions%2FAbuseFilter/be09eabbdd591fb869b30cd4e77a286763cbe4e1/i18n%2Fen.json
 	'abusefilter-log'					: 'Abuse filter log',
@@ -279,51 +273,18 @@ const MESSAGES = i18n.MESSAGES = {
 	'logentry-rights-rights-legacy'       : '$1 {{GENDER:$2|changed}} group membership for $3',
 	'rightsnone'                 : '(none)',
 	// ## Non-standard Mediawiki logs ##
-	// User Avatar - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserProfilePageV3/UserProfilePage.i18n.php
-	'blog-avatar-changed-log' : 'Added or changed avatar',
-	'blog-avatar-removed-log' : "Removed $1's avatars",
 	// User Rename - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserRenameTool/SpecialRenameuser.i18n.php
 	'userrenametool-success' : 'The user "$1" has been renamed to "$2".',
-	// ## Wiki Features ##
-	// Wiki Features - https://github.com/Wikia/app/blob/bf1e586c95224922577b6feea8293df341265a44/extensions/wikia/WikiFeatures/WikiFeatures.i18n.php
 
 	/***************************
 	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
 	****************************/
-	'wall-recentchanges-edit'					: 'edited message',
-	'wall-recentchanges-removed-thread'			: 'removed thread "[[$1|$2]]" from [[$3|$4\'s wall]]',
-	'wall-recentchanges-removed-reply'			: 'removed reply from "[[$1|$2]]" from [[$3|$4\'s wall]]',
-	'wall-recentchanges-restored-thread'		: 'restored thread "[[$1|$2]]" to [[$3|$4\'s wall]]',
-	'wall-recentchanges-restored-reply'			: 'restored reply on "[[$1|$2]]" to [[$3|$4\'s wall]]',
-	'wall-recentchanges-deleted-thread'			: 'deleted thread "[[$1|$2]]" from [[$3|$4\'s wall]]',
-	'wall-recentchanges-deleted-reply'			: 'deleted reply from "[[$1|$2]]" from [[$3|$4\'s wall]]',
-	'wall-recentchanges-closed-thread'			: 'closed thread "[[$1|$2]]" on [[$3|$4\'s wall]]',
-	'wall-recentchanges-reopened-thread'		: 'reopened thread "[[$1|$2]]" on [[$3|$4\'s wall]]',
 	'wall-recentchanges-thread-group'			: '$1 on [[$2|$3\'s wall]]',
-	'wall-recentchanges-history-link'			: 'wall history',
-	'wall-recentchanges-thread-history-link'	: 'thread history',
-
-	/***************************
-	* Forum Boards - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Forum/Forum.i18n.php#L113
-	****************************/
-	'forum-recentchanges-edit'					: 'edited message',
-	'forum-recentchanges-removed-thread'		: 'removed thread "[[$1|$2]]" from the [[$3|$4 Board]]',
-	'forum-recentchanges-removed-reply'			: 'removed reply from "[[$1|$2]]" from the [[$3|$4 Board]]',
-	'forum-recentchanges-restored-thread'		: 'restored thread "[[$1|$2]]" to the [[$3|$4 Board]]',
-	'forum-recentchanges-restored-reply'		: 'restored reply on "[[$1|$2]]" to the [[$3|$4 Board]]',
-	'forum-recentchanges-deleted-thread'		: 'deleted thread "[[$1|$2]]" from the [[$3|$4 Board]]',
-	'forum-recentchanges-deleted-reply'			: 'deleted reply from "[[$1|$2]]" from the [[$3|$4 Board]]',
-	'forum-recentchanges-thread-group'			: '$1 on the [[$2|$3 Board]]',
-	'forum-recentchanges-history-link'			: 'board history',
-	'forum-recentchanges-thread-history-link'	: 'thread history',
-	'forum-recentchanges-closed-thread'			: 'closed thread "[[$1|$2]]" from [[$3|$4]]',
-	'forum-recentchanges-reopened-thread'		: 'reopened thread "[[$1|$2]]" from [[$3|$4]]',
 	
 	/***************************
 	* Discussions
 	****************************/
-	'forum-related-discussion-heading': 'Discussions about $1',
-	'embeddable-discussions-loading': 'Loading Discussions...',
+	// 'forum-related-discussion-heading': 'Discussions about $1',
 	'allmessages-filter-all': 'All',
 	'listusers-select-all': 'Select all',
 	'socialactivity-page-title': 'Social Activity',
@@ -363,37 +324,8 @@ const MESSAGES = i18n.MESSAGES = {
 };
 
 export const legacyMessagesRemovedContent = [
-	// Old Logs
-	"useravatar-log",
-	"wikifeatures-log-name",
-	"blog-avatar-changed-log",
-	"blog-avatar-removed-log",
 	// Wall logs (Thread-style walls removed in UCP)
-	"wall-recentchanges-edit",
-	"wall-recentchanges-removed-thread",
-	"wall-recentchanges-removed-reply",
-	"wall-recentchanges-restored-thread",
-	"wall-recentchanges-restored-reply",
-	"wall-recentchanges-deleted-thread",
-	"wall-recentchanges-deleted-reply",
-	"wall-recentchanges-closed-thread",
-	"wall-recentchanges-reopened-thread",
 	"wall-recentchanges-thread-group",
-	"wall-recentchanges-history-link",
-	"wall-recentchanges-thread-history-link",
-	// Forum logs (Thread-style forum removed in UCP)
-	"forum-recentchanges-edit",
-	"forum-recentchanges-removed-thread",
-	"forum-recentchanges-removed-reply",
-	"forum-recentchanges-restored-thread",
-	"forum-recentchanges-restored-reply",
-	"forum-recentchanges-deleted-thread",
-	"forum-recentchanges-deleted-reply",
-	"forum-recentchanges-thread-group",
-	"forum-recentchanges-history-link",
-	"forum-recentchanges-thread-history-link",
-	"forum-recentchanges-closed-thread",
-	"forum-recentchanges-reopened-thread",
 ];
 
 /***************************

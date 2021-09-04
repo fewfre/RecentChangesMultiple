@@ -357,7 +357,7 @@ export default class WikiData
 		
 		// Check if wiki has any abusefilter rights; if so, it's probably enabled (and accessable)
 		this.wikiUsesAbuseLogs = this.user.rights.abusefilter_log;//!!Utils.arrayFind(rightsList, r=>r.indexOf("abusefilter") > -1);
-		if(this.manager.abuseLogsAllowed) {
+		if(this.manager.abuseLogsEnabled) {
 			this.needsAbuseFilterFilters = this.wikiUsesAbuseLogs;
 		}
 	}
@@ -576,7 +576,7 @@ export default class WikiData
 		// Get results up to this time stamp.
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
-		var tLimit = this.rcParams.limit < 50 ? this.rcParams.limit : 50; // 50 is the limit, but fetch less if there are less.
+		var tLimit = Math.min(this.rcParams.limit, 100); // 100 is the limit, but fetch less if there are less.
 		
 		let params = {
 			limit: tLimit,
@@ -657,7 +657,8 @@ export default class WikiData
 		* Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
 		* Each wiki has it's own list of abuse filters
 		***************************/
-		if(this.wikiUsesAbuseLogs && this.manager.abuseLogsAllowed && this.rcParams.hidelogs == false && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
+		// POSSIBLE BUG: potential issue if external wiki has this.username set when anons not allowed to view log data - may need to fetch both anon and user data?
+		if(this.wikiUsesAbuseLogs && this.manager.abuseLogsEnabled && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
 			// Grab filters just once (so we have them on-hand)
 			if(this.needsAbuseFilterFilters) {
 				tUrlList.push("abusefilters");
