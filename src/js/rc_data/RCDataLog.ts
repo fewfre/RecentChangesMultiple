@@ -1,10 +1,9 @@
-import RCMManager from "./RCMManager";
-import WikiData from "./WikiData";
-import Utils from "./Utils";
-import i18n, {I18nKey} from "./i18n";
-import RCData from "./RCData";
-import TYPE from "./types/RC_TYPE";
-import { UNKNOWN_GENDER_TYPE } from "./Global";
+import RCMManager from "../RCMManager";
+import WikiData from "../WikiData";
+import Utils from "../Utils";
+import i18n, {I18nKey} from "../i18n";
+import { RCDataArticle, RCDataAbstract, RC_TYPE } from ".";
+import { UNKNOWN_GENDER_TYPE } from "../Global";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -18,13 +17,17 @@ let mw = window.mediaWiki;
 // * A data object to keep track of RecentChanges data in an organized way, as well as also having convenience methods.
 // * These should only ever be used in RCList.
 //######################################
-export default class RCDataLog extends RCData
+export default class RCDataLog extends RCDataAbstract
 {
 	/***************************
-	 * Situational Data - depends on the type, might not even be used, and may remain be unset.
+	 * Ajax Data - https://www.mediawiki.org/wiki/API:RecentChanges
 	 ***************************/
-	log_info_0			: any; // Generic info passed for a rc/log
+	type				: RC_TYPE.LOG;
+	logid				: string; // Log identifier
+	logtype				: string; // What log fired
+	logaction			: string; // What the log did
 	actionhidden		: boolean; // If the rc is marked "actionhidden"
+	userhidden			: boolean; // If the rc is marked "userhidden"
 	
 	/***************************
 	 * Log Info - info for specific logs that require additional info via API:Logevents.
@@ -80,29 +83,37 @@ export default class RCDataLog extends RCData
 	;
 	
 	// Constructor
-	constructor(pWikiInfo:WikiData, pManager:RCMManager) {
-		super(pWikiInfo, pManager);
+	constructor(pWikiInfo:WikiData, pManager:RCMManager, pData:any) {
+		const isUser = pData.user != "" && pData.anon != "";
+		super(pWikiInfo, pManager, {
+			title: pData.title,
+			date: new Date(pData.timestamp),
+			author: isUser ? pData.user : (pData.anon ? pData.anon : pData.user),
+			isUser,
+			namespace: pData.ns,
+			groupWithID: pData.logtype,
+			
+			isNewPage: pData["new"] == "",
+			isBotEdit: pData.bot == "",
+			isMinorEdit: pData.minor == "",
+			isPatrolled: pData.patrolled == "",
+		});
+		this.type = RC_TYPE.LOG;
+		
+		this.summary = RCDataArticle.tweakParsedComment(pData.parsedcomment, pData.commenthidden == "", this.wikiInfo);
+		this.summaryUnparsed = pData.comment;
+		
+		this.logid = pData.logid;
+		this.logtype = pData.logtype;
+		this.logaction = pData.logaction;
+		this.actionhidden = pData.actionhidden == "";
+		this.userhidden = pData.userhidden == "";
+		
+		this._initLog(pData);
 	}
 	
 	/*override*/ dispose() : void {
-		// @ts-ignore - It's read only, but we still want it deleted here
-		delete this.manager;
-		// @ts-ignore - It's read only, but we still want it deleted here
-		delete this.wikiInfo;
-		
-		this.date = null;
-		this.type = null;
-	}
-	
-	initLog(pData:any) : this {
-		this.type = TYPE.LOG;
-		super.init(pData);
-		
-		this.log_info_0 = pData["0"];
-		this.actionhidden = pData.actionhidden == "";
-		this._initLog(pData);
-		
-		return this; // Return self for chaining or whatnot.
+		super.dispose();
 	}
 	
 	// If it's a log, init data if needed for that type.
@@ -215,7 +226,7 @@ export default class RCDataLog extends RCData
 	
 	logTitleLink() : string {
 		const logPage = this.logtype === "abuse" ? "Special:AbuseLog" : `Special:Log/${this.logtype}`;
-		return `(<a class='rc-log-link' href='${this.wikiInfo.articlepath}${logPage}'>${this.logTitle()}</a>)`;
+		return `(<a class='rc-log-link' href='${this.wikiInfo.getPageUrl(logPage)}'>${this.logTitle()}</a>)`;
 	}
 	
 	logTitle() : string {
@@ -271,7 +282,7 @@ export default class RCDataLog extends RCData
 					? i18n('abusefilter-log-noactions')
 					: result.split(",").map(r=>i18n('abusefilter-action-'+r as I18nKey)).join(", ");
 				const filterIdLink = !filterFromDesc.private && filterFromDesc.id
-					? `<a href='${this.wikiInfo.getUrl('Special:AbuseFilter/'+filterFromDesc.id)}'>${i18n('abusefilter-log-detailedentry-local', filterFromDesc.id)}</a>`
+					? `<a href='${this.wikiInfo.getPageUrl('Special:AbuseFilter/'+filterFromDesc.id)}'>${i18n('abusefilter-log-detailedentry-local', filterFromDesc.id)}</a>`
 					: i18n('abusefilter-log-detailedentry-local', filterFromDesc.id !== undefined ? filterFromDesc.id : "?");
 				// If user can view detailed logs, then link to them + the filter
 				if(this.wikiInfo.user.rights.abusefilter_log_detail) {
@@ -285,8 +296,8 @@ export default class RCDataLog extends RCData
 						resultString,
 						filter,
 						[
-							`<a href='${this.wikiInfo.getUrl(`Special:AbuseLog/${this.pageid}`)}'>${i18n('abusefilter-log-detailslink')}</a>`,
-							`<a href='${this.wikiInfo.getUrl(`Special:AbuseFilter/examine/log/${this.pageid}`)}'>${i18n('abusefilter-changeslist-examine')}</a>`,
+							`<a href='${this.wikiInfo.getPageUrl(`Special:AbuseLog/${this.logid}`)}'>${i18n('abusefilter-log-detailslink')}</a>`,
+							`<a href='${this.wikiInfo.getPageUrl(`Special:AbuseFilter/examine/log/${this.logid}`)}'>${i18n('abusefilter-changeslist-examine')}</a>`,
 						].join(" | "),
 						UNKNOWN_GENDER_TYPE,
 					);
@@ -326,7 +337,7 @@ export default class RCDataLog extends RCData
 							UNKNOWN_GENDER_TYPE,
 							undefined,
 							`<a href='${this.href}'>${this.title}</a>`,
-							`<a href='${this.wikiInfo.getUrl(`Special:AbuseFilter/history/${filterId}/diff/prev/${historyId}`)}'>${i18n("abusefilter-log-detailslink")}</a>`
+							`<a href='${this.wikiInfo.getPageUrl(`Special:AbuseFilter/history/${filterId}/diff/prev/${historyId}`)}'>${i18n("abusefilter-log-detailslink")}</a>`
 						);
 						break;
 					}
@@ -336,11 +347,14 @@ export default class RCDataLog extends RCData
 			case "block": {
 				const { duration, flags } = this.logParams;
 				
+				// Regex only matches first ":", and thus removed the "User:" namespace
+				const affectedUser = this.title.split(/:(.+)/)[1] ?? this.title;
+				
 				// logactions assumed: block, reblock, unblock
 				tLogMessage += i18n(<I18nKey>("logentry-block-"+this.logaction),
 					this.userDetails(),
 					UNKNOWN_GENDER_TYPE,
-					`<a href='${this.href}'>${this.titleNoNS}</a>`,
+					`<a href='${this.href}'>${affectedUser}</a>`,
 					UNKNOWN_GENDER_TYPE, // api doesn't tell use the blocked user's gender
 					duration,
 					flags && i18n('parentheses', flags),
@@ -366,7 +380,7 @@ export default class RCDataLog extends RCData
 					}
 				}
 				if(this.logaction == "change" && this.wikiInfo.user.rights.editcontentmodel) {
-					tLogMessage += ` (<a href='${this.wikiInfo.getUrl('Special:ChangeContentModel', { pagetitle:this.hrefTitle, model:oldmodel, reason:i18n('logentry-contentmodel-change-revert') })}'>${i18n('logentry-contentmodel-change-revertlink')}</a>)`
+					tLogMessage += ` (<a href='${this.wikiInfo.getPageUrl('Special:ChangeContentModel', { pagetitle:this.titleUrlEscaped, model:oldmodel, reason:i18n('logentry-contentmodel-change-revert') })}'>${i18n('logentry-contentmodel-change-revertlink')}</a>)`
 				}
 				break;
 			}
@@ -412,7 +426,7 @@ export default class RCDataLog extends RCData
 				
 				// Added undelete links at the end, just like log page does it
 				if(this.wikiInfo.user.rights.undelete && this.logaction == "delete") {
-					tAfterLogMessage = " "+i18n('parentheses', `<a href='${this.wikiInfo.getUrl('Special:Undelete', { target:this.hrefTitle })}'>${i18n("undeletelink")}</a>`);
+					tAfterLogMessage = " "+i18n('parentheses', `<a href='${this.wikiInfo.getPageUrl('Special:Undelete', { target:this.titleUrlEscaped })}'>${i18n("undeletelink")}</a>`);
 				}
 				break;
 			}
@@ -433,7 +447,7 @@ export default class RCDataLog extends RCData
 				tLogMessage += i18n("pagemerge-logentry",
 					this.href + "|" + this.title,
 					this.wikiInfo.articlepath+destination + "|" + destination,
-					this.getLogTimeStamp(new Date(mergepoint))
+					Utils.formatWikiTimeStamp(new Date(mergepoint))
 				);
 				break;
 			}
@@ -444,8 +458,8 @@ export default class RCDataLog extends RCData
 				tLogMessage += i18n(<I18nKey>("logentry-move-"+this.logaction+noredirect),
 					this.userDetails(),
 					UNKNOWN_GENDER_TYPE,
-					`<a href='${this.hrefFS}redirect=no'>${this.title}</a>`,
-					`<a href='${this.wikiInfo.articlepath + Utils.escapeCharactersLink(newTitle)}'>${newTitle}</a>`
+					`<a href='${this.getUrl({ redirect:"no" })}'>${this.title}</a>`,
+					`<a href='${this.wikiInfo.articlepath + Utils.escapeCharactersUrl(newTitle)}'>${newTitle}</a>`
 				);
 				break;
 			}
@@ -460,7 +474,7 @@ export default class RCDataLog extends RCData
 				let arg4 = description;
 				switch(this.logaction) {
 					case "move_prot": {
-						arg4 = this.wikiInfo.getUrl(oldtitle_title);
+						arg4 = this.wikiInfo.getPageUrl(oldtitle_title);
 						break;
 					}
 				}
@@ -516,12 +530,16 @@ export default class RCDataLog extends RCData
 		return tLogMessage;
 	}
 	
-	/*override*/ getNotificationTitle() : string {
-		return this.logTitle()+(this.title ? ` - ${this.title}` : "");
+	/*override*/ getUrl(params?:{ [key:string]:string|number }) : string {
+		return this.wikiInfo.getPageUrl(this.titleUrlEscaped, params);
 	}
 	
-	getLogTimeStamp(pDate) : string {
-		return RCData.getFullTimeStamp(pDate);
+	/*override*/ userDetails() : string {
+		return RCDataArticle.formatUserDetails(this.wikiInfo, this.author, this.userhidden, this.userEdited);
+	}
+	
+	/*override*/ getNotificationTitle() : string {
+		return this.logTitle()+(this.title ? ` - ${this.title}` : "");
 	}
 	
 	// Since we want to treat abuse logs like normal logs, this converts them to the same structure as normal logs

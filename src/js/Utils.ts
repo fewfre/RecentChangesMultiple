@@ -176,7 +176,7 @@ export default class Utils
 		return pString ? pString.replace(/"/g, '&quot;').replace(/'/g, '&apos;') : pString;
 	}
 	
-	static escapeCharactersLink(pString:string) : string {
+	static escapeCharactersUrl(pString:string) : string {
 		return mw.util.wikiUrlencode(pString);
 		//return pString ? pString.replace(/%/g, '%25').replace(/ /g, "_").replace(/"/g, '%22').replace(/'/g, '%27').replace(/\?/g, '%3F').replace(/\&/g, '%26').replace(/\+/g, '%2B') : pString;
 	}

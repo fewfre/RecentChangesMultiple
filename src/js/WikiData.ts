@@ -285,7 +285,7 @@ export default class WikiData
 			this.server = pQuery.general.server || ("//" + this.servername);
 			this.articlepath = this.server + pQuery.general.articlepath.replace("$1", "");
 			if(this.articlepath.indexOf("?") > -1) { this.firstSeperator = "&"; }
-			this.scriptpath =  `${this.server}${pQuery.general.scriptpath}`; // Re-set with info directly from siteinfo
+			this.scriptpath = `${this.server}${pQuery.general.scriptpath}`; // Re-set with info directly from siteinfo
 			this.sitename = pQuery.general.sitename;
 			this.mainpage = pQuery.general.mainpage;
 			this.mwversion = pQuery.general.generator;
@@ -454,9 +454,13 @@ export default class WikiData
 	 * @param params A mapping of query parameter names to values, e.g. `{ action: 'edit' }`
 	 * @returns Url of the page with name of `pageName`
 	 */
-	getUrl(pageName:string, params?:{ [key:string]:string|number }) : string {
+	getPageUrl(pageName:string, params?:{ [key:string]:string|number }) : string {
 		let query = params ? this.firstSeperator+$.param(params) : "";
 		return `${this.articlepath}${pageName}${query}`;
+	}
+	
+	getApiUrl(params:{ [key:string]:string|number }) : string {
+		return `${this.scriptpath}/api.php?${$.param(params).replace(/ /g, "_")}`;
 	}
 	
 	checkForSecondaryLoading() : void {
@@ -519,7 +523,7 @@ export default class WikiData
 	}
 	
 	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
-	getWikiDataApiUrl() : string {
+	buildWikiDataApiUrl() : string {
 		if(!this.needsSiteinfoData || !this.needsUserData) { return null; }
 		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
 		
@@ -566,13 +570,13 @@ export default class WikiData
 		tMetaList = null;
 		tPropList = null;
 		
-		Utils.logUrl("[WikiData](getWikiDataApiUrl)", tReturnText);
+		Utils.logUrl("[WikiData](buildWikiDataApiUrl)", tReturnText);
 		return tReturnText;
 	}
 	
 	// Gets URL for the Wikia discussions API;
 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
-	getWikiDiscussionUrl() : string {
+	buildWikiDiscussionUrl() : string {
 		// Get results up to this time stamp.
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
@@ -588,13 +592,13 @@ export default class WikiData
 		};
 		// var tReturnText = `https://services.fandom.com/discussion/${this.wikiaCityID}/posts?${Utils.objectToUrlQueryData(params)}`;
 		var tReturnText = `${this.scriptpath}/wikia.php?controller=DiscussionPost&method=getPosts&${Utils.objectToUrlQueryData(params)}`;
-		mw.log(`[WikiData](getWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
+		mw.log(`[WikiData](buildWikiDiscussionUrl) ${this.servername} - ${tReturnText}`);
 		return tReturnText;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
 	// https://www.mediawiki.org/wiki/API:RecentChanges
-	getApiUrl() : string {
+	buildApiUrl() : string {
 		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
 		
 		// Get results up to this time stamp.
@@ -688,7 +692,7 @@ export default class WikiData
 		tPropList = null;
 		tEndDate = null;
 		
-		Utils.logUrl("[WikiData](getApiUrl)", tReturnText);
+		Utils.logUrl("[WikiData](buildApiUrl)", tReturnText);
 		return tReturnText;
 	}
 }

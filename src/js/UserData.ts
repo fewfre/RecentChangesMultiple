@@ -66,7 +66,7 @@ export default class UserData
 	static getUsersApiUrl(pList:string[], pScriptpath:string) : string {
 		var tReturnText = pScriptpath+"/api.php?action=query&format=json&continue=&list=users";
 		tReturnText += "&usprop=" + ["blockinfo", "groups"].join("|"); // "editcount", "registration"
-		tReturnText += "&ususers=" + Utils.escapeCharactersLink(pList.join("|").replace(/ /g, "_"));
+		tReturnText += "&ususers=" + Utils.escapeCharactersUrl(pList.join("|").replace(/ /g, "_"));
 		
 		Utils.logUrl("[UserData](getUsersApiUrl)", tReturnText);
 		return tReturnText;

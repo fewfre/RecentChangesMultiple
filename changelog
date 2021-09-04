@@ -9,7 +9,9 @@
 	- cleaned up code + updated some old translations to newer versions
 - [Bug] "social activity" posts made by anons is no longer always hidden
 - [Bug] Neither discussions nor abuse log respected filtering based on anon/user status; this has been fixed
-- "social activity" posts can now be previewed just like normal pages can 
+- "social activity" posts can now be previewed just like normal pages can
+- Rewrote RCData classes to inherit from an abstract class, and moved them all into a folder
+- Added some missing translation support for symbols
 
 
 == 2.16 - 21 August 2021 ==

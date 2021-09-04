@@ -152,6 +152,10 @@ const MESSAGES = i18n.MESSAGES = {
 	'semicolon-separator' : ';&#32;',
 	'pipe-separator' : '&#32;|&#32;',
 	'parentheses' : '($1)',
+	'parentheses-start' : '(',
+	'parentheses-end' : ')',
+	'brackets' : '[$1]',
+	'ntimes': '$1×',
 	// Revision deletion
 	'rev-deleted-comment' : '(edit summary removed)',
 	'rev-deleted-user' : '(username removed)',

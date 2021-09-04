@@ -148,7 +148,7 @@ export default class RCMWikiPanel
 		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
 			this.closeInfo();
 		} else {
-			const tLink=(page:string, key:I18nKey)=>`<a href='${pWikiInfo.getUrl(page)}'>${i18n(key)}</a>`;
+			const tLink=(page:string, key:I18nKey)=>`<a href='${pWikiInfo.getPageUrl(page)}'>${i18n(key)}</a>`;
 			const tLinkNum=(page:string, key:I18nKey, num:string|number)=>tLink(page, key)+`: <b>${num}</b>`;
 			
 			///////////////////////////////
@@ -194,7 +194,7 @@ export default class RCMWikiPanel
 			///////////////////////////////
 			// Add to page
 			///////////////////////////////
-			const siteLink = `<a href='${pWikiInfo.articlepath+Utils.escapeCharactersLink(pWikiInfo.mainpage)}'>${pWikiInfo.sitename}</a>`;
+			const siteLink = `<a href='${pWikiInfo.articlepath+Utils.escapeCharactersUrl(pWikiInfo.mainpage)}'>${pWikiInfo.sitename}</a>`;
 			let html = ""
 			+ "<table class='rcm-wiki-infotable'>"
 			+ "<tr>"

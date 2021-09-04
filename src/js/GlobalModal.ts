@@ -2,9 +2,9 @@ import Utils from './Utils';
 import i18n, {I18nKey} from "./i18n";
 import Global from "./Global";
 import RCMModal from "./RCMModal";
-import RCData from "./RCData";
 import WikiData from './WikiData';
-import RCDataFandomDiscussion, { JsonModelDataProp } from './RCDataFandomDiscussion';
+import { RCDataAbstract, RCDataArticle, RCDataFandomDiscussion } from './rc_data';
+import { JsonModelDataProps } from './rc_data/RCDataFandomDiscussion';
 
 let mw = window.mediaWiki;
 
@@ -16,7 +16,7 @@ let mw = window.mediaWiki;
 // Inspired by http://dev.fandom.com/wiki/AjaxDiff / http://dev.fandom.com/wiki/LastEdited
 interface DiffTableInfoProp {
 	wikiInfo: WikiData;
-	hrefFS: string;
+	titleUrlEscaped: string;
 	newRev: { user:string, summary:string, date:Date, minor:boolean }
 }
 // Note: don't pass the RCData object directly, as it may have been deleted between the time this is called and content is loaded
@@ -30,6 +30,8 @@ export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:str
 	if(pUndoLink != null) {
 		tButtons.push(modalLinkButton('modal-diff-undo', "undo", pUndoLink));
 	}
+	
+	const getRcUrl=(params?:{ [key:string]:string|number }) => pDiffTableInfo.wikiInfo.getPageUrl(pDiffTableInfo.titleUrlEscaped, params);
 	
 	RCMModal.showLoadingModal({ title:tTitle, buttons:tButtons }).then(() => {
 		// Retrieve the diff table.
@@ -67,29 +69,29 @@ export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:str
 						"<td class='diff-otitle' colspan='2'>",
 							"<div class='mw-diff-otitle1'>",
 								"<strong>",
-									"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.from+"' data-action='revision-link-before'>",
-										i18n('revisionasof', RCData.getFullTimeStamp(tRevDate), Utils.formatWikiTimeStampDateOnly(tRevDate), Utils.formatWikiTimeStampTimeOnly(tRevDate)),
+									"<a href='"+getRcUrl({ oldid:tRevision.diff.from })+"' data-action='revision-link-before'>",
+										i18n('revisionasof', Utils.formatWikiTimeStamp(tRevDate), Utils.formatWikiTimeStampDateOnly(tRevDate), Utils.formatWikiTimeStampTimeOnly(tRevDate)),
 									"</a>",
 									" <span class='mw-rev-head-action'>",
-										`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.from}&action=edit" data-action="edit-revision-before">${i18n('editold')}</a>)`,
+										`(<a href="${getRcUrl({ oldid:tRevision.diff.from, action:'edit' })}" data-action="edit-revision-before">${i18n('editold')}</a>)`,
 									"</span>",
 								"</strong>",
 							"</div>",
-							"<div class='mw-diff-otitle2'>"+RCData.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>",
-							"<div class='mw-diff-otitle3'>"+tOMinor+RCData.formatSummary(RCData.formatParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>",
+							"<div class='mw-diff-otitle2'>"+RCDataArticle.formatUserDetails(pDiffTableInfo.wikiInfo, tRevision.user, tRevision.userhidden == "", tRevision.anon != "")+"</div>",
+							"<div class='mw-diff-otitle3'>"+tOMinor+RCDataAbstract.renderSummary(RCDataArticle.tweakParsedComment(tRevision.parsedcomment, tRevision.commenthidden == "", pDiffTableInfo.wikiInfo))+"</div>",
 							// +"<div class='mw-diff-otitle4'></div>",
 						"</td>",
 						"<td class='diff-ntitle' colspan='2'>",
 							"<div class='mw-diff-ntitle1'>",
 								"<strong>",
-									"<a href='"+pDiffTableInfo.hrefFS+"oldid="+tRevision.diff.to+"' data-action='revision-link-after'>",
-										i18n('revisionasof', RCData.getFullTimeStamp(tNewRevDate), Utils.formatWikiTimeStampDateOnly(tNewRevDate), Utils.formatWikiTimeStampTimeOnly(tNewRevDate)),
+									"<a href='"+getRcUrl({ oldid:tRevision.diff.to })+"' data-action='revision-link-after'>",
+										i18n('revisionasof', Utils.formatWikiTimeStamp(tNewRevDate), Utils.formatWikiTimeStampDateOnly(tNewRevDate), Utils.formatWikiTimeStampTimeOnly(tNewRevDate)),
 									"</a>",
 									" <span class='mw-rev-head-action'>",
-										`(<a href="${pDiffTableInfo.hrefFS}oldid=${tRevision.diff.to}&action=edit" data-action="edit-revision-after">${i18n('editold')}</a>)`,
+										`(<a href="${getRcUrl({ oldid:tRevision.diff.to, action:'edit' })}" data-action="edit-revision-after">${i18n('editold')}</a>)`,
 									"</span>",
 									"<span class='mw-rev-head-action'>",
-										`(<a href="${pDiffTableInfo.hrefFS}action=edit&undoafter=${tRevision.diff.to}&undo=${tRevision.diff.to}" data-action="undo">${i18n('editundo')}</a>)`,
+										`(<a href="${getRcUrl({ action:'edit', undoafter:tRevision.diff.to, undo:tRevision.diff.to })}" data-action="undo">${i18n('editundo')}</a>)`,
 									"</span>",
 								"</strong>",
 							"</div>",
@@ -172,12 +174,12 @@ function previewImages_getGalleryItem(pPage:any, pArticlePath:string, pSize:numb
 	;
 	if(pPage.missing == "") {
 		tInvalidImage = {
-			thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
+			thumbHref: pArticlePath+Utils.escapeCharactersUrl(tTitle),
 			thumbText: i18n('filedelete-success', tTitle)
 		};
 	} else if(tImage == null) {
 		tInvalidImage = {
-			thumbHref: pArticlePath+Utils.escapeCharactersLink(tTitle),
+			thumbHref: pArticlePath+Utils.escapeCharactersUrl(tTitle),
 			thumbText: i18n('redirectto')+" "+tTitle
 		};
 	} else if(Utils.isFileAudio(tTitle)) {
@@ -363,8 +365,8 @@ export function previewDiscussionHTML(rc:RCDataFandomDiscussion) : void {
 		`;
 	} else {
 		// jsonModel makes heavy use of recursive data types, so lots of recursion in this
-		const jsonModelDataToString=(props:JsonModelDataProp):string => {
-			const recur = (content?:JsonModelDataProp[]) => content?.map(jsonModelDataToString).join("");
+		const jsonModelDataToString=(props:JsonModelDataProps):string => {
+			const recur = (content?:JsonModelDataProps[]) => content?.map(jsonModelDataToString).join("");
 			switch(props.type) {
 				case "doc": return `<div class="entity-content">${recur(props.content) ?? ""}</div>`;
 				case "paragraph": return `<p>${recur(props.content) ?? "<br />"}</p>`;

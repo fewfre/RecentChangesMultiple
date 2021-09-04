@@ -4,10 +4,8 @@ import RCMOptions from "./RCMOptions";
 import Global from "./Global";
 import RCMModal from "./RCMModal";
 import WikiData from "./WikiData";
-import RCData from "./RCData";
-import RCDataLog from "./RCDataLog";
-import RCDataFandomDiscussion from "./RCDataFandomDiscussion";
-import RCList from "./RCList";
+import { RCData, RCDataArticle, RCDataLog, RCDataFandomDiscussion } from "./rc_data";
+import RCList from "./rc_data/RCList";
 import RCParams from "./types/RCParams";
 import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
@@ -328,7 +326,7 @@ export default class RCMManager
 	}
 	
 	private _loadWikiData(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.getWikiDataApiUrl(), 'jsonp', pTries, pID, this._onWikiDataLoaded.bind(this), pDelayNum);
+		this._load(pWikiData, pWikiData.buildWikiDataApiUrl(), 'jsonp', pTries, pID, this._onWikiDataLoaded.bind(this), pDelayNum);
 	}
 	
 	private _onWikiDataLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
@@ -452,7 +450,7 @@ export default class RCMManager
 	}
 	
 	private _loadWikiaDiscussions(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.getWikiDiscussionUrl(), 'json', pTries, pID, this._onWikiDiscussionLoaded.bind(this), pDelayNum);
+		this._load(pWikiData, pWikiData.buildWikiDiscussionUrl(), 'json', pTries, pID, this._onWikiDiscussionLoaded.bind(this), pDelayNum);
 	}
 	
 	private _onWikiDiscussionLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
@@ -515,8 +513,7 @@ export default class RCMManager
 			
 			/////// Create RC ///////
 			this.itemsToAddTotal++;
-			tNewRC = new RCDataFandomDiscussion( pWikiData, this );
-			tNewRC.init(pRCData);
+			tNewRC = new RCDataFandomDiscussion(pWikiData, this, pRCData);
 			this._addRCDataToList(tNewRC);
 			pWikiData.discussionsCount++;
 		});
@@ -639,7 +636,7 @@ export default class RCMManager
 	
 	// Separate method so that it can be reused if the loading failed
 	private _loadWiki(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.getApiUrl(), 'jsonp', pTries, pID, this._onWikiLoaded.bind(this), pDelayNum);
+		this._load(pWikiData, pWikiData.buildApiUrl(), 'jsonp', pTries, pID, this._onWikiLoaded.bind(this), pDelayNum);
 	}
 	
 	/* Called after a wiki is loaded; will add it to queue, and run it if no other callbacks running. */
@@ -717,9 +714,9 @@ export default class RCMManager
 			
 			this.itemsToAddTotal++;
 			if(pRCData.logtype && pRCData.logtype != "0") { // It's a "real" log. "0" signifies a wall/board.)
-				tNewRC = new RCDataLog( pWikiData, this ).initLog(pRCData);
+				tNewRC = new RCDataLog(pWikiData, this, pRCData);
 			} else {
-				tNewRC = new RCData( pWikiData, this ).init(pRCData);
+				tNewRC = new RCDataArticle( pWikiData, this, pRCData);
 			}
 			this._addRCDataToList(tNewRC);
 			pWikiData.resultsCount++;
@@ -760,7 +757,7 @@ export default class RCMManager
 			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, userEdited, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
-			this._addRCDataToList( new RCDataLog( pWikiData, this ).initLog(pLogData) );
+			this._addRCDataToList( new RCDataLog(pWikiData, this, pLogData) );
 			pWikiData.abuseLogCount++;
 		});
 	}
@@ -1063,7 +1060,7 @@ export default class RCMManager
 	}
 	
 	notifyUserOfChange() {
-		let tMostRecentEntry:RCData = this.recentChangesEntries[0].newest;
+		let tMostRecentEntry = this.recentChangesEntries[0].newest;
 		// Skip if user is hidden for whole script or specific wiki
 		let tDontNotify = this.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1 || (tMostRecentEntry.wikiInfo.notificationsHideusers && tMostRecentEntry.wikiInfo.notificationsHideusers.indexOf(tMostRecentEntry.author) > -1) || !tMostRecentEntry.wikiInfo.notificationsEnabled;
 		if(!tDontNotify) {
@@ -1090,7 +1087,7 @@ export default class RCMManager
 			let bodyContents = [];
 			if(tEditTitle) bodyContents.push(tEditTitle);
 			bodyContents.push( i18n("notification-edited-by", tMostRecentEntry.author) );
-			if(tMostRecentEntry.unparsedComment) bodyContents.push( i18n("notification-edit-summary", tMostRecentEntry.unparsedComment) );
+			if(tMostRecentEntry.summaryUnparsed) bodyContents.push( i18n("notification-edit-summary", tMostRecentEntry.summaryUnparsed) );
 			
 			Main.addNotification(i18n("nchanges", tNumNewChanges)+" - "+tMostRecentEntry.wikiInfo.sitename + (tNumNewChangesWiki != tNumNewChanges ? ` (${tNumNewChangesWiki})` : ""), {
 				body: bodyContents.join("\n")
