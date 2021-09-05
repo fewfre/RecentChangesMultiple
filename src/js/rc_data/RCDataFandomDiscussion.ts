@@ -208,7 +208,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				);
 			}
 			case "ARTICLE_COMMENT": {
-				return i18n(pIsHead ? "rc-comments" : "rc-comment", this.getCommentForumNameLink());
+				return i18n(pIsHead ? "rc-comments" : "rc-comment", this.getCommentForumNameLink(pIsHead));
 			}
 		}
 		mw.log("(discussionTitleText) Unknown containerType:", this.containerType);
@@ -228,7 +228,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			this.forumPageName = title;
 		}
 		
-		// If loaded but page not updated for some reason
+		// If loaded but page not updated for some reason, then update value and return
 		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
 			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
 			tSetDataAfterLoad(title, relativeUrl);
@@ -245,7 +245,45 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			$(`.rcm${uniqID} a`).attr("href", this.getUrl(null, pIsHead)).text(this.forumName);
 		} });
 		
-		// If secondary fetch not start for this wiki, then start one
+		this.fetchCommentFeedsAndPostsIfNeeded();
+		
+		// Pass back temp url with an id to allow updating later
+		return `<span class="rcm${uniqID}">[[#|${this.forumName}]]</span>`;
+	}
+	
+	getCommentTimeLink() : string {
+		// If already loaded and saved
+		if(this.forumPageName) { return `<a href='${this.href}' title='${this.title}'>${this.time()}</a>`; }
+		
+		const tSetDataAfterLoad = (title, relativeUrl)=>{
+			this.forumName = title;
+			this.forumPageName = title;
+		}
+		
+		// If loaded but page not updated for some reason, then update value and return
+		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
+			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
+			tSetDataAfterLoad(title, relativeUrl);
+			return `<a href='${this.href}' title='${this.title}'>${this.time()}</a>`;
+		}
+		
+		// Else name unknown and must be loaded
+		let uniqID = Utils.uniqID();
+		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
+			// Skip if it has been disposed
+			if(!this || !this.date) { return; }
+			
+			tSetDataAfterLoad(title, relativeUrl);
+			$(`.rcm${uniqID}`).attr("href", this.href);
+		} });
+		
+		this.fetchCommentFeedsAndPostsIfNeeded();
+		
+		return `<a class="rcm${uniqID}" href='${this.href}' title='${this.title}'>${this.time()}</a>`;
+	}
+	
+	fetchCommentFeedsAndPostsIfNeeded() {
+		// If secondary fetch not started for this wiki, then start one
 		// To save on speed, we fetch as many as possible from a given wiki
 		// (ids stored in discCommentPageNamesNeeded, and url generated when everything is fetched)
 		if(this.wikiInfo.discCommentPageNamesNeeded.length === 1) {
@@ -271,8 +309,6 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				}
 			});
 		}
-		// Pass back temp url with an id to allow updating later
-		return `<span class="rcm${uniqID}">[[#|${this.forumName}]]</span>`;
 	}
 	
 	getUpvoteCount() : string {

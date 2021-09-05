@@ -642,21 +642,6 @@ export default class WikiData
 			params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
 		}
 		
-		// /***************************
-		// * Log Event Data - https://www.mediawiki.org/wiki/API:Logevents
-		// * Get info for logs that don't return all necessary info through "Recent Changes" api.
-		// * To avoid a second loading sequence, we load logs up to same limit / timestamp at "Recent Changes" api (since it's the best we can assume).
-		// ***************************/
-		// if(this.useOutdatedLogSystem && this.rcParams.hidelogs == false) {
-		// 	tUrlList.push("logevents");
-		// 	params["leprop"] = ["details", "user", "title", "timestamp", "type", "ids"].join("|");
-		// 	params["letype"] = ["rights", "move", "delete", "block", "merge"].join("|");
-			
-		// 	// How many results to retrieve
-		// 	params["lelimit"] = this.rcParams.limit;
-		// 	params["leend"] = tEndDate.toISOString();
-		// }
-		
 		/***************************
 		* Abuse Filter Filter List Data - https://www.mediawiki.org/wiki/Extension:AbuseFilter
 		* Each wiki has it's own list of abuse filters

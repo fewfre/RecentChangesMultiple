@@ -41,8 +41,8 @@ export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:str
 			var tPage = pData.query.pages[pageID];
 			var tRevision = tPage.revisions[0];
 			
-			// mw.log("Rollback: ", pRollbackLink, tRevision.rollbacktoken, tPage.lastrevid, tRevision.diff.to);
-			// if(pRollbackLink != null && tRevision.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
+			// mw.log("Rollback: ", pRollbackLink, pData.query.tokens?.rollbacktoken, tPage.lastrevid, tRevision.diff.to, pData);
+			// if(pRollbackLink != null && pData.query.tokens?.rollbacktoken && tPage.lastrevid == tRevision.diff.to) {
 			// 	tButtons.splice(tButtons.length-2, 0, {
 			// 		value: i18n('rollbacklink'),
 			// 		event: "rollback",

@@ -116,18 +116,18 @@ export default class RCList
 	
 	// TODO: Convert to a Map once ES6 is used.
 	private _contributorsCountText() : string {
-		const contribs = this.list.reduce((contribs, rc) => {
-			if(contribs.hasOwnProperty(rc.author)) {
-				contribs[rc.author].count++;
+		const contribs = this.list.reduce((map, rc) => {
+			if(map.has(rc.author)) {
+				map.get(rc.author).count++;
 			} else {
-				contribs[rc.author] = { count:1, anon:!rc.userEdited, avatar:(rc.type == RC_TYPE.DISCUSSION ? rc.getCreatorAvatarImg() : "") };
+				map.set(rc.author, { count:1, anon:!rc.userEdited, avatar:(rc.type == RC_TYPE.DISCUSSION ? rc.getCreatorAvatarImg() : "") });
 			}
-			return contribs;
-		}, {} as { [author:string]:{ count:number, anon:boolean, avatar:string } });
+			return map;
+		}, new Map<string, { count:number, anon:boolean, avatar:string }>());
 		
-		const contribLinks = Object.keys(contribs).map((key) => {
-			const { count, anon, avatar } = contribs[key];
-			return this._userPageLink(key, !anon, avatar) + (count > 1 ? " "+i18n('parentheses', i18n('ntimes', count)) : "");
+		const contribLinks:string[] = [];
+		contribs.forEach(({ count, anon, avatar }, key) => {
+			contribLinks.push(this._userPageLink(key, !anon, avatar) + (count > 1 ? " "+i18n('parentheses', i18n('ntimes', count)) : ""));
 		});
 		
 		return i18n('brackets', contribLinks.join(i18n('semicolon-separator')));
@@ -202,13 +202,18 @@ export default class RCList
 			action:'query', format:'json', prop:'revisions|info', rvprop:'size|user|parsedcomment|timestamp|flags',
 			rvdiffto:pToRC.revid, revids:pFromRC.old_revid
 		});
+		// // TODO: other way to get diff link is depreciated - but since fandom doesn't currently support "timestamp", can't switch to new way yet
+		// var ajaxLink = this.wikiInfo.getApiUrl({
+		// 	action:'compare', format:'json', prop:'diff|ids|title|size|user|parsedcomment|timestamp',
+		// 	torev:pToRC.revid, fromrev:pFromRC.old_revid
+		// });
 		const diffLink = pFromRC.getUrl({ curid:pFromRC.pageid, diff:pToRC.revid, oldid:pFromRC.old_revid });
 		const undoLink = pFromRC.getUrl({ curid:pFromRC.pageid, undo:pToRC.revid, undoafter:pFromRC.old_revid, action:'edit' });
 		// var rollbackLink = null;
 		// if(this.wikiInfo.user.rights.rollback) {
-		// 	ajaxLink += "&rvtoken=rollback";
+		// 	ajaxLink += "&meta=tokens&type=rollback";
 		// 	// Token provided upon results returned from ajaxLink.
-		// 	rollbackLink = Utils.formatString( "{0}action=rollback&from={1}&token=", pFromRC.hrefFS , pFromRC.author );
+		// 	rollbackLink = pFromRC.getUrl({ action:'rollback', from:pFromRC.author, token:'' });
 		// }
 		var diffTableInfo = {
 			wikiInfo: pFromRC.wikiInfo,
@@ -424,17 +429,14 @@ export default class RCList
 				html += `<a class='rc-pagetitle' href='${this.newest.href}'>${this.newest.title}</a>`;
 				html += this.getAjaxPagePreviewButton();
 				html += " "+i18n('parentheses-start');
-					const nchanges = i18n("nchanges", this.list.length);
-					if(this.oldest.editFlags.newpage == false) {
-						html += `<a class='rc-changes-link' href='${(this.oldest as RCDataArticle).getRcCompareDiffUrl(this.newest)}'>${nchanges}</a>`+this.getAjaxDiffButton();
-					} else {
-						html += nchanges;
-					}
-					if(this.newest.namespace == 6) {
-						html += this.getAjaxImageButton();
-					}
-					html += i18n("pipe-separator");
-					html += `<a href='${this.newest.getUrl({ action:'history' })}'>${i18n("hist")}</a>)`;
+				html += this.oldest.editFlags.newpage == false
+					? `<a class='rc-changes-link' href='${(this.oldest as RCDataArticle).getRcCompareDiffUrl(this.newest)}'>${i18n("nchanges", this.list.length)}</a>`+this.getAjaxDiffButton()
+					: i18n("nchanges", this.list.length);
+				if(this.newest.namespace == 6) {
+					html += this.getAjaxImageButton();
+				}
+				html += i18n("pipe-separator");
+				html += `<a href='${this.newest.getUrl({ action:'history' })}'>${i18n("hist")}</a>`;
 				html += i18n('parentheses-end');
 				html += RCList.SEP
 				html += this._diffSizeText(this.newest, this.oldest as RCDataArticle);
@@ -499,7 +501,11 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.href}' title='${pRC.title}'>${pRC.time()}</a></span>`;
+				if(pRC.containerType == "ARTICLE_COMMENT") {
+					html += `<span class='mw-enhanced-rc-time'>${pRC.getCommentTimeLink()}</span>`;
+				} else {
+					html += `<span class='mw-enhanced-rc-time'><a href='${pRC.href}' title='${pRC.title}'>${pRC.time()}</a></span>`;
+				}
 				if(pRC.previewData) html += this.getAjaxPagePreviewButton();
 				html += pRC.getThreadStatusIcons();
 				html += pRC.getUpvoteCount();
@@ -510,11 +516,11 @@ export default class RCList
 			}
 			case RC_TYPE.NORMAL: {
 				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.getRcRevisionUrl(null, pRC.revid)}' title='${pRC.title}'>${pRC.time()}</a></span>`;
-				html += ` (<a href='${pRC.getRcRevisionUrl(0, pRC.revid)}'>${i18n("cur")}</a>`;
-				if(pRC.editFlags.newpage == false) {
-					html += i18n("pipe-separator")+"<a href='"+pRC.getRcRevisionUrl(pRC.revid, pRC.old_revid)+"'>"+i18n("last")+"</a>"+this.getAjaxDiffButton();
-				}
-				html += ")";
+				let diffs = [
+					`<a href='${pRC.getRcRevisionUrl(0, pRC.revid)}'>${i18n("cur")}</a>`,
+					pRC.editFlags.newpage == false ? `<a href='${pRC.getRcRevisionUrl(pRC.revid, pRC.old_revid)}'>${i18n("last")}</a>`+this.getAjaxDiffButton() : i18n("last"),
+				].filter(o=>!!o);
+				html += ` ${i18n('parentheses', diffs.join(i18n("pipe-separator")))}`;
 				html += RCList.SEP;
 				html += this._diffSizeText(pRC);
 				html += RCList.SEP;
@@ -545,22 +551,20 @@ export default class RCList
 		var html = "";
 		switch(pRC.type) {
 			case RC_TYPE.LOG: {
-				let tRC = <RCDataLog>pRC;
-				html += tRC.logTitleLink();
-				if(tRC.logtype=="upload") { html += this.getAjaxImageButton(); }
-				html += i18n("semicolon-separator")+tRC.time();
+				html += pRC.logTitleLink();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
+				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
-				html += tRC.logActionText();
+				html += pRC.logActionText();
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
-				let tRC = <RCDataFandomDiscussion>pRC;
-				html += tRC.getThreadStatusIcons();
-				html += tRC.discussionTitleText( this.getThreadTitle() );
+				html += pRC.getThreadStatusIcons();
+				html += pRC.discussionTitleText( this.getThreadTitle() );
 				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
-				html += tRC.userDetails();
-				html += tRC.getSummary();
+				html += pRC.userDetails();
+				html += pRC.getSummary();
 				break;
 			}
 			case RC_TYPE.NORMAL:
