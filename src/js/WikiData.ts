@@ -363,7 +363,7 @@ export default class WikiData
 	}
 	
 	initAbuseFilterFilters(pQuery) : this {
-		if(this.needsAbuseFilterFilters && !!pQuery.abusefilters){
+		if(this.needsAbuseFilterFilters && !!pQuery?.abusefilters){
 			this.needsAbuseFilterFilters = false;
 			this.abuseFilterFilters = {};
 			let tFilter;
@@ -596,6 +596,13 @@ export default class WikiData
 		return tReturnText;
 	}
 	
+	// If filters are logged off in a way to prevent any changes, then don't load it
+	// This in needed because if some filters are blank it will load default rather than nothing
+	// We want to allow loading nothing, since Discussions + Abuse Filters may still be loaded
+	skipLoadingNormalRcDueToFilters() : boolean {
+		return this.rcParams.hidenewpages && this.rcParams.hidepageedits && this.rcParams.hidelogs;
+	}
+	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
 	// https://www.mediawiki.org/wiki/API:RecentChanges
 	buildApiUrl() : string {
@@ -607,39 +614,43 @@ export default class WikiData
 		/***************************
 		* Recent Changes Data - https://www.mediawiki.org/wiki/API:RecentChanges
 		***************************/
-		tUrlList.push("recentchanges");
-		params["rcprop"] = WikiData.RC_PROPS; // What data to retrieve.
-		
-		// How many results to retrieve
-		params["rclimit"] = this.rcParams.limit;
-		params["rcend"] = tEndDate.toISOString();
-		
-		var tRcShow = [];
-		if(this.rcParams.hideminor) { tRcShow.push("!minor"); }
-		if(this.rcParams.hidebots) { tRcShow.push("!bot"); }
-		if(this.rcParams.hideanons) { tRcShow.push("!anon"); }
-		if(this.rcParams.hideliu) { tRcShow.push("anon"); } // Hide users
-		params["rcshow"] = tRcShow.join("|");
-		tRcShow = null;
-		
-		var tRcType = ["edit", "new"]; // external
-		if(this.rcParams.hidelogs == false) { tRcType.push("log"); }
-		params["rctype"] = tRcType.join("|");
-		tRcType = null;
-		
-		// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
-		let tUserToHide = null;
-		if(this.rcParams.hidemyself && this.username) {
-			tUserToHide = this.username;
-		} else if(this.manager.hideusers.length > 0) {
-			tUserToHide = this.manager.hideusers[0];
-		} else if(this.hideusers) {
-			tUserToHide = this.hideusers[0];
-		}
-		if(tUserToHide != null) { params["rcexcludeuser"] = tUserToHide; }
-		
-		if(this.rcParams.namespace || this.rcParams.namespace === "0") {
-			params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
+		if(!this.skipLoadingNormalRcDueToFilters()) {
+			tUrlList.push("recentchanges");
+			params["rcprop"] = WikiData.RC_PROPS; // What data to retrieve.
+			
+			// How many results to retrieve
+			params["rclimit"] = this.rcParams.limit;
+			params["rcend"] = tEndDate.toISOString();
+			
+			var tRcShow = [];
+			if(this.rcParams.hideminor) { tRcShow.push("!minor"); }
+			if(this.rcParams.hidebots) { tRcShow.push("!bot"); }
+			if(this.rcParams.hideanons) { tRcShow.push("!anon"); }
+			if(this.rcParams.hideliu) { tRcShow.push("anon"); } // Hide users
+			params["rcshow"] = tRcShow.join("|");
+			tRcShow = null;
+			
+			var tRcType = []; // external
+			if(this.rcParams.hidenewpages == false) { tRcType.push("new"); }
+			if(this.rcParams.hidepageedits == false) { tRcType.push("edit"); }
+			if(this.rcParams.hidelogs == false) { tRcType.push("log"); }
+			params["rctype"] = tRcType.join("|");
+			tRcType = null;
+			
+			// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
+			let tUserToHide = null;
+			if(this.rcParams.hidemyself && this.username) {
+				tUserToHide = this.username;
+			} else if(this.manager.hideusers.length > 0) {
+				tUserToHide = this.manager.hideusers[0];
+			} else if(this.hideusers) {
+				tUserToHide = this.hideusers[0];
+			}
+			if(tUserToHide != null) { params["rcexcludeuser"] = tUserToHide; }
+			
+			if(this.rcParams.namespace || this.rcParams.namespace === "0") {
+				params["rcnamespace"] = this.rcParams.namespace; // Already separated by "|"
+			}
 		}
 		
 		/***************************

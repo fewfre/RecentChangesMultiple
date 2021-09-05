@@ -654,7 +654,7 @@ export default class RCMManager
 			this._handleWikiLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
 			return;
 		}
-		else if(pData == null || pData.query == null || pData.query.recentchanges == null) {
+		else if(pData?.query?.recentchanges == null && !pWikiData.skipLoadingNormalRcDueToFilters()) {
 			this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWiki.bind(this), this._handleWikiLoadError.bind(this));
 			return;
 		}
@@ -666,8 +666,8 @@ export default class RCMManager
 		
 		this.ajaxCallbacks.push(() => {
 			pWikiData.initAbuseFilterFilters(pData.query);
-			this._parseWikiAbuseLog(pData.query.abuselog, pWikiData);
-			this._parseWiki(pData.query.recentchanges, pWikiData);
+			this._parseWikiAbuseLog(pData.query?.abuselog, pWikiData);
+			this._parseWiki(pData.query?.recentchanges, pWikiData);
 		});
 		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
 		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
@@ -698,7 +698,7 @@ export default class RCMManager
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
 	private _parseWiki(pData, pWikiData:WikiData) : void {
 		// Check if wiki doesn't have any recent changes
-		if(pData.length <= 0) {
+		if(!pData || pData.length <= 0) {
 			this._onWikiParsingFinished(pWikiData);
 			return;
 		}
@@ -1377,6 +1377,8 @@ export default class RCMManager
 			hidemyself	: false,
 			hideenhanced: false,
 			hidelogs	: false,
+			hidenewpages: false,
+			hidepageedits: false,
 			namespace	: null,
 		};
 	}

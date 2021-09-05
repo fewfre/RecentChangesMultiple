@@ -9,6 +9,8 @@ interface RCParams {
 	hidemyself	?: boolean,
 	hideenhanced?: boolean,
 	hidelogs	?: boolean,
+	hidenewpages?: boolean,
+	hidepageedits?: boolean,
 	namespace	?: string,
 }
 export default RCParams;

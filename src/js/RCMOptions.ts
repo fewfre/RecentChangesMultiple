@@ -3,6 +3,7 @@ import RCMManager from "./RCMManager";
 import Utils from "./Utils";
 import i18n from "./i18n";
 import { WikiaMultiSelectDropdown } from "./lib/WikiaMultiSelectDropdown";
+import RCParams from "./types/RCParams";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -40,6 +41,8 @@ export default class RCMOptions
 	myEditsCheckbox				: HTMLInputElement;
 	groupedChangesCheckbox		: HTMLInputElement;
 	logsCheckbox				: HTMLInputElement;
+	newPagesCheckbox			: HTMLInputElement;
+	pageEditsCheckbox			: HTMLInputElement;
 	abuseLogsCheckbox			: HTMLInputElement;
 	
 	discussionsDropdown			: WikiaMultiSelectDropdown;
@@ -72,6 +75,8 @@ export default class RCMOptions
 		this.myEditsCheckbox			= null;
 		this.groupedChangesCheckbox		= null;
 		this.logsCheckbox				= null;
+		this.newPagesCheckbox			= null;
+		this.pageEditsCheckbox			= null;
 		this.abuseLogsCheckbox			= null;
 	}
 	
@@ -155,6 +160,12 @@ export default class RCMOptions
 		
 		Utils.addTextTo(" | ", tRow2);
 		this.abuseLogsCheckbox = this._newCheckbox(i18n('abuselog'), tRow2);
+		
+		Utils.addTextTo(" | ", tRow2);
+		this.newPagesCheckbox = this._newCheckbox(i18n('rcfilters-filter-newpages-label'), tRow2);
+		
+		Utils.addTextTo(" | ", tRow2);
+		this.pageEditsCheckbox = this._newCheckbox(i18n('rcfilters-filter-pageedits-label'), tRow2);
 		
 		/***************************
 		 * Third line of choices (discussions)
@@ -264,6 +275,8 @@ export default class RCMOptions
 		this.myEditsCheckbox.checked = !this.manager.rcParams.hidemyself;
 		this.groupedChangesCheckbox.checked = !this.manager.rcParams.hideenhanced;
 		this.logsCheckbox.checked = !this.manager.rcParams.hidelogs;
+		this.newPagesCheckbox.checked = !this.manager.rcParams.hidenewpages;
+		this.pageEditsCheckbox.checked = !this.manager.rcParams.hidepageedits;
 		this.abuseLogsCheckbox.checked = this.manager.abuseLogsEnabled;
 		
 		Object.keys(this.discNamespaces).forEach((ns)=>{
@@ -284,6 +297,8 @@ export default class RCMOptions
 		this.myEditsCheckbox.addEventListener("change", this._onChange_hidemyself);
 		this.groupedChangesCheckbox.addEventListener("change", this._onChange_hideenhanced);
 		this.logsCheckbox.addEventListener("change", this._onChange_hidelogs);
+		this.newPagesCheckbox.addEventListener("change", this._onChange_hidenewpages);
+		this.pageEditsCheckbox.addEventListener("change", this._onChange_hidepageedits);
 		this.abuseLogsCheckbox.addEventListener("change", this._onChange_abuselogs);
 		
 		this.discussionsDropdown.on("change", this._onChange_discussionsDropdown);
@@ -303,6 +318,8 @@ export default class RCMOptions
 		this.myEditsCheckbox.removeEventListener("change", this._onChange_hidemyself);
 		this.groupedChangesCheckbox.removeEventListener("change", this._onChange_hideenhanced);
 		this.logsCheckbox.removeEventListener("change", this._onChange_hidelogs);
+		this.newPagesCheckbox.removeEventListener("change", this._onChange_hidenewpages);
+		this.pageEditsCheckbox.removeEventListener("change", this._onChange_hidepageedits);
 		this.abuseLogsCheckbox.removeEventListener("change", this._onChange_abuselogs);
 	}
 	
@@ -330,6 +347,7 @@ export default class RCMOptions
 	private _onChange_hideanons = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
 		if(this.getInput(pEvent).checked == false && this.usersCheckbox.checked == false) {
+			this.rcParams["hideliu"] = false;
 			this.manager.rcParams["hideliu"] = false;
 			this.usersCheckbox.checked = true;
 		}
@@ -339,6 +357,7 @@ export default class RCMOptions
 	private _onChange_hideliu = (pEvent:Event) : void => {
 		// Both "hideanons" and "hideliu" cannot be true
 		if(this.getInput(pEvent).checked == false && this.anonsCheckbox.checked == false) {
+			this.rcParams["hideanons"] = false;
 			this.manager.rcParams["hideanons"] = false;
 			this.anonsCheckbox.checked = true;
 		}
@@ -355,6 +374,14 @@ export default class RCMOptions
 	
 	private _onChange_hidelogs = (pEvent:Event) : void => {
 		this.afterChangeBoolean("hidelogs", !this.getInput(pEvent).checked);
+	}
+	
+	private _onChange_hidenewpages = (pEvent:Event) : void => {
+		this.afterChangeBoolean("hidenewpages", !this.getInput(pEvent).checked);
+	}
+	
+	private _onChange_hidepageedits = (pEvent:Event) : void => {
+		this.afterChangeBoolean("hidepageedits", !this.getInput(pEvent).checked);
 	}
 	
 	private _onChange_abuselogs = (pEvent:Event) : void => {
@@ -392,14 +419,14 @@ export default class RCMOptions
 	 * Helper Methods
 	 ***************************/
 	// Will add / edit the url param & script value with details entered.
-	afterChangeNumber(pKey:string, pVal:number, pHardRefresh:boolean=false) : void {
+	afterChangeNumber(pKey:keyof RCParams, pVal:number, pHardRefresh:boolean=false) : void {
 		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
 		this.manager.hardRefresh(true);
 		this.save();
 	}
 	
-	afterChangeBoolean(pKey:string, pVal:boolean, pHardRefresh:boolean=false) : void {
+	afterChangeBoolean(pKey:keyof RCParams, pVal:boolean, pHardRefresh:boolean=false) : void {
 		this.rcParams[pKey] = pVal;
 		this.manager.rcParams[pKey] = pVal;
 		this.manager.hardRefresh(true);

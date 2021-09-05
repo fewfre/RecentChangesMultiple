@@ -129,6 +129,8 @@ const MESSAGES = i18n.MESSAGES = {
 	'rcshowhidemine'		: '$1 my edits', // 2053
 	'rcfilters-group-results-by-page'	: 'Group results by page',
 	'rcfilters-filter-logactions-label' : 'Logged actions',
+	'rcfilters-filter-newpages-label' : 'Page creations',
+	'rcfilters-filter-pageedits-label' : 'Page edits',
 	'diff' : 'diff', // L2055
 	'hist' : 'hist', // L2056
 	'hide' : 'Hide', // L2057
