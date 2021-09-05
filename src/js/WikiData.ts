@@ -95,8 +95,8 @@ export default class WikiData
 	// * AbuseFilter
 	// ****************************/
 	wikiUsesAbuseLogs		: boolean;
-	abuseFilterFilters		: { [id: number]: { description:string, private:boolean } };
-	needsAbuseFilterFilters	: boolean;
+	abuseFilters			: { [id: number]: { description:string, private:boolean } };
+	needsAbuseFilters		: boolean;
 	
 	/***************************
 	* Other
@@ -136,8 +136,8 @@ export default class WikiData
 		this.discCommentPageNamesNeeded = [];
 		
 		this.wikiUsesAbuseLogs = false; // assume it's off until we check
-		this.abuseFilterFilters		= {};
-		this.needsAbuseFilterFilters = false;
+		this.abuseFilters = {};
+		this.needsAbuseFilters = false;
 		
 		this.hidden = false;
 		
@@ -358,18 +358,18 @@ export default class WikiData
 		// Check if wiki has any abusefilter rights; if so, it's probably enabled (and accessable)
 		this.wikiUsesAbuseLogs = this.user.rights.abusefilter_log;//!!Utils.arrayFind(rightsList, r=>r.indexOf("abusefilter") > -1);
 		if(this.manager.abuseLogsEnabled) {
-			this.needsAbuseFilterFilters = this.wikiUsesAbuseLogs;
+			this.needsAbuseFilters = this.wikiUsesAbuseLogs;
 		}
 	}
 	
 	initAbuseFilterFilters(pQuery) : this {
-		if(this.needsAbuseFilterFilters && !!pQuery?.abusefilters){
-			this.needsAbuseFilterFilters = false;
-			this.abuseFilterFilters = {};
+		if(this.needsAbuseFilters && !!pQuery?.abusefilters){
+			this.needsAbuseFilters = false;
+			this.abuseFilters = {};
 			let tFilter;
 			for (let i = 0; i < pQuery.abusefilters.length; i++) {
 				tFilter = pQuery.abusefilters[i];
-				this.abuseFilterFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
+				this.abuseFilters[tFilter.id] = { description:tFilter.description, private:tFilter.private==="" };
 			}
 		}
 		
@@ -660,7 +660,7 @@ export default class WikiData
 		// POSSIBLE BUG: potential issue if external wiki has this.username set when anons not allowed to view log data - may need to fetch both anon and user data?
 		if(this.wikiUsesAbuseLogs && this.manager.abuseLogsEnabled && this.user.rights.abusefilter_view && this.user.rights.abusefilter_log) {
 			// Grab filters just once (so we have them on-hand)
-			if(this.needsAbuseFilterFilters) {
+			if(this.needsAbuseFilters) {
 				tUrlList.push("abusefilters");
 				params["abflimit"] = 500;
 				params["abfshow"] = "enabled";

@@ -159,13 +159,15 @@ export default class RCMOptions
 		this.logsCheckbox = this._newCheckbox(i18n('rcfilters-filter-logactions-label'), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
-		this.abuseLogsCheckbox = this._newCheckbox(i18n('abuselog'), tRow2);
-		
-		Utils.addTextTo(" | ", tRow2);
 		this.newPagesCheckbox = this._newCheckbox(i18n('rcfilters-filter-newpages-label'), tRow2);
 		
 		Utils.addTextTo(" | ", tRow2);
 		this.pageEditsCheckbox = this._newCheckbox(i18n('rcfilters-filter-pageedits-label'), tRow2);
+		
+		// Hide this a-standard filter unless a wiki on the list needs it. Unhidden via `toggleAbuseLogsFilterVisiblity` later
+		var tALSpan = Utils.newElement("span", { className:"rcm-al-filter", style:"display:none;" }, tRow2);
+		Utils.addTextTo(" | ", tALSpan);
+		this.abuseLogsCheckbox = this._newCheckbox(i18n('abuselog'), tALSpan);
 		
 		/***************************
 		 * Third line of choices (discussions)
@@ -192,6 +194,10 @@ export default class RCMOptions
 		
 		this.refresh();
 		return this;
+	}
+	
+	toggleAbuseLogsFilterVisiblity(pShow:boolean) {
+		$(this.root).find(".rcm-al-filter").toggle( pShow );
 	}
 	
 	private _newCheckbox(pText:string, pParent:HTMLElement) : HTMLInputElement {
@@ -387,7 +393,7 @@ export default class RCMOptions
 	private _onChange_abuselogs = (pEvent:Event) : void => {
 		this.manager.abuseLogsEnabled = this.getInput(pEvent).checked;
 		if(this.manager.abuseLogsEnabled) {
-			this.manager.chosenWikis.forEach(w=>w.needsAbuseFilterFilters=true);
+			this.manager.chosenWikis.forEach(w=>w.needsAbuseFilters=true);
 		}
 		this.manager.hardRefresh(true);
 		this.save();

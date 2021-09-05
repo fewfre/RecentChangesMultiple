@@ -264,11 +264,11 @@ export default class RCDataLog extends RCDataAbstract
 				const { result, filter, filter_id } = this.logParams;
 				let filterFromDesc: { id?:number, private?:boolean, found:number } = { found:0 };
 				if(filter.trim() != "") {
-					Object.keys(this.wikiInfo.abuseFilterFilters).forEach((i)=>{
-						if(this.wikiInfo.abuseFilterFilters[i].description == filter) {
+					Object.keys(this.wikiInfo.abuseFilters).forEach((i)=>{
+						if(this.wikiInfo.abuseFilters[i].description == filter) {
 							filterFromDesc.found++;
 							filterFromDesc.id = Number(i);
-							filterFromDesc.private = this.wikiInfo.abuseFilterFilters[i].private;
+							filterFromDesc.private = this.wikiInfo.abuseFilters[i].private;
 						}
 					});
 				}
@@ -325,7 +325,7 @@ export default class RCDataLog extends RCDataAbstract
 				const { newId:filterId, historyId } = this.logParams;
 				
 				// If a filter is modified, re-grab the filter data
-				this.wikiInfo.needsAbuseFilterFilters = true;
+				this.wikiInfo.needsAbuseFilters = true;
 				
 				switch(this.logaction) {
 					case "create":

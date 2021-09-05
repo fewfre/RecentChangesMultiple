@@ -419,6 +419,9 @@ export default class RCMManager
 		
 		this.wikisNode.onWikiDataLoaded();
 		
+		// If at least one wiki on this list has abuse filters enabled, then show the toggle
+		this.optionsNode.toggleAbuseLogsFilterVisiblity( this.chosenWikis.some(w=>w.wikiUsesAbuseLogs) );
+		
 		this._start(true);
 	}
 	
@@ -606,6 +609,8 @@ export default class RCMManager
 			tWikiData.resultsCount = 0;
 			tWikiData.discussionsCount = 0;
 			tWikiData.abuseLogCount = 0;
+			// Need to clear them as otherwise they won't be attempted again
+			tWikiData.discCommentPageNamesNeeded = [];
 		});
 		
 		// if(this.rcData != null) {
