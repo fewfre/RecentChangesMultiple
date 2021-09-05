@@ -293,6 +293,9 @@ const MESSAGES = i18n.MESSAGES = {
 	'listusers-select-all': 'Select all',
 	'socialactivity-page-title': 'Social Activity',
 	
+	'activity-social-activity-poll-placeholder': 'poll',
+	'activity-social-activity-image-placeholder': 'image',
+	
 	/***************************
 	* AbuseFilter
 	****************************/

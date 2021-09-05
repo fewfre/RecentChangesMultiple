@@ -13,6 +13,8 @@
 - Rewrote RCData classes to inherit from an abstract class, and moved them all into a folder
 - Added some missing translation support for symbols
 - [Bug] Comment timestamp links (when in grouped mode) now correctly link / update once page name is fetched via API
+- "social activity" summaries now support polls & show image placeholder in text summaries
+- "social activity" posts now show official new/reply icons next to them
 
 
 == 2.16 - 21 August 2021 ==

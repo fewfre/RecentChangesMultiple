@@ -351,6 +351,7 @@ export default class RCList
 			}
 			case RC_TYPE.DISCUSSION: {
 				let tRC = <RCDataFandomDiscussion>pRC;
+				html += pRC.getThreadActionIcon()+" ";
 				html += tRC.getThreadStatusIcons();
 				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
 				if((this.newest as RCDataFandomDiscussion).previewData) html += this.getAjaxPagePreviewButton();
@@ -443,6 +444,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
+				html += this.newest.getThreadTypeIcon()+" ";
 				html += this.newest.discussionTitleText( this.getThreadTitle(), true );
 				html += " "+i18n('parentheses-start');
 				html += i18n("nchanges", this.list.length);
@@ -508,8 +510,9 @@ export default class RCList
 				}
 				if(pRC.previewData) html += this.getAjaxPagePreviewButton();
 				html += pRC.getThreadStatusIcons();
-				html += pRC.getUpvoteCount();
+				// html += pRC.getUpvoteCount();
 				html += RCList.SEP;
+				html += pRC.getThreadActionIcon()+" ";
 				html += pRC.userDetails();
 				html += pRC.getSummary();
 				break;
@@ -559,6 +562,7 @@ export default class RCList
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
+				html += pRC.getThreadActionIcon()+" ";
 				html += pRC.getThreadStatusIcons();
 				html += pRC.discussionTitleText( this.getThreadTitle() );
 				html += i18n("semicolon-separator")+pRC.time();

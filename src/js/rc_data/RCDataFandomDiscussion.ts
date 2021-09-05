@@ -53,6 +53,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	forumId			: string;
 	forumName		: string; // name of the forum (may not be suitable for urls) - used on actual page
 	forumPageName	: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
+	threadTitle		: string; // The name of the thread if known
 	
 	user_id			: string; // createdBy.id
 	user_avatarUrl	: string // createdBy.avatarUrl
@@ -60,10 +61,9 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	isLocked		: string;
 	isReported		: string;
 	isReply			: boolean;
-	upvoteCount		: number;
+	action			: "new"|"reply";
 	rawContent		: string;
 	
-	threadTitle		: string; // The name of the thread if known
 	previewData		: { jsonModel:JsonModelDataProps, attachments:any[], poll?:PollProps }; // Preview
 	
 	// Constructor
@@ -93,26 +93,46 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		this.isReply = post.isReply;
 		this.isLocked = post.isLocked;
 		this.isReported = post.isReported;
-		this.upvoteCount = post.upvoteCount;
+		this.action = post.position == 1 ? "new" : "reply";
 		this.rawContent = post.rawContent;
 		
 		this.threadTitle = thread ? (thread.title || post.title) : post.title;
 		
+		const jsonModel:JsonModelDataProps = JSON.parse(post.jsonModel);
+		
 		// Get summary; done two ways based on containerType
-		this.summary = post.rawContent;
-		if(this.containerType == "ARTICLE_COMMENT" && !this.summary && post.jsonModel) {
-			let jsonModel:{ type:string, content:{ type:string, text:string }[] }[] = JSON.parse(post.jsonModel).content;
-			this.summary = !jsonModel || jsonModel.length===0 ? "" : jsonModel.map(d=>d.type=="paragraph" && d.content ? d.content.map(td=>td.text || "") : "").join(" ").replace(/  /, " ");
+		if(post.rawContent) {
+			this.summary = post.rawContent;
+			if(this.summary.length > 100) { this.summary = this.summary.slice(0, 100).trim()+"..."; }
+		} else {
+			if(post.poll) {
+				this.summary = `${Global.getWdsSymbol('rcm-disc-poll')} ${i18n('activity-social-activity-poll-placeholder')}`;
+			}
+			else if(this.containerType == "ARTICLE_COMMENT" && post.jsonModel) {
+				const tJsonToSummary=(props:JsonModelDataProps):string => {
+					if("content" in props) { return props.content.map(tJsonToSummary).join(""); }
+					if(props.type == "text") { return props.text; }
+					else if(props.type == "image") { return " ␚ "; } // use temp here, since html injected here won't play nice with string length
+					return "";
+				};
+				
+				this.summary = tJsonToSummary(jsonModel).replace(/  /g, " ").trim();
+				
+				if(this.summary.length > 100) {
+					this.summary = this.summary.slice(0, 100).trim()+"...";
+				}
+				// Replace the temp character from earlier here, after the length has been shortened
+				this.summary = this.summary.replace(/␚/g, `${Global.getWdsSymbol('rcm-disc-image')} ${i18n('activity-social-activity-image-placeholder')}`);
+			}
 		}
-		if(this.summary.length > 175) {
+		if(this.summary) {
 			this.summary = `"${this.summary}"`; // Add quotes around it just to drive home it is a quote
-			this.summary = this.summary.slice(0, 175)+"...";
 		}
 		this.summaryUnparsed = this.summary;
 		
-		if(post.jsonModel || post.poll) {
+		if(jsonModel || post.poll) {
 			try {
-				this.previewData = { jsonModel:JSON.parse(post.jsonModel), attachments:post._embedded.attachments, poll:post.poll };
+				this.previewData = { jsonModel, attachments:post._embedded.attachments, poll:post.poll };
 			} catch(e){};
 		}
 		
@@ -197,7 +217,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
 				let tForumLink = `<a href="${this.getForumUrl()}">${this.forumName}</a>`;
 				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
-				return i18n.wiki2html(tText, `<a href="${this.getUrl(null, pIsHead)}">${pThreadTitle}</a>`+(pIsHead ? "" : this.getUpvoteCount()), tForumLink);
+				return i18n.wiki2html(tText, `<a href="${this.getUrl(null, pIsHead)}">${pThreadTitle}</a>`, tForumLink);//+(pIsHead ? "" : this.getUpvoteCount())
 			}
 			case "WALL": {
 				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
@@ -287,6 +307,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		// To save on speed, we fetch as many as possible from a given wiki
 		// (ids stored in discCommentPageNamesNeeded, and url generated when everything is fetched)
 		if(this.wikiInfo.discCommentPageNamesNeeded.length === 1) {
+			const wikiInfo = this.wikiInfo;
 			this.manager.secondaryWikiData.push({
 				url: ()=>{
 					let ids = this.wikiInfo.discCommentPageNamesNeeded.map(o=>o.pageID).filter((o,i,a)=>a.indexOf(o)==i).join(",");
@@ -298,30 +319,47 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				skipRefreshSanity: true,
 				callback: (data) => {
 					// Pass data to all waiting items
-					this.wikiInfo.discCommentPageNamesNeeded.forEach((o)=>{
+					wikiInfo.discCommentPageNamesNeeded.forEach((o)=>{
 						if(data.articleNames[Number(o.pageID)]) {
 							o.cb(data.articleNames[Number(o.pageID)]);
-							this.wikiInfo.discCommentPageNames.set(o.pageID, data.articleNames[Number(o.pageID)])
+							wikiInfo.discCommentPageNames.set(o.pageID, data.articleNames[Number(o.pageID)])
 						}
 					});
 					// List cleared of waiting items
-					this.wikiInfo.discCommentPageNamesNeeded = [];
+					wikiInfo.discCommentPageNamesNeeded = [];
 				}
 			});
 		}
 	}
 	
-	getUpvoteCount() : string {
-		// Only forum-type discussions have upvotes
-		if(this.containerType != "FORUM") { return ""; }
-		return `<span class="rcm-upvotes"> (${Global.getSymbol("rcm-upvote-tiny")} ${this.upvoteCount})</span>`;
-	}
+	// getUpvoteCount() : string {
+	// 	// Only forum-type discussions have upvotes
+	// 	if(this.containerType != "FORUM") { return ""; }
+	// 	return `<span class="rcm-upvotes"> (${Global.getSymbol("rcm-upvote-tiny")} ${this.upvoteCount})</span>`;
+	// }
 	
 	getThreadStatusIcons() : string {
 		return ""
 			+ (this.isLocked ? Global.getSymbol("rcm-lock") : "")
 			+ (this.isReported ? Global.getSymbol("rcm-report") : "")
 		;
+	}
+	
+	getThreadTypeIcon() : string {
+		switch(this.containerType) {
+			default:
+			case "FORUM": return Global.getWdsSymbol('rcm-disc-comment');
+			case "WALL": return Global.getWdsSymbol('rcm-disc-envelope');
+			case "ARTICLE_COMMENT": return Global.getWdsSymbol('rcm-disc-page');
+		}
+		return "";
+	}
+	
+	getThreadActionIcon() : string {
+		switch(this.action) {
+			case "new": return this.getThreadTypeIcon();
+			case "reply": return Global.getWdsSymbol('rcm-disc-reply');
+		}
 	}
 	
 	/* override */ getNotificationTitle() : string {

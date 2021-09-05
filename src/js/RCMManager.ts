@@ -457,7 +457,7 @@ export default class RCMManager
 		// Make sure this isn't something loaded before the script was last refreshed.
 		if(pID != this.ajaxID) { return; }
 		
-		if(pFailStatus == null && pData && pData["_embedded"] && pData["_embedded"]["doc:posts"]) {
+		if(pFailStatus == null && pData?.["_embedded"]?.["doc:posts"]) {
 			pWikiData.usesWikiaDiscussions = true;
 			this.ajaxCallbacks.push(() => {
 				this._parseWikiDiscussions(pData["_embedded"]["doc:posts"], pWikiData);

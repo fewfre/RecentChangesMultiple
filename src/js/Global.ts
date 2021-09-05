@@ -94,8 +94,15 @@ export default class Global
 	/*************************************
 	* SVGs - Inline SVG allows icon to use font color.
 	**************************************/
-	static getSymbol(pID:/*"rcm-loading"|"rcm-loading-large"|*/"rcm-columns"|"rcm-picture"|"rcm-preview"|"rcm-upvote-tiny"|"rcm-lock"|"rcm-report"|"rcm-settings-gear"|"rcm-disc-page"|"rcm-disc-envelope"|"rcm-disc-reply", pWidth:string|number=15, pHeight:string|number=pWidth) : string {
+	static getSymbol(
+		pID:/*"rcm-loading"|"rcm-loading-large"|*/"rcm-columns"|"rcm-picture"|"rcm-preview"|"rcm-upvote-tiny"|"rcm-lock"|"rcm-report"|"rcm-settings-gear",
+		pWidth:string|number=15, pHeight:string|number=pWidth
+	) : string {
 		return `<svg width="${pWidth}" height="${pHeight}" class='rcm-svg-icon'><use xlink:href="#${pID}" width="${pWidth}" height="${pHeight}" /></svg>`;
+	}
+	// Same as `getSymbol`, except some small tweaks for the fandom-defined symbols
+	static getWdsSymbol(pID:"rcm-disc-page"|"rcm-disc-envelope"|"rcm-disc-comment"|"rcm-disc-reply"|"rcm-disc-poll"|"rcm-disc-image", width:number=12, height:number=width) : string {
+		return `<svg class='rcm-svg-icon wds-icon wds-icon-tiny' width="${width}" height="${height}"><use xlink:href="#${pID}" width="${width}" height="${height}" /></svg>`;
 	}
 	
 	static /*readonly*/ SVG_SYMBOLS : string[] = [
@@ -183,12 +190,17 @@ export default class Global
 			<path style="fill:currentColor" d="M20,14.5v-2.9l-1.8-0.3c-0.1-0.4-0.3-0.8-0.6-1.4l1.1-1.5l-2.1-2.1l-1.5,1.1c-0.5-0.3-1-0.5-1.4-0.6L13.5,5h-2.9l-0.3,1.8 C9.8,6.9,9.4,7.1,8.9,7.4L7.4,6.3L5.3,8.4l1,1.5c-0.3,0.5-0.4,0.9-0.6,1.4L4,11.5v2.9l1.8,0.3c0.1,0.5,0.3,0.9,0.6,1.4l-1,1.5 l2.1,2.1l1.5-1c0.4,0.2,0.9,0.4,1.4,0.6l0.3,1.8h3l0.3-1.8c0.5-0.1,0.9-0.3,1.4-0.6l1.5,1.1l2.1-2.1l-1.1-1.5c0.3-0.5,0.5-1,0.6-1.4 L20,14.5z M12,16c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S13.7,16,12,16z"/>
 		</symbol>`,
 		
-		// [wds-icons-page-tiny] Used for discussion stuff
+		//////////////////////////
+		// Discussion Stuff - created by fandom
+		//////////////////////////
+		// Icons representing an action (new, reply, etc)
 		`<symbol id="rcm-disc-page" viewBox="0 0 12 12"><path d="M5 7v3H3V2h6v4H6a1 1 0 0 0-1 1m5.935.326c.03-.086.047-.175.053-.265.001-.022.012-.04.012-.061V1a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4a.985.985 0 0 0 .383-.077.986.986 0 0 0 .325-.217l3.998-3.998.004-.005a.958.958 0 0 0 .19-.283c.015-.03.023-.062.035-.094" fill-rule="evenodd"></path></symbol>`,
-		// [wds-icons-envelope-tiny] Used for discussion stuff
 		`<symbol id="rcm-disc-envelope" viewBox="0 0 12 12"><path d="M10 9H2V4.414l3.293 3.293a.999.999 0 0 0 1.414 0L10 4.414V9zM8.586 3L6 5.586 3.414 3h5.172zm3.339-1.381A1.003 1.003 0 0 0 11.003 1H.997a.988.988 0 0 0-.704.293A1.003 1.003 0 0 0 0 1.997V10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V1.997a.988.988 0 0 0-.075-.378z" fill-rule="evenodd"></path></symbol>`,
-		// [wds-icons-reply-tiny] Used for discussion stuff
+		`<symbol id="rcm-disc-comment" viewBox="0 0 12 12"><path id="comment-tiny" d="M4.5 2c-.668 0-1.293.26-1.757.731A2.459 2.459 0 0 0 2 4.5c0 1.235.92 2.297 2.141 2.47A1 1 0 0 1 5 7.96v.626l1.293-1.293A.997.997 0 0 1 7 7h.5c.668 0 1.293-.26 1.757-.731.483-.476.743-1.1.743-1.769C10 3.122 8.878 2 7.5 2h-3zM4 12a1 1 0 0 1-1-1V8.739A4.52 4.52 0 0 1 0 4.5c0-1.208.472-2.339 1.329-3.183A4.424 4.424 0 0 1 4.5 0h3C9.981 0 12 2.019 12 4.5a4.432 4.432 0 0 1-1.329 3.183A4.424 4.424 0 0 1 7.5 9h-.086l-2.707 2.707A1 1 0 0 1 4 12z"></path></symbol>`,
 		`<symbol id="rcm-disc-reply" viewBox="0 0 12 12"><path id="reply-tiny" d="M4.998 4H3.412l2.293-2.293A.999.999 0 1 0 4.291.293l-3.999 4a1 1 0 0 0 0 1.415l3.999 4a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.415L3.412 6h1.586c2.757 0 5 2.243 5 5a1 1 0 1 0 2 0c0-3.86-3.141-7-7-7"></path></symbol>`,
+		// Icons used in summaries
+		`<symbol id="rcm-disc-poll" viewBox="0 0 12 12"><path id="poll-tiny" d="M2 7a1 1 0 0 1 1 1v3a1 1 0 0 1-2 0V8a1 1 0 0 1 1-1zm8-3a1 1 0 0 1 1 1v6a1 1 0 0 1-2 0V5a1 1 0 0 1 1-1zM6 0a1 1 0 0 1 1 1v10a1 1 0 0 1-2 0V1a1 1 0 0 1 1-1z"></path></symbol>`,
+		`<symbol id="rcm-disc-image" viewBox="0 0 12 12"><path id="image-tiny" d="M10 6.243l-.646-.646a.5.5 0 0 0-.708 0L7 7.243 3.854 4.097a.5.5 0 0 0-.708 0L2 5.243V2h8v4.243zM10 10H2V6.657l1.5-1.5 3.146 3.147a.502.502 0 0 0 .708 0L9 6.657l1 1V10zm1-10H1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zM6.65 4.35c.09.1.22.15.35.15.07 0 .13-.01.19-.04.06-.02.12-.06.16-.11.05-.04.09-.1.11-.16.03-.06.04-.12.04-.19a.472.472 0 0 0-.15-.35.355.355 0 0 0-.16-.11.495.495 0 0 0-.54.11.472.472 0 0 0-.15.35c0 .07.01.13.04.19.02.06.06.12.11.16"></path></symbol>`,
 	];
 	
 	// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
