@@ -1,31 +1,16 @@
-﻿- allow disabling a wiki
-	-Idea: when opening wiki details, along the bottom is "hide wiki" and "show only this wiki"
-		-if hidden, "show wiki"
-	-When wiki is hidden, it's added to a new "Hidden wikis: " list, and at the end of list is "unhide all"
-- add diff view for new pages collapsed into "(# changes)" - still useful
+﻿- add diff view for new pages collapsed into "(# changes)" - still useful
 - change design somewhat to follow more modern recent changes?
 - syntax highlight for css/js/lua page previews
-- show abuse logs (NOT abuse filter logs; they already show)
+- group page comments by page name (not thread group)? - can't be done until page name is included by default (I think?)
 
 ############################################
 ## PRIMARY
 ############################################
 - [Idea] Make a "loader" class to cut down on duplicate code between sitedata, RC, and discussion loading.
-- Add a new way to format data (while retaining backwards compatibility)
-	- make "data-params" / "&params=" their own params
-	- Don't crowd wiki options onto the end of the line; make them sublists
-		- Allow links to have http(s) when using this (just remove them; won't be an issue anymore due to line above)
-	- make script-wide options on the js page
-	- Add way to list wikis on JS page (display on a special:blank page?)
-- Better visual loading progress for each wiki on WikiPanel
-	- keep icons in same place
-	- show loading spinner on top of them.
-	- button with option to only show changes for that wiki?
 - Add "discussions-enabled" options to individual wikis.
 - [Bug] Deleted pages not removed on soft refresh
 - Close shadow root? (Chrome shows “shadow root (open)”)
 - User info box on hover (since already fetching data for a users' groups)
-- [Bug] on FF the page preview replaces current page icon with that wiki's icon
 
 ############################################
 ## SECONDARY
