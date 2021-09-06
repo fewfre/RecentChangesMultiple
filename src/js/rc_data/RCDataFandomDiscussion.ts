@@ -422,6 +422,16 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	}
 	
 	/* override */ getNotificationTitle() : string {
-		return this.title;
+		switch(this.containerType) {
+			case "FORUM": {
+				return `${i18n('discussions')}: ${this.getThreadTitle()} [${this.forumName}]`;
+			}
+			case "WALL": {
+				return `${i18n('message-wall')}: ${this.getThreadTitle()} [${this.forumName}]`;
+			}
+			case "ARTICLE_COMMENT": {
+				return i18n("comments");
+			}
+		}
 	}
 }

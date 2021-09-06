@@ -1083,10 +1083,6 @@ export default class RCMManager
 			}
 			Main.blinkWindowTitle(i18n("notification-new")+" "+i18n("nchanges", tNumNewChanges));
 			let tEditTitle = tMostRecentEntry.getNotificationTitle();
-			if(tEditTitle == null) {
-				tEditTitle = this.recentChangesEntries[0].getExistingThreadTitle();
-				tEditTitle = tEditTitle ? i18n('discussions')+" - "+tEditTitle : i18n('discussions');
-			}
 			
 			// Get each line of the notification
 			let bodyContents = [];
