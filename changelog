@@ -18,6 +18,7 @@
 - Added new filters for page edits + page creation
 	- Made it so if logs + page edits + page creation are all unselected then recentchanges won't load; this can allow viewing only discussions/abuse logs
 - Abuse logs filter now only shows on options panel if at least one wiki on the list uses the extension
+- "social activity" posts now use text explaining what each change did
 
 
 == 2.16 - 21 August 2021 ==

@@ -153,18 +153,18 @@ const MESSAGES = i18n.MESSAGES = {
 	// "Extra" support - "# only translate this message to other languages if you have to change it"
 	'semicolon-separator' : ';&#32;',
 	'pipe-separator' : '&#32;|&#32;',
+	'word-separator' : ' ',
 	'parentheses' : '($1)',
 	'parentheses-start' : '(',
 	'parentheses-end' : ')',
 	'brackets' : '[$1]',
+	'quotation-marks' : '"$1"',
 	'ntimes': '$1×',
+	'and' : '&#32;and',
 	// Revision deletion
 	'rev-deleted-comment' : '(edit summary removed)',
 	'rev-deleted-user' : '(username removed)',
 	'rev-deleted-event' : '(log action removed)',
-	// https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/ArticleComments/ArticleComments.i18n.php
-	'and' : '&#32;and',
-	'word-separator' : ' ',
 	// Wiki Infobar
 	'recentchanges' : 'Recent changes',
 	'newpages' : 'New pages',
@@ -281,14 +281,9 @@ const MESSAGES = i18n.MESSAGES = {
 	// ## Non-standard Mediawiki logs ##
 	// User Rename - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserRenameTool/SpecialRenameuser.i18n.php
 	'userrenametool-success' : 'The user "$1" has been renamed to "$2".',
-
-	/***************************
-	* Wall - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/Wall/Wall.i18n.php#L191
-	****************************/
-	'wall-recentchanges-thread-group'			: '$1 on [[$2|$3\'s wall]]',
 	
 	/***************************
-	* Discussions
+	* Social Activity: Discussions / Walls / Comments
 	****************************/
 	// 'forum-related-discussion-heading': 'Discussions about $1',
 	'allmessages-filter-all': 'All',
@@ -297,6 +292,49 @@ const MESSAGES = i18n.MESSAGES = {
 	
 	'activity-social-activity-poll-placeholder': 'poll',
 	'activity-social-activity-image-placeholder': 'image',
+	'socialactivity-view': 'view',
+	
+	// OLD
+	'wall-recentchanges-thread-group'			: '$1 on [[$2|$3\'s wall]]',
+	
+	// Forum Activity
+	'activity-social-activity-post-create': "$1 posted $2 in $3: $4",
+	// 'activity-social-activity-post-edit': "$1 edited a post $2 in $3: $4",
+	// 'activity-social-activity-post-delete': "$1 deleted a post $2 in $3: $4",
+	// 'activity-social-activity-post-undelete': "$1 undeleted a post $2 in $3: $4",
+	// 'activity-social-activity-post-lock': "$1 locked the post $2 in $3: $4",
+	// 'activity-social-activity-post-unlock': "$1 unlocked the post $2 in $3: $4",
+	// 'activity-social-activity-post-report': "$1 reported the post $2 in $3: $4",
+	
+	'activity-social-activity-post-reply-create': "$1 replied to the post $2 in $3: $4",
+	// 'activity-social-activity-post-reply-edit': "$1 edited a reply to the post $2 in $3: $4",
+	// 'activity-social-activity-post-reply-delete': "$1 deleted a reply to the post $2 in $3: $4",
+	// 'activity-social-activity-post-reply-undelete': "$1 undeleted a reply to the post $2 in $3: $4",
+	// 'activity-social-activity-post-reply-report': "$1 reported the reply to the post $2 in $3: $4",
+	
+	// Wall Activity
+	'activity-social-activity-message-create': "$1 left the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-edit': "$1 edited the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-delete': "$1 deleted the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-undelete': "$1 undeleted the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-lock': "$1 locked the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-unlock': "$1 unlocked the message $2 on $3's wall: $4",
+	
+	'activity-social-activity-message-reply-create': "$1 replied to the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-reply-edit': "$1 edited a reply to the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-reply-delete': "$1 deleted a reply to the message $2 on $3's wall: $4",
+	// 'activity-social-activity-message-reply-undelete': "$1 undeleted a reply to the message $2 on $3's wall: $4",
+	
+	// Comment Activity
+	'activity-social-activity-comment-create': "$1 commented on the article $2: $3",
+	// 'activity-social-activity-comment-edit': "$1 edited a comment on the article $2: $3",
+	// 'activity-social-activity-comment-delete': "$1 deleted a comment on the article $2: $3",
+	// 'activity-social-activity-comment-undelete': "$1 undeleted a comment on the article $2: $3",
+	
+	'activity-social-activity-comment-reply-create': "$1 replied to the comment $2 on the article $3: $4",
+	// 'activity-social-activity-comment-reply-edit': "$1 edited a reply to the comment $2 on the article $3: $4",
+	// 'activity-social-activity-comment-reply-delete': "$1 deleted a reply to the comment $2 on the article $3: $4",
+	// 'activity-social-activity-comment-reply-undelete': "$1 undeleted a reply to the comment $2 on the article $3: $4",
 	
 	/***************************
 	* AbuseFilter
@@ -331,11 +369,6 @@ const MESSAGES = i18n.MESSAGES = {
 	'logentry-contentmodel-change-revert': 'revert',
 	'logentry-contentmodel-change-revertlink': 'revert',
 };
-
-export const legacyMessagesRemovedContent = [
-	// Wall logs (Thread-style walls removed in UCP)
-	"wall-recentchanges-thread-group",
-];
 
 /***************************
 * mediawiki.language.data

@@ -335,12 +335,38 @@ export default class RCList
 		return this._showFavicon() ? "rcm-tiled-favicon" : "";
 	}
 	
+	// static ajaxRollback(pScriptDir, pVersion, pPageName, pPageID, pRollbackLink) {
+	// 	var tAPiUrl = pScriptDir+"/api.php?action=query&meta=tokens&type=rollback";
+	// 	$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url:tAPiUrl,
+	// 		success: (pData) => {
+	// 			var tToken = pData.query.tokens.rollbacktoken;
+	// 			mw.log(pRollbackLink+tToken);
+	// 		},
+	// 		error: (pData) => {},
+	// 	});
+	// }
+	
 	// An RC that is NOT part of a "block" of related changes (logs, edits to same page, etc)
 	private _toHTMLSingle(pRC:RCData) : HTMLElement {
 		if(this.list.length > 1) { return this._toHTMLBlock(); }
 		
 		var html = "";
 		switch(pRC.type) {
+			case RC_TYPE.NORMAL:
+			default: {
+				html += pRC.pageTitleTextLink();
+				html += this.getAjaxPagePreviewButton();
+				html += " "+this._diffHist(pRC);
+				html += RCList.SEP;
+				html += this._diffSizeText(pRC);
+				html += RCList.SEP;
+				html += pRC.userDetails();
+				html += pRC.getSummary();
+				// if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.rights.rollback) {
+				//  html += " [<a href='"+this.href+"action=rollback&from="+this.entry.author.name+"'>rollback</a>]";
+				// }
+				break;
+			}
 			case RC_TYPE.LOG: {
 				let tRC = <RCDataLog>pRC;
 				html += tRC.logTitleLink();
@@ -356,23 +382,9 @@ export default class RCList
 				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
 				if((this.newest as RCDataFandomDiscussion).previewData) html += this.getAjaxPagePreviewButton();
 				html += RCList.SEP;
-				html += tRC.userDetails();
-				html += tRC.getSummary();
-				break;
-			}
-			case RC_TYPE.NORMAL:
-			default: {
-				html += pRC.pageTitleTextLink();
-				html += this.getAjaxPagePreviewButton();
-				html += " "+this._diffHist(pRC);
-				html += RCList.SEP;
-				html += this._diffSizeText(pRC);
-				html += RCList.SEP;
-				html += pRC.userDetails();
-				html += pRC.getSummary();
-				// if(this.type == RC_TYPE.NORMAL && this.isNewPage == false && this.wikiInfo.user.rights.rollback) {
-				//  html += " [<a href='"+this.href+"action=rollback&from="+this.entry.author.name+"'>rollback</a>]";
-				// }
+				// html += tRC.userDetails();
+				// html += tRC.getSummary();
+				html += pRC.actionText();
 				break;
 			}
 		}
@@ -421,11 +433,6 @@ export default class RCList
 	private _toHTMLBlockHead() : HTMLElement {
 		var html = "";
 		switch(this.newest.type) {
-			case RC_TYPE.LOG: {
-				html += this.newest.logTitleLink();
-				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
-				break;
-			}
 			case RC_TYPE.NORMAL: {
 				html += `<a class='rc-pagetitle' href='${this.newest.href}'>${this.newest.title}</a>`;
 				html += this.getAjaxPagePreviewButton();
@@ -441,6 +448,11 @@ export default class RCList
 				html += i18n('parentheses-end');
 				html += RCList.SEP
 				html += this._diffSizeText(this.newest, this.oldest as RCDataArticle);
+				break;
+			}
+			case RC_TYPE.LOG: {
+				html += this.newest.logTitleLink();
+				if(this.newest.logtype=="upload") { html += this.getAjaxImageButton(); }
 				break;
 			}
 			case RC_TYPE.DISCUSSION: {
@@ -495,6 +507,20 @@ export default class RCList
 		var html = "";
 		
 		switch(pRC.type) {
+			case RC_TYPE.NORMAL: {
+				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.getRcRevisionUrl(null, pRC.revid)}' title='${pRC.title}'>${pRC.time()}</a></span>`;
+				let diffs = [
+					`<a href='${pRC.getRcRevisionUrl(0, pRC.revid)}'>${i18n("cur")}</a>`,
+					pRC.editFlags.newpage == false ? `<a href='${pRC.getRcRevisionUrl(pRC.revid, pRC.old_revid)}'>${i18n("last")}</a>`+this.getAjaxDiffButton() : i18n("last"),
+				].filter(o=>!!o);
+				html += ` ${i18n('parentheses', diffs.join(i18n("pipe-separator")))}`;
+				html += RCList.SEP;
+				html += this._diffSizeText(pRC);
+				html += RCList.SEP;
+				html += pRC.userDetails();
+				html += pRC.getSummary();
+				break;
+			}
 			case RC_TYPE.LOG: {
 				html += "<span class='mw-enhanced-rc-time'>"+pRC.time()+"</span>";
 				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
@@ -513,22 +539,9 @@ export default class RCList
 				// html += pRC.getUpvoteCount();
 				html += RCList.SEP;
 				html += pRC.getThreadActionIcon()+" ";
-				html += pRC.userDetails();
-				html += pRC.getSummary();
-				break;
-			}
-			case RC_TYPE.NORMAL: {
-				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.getRcRevisionUrl(null, pRC.revid)}' title='${pRC.title}'>${pRC.time()}</a></span>`;
-				let diffs = [
-					`<a href='${pRC.getRcRevisionUrl(0, pRC.revid)}'>${i18n("cur")}</a>`,
-					pRC.editFlags.newpage == false ? `<a href='${pRC.getRcRevisionUrl(pRC.revid, pRC.old_revid)}'>${i18n("last")}</a>`+this.getAjaxDiffButton() : i18n("last"),
-				].filter(o=>!!o);
-				html += ` ${i18n('parentheses', diffs.join(i18n("pipe-separator")))}`;
-				html += RCList.SEP;
-				html += this._diffSizeText(pRC);
-				html += RCList.SEP;
-				html += pRC.userDetails();
-				html += pRC.getSummary();
+				// html += pRC.userDetails();
+				// html += pRC.getSummary();
+				html += pRC.actionText();
 				break;
 			}
 		}
@@ -553,24 +566,6 @@ export default class RCList
 	private _toHTMLNonEnhanced(pRC:RCData, pIndex:number) : HTMLElement {
 		var html = "";
 		switch(pRC.type) {
-			case RC_TYPE.LOG: {
-				html += pRC.logTitleLink();
-				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
-				html += i18n("semicolon-separator")+pRC.time();
-				html += RCList.SEP;
-				html += pRC.logActionText();
-				break;
-			}
-			case RC_TYPE.DISCUSSION: {
-				html += pRC.getThreadActionIcon()+" ";
-				html += pRC.getThreadStatusIcons();
-				html += pRC.discussionTitleText( this.getThreadTitle() );
-				html += i18n("semicolon-separator")+pRC.time();
-				html += RCList.SEP;
-				html += pRC.userDetails();
-				html += pRC.getSummary();
-				break;
-			}
 			case RC_TYPE.NORMAL:
 			default: {
 				html += this._diffHist(pRC);
@@ -586,9 +581,28 @@ export default class RCList
 				html += pRC.getSummary();
 				break;
 			}
+			case RC_TYPE.LOG: {
+				html += pRC.logTitleLink();
+				if(pRC.logtype=="upload") { html += this.getAjaxImageButton(); }
+				html += i18n("semicolon-separator")+pRC.time();
+				html += RCList.SEP;
+				html += pRC.logActionText();
+				break;
+			}
+			case RC_TYPE.DISCUSSION: {
+				html += pRC.getThreadActionIcon()+" ";
+				html += pRC.getThreadStatusIcons();
+				html += pRC.discussionTitleText( this.getThreadTitle() );
+				html += i18n("semicolon-separator")+pRC.time();
+				html += RCList.SEP;
+				// html += pRC.userDetails();
+				// html += pRC.getSummary();
+				html += pRC.actionText();
+				break;
+			}
 		}
 		
-		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+" "+pRC.wikiInfo.rcClass+" "+pRC.getNSClass() });
+		var tLi = Utils.newElement("li", { className:(pIndex%2==0 ? "mw-line-even" : "mw-line-odd")+` ${pRC.wikiInfo.rcClass} ${pRC.getNSClass()}` });
 		Utils.newElement("div", { className:this._getBackgroundClass() }, tLi);;
 		if(this._showFavicon()) { tLi.innerHTML += pRC.wikiInfo.getFaviconHTML(true)+" "; }
 		tLi.innerHTML += html;
@@ -618,31 +632,4 @@ export default class RCList
 			}
 		}
 	}
-	
-	//######################################
-	// Static methods
-	//######################################
-	// static ajaxRollback(pScriptDir, pVersion, pPageName, pPageID, pRollbackLink) {
-	// 	var tAPiUrl = pScriptDir+"/api.php?", isV1_24Plus = Utils.version_compare(pVersion, "1.24", ">=");
-	// 	if(isV1_24Plus) {
-	// 		tAPiUrl += "action=query&meta=tokens&type=rollback";
-	// 	} else {
-	// 		tAPiUrl += "action=query&prop=revisions&format=json&rvtoken=rollback&titles="+Utils.escapeCharactersUrl(pPageName)
-	// 	}
-		
-	// 	$.ajax({ type: 'GET', dataType: 'jsonp', data: {}, url:tAPiUrl,
-	// 		success: (pData) => {
-	// 			var tToken = "";
-	// 			if(isV1_24Plus) {
-	// 				tToken = pData.query.tokens.rollbacktoken;
-	// 			} else {
-	// 				tToken = pData.query.pages[pPageID].revisions[0].rollbacktoken;
-	// 			}
-	// 			mw.log(pRollbackLink+tToken);
-	// 		},
-	// 		error: (pData) => {
-				
-	// 		},
-	// 	});
-	// }
 }

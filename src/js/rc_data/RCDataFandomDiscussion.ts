@@ -50,10 +50,10 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	containerType	: "ARTICLE_COMMENT" | "FORUM" | "WALL";
 	id				: string; // id uniq to this post, not the whole thread - mostly used for replies
 	threadId		: string;
+	threadTitle		: string; // The name of the thread if known
 	forumId			: string;
 	forumName		: string; // name of the forum (may not be suitable for urls) - used on actual page
 	forumPageName	: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
-	threadTitle		: string; // The name of the thread if known
 	
 	user_id			: string; // createdBy.id
 	user_avatarUrl	: string // createdBy.avatarUrl
@@ -83,9 +83,10 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		this.containerType = thread.containerType || "FORUM";
 		this.id = post.id;
 		this.threadId = post.threadId;
+		this.threadTitle = thread ? (thread.title || post.title) : post.title;
 		this.forumId = post.forumId;
 		this.forumName = post.forumName;
-		this.forumPageName = null; // not used on "FORUM"; set further down for other types
+		this.forumPageName = post.forumName;
 		
 		this.user_id = post.createdBy.id;
 		this.user_avatarUrl = post.createdBy.avatarUrl ? post.createdBy.avatarUrl+"/scale-to-width-down/15" : post.createdBy.avatarUrl;
@@ -95,8 +96,6 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		this.isReported = post.isReported;
 		this.action = post.position == 1 ? "new" : "reply";
 		this.rawContent = post.rawContent;
-		
-		this.threadTitle = thread ? (thread.title || post.title) : post.title;
 		
 		const jsonModel:JsonModelDataProps = JSON.parse(post.jsonModel);
 		
@@ -109,24 +108,8 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				this.summary = `${Global.getWdsSymbol('rcm-disc-poll')} ${i18n('activity-social-activity-poll-placeholder')}`;
 			}
 			else if(this.containerType == "ARTICLE_COMMENT" && post.jsonModel) {
-				const tJsonToSummary=(props:JsonModelDataProps):string => {
-					if("content" in props) { return props.content.map(tJsonToSummary).join(""); }
-					if(props.type == "text") { return props.text; }
-					else if(props.type == "image") { return " ␚ "; } // use temp here, since html injected here won't play nice with string length
-					return "";
-				};
-				
-				this.summary = tJsonToSummary(jsonModel).replace(/  /g, " ").trim();
-				
-				if(this.summary.length > 100) {
-					this.summary = this.summary.slice(0, 100).trim()+"...";
-				}
-				// Replace the temp character from earlier here, after the length has been shortened
-				this.summary = this.summary.replace(/␚/g, `${Global.getWdsSymbol('rcm-disc-image')} ${i18n('activity-social-activity-image-placeholder')}`);
+				this.summary = this.jsonModelToSummary(jsonModel, 100);
 			}
-		}
-		if(this.summary) {
-			this.summary = `"${this.summary}"`; // Add quotes around it just to drive home it is a quote
 		}
 		this.summaryUnparsed = this.summary;
 		
@@ -144,8 +127,15 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			}
 		}
 		// This is a fake page name, so if we see it we want to treat it as unknown
-		else if(this.containerType == "ARTICLE_COMMENT" && this.forumName == "Root Forum") {
-			this.forumName = null;
+		else if(this.containerType == "ARTICLE_COMMENT") {
+			if(!this.forumName || this.forumName == "Root Forum") {
+				this.forumName = null;
+				this.forumPageName = null;
+			}
+			if(!this.threadTitle && thread?.firstPost?.jsonModel) {
+				const jsonModel:JsonModelDataProps = JSON.parse(thread.firstPost.jsonModel);
+				this.threadTitle = this.jsonModelToSummary(jsonModel, 65); // 100 used in actual one, but I prefer a shorter "title"
+			}
 		}
 	}
 	
@@ -211,6 +201,24 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		: "";
 	}
 	
+	jsonModelToSummary(jsonModel:JsonModelDataProps, maxLength:number) : string {
+		const tJsonToSummary=(props:JsonModelDataProps):string => {
+			if("content" in props) { return props.content.map(tJsonToSummary).join(""); }
+			if(props.type == "text") { return props.text; }
+			else if(props.type == "image") { return " ␚ "; } // use temp here, since html injected here won't play nice with string length
+			return "";
+		};
+		
+		let summary = tJsonToSummary(jsonModel).replace(/  /g, " ").trim();
+		
+		if(summary.length > maxLength) {
+			summary = summary.slice(0, maxLength).trim()+"...";
+		}
+		// Replace the temp character from earlier here, after the length has been shortened
+		summary = summary.replace(/␚/g, `${Global.getWdsSymbol('rcm-disc-image')} ${i18n('activity-social-activity-image-placeholder')}`);
+		return summary;
+	}
+	
 	discussionTitleText(pThreadTitle?:string, pIsHead:boolean=false) : string {
 		switch(this.containerType) {
 			case "FORUM": {
@@ -239,29 +247,43 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		return this.threadTitle || `<i>${i18n('unknownthreadname')}</i>`;
 	}
 	
-	getCommentForumNameLink(pIsHead:boolean=false) : string {
+	getCommentLink({ text, showReply=true }:{ text:string|"set-to-page-name", showReply?:boolean }) : string {
+		this.updateFromOldCommentFetchDataIfNeeded();
+		
 		// If already loaded and saved
-		if(this.forumName) { return `[${this.getUrl(null, pIsHead)} ${this.forumName}]`; }
-		
-		const tSetDataAfterLoad = (title, relativeUrl)=>{
-			this.forumName = title;
-			this.forumPageName = title;
-		}
-		
-		// If loaded but page not updated for some reason, then update value and return
-		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
-			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
-			tSetDataAfterLoad(title, relativeUrl);
-			return `[${this.getUrl(null, pIsHead)} ${this.forumName}]`;
-		}
+		if(this.forumPageName) { return `<a href='${this.getUrl(null, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? this.forumName : text}</a>`; }
 		
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
-		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
+		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:(articleData)=>{
 			// Skip if it has been disposed
 			if(!this || !this.date) { return; }
 			
-			tSetDataAfterLoad(title, relativeUrl);
+			this.updateDataFromCommentFetch(articleData);
+			$(`.rcm${uniqID}`).attr("href", this.getUrl(null, !showReply));
+			if(text == "set-to-page-name") {
+				$(`.rcm${uniqID}`).text(this.forumName);
+			}
+		} });
+		
+		this.fetchCommentFeedsAndPostsIfNeeded();
+		
+		return `<a class="rcm${uniqID}" href='${this.getUrl(null, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? null : text}</a>`;
+	}
+	
+	getCommentForumNameLink(pIsHead:boolean=false) : string {
+		this.updateFromOldCommentFetchDataIfNeeded();
+		
+		// If already loaded and saved
+		if(this.forumName) { return `[${this.getUrl(null, pIsHead)} ${this.forumName}]`; }
+		
+		// Else name unknown and must be loaded
+		let uniqID = Utils.uniqID();
+		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:(articleData)=>{
+			// Skip if it has been disposed
+			if(!this || !this.date) { return; }
+			
+			this.updateDataFromCommentFetch(articleData);
 			$(`.rcm${uniqID} a`).attr("href", this.getUrl(null, pIsHead)).text(this.forumName);
 		} });
 		
@@ -272,34 +294,37 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	}
 	
 	getCommentTimeLink() : string {
+		this.updateFromOldCommentFetchDataIfNeeded();
+		
 		// If already loaded and saved
 		if(this.forumPageName) { return `<a href='${this.href}' title='${this.title}'>${this.time()}</a>`; }
 		
-		const tSetDataAfterLoad = (title, relativeUrl)=>{
-			this.forumName = title;
-			this.forumPageName = title;
-		}
-		
-		// If loaded but page not updated for some reason, then update value and return
-		if(this.wikiInfo.discCommentPageNames.has(this.forumId)) {
-			let { title, relativeUrl } = this.wikiInfo.discCommentPageNames.get(this.forumId);
-			tSetDataAfterLoad(title, relativeUrl);
-			return `<a href='${this.href}' title='${this.title}'>${this.time()}</a>`;
-		}
-		
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
-		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:({ title, relativeUrl })=>{
+		this.wikiInfo.discCommentPageNamesNeeded.push({ pageID:this.forumId, uniqID, cb:(articleData)=>{
 			// Skip if it has been disposed
 			if(!this || !this.date) { return; }
 			
-			tSetDataAfterLoad(title, relativeUrl);
+			this.updateDataFromCommentFetch(articleData);
 			$(`.rcm${uniqID}`).attr("href", this.href);
 		} });
 		
 		this.fetchCommentFeedsAndPostsIfNeeded();
 		
 		return `<a class="rcm${uniqID}" href='${this.href}' title='${this.title}'>${this.time()}</a>`;
+	}
+	
+	updateDataFromCommentFetch({ title, relativeUrl }) {
+		this.forumName = title;
+		this.forumPageName = title;
+	}
+	
+	// If loaded but page not updated for some reason, then update values first
+	updateFromOldCommentFetchDataIfNeeded() {
+		if(!this.forumName && this.wikiInfo.discCommentPageNames.has(this.forumId)) {
+			let articleData = this.wikiInfo.discCommentPageNames.get(this.forumId);
+			this.updateDataFromCommentFetch(articleData);
+		}
 	}
 	
 	fetchCommentFeedsAndPostsIfNeeded() {
@@ -332,6 +357,40 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		}
 	}
 	
+	actionText() : string {
+		const userDetails = this.userDetails();
+		let forumLink = `<a href="${this.getForumUrl()}">${this.forumPageName}</a>`;
+		let threadLink = `<a href="${this.getUrl(null, true)}">${this.getThreadTitle()}</a>`;
+		let viewLink = " "+i18n('parentheses', `<a href="${this.getUrl()}">${i18n('socialactivity-view')}</a>`);
+		const summary = i18n('quotation-marks', `<em>${this.summary}</em>`);
+		switch(this.containerType) {
+			default:
+			case "FORUM": {
+				switch(this.action) {
+					case "new": return i18n('activity-social-activity-post-create', userDetails, threadLink, forumLink, summary)+viewLink;
+					case "reply": return i18n('activity-social-activity-post-reply-create', userDetails, threadLink, forumLink, summary)+viewLink;
+				}
+			}
+			case "WALL": {
+				switch(this.action) {
+					case "new": return i18n('activity-social-activity-message-create', userDetails, threadLink, forumLink, summary)+viewLink;
+					case "reply": return i18n('activity-social-activity-message-reply-create', userDetails, threadLink, forumLink, summary)+viewLink;
+				}
+			}
+			case "ARTICLE_COMMENT": {
+				forumLink = this.getCommentLink({ text:"set-to-page-name", showReply:false });
+				threadLink = this.getCommentLink({ text:this.getThreadTitle(), showReply:false });
+				viewLink = " "+i18n('parentheses', this.getCommentLink({ text:i18n('socialactivity-view') }));
+				
+				switch(this.action) {
+					case "new": return i18n('activity-social-activity-comment-create', userDetails, forumLink, summary)+viewLink;
+					case "reply": return i18n('activity-social-activity-comment-reply-create', userDetails, threadLink, forumLink, summary)+viewLink;
+				}
+			}
+		}
+		return "";
+	}
+	
 	// getUpvoteCount() : string {
 	// 	// Only forum-type discussions have upvotes
 	// 	if(this.containerType != "FORUM") { return ""; }
@@ -348,9 +407,9 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	getThreadTypeIcon() : string {
 		switch(this.containerType) {
 			default:
-			case "FORUM": return Global.getWdsSymbol('rcm-disc-comment');
+			case "FORUM": return Global.getWdsSymbol('rcm-disc-comment'); // yes, 'comment' is the right icon
 			case "WALL": return Global.getWdsSymbol('rcm-disc-envelope');
-			case "ARTICLE_COMMENT": return Global.getWdsSymbol('rcm-disc-page');
+			case "ARTICLE_COMMENT": return Global.getWdsSymbol('rcm-disc-page'); // yes, 'page' is the right icon
 		}
 		return "";
 	}
