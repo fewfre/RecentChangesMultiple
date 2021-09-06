@@ -425,7 +425,7 @@ export function previewDiscussionHTML(rc:RCDataFandomDiscussion) : void {
 		html = jsonModelDataToString(jsonModel);
 	}
 	
-	const title = rc.containerType != "ARTICLE_COMMENT" ? rc.getThreadTitle() : i18n("rc-comment", rc.forumName);;
+	const title = rc.containerType != "ARTICLE_COMMENT" ? rc.threadTitle : i18n("rc-comment", rc.forumName);;
 	let buttons = [
 		modalLinkButton('modal-preview-openpage', "view", rc.href),
 	];

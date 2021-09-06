@@ -141,41 +141,6 @@ export default class RCList
 		}
 	}
 	
-	getExistingThreadTitle() : string {
-		let tTitle = null;
-		this.list.some((rc:RCDataFandomDiscussion) => {
-			if(rc.threadTitle) {
-				tTitle = rc.threadTitle;
-				return true;
-			}
-			return false;
-		});
-		return tTitle;
-	}
-	
-	// Check each entry for "threadTitle", else return default text.
-	// DEPRECIATED? - thread title is now always included
-	getThreadTitle() : string {
-		let tTitle = this.getExistingThreadTitle();
-		let tReturnText = tTitle;
-		if(this.manager.extraLoadingEnabled) {
-			let tElemID = Utils.uniqID();
-			tReturnText = `<span id='${tElemID}'><i>${tTitle ? tTitle : i18n('unknownthreadname')}</i></span>`;
-			
-			if(tTitle == null) {
-				// (<RCDataFandomDiscussion>this.newest).handleSecondaryLoad(tElemID);
-			} else {
-				tReturnText = tTitle;
-			}
-		} else {
-			if(tReturnText == null) {
-				tReturnText = `<i>${i18n('unknownthreadname')}</i>`;
-			}
-		}
-		
-		return tReturnText;
-	}
-	
 	getAjaxDiffButton() : string {
 		return ` <span class="rcm-ajaxIcon rcm-ajaxDiff">${Global.getSymbol("rcm-columns")}</span>`;
 	}
@@ -379,8 +344,7 @@ export default class RCList
 				let tRC = <RCDataFandomDiscussion>pRC;
 				html += pRC.getThreadActionIcon()+" ";
 				html += tRC.getThreadStatusIcons();
-				html += tRC.discussionTitleText( tRC.containerType != "ARTICLE_COMMENT" ? this.getThreadTitle() : "unused" );
-				if((this.newest as RCDataFandomDiscussion).previewData) html += this.getAjaxPagePreviewButton();
+				html += tRC.discussionTitleText( this.getAjaxPagePreviewButton() );
 				html += RCList.SEP;
 				// html += tRC.userDetails();
 				// html += tRC.getSummary();
@@ -457,7 +421,7 @@ export default class RCList
 			}
 			case RC_TYPE.DISCUSSION: {
 				html += this.newest.getThreadTypeIcon()+" ";
-				html += this.newest.discussionTitleText( this.getThreadTitle(), true );
+				html += this.newest.discussionTitleText( null, true );
 				html += " "+i18n('parentheses-start');
 				html += i18n("nchanges", this.list.length);
 				html += i18n('parentheses-end');
@@ -592,7 +556,7 @@ export default class RCList
 			case RC_TYPE.DISCUSSION: {
 				html += pRC.getThreadActionIcon()+" ";
 				html += pRC.getThreadStatusIcons();
-				html += pRC.discussionTitleText( this.getThreadTitle() );
+				html += pRC.discussionTitleText( this.getAjaxPagePreviewButton() );
 				html += i18n("semicolon-separator")+pRC.time();
 				html += RCList.SEP;
 				// html += pRC.userDetails();

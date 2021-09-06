@@ -50,7 +50,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	containerType	: "ARTICLE_COMMENT" | "FORUM" | "WALL";
 	id				: string; // id uniq to this post, not the whole thread - mostly used for replies
 	threadId		: string;
-	threadTitle		: string; // The name of the thread if known
+	threadTitle		: string;
 	forumId			: string;
 	forumName		: string; // name of the forum (may not be suitable for urls) - used on actual page
 	forumPageName	: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
@@ -83,7 +83,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		this.containerType = thread.containerType || "FORUM";
 		this.id = post.id;
 		this.threadId = post.threadId;
-		this.threadTitle = thread ? (thread.title || post.title) : post.title;
+		this.threadTitle = thread?.title ?? post.title;
 		this.forumId = post.forumId;
 		this.forumName = post.forumName;
 		this.forumPageName = post.forumName;
@@ -110,6 +110,10 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			else if(this.containerType == "ARTICLE_COMMENT" && post.jsonModel) {
 				this.summary = this.jsonModelToSummary(jsonModel, 100);
 			}
+			else if(this.containerType == "ARTICLE_COMMENT" && post.renderedContent) {
+				this.summary = $(`<div>${post.renderedContent}</div>`).text();
+				if(this.summary.length > 100) { this.summary = this.summary.slice(0, 100).trim()+"..."; }
+			}
 		}
 		this.summaryUnparsed = this.summary;
 		
@@ -132,9 +136,15 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 				this.forumName = null;
 				this.forumPageName = null;
 			}
-			if(!this.threadTitle && thread?.firstPost?.jsonModel) {
-				const jsonModel:JsonModelDataProps = JSON.parse(thread.firstPost.jsonModel);
-				this.threadTitle = this.jsonModelToSummary(jsonModel, 65); // 100 used in actual one, but I prefer a shorter "title"
+			if(!this.threadTitle) {
+				if(thread?.firstPost?.jsonModel) {
+					const jsonModel:JsonModelDataProps = JSON.parse(thread.firstPost.jsonModel);
+					this.threadTitle = this.jsonModelToSummary(jsonModel, 65); // 100 used in actual one, but I prefer a shorter "title"
+				}
+				else if(thread?.firstPost?.renderedContent) {
+					this.threadTitle = $(`<div>${thread?.firstPost?.renderedContent}</div>`).text();
+					if(this.threadTitle.length > 65) { this.threadTitle = this.threadTitle.slice(0, 65).trim()+"..."; }
+				}
 			}
 		}
 	}
@@ -219,32 +229,26 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		return summary;
 	}
 	
-	discussionTitleText(pThreadTitle?:string, pIsHead:boolean=false) : string {
+	discussionTitleText(ajaxIcon?:string, pIsHead:boolean=false) : string {
+		ajaxIcon = this.previewData ? (ajaxIcon??"") : ""; // If no preview data, skip
 		switch(this.containerType) {
 			case "FORUM": {
-				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
 				let tForumLink = `<a href="${this.getForumUrl()}">${this.forumName}</a>`;
 				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
-				return i18n.wiki2html(tText, `<a href="${this.getUrl(null, pIsHead)}">${pThreadTitle}</a>`, tForumLink);//+(pIsHead ? "" : this.getUpvoteCount())
+				return i18n.wiki2html(tText, `<a href="${this.getUrl(null, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`, tForumLink);//+(pIsHead ? "" : this.getUpvoteCount())
 			}
 			case "WALL": {
-				if(pThreadTitle == undefined) { pThreadTitle = this.getThreadTitle(); }
 				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
 				return i18n.wiki2html(tText,
-					`<a href="${this.getUrl(null, pIsHead)}">${pThreadTitle}</a>`,
+					`<a href="${this.getUrl(null, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`,
 					`<a href="${this.getForumUrl()}">${this.forumName}</a>`,
 				);
 			}
 			case "ARTICLE_COMMENT": {
-				return i18n(pIsHead ? "rc-comments" : "rc-comment", this.getCommentForumNameLink(pIsHead));
+				return i18n(pIsHead ? "rc-comments" : "rc-comment", this.getCommentForumNameLink(pIsHead)+ajaxIcon);
 			}
 		}
 		mw.log("(discussionTitleText) Unknown containerType:", this.containerType);
-	}
-	
-	// Check each entry for "threadTitle", else return default text.
-	getThreadTitle() : string {
-		return this.threadTitle || `<i>${i18n('unknownthreadname')}</i>`;
 	}
 	
 	getCommentLink({ text, showReply=true }:{ text:string|"set-to-page-name", showReply?:boolean }) : string {
@@ -360,7 +364,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	actionText() : string {
 		const userDetails = this.userDetails();
 		let forumLink = `<a href="${this.getForumUrl()}">${this.forumPageName}</a>`;
-		let threadLink = `<a href="${this.getUrl(null, true)}">${this.getThreadTitle()}</a>`;
+		let threadLink = `<a href="${this.getUrl(null, true)}">${this.threadTitle}</a>`;
 		let viewLink = " "+i18n('parentheses', `<a href="${this.getUrl()}">${i18n('socialactivity-view')}</a>`);
 		const summary = i18n('quotation-marks', `<em>${this.summary}</em>`);
 		switch(this.containerType) {
@@ -379,7 +383,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			}
 			case "ARTICLE_COMMENT": {
 				forumLink = this.getCommentLink({ text:"set-to-page-name", showReply:false });
-				threadLink = this.getCommentLink({ text:this.getThreadTitle(), showReply:false });
+				threadLink = this.getCommentLink({ text:this.threadTitle, showReply:false });
 				viewLink = " "+i18n('parentheses', this.getCommentLink({ text:i18n('socialactivity-view') }));
 				
 				switch(this.action) {
@@ -424,10 +428,10 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	/* override */ getNotificationTitle() : string {
 		switch(this.containerType) {
 			case "FORUM": {
-				return `${i18n('discussions')}: ${this.getThreadTitle()} [${this.forumName}]`;
+				return `${i18n('discussions')}: ${this.threadTitle} [${this.forumName}]`;
 			}
 			case "WALL": {
-				return `${i18n('message-wall')}: ${this.getThreadTitle()} [${this.forumName}]`;
+				return `${i18n('message-wall')}: ${this.threadTitle} [${this.forumName}]`;
 			}
 			case "ARTICLE_COMMENT": {
 				return i18n("comments");
