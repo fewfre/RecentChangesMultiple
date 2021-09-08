@@ -448,6 +448,16 @@ export default class WikiData
 		return `data-username=\"${pUser.replace(/"/g, "&quot;")}\"`;
 	}
 	
+	// Get some run-time CSS classes
+	getWikiRuntimeCSS() : string {
+		// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
+		return [
+			`.${this.rcClass} .rcm-tiled-favicon { `,
+				(this.bgcolor != null ? `background: ${this.bgcolor};` : `background-image: url(${this.favicon});`),
+			" }",
+		].join("");
+	}
+	
 	/**
 	 * Get the link to a page name (relative to wgServer) - based on `mw.util.getUrl()`
 	 * @param pageName name of the wiki page

@@ -10,6 +10,7 @@ import RCParams from "./types/RCParams";
 import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
 import RC_TYPE from "./types/RC_TYPE";
+import MultiLoader from "./MultiLoader";
 
 let $ = window.jQuery;
 let mw = window.mediaWiki;
@@ -69,17 +70,14 @@ export default class RCMManager
 	rcData						: { data:RCData, list:RCList }[];
 	recentChangesEntries		: RCList[]; // Array of either RecentChange/RecentChangeList objects.
 	newRecentChangesEntries		: RCList[]; // Only the new / "dirty" RCLists
-	ajaxCallbacks				: (()=>void)[]; // Array of functions that stores info retrieved from ajax, so that the script can run without worry of race conditions.
-	erroredWikis				: { wikiInfo:WikiData, tries:number, id:number }[]; // Array of wikis that have errored more than expected times; kept in list to be tried more times should user wish
 	
 	extraLoadingEnabled			: boolean; // Turns extra loading on/off
 	secondaryWikiData			: { url:string|(()=>string), callback:(any)=>void, dataType?:string, skipRefreshSanity?:boolean }[]; // Array of objects that are used to fill in blanks that cannot be retrieved on initial data calls (usually page-specific).
 	
+	currentMultiLoader			: MultiLoader<WikiData>; // Current multiLoader - needed encase errored wikis need to be retried
 	flagWikiDataIsLoaded		: boolean; // Make sure certain actions can't be done by user until wiki data is retrieved.
-	totalItemsToLoad			: number; // Total number of wikis to load.
-	wikisLeftToLoad				: number; // Wikis left to load via ajax
-	loadingErrorRetryNum		: number; // Number of tries to load a wiki before complaining (encase it's due to server, not invalid link)
 	loadErrorTimeoutID			: number;
+	
 	itemsAdded					: number; // Number off items added to screen AFTER load.
 	itemsToAddTotal				: number; // Total number if items to add to the screen
 	isHardRefresh				: boolean;
@@ -130,8 +128,6 @@ export default class RCMManager
 			}
 			this.recentChangesEntries = null;
 		}
-		this.ajaxCallbacks		= null;
-		this.erroredWikis		= null;
 		this.secondaryWikiData	= null;
 		
 		this.lastLoadDateTime	= null;
@@ -225,78 +221,29 @@ export default class RCMManager
 	};
 	
 	/***************************
-	* Loading
+	* Loading - Shared
 	***************************/
-	private _load(pWikiData:WikiData, pUrl:string, pDataType:string, pTries:number, pID:number,
-				pCallback:(pData:any, pWikiData:WikiData, pTries:number, pID:number, pStatus:any)=>void, pDelayNum:number=0) : void {
-		++pTries;
-		// A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
-		// A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
-		setTimeout(() => {
-			$.ajax({ type: 'GET', dataType: pDataType, data: {},
-				timeout: 15000, // Error out after 15s
-				url: pUrl,
-				success: (data) => { pCallback(data, pWikiData, pTries, pID, null); },
-				error: (data, status) => { pCallback(null, pWikiData, pTries, pID, status); },
-			});
-		}, pDelayNum);
-	}
-	// private _loadP(pUrl:string, pDataType:string, tries:number, delay:number=0) : Promise<{ data:any, tries:number }> {
-	// 	const id = this.ajaxID;
-	// 	return new Promise((resolve, reject)=>{
-	// 		++tries;
-	// 		// A timeout is used instead of loading 1 at a time to save time, as it allows some loading overlap.
-	// 		// A timeout is needed since Wikia wikis share a "request overload" detector, which can block your account from making more requests for awhile.
-	// 		setTimeout(() => {
-	// 			$.ajax({ type: 'GET', dataType: pDataType, data: {},
-	// 				timeout: 15000, // Error out after 15s
-	// 				url: pUrl,
-	// 				success: (data) => {
-	// 					// Make sure this isn't something loaded before the script was last refreshed.
-	// 					if(id != this.ajaxID) { return; }
-	// 					resolve({ data, tries });
-	// 				},
-	// 				error: (data, status) => {
-	// 					// Make sure this isn't something loaded before the script was last refreshed.
-	// 					if(id != this.ajaxID) { return; }
-	// 					reject({ tries, status });
-	// 				},
-	// 			});
-	// 		}, delay);
-	// 	});
-	// }
-	
-	private _retryOrError(pWikiData:WikiData, pTries:number, pID:number, pFailStatus:string,
-						pLoadCallback:(pWikiData:WikiData, pTries:number, pID:number, pDelayNum?:number)=>void,
-						pHandleErrorCallback:(pWikiData:WikiData, pTries:number, pID:number, pMessage:string, pInc:number)=>void) : void {
-		mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-		if(pTries < this.loadingErrorRetryNum) {
-			pLoadCallback(pWikiData, pTries, pID, 0);
+	private _addErroredWikiAfterToManyRetries(pWikiData:WikiData, pTries:number, pID:number, pFailStatus:string,
+		pHandleErrorCallback:(pWikiData:WikiData, pTries:number, pID:number, pMessage:I18nKey, pInc:number)=>void
+	) : void {
+		if(this.currentMultiLoader.ErroredItems.length === 1 || !this.statusNode.querySelector(".errored-wiki")) {
+			let tMessage:I18nKey = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
+			pHandleErrorCallback(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
 		} else {
-			if(this.erroredWikis.length === 0) {
-				let tMessage = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
-				pHandleErrorCallback(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-			} else {
-				this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-				this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
-			}
+			this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
 		}
 	}
 	
-	// After a wiki is loaded, check if ALL wikis are loaded
-	// If so add results; if not, load the next wiki, or wait for next wiki to return data.
-	private _onParsingFinished(pCallback:()=>void) : void {
-		this.wikisLeftToLoad--;
-		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = this.calcLoadPercent() + "%";//.toFixed(3) + "%";
-		if(this.wikisLeftToLoad > 0) {
-			if(this.ajaxCallbacks.length > 0) {
-				this.ajaxCallbacks.shift();
-				// Parse next wiki in queue (if there is one), or wait for next wiki.
-				if(this.ajaxCallbacks.length > 0){ setTimeout(() => { this.ajaxCallbacks[0](); }, 0); }
-			}
-		} else {
-			pCallback();
-		}
+	private setupStatusLoadingMode(loadingText:I18nKey) : void {
+		this.statusNode.innerHTML = [
+			`<div class="rcm-status-alerts-cont"></div>`,
+			`<div class="rcm-status-loading-cont">${Global.getLoader()} ${i18n(loadingText)} (<span class='rcm-load-perc'>0%</span>)</div>`,
+		].join("");
+	}
+	
+	// Expects a whole number between 0-100
+	private _updateLoadingPercent=(perc:number)=>{
+		document.querySelector(this.modID+" .rcm-load-perc").innerHTML = `${perc}%`;//.toFixed(3) + "%";
 	}
 	
 	/***************************
@@ -304,19 +251,11 @@ export default class RCMManager
 	* These should only be called at the begining of the script; once data is retrieved, does not need to be loaded again.
 	***************************/
 	private _startWikiDataLoad() : void {
-		this.erroredWikis = [];
-		this.ajaxCallbacks = [];
-		
 		this.ajaxID++;
-		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		
 		if(this.chosenWikis.length > 0) {
-			this.chosenWikis.forEach((tWikiData, i) => {
-				this._loadWikiData(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
-			});
-			this.totalItemsToLoad = this.chosenWikis.length;
-			this.wikisLeftToLoad = this.totalItemsToLoad;
-			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading')+" (<span class='rcm-load-perc'>0%</span>)";
+			this.setupStatusLoadingMode('status-loading');
+			this._loadWikiDataFromList(this.chosenWikis);
 		} else {
 			// If the RCM has no wikis listed, there is nothing to run, and the user should be informed.
 			Utils.removeElement(this.statusNode);
@@ -325,98 +264,82 @@ export default class RCMManager
 		}
 	}
 	
-	private _loadWikiData(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.buildWikiDataApiUrl(), 'jsonp', pTries, pID, this._onWikiDataLoaded.bind(this), pDelayNum);
+	private _loadWikiDataFromList(list:WikiData[]) : void {
+		const loader = this.currentMultiLoader = new MultiLoader<WikiData>(this);
+		loader.multiLoad({
+			list,
+			buildUrl: (w)=>w.buildWikiDataApiUrl(),
+			dataType: 'jsonp',
+			maxTries: RCMManager.LOADING_ERROR_RETRY_NUM_INC,
+			onProgress: this._updateLoadingPercent,
+			onSingleLoadFinished: (data, wikiData)=>{
+				if(data && data.warning) { mw.log("WARNING: ", data.warning); }
+				wikiData.initAfterLoad(data.query); // Store wiki-data retrieved that's needed before wiki parsing
+			},
+			onCheckInvalid:(data)=>{
+				if(data?.error && !data?.query) {
+					console.error(data.error, data, data.query == null);
+					return { id:"api-error", halt:true, error:data.error }; // Wiki gave an error, end it now
+				}
+				else if(!data?.query?.general) {
+					return { id:"parse-error" }; // Soft error, keep trying
+				}
+				return false;
+			},
+			onSingleError: (info, wikiData)=>{
+				const ajaxID = loader.AjaxID;
+				switch(info.id) {
+					case "timeout": {
+						this._handleWikiDataLoadError(wikiData, info.tries, ajaxID, "error-loading-syntaxhang", 1);
+						break;
+					}
+					case "max-tries": {
+						this._addErroredWikiAfterToManyRetries(wikiData, info.tries, ajaxID, info.status, this._handleWikiDataLoadError);
+						break;
+					}
+					case "unknown": {
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						throw "Wiki returned error";
+						break;
+					}
+				}
+			},
+		})
+		.then(this._onAllWikiDataParsed);
 	}
 	
-	private _onWikiDataLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
-		// Make sure this isn't something loaded before the script was last refreshed.
-		if(pID != this.ajaxID) { return; }
-		
-		// Make sure results are valid
-		if(!!pData && pData.error && pData.query == null) {
-			console.error(pData , pData.error , pData.query == null);
-			this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${pWikiData.servername}</div>${JSON.stringify(pData.error)}</div>`;
-			throw "Wiki returned error";
-		}
-		else if(pFailStatus == "timeout") {
-			this._handleWikiDataLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
-			return;
-		}
-		else if(!pData?.query?.general) {
-			// mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-			// //mw.log(pData);
-			// if(pTries < this.loadingErrorRetryNum) {
-			// 	this._loadWikiData(pWikiData, pTries, pID, 0);
-			// } else {
-			// 	if(this.erroredWikis.length === 0) {
-			// 		var tMessage = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
-			// 		this._handleWikiDataLoadError(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
-			// 	} else {
-			// 		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-			// 		this.statusNode.querySelector(".errored-wiki").innerHTML += ", "+pWikiData.servername;
-			// 	}
-			// }
-			this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWikiData.bind(this), this._handleWikiDataLoadError.bind(this));
-			return;
-		}
-		
-		if(pData && pData.warning) { mw.log("WARNING: ", pData.warning); }
-		
-		// Store wiki-data retrieved that's needed before wiki parsing
-		pWikiData.initAfterLoad(pData.query);
-		
-		this._onWikiDataParsingFinished(pWikiData);
-	}
-	
-	private _handleWikiDataLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void {
-		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "[<span class='errored-wiki'>"+pWikiData.servername+"</span>]", pTries)+"</div>";
+	private _handleWikiDataLoadError=(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void => {
+		const errorCont = $("<div>").appendTo($(this.statusNode).find(".rcm-status-alerts-cont"));
+		let string = `<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${pWikiData.servername}</span>]`, pTries)}</div>`;
 		if(pErrorMessage == "error-loading-syntaxhang" && 'https:' == document.location.protocol) {
-			this.statusNode.innerHTML += "<div class='rcm-error'>"+i18n("error-loading-http")+"</div>";
+			string += `<div class='rcm-error'>${i18n("error-loading-http")}</div>`;
 		}
-		let tHandler = (pEvent:MouseEvent) => {
-			this.loadingErrorRetryNum += pInc;
-			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }
-			tHandler = null;
-			
-			this.erroredWikis.forEach((obj) => {
-				// mw.log(obj);
-				this._loadWikiData(obj.wikiInfo, obj.tries, obj.id);
+		errorCont.html(string);
+		
+		// Retry Button
+		$(`<button class="rcm-btn">${i18n("error-trymoretimes", pInc)}</button>`).appendTo(errorCont).on("click", ()=>{
+			this.currentMultiLoader.retry(pInc);
+			errorCont.remove();
+		});
+		// Add space
+		errorCont.append(" ");
+		// Remove Button
+		$(`<button class="rcm-btn">${i18n("ooui-item-remove", pInc)}</button>`).appendTo(errorCont).on("click", ()=>{
+			this.currentMultiLoader.ErroredItems.forEach((e)=>{
+				this.chosenWikis.splice(this.chosenWikis.indexOf(e.item), 1);
 			});
-			this.erroredWikis = [];
-			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
-		};
-		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
-		let tHandlerRemove = (pEvent:MouseEvent) => {
-			if(pEvent) { pEvent.target.removeEventListener("click", tHandlerRemove); }
-			tHandlerRemove = null;
-			
-			this.chosenWikis.splice(this.chosenWikis.indexOf(pWikiData), 1);
-			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
-			this._onWikiDataParsingFinished(null);
-		};
-		Utils.addTextTo(" ", this.statusNode);
-		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("ooui-item-remove") }, this.statusNode).addEventListener("click", tHandlerRemove);
-		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-	}
-	
-	private _onWikiDataParsingFinished(pWikiData:WikiData) : void {
-		this._onParsingFinished(() => { this._onAllWikiDataParsed(); });
+			this.currentMultiLoader.removeAllErroredWikis();
+			errorCont.remove();
+		});
 	}
 	
 	// Should only be called once.
-	private _onAllWikiDataParsed() : void {
+	private _onAllWikiDataParsed=() : void => {
 		this.flagWikiDataIsLoaded = true;
 		// Add some run-time CSS classes
-		let tCSS = "";
-		this.chosenWikis.forEach((wikiInfo:WikiData) => {
-			// bgcolor should be used if specified, otherwise tile favicon as background. But not both.
-			tCSS += `\n.${wikiInfo.rcClass} .rcm-tiled-favicon {`
-				+(wikiInfo.bgcolor != null ? `background: ${wikiInfo.bgcolor};` : `background-image: url(${wikiInfo.favicon});`)
-			+" }";
-		});
-		mw.util.addCSS(tCSS);
+		mw.util.addCSS( this.chosenWikis.map(w=>w.getWikiRuntimeCSS()).join('\n') );
 		
+		// Update wiki section now that everything is loaded
 		this.wikisNode.onWikiDataLoaded();
 		
 		// If at least one wiki on this list has abuse filters enabled, then show the toggle
@@ -426,124 +349,16 @@ export default class RCMManager
 	}
 	
 	/***************************
-	* Discussion Loading
-	***************************/
-	private _startDiscussionLoading(pID:number) : void {
-		if(!this.discussionsEnabled) { return; }
-		
-		this.ajaxCallbacks = [];
-		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
-		
-		this.totalItemsToLoad = 0;
-		const wikis = this.chosenWikis.filter(w=>!w.hidden);
-		wikis.forEach((tWikiData:WikiData, i:number) => {
-			if(tWikiData.usesWikiaDiscussions !== false) {
-				this.totalItemsToLoad++;
-				this._loadWikiaDiscussions(tWikiData, 0, pID, this.totalItemsToLoad * Global.loadDelay);
-			}
-		});
-		// If no discussions are being loaded, skip it and tell manager to not even bother in the future.
-		if(this.totalItemsToLoad <= 0) {
-			this.discussionsEnabled = false;
-			this.rcmChunkStart();
-			return;
-		}
-		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-discussions-loading')+" (<span class='rcm-load-perc'>0%</span>)";
-	}
-	
-	private _loadWikiaDiscussions(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.buildWikiDiscussionUrl(), 'json', pTries, pID, this._onWikiDiscussionLoaded.bind(this), pDelayNum);
-	}
-	
-	private _onWikiDiscussionLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
-		// Make sure this isn't something loaded before the script was last refreshed.
-		if(pID != this.ajaxID) { return; }
-		
-		if(pFailStatus == null && pData?.["_embedded"]?.["doc:posts"]) {
-			pWikiData.usesWikiaDiscussions = true;
-			this.ajaxCallbacks.push(() => {
-				this._parseWikiDiscussions(pData["_embedded"]["doc:posts"], pWikiData);
-			});
-			if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
-		} else {
-			if(pWikiData.usesWikiaDiscussions === true) {
-				mw.log("Error loading "+pWikiData.servername+" ("+pTries+"/"+this.loadingErrorRetryNum+" tries)");
-				//mw.log(pData);
-				if(pTries < this.loadingErrorRetryNum && pFailStatus == "timeout") {
-					this._loadWikiaDiscussions(pWikiData, pTries, pID, 0);
-				} else {
-					// Don't do any fancy error catching. just fail.
-					this._onDiscussionParsingFinished(pWikiData);
-				}
-				return;
-			} else {
-				if(pFailStatus != "timeout") {
-					mw.log("[RCMManager](loadWikiDiscussions) "+pWikiData.servername+" has no discussions.");
-					pWikiData.usesWikiaDiscussions = false;
-				}
-				this._onDiscussionParsingFinished(pWikiData);
-			}
-		}
-	}
-	
-	private _parseWikiDiscussions(pData:any[], pWikiData:WikiData) : void {
-		// Check if wiki doesn't have any recent changes
-		if(pData.length <= 0) {
-			this._onDiscussionParsingFinished(pWikiData);
-			return;
-		}
-		
-		// A sort is needed since they are sorted by creation, not last edit.
-		pData.sort((a, b) => {
-			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
-		});
-		pWikiData.updateLastDiscussionDate(Utils.getFirstItemFromObject(pData));
-		var tNewRC:RCDataFandomDiscussion, tDate, tChangeAdded;
-		// Add each entry from the wiki to the list in a sorted order
-		pData.forEach((pRCData) => {
-			/////// Filters ///////
-			const tUser = pRCData.createdBy.name;
-			if(this._changeShouldBePrunedBasedOnOptions(tUser, !!tUser, pWikiData)) { return; }
-			try {
-				// Skip if goes past the RC "changes in last _ days" value.
-				if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
-				
-				// Skip if discussion type is one user doesn't want
-				const containerType = pRCData._embedded.thread[0].containerType;
-				if(!this.discNamespaces[ containerType ]) { return; }
-			} catch(e){}
-			
-			/////// Create RC ///////
-			this.itemsToAddTotal++;
-			tNewRC = new RCDataFandomDiscussion(pWikiData, this, pRCData);
-			this._addRCDataToList(tNewRC);
-			pWikiData.discussionsCount++;
-		});
-		
-		mw.log("Discussions:", pWikiData.servername, pData);
-		
-		this._onDiscussionParsingFinished(pWikiData);
-	}
-	
-	private _onDiscussionParsingFinished(pWikiData:WikiData) : void {
-		this._onParsingFinished(() => { this.rcmChunkStart() });
-	}
-	
-	/***************************
-	* Main RecentChanges loading methods
+	* Main manager state methods
 	***************************/
 	private _start(pUpdateParams:boolean=false) : void {
 		clearTimeout(this.autoRefreshTimeoutID);
 		this.wikisNode.clear();
 		
 		this.newRecentChangesEntries = [];
-		this.ajaxCallbacks = [];
-		this.erroredWikis = [];
 		this.secondaryWikiData = [];
 		
 		this.ajaxID++;
-		this.loadingErrorRetryNum = RCMManager.LOADING_ERROR_RETRY_NUM_INC;
 		this.itemsAdded = this.itemsToAddTotal = 0;
 		
 		const wikis = this.chosenWikis.filter(w=>!w.hidden);
@@ -554,13 +369,13 @@ export default class RCMManager
 			return;
 		}
 		
-		wikis.forEach((tWikiData:WikiData, i:number) => {
-			if(pUpdateParams) { tWikiData.setupRcParams(); } // Encase it was changed via RCMOptions
-			this._loadWiki(tWikiData, 0, this.ajaxID, (i+1) * Global.loadDelay);
-		});
-		this.totalItemsToLoad = wikis.length;
-		this.wikisLeftToLoad = this.totalItemsToLoad;
-		this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>0%</span>)";
+		if(pUpdateParams) {
+			wikis.forEach(wiki => wiki.setupRcParams());
+		}
+		
+		this.setupStatusLoadingMode('status-loading-sorting');
+		
+		this._loadRecentChangesFromList(wikis);
 	}
 	
 	// Refresh and add new changes to top
@@ -585,7 +400,6 @@ export default class RCMManager
 		// 	}
 		// 	this.recentChangesEntries = null;
 		// }
-		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
 		RCMModal.closeModal();
@@ -631,7 +445,6 @@ export default class RCMManager
 			this.recentChangesEntries = null;
 		}
 		this.recentChangesEntries = [];
-		this.ajaxCallbacks = null;
 		this.secondaryWikiData = null;
 		
 		RCMModal.closeModal();
@@ -639,72 +452,195 @@ export default class RCMManager
 		this._start(pUpdateParams);
 	}
 	
-	// Separate method so that it can be reused if the loading failed
-	private _loadWiki(pWikiData:WikiData, pTries:number, pID:number, pDelayNum:number=0) : void {
-		this._load(pWikiData, pWikiData.buildApiUrl(), 'jsonp', pTries, pID, this._onWikiLoaded.bind(this), pDelayNum);
+	/***************************
+	* Discussion Loading
+	***************************/
+	private _startDiscussionLoading(pID:number) : void {
+		if(!this.discussionsEnabled) { return; }
+		
+		const wikis = this.chosenWikis.filter(w=>!w.hidden).filter(w=>w.usesWikiaDiscussions !== false);
+		// If no discussions are being loaded, skip it and tell manager to not even bother in the future.
+		if(wikis.length <= 0) {
+			this.discussionsEnabled = false;
+			this.rcmChunkStart();
+			return;
+		}
+		
+		this.setupStatusLoadingMode('status-discussions-loading');
+		this._loadDiscussionsFromList(wikis);
 	}
 	
-	/* Called after a wiki is loaded; will add it to queue, and run it if no other callbacks running. */
-	private _onWikiLoaded(pData, pWikiData:WikiData, pTries:number, pID:number, pFailStatus) : void {
-		// Make sure this isn't something loaded before the script was last refreshed.
-		if(pID != this.ajaxID) { return; }
-		
-		// Make sure results are valid
-		if(!!pData && pData.error && pData.query == null) {
-			this.statusNode.innerHTML = "<div class='rcm-error'><div>ERROR: "+pWikiData.servername+"</div>"+JSON.stringify(pData.error)+"</div>";
-			this.addRefreshButtonTo(this.statusNode);
-			throw "Wiki returned error";
-		}
-		else if(pFailStatus == "timeout") {
-			this._handleWikiLoadError(pWikiData, pTries, pID, "error-loading-syntaxhang", 1);
+	private _loadDiscussionsFromList(list:WikiData[]) : void {
+		const loader = this.currentMultiLoader = new MultiLoader<WikiData>(this);
+		loader.multiLoad({
+			list,
+			buildUrl: (w)=>w.buildWikiDiscussionUrl(),
+			dataType: 'json',
+			maxTries: RCMManager.LOADING_ERROR_RETRY_NUM_INC,
+			onProgress: this._updateLoadingPercent,
+			onSingleLoadFinished: (data, wikiData)=>{
+				if(data && data.warning) { mw.log("WARNING: ", data.warning); }
+				
+				// Make sure it wasn't disabled during validity check
+				if(wikiData.usesWikiaDiscussions !== false) {
+					// If success, then we know this wiki uses discussions!
+					wikiData.usesWikiaDiscussions = true;
+					this._parseWikiDiscussions(data?.["_embedded"]?.["doc:posts"], wikiData);
+				}
+			},
+			onCheckInvalid:(data, wikiData)=>{
+				if(data?.error) {
+					console.error(data.error, data);
+					return { id:"api-error", halt:true, error:`[${data.status}] ${data.error} - ${data.details}` }; // Wiki gave an error, end it now
+				}
+				else if(!data?.["_embedded"]?.["doc:posts"]) {
+					// Error type changes based on if we know discussions are used on this wiki
+					if(wikiData.usesWikiaDiscussions === true) {
+						return { id:"parse-error" }; // Soft error, keep trying
+					} else {
+						// If we aren't sure that discussions exist, don't bother checking more; just turn it off and say success
+						mw.log("[RCMManager](loadWikiDiscussions) "+wikiData.servername+" has no discussions.");
+						wikiData.usesWikiaDiscussions = false;
+						return false;
+					}
+				}
+				return false;
+			},
+			onSingleError: (info, wikiData, errorData)=>{
+				switch(info.id) {
+					case "timeout":
+					case "max-tries": {
+						// Don't do any fancy error catching. just ignore / move on
+						errorData.remove();
+						break;
+					}
+					case "unknown": {
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						throw "Wiki returned error";
+						break;
+					}
+				}
+			},
+		})
+		.then(this._onAllDiscussionsParsed);
+	}
+	
+	private _parseWikiDiscussions(pData:any[], pWikiData:WikiData) : void {
+		// Check if wiki doesn't have any recent changes
+		if(!pData || pData.length <= 0) {
 			return;
 		}
-		else if(pData?.query?.recentchanges == null && !pWikiData.skipLoadingNormalRcDueToFilters()) {
-			this._retryOrError(pWikiData, pTries, pID, pFailStatus, this._loadWiki.bind(this), this._handleWikiLoadError.bind(this));
-			return;
-		}
 		
-		if(pData && pData.warning) { mw.log("WARNING: ", pData.warning); }
-		
-		// Store wiki-data retrieved that's needed before wiki parsing
-		// pWikiData.initAfterLoad(pData.query);
-		
-		this.ajaxCallbacks.push(() => {
-			pWikiData.initAbuseFilterFilters(pData.query);
-			this._parseWikiAbuseLog(pData.query?.abuselog, pWikiData);
-			this._parseWiki(pData.query?.recentchanges, pWikiData);
+		// A sort is needed since they are sorted by creation, not last edit.
+		pData.sort((a, b) => {
+			return (a.modificationDate || a.creationDate).epochSecond < (b.modificationDate || b.creationDate).epochSecond ? 1 : -1;
 		});
-		// Directly call next callback if this is the only one in it. Otherwise let script handle it.
-		if(this.ajaxCallbacks.length === 1) { this.ajaxCallbacks[0](); }
+		pWikiData.updateLastDiscussionDate(Utils.getFirstItemFromObject(pData));
+		var tNewRC:RCDataFandomDiscussion, tDate, tChangeAdded;
+		// Add each entry from the wiki to the list in a sorted order
+		pData.forEach((pRCData) => {
+			/////// Filters ///////
+			const tUser = pRCData.createdBy.name;
+			if(this._changeShouldBePrunedBasedOnOptions(tUser, !!tUser, pWikiData)) { return; }
+			try {
+				// Skip if goes past the RC "changes in last _ days" value.
+				if((pRCData.modificationDate || pRCData.creationDate).epochSecond < Math.round(pWikiData.getEndDate().getTime() / 1000)) { return; }
+				
+				// Skip if discussion type is one user doesn't want
+				const containerType = pRCData._embedded.thread[0].containerType;
+				if(!this.discNamespaces[ containerType ]) { return; }
+			} catch(e){}
+			
+			/////// Create RC ///////
+			this.itemsToAddTotal++;
+			tNewRC = new RCDataFandomDiscussion(pWikiData, this, pRCData);
+			this._addRCDataToList(tNewRC);
+			pWikiData.discussionsCount++;
+		});
+		
+		mw.log("Discussions:", pWikiData.servername, pData);
 	}
 	
-	private _handleWikiLoadError(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void {
+	private _onAllDiscussionsParsed=() : void => {
+		this.rcmChunkStart();
+	}
+	
+	/***************************
+	* Main RecentChanges loading methods
+	***************************/
+	private _loadRecentChangesFromList(list:WikiData[]) : void {
+		const loader = this.currentMultiLoader = new MultiLoader<WikiData>(this);
+		loader.multiLoad({
+			list,
+			buildUrl: (w)=>w.buildApiUrl(),
+			dataType: 'jsonp',
+			maxTries: RCMManager.LOADING_ERROR_RETRY_NUM_INC,
+			onProgress: this._updateLoadingPercent,
+			onSingleLoadFinished: (data, wikiData)=>{
+				if(data && data.warning) { mw.log("WARNING: ", data.warning); }
+				wikiData.initAbuseFilterFilters(data.query);
+				this._parseWikiAbuseLog(data.query?.abuselog, wikiData);
+				this._parseWiki(data.query?.recentchanges, wikiData);
+				this.wikisNode.onWikiLoaded(wikiData);
+			},
+			onCheckInvalid:(data, pWikiData)=>{
+				if(data?.error && !data?.query) {
+					console.error(data.error, data, data.query == null);
+					return { id:"api-error", halt:true, error:data.error }; // Wiki gave an error, end it now
+				}
+				// Make sure results are valid - ignore if this feature is turned off (we obviously don't care if results aren't returned)
+				else if(!data?.query?.recentchanges && !pWikiData.skipLoadingNormalRcDueToFilters()) {
+					return { id:"parse-error" }; // Soft error, keep trying
+				}
+				return false;
+			},
+			onSingleError: (info, wikiData)=>{
+				const ajaxID = loader.AjaxID;
+				switch(info.id) {
+					case "timeout": {
+						this._handleWikiLoadError(wikiData, info.tries, ajaxID, "error-loading-syntaxhang", 1);
+						break;
+					}
+					case "max-tries": {
+						this._addErroredWikiAfterToManyRetries(wikiData, info.tries, ajaxID, info.status, this._handleWikiLoadError);
+						break;
+					}
+					case "unknown": {
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						throw "Wiki returned error";
+						break;
+					}
+				}
+			},
+		})
+		.then(this._onAllWikisParsed);
+	}
+	
+	private _handleWikiLoadError=(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void => {
 		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-		this.statusNode.innerHTML = "<div class='rcm-error'>"+i18n(pErrorMessage, "[<span class='errored-wiki'>"+pWikiData.servername+"</span>]", pTries)+"</div>";
-		this.addRefreshButtonTo(this.statusNode);
-		let tHandler = (pEvent) => {
+		
+		const errorCont = $("<div>").appendTo($(this.statusNode).find(".rcm-status-alerts-cont"));
+		errorCont.html(`<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${pWikiData.servername}</span>]`, pTries)}</div>`);
+		
+		this.addRefreshButtonTo(errorCont[0]);
+		errorCont.append(" ");
+		
+		// Retry Button
+		const retry = ()=>{
 			clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = null;
-			this.loadingErrorRetryNum += pInc;
-			if(pEvent) { pEvent.target.removeEventListener("click", tHandler); }
-			tHandler = null;
 			
-			this.erroredWikis.forEach((obj) => {
-				// mw.log(obj);
-				this._loadWiki(obj.wikiInfo, obj.tries, obj.id);
-			});
-			this.erroredWikis = [];
-			this.statusNode.innerHTML = Global.getLoader()+" "+i18n('status-loading-sorting')+" (<span class='rcm-load-perc'>"+this.calcLoadPercent()+"%</span>)";
+			this.currentMultiLoader.retry(pInc);
+			errorCont.remove();
 		};
-		Utils.newElement("button", { className:"rcm-btn", innerHTML:i18n("error-trymoretimes", pInc) }, this.statusNode).addEventListener("click", tHandler);
-		this.erroredWikis.push({wikiInfo:pWikiData, tries:pTries, id:pID});
-		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = window.setTimeout(() => { if(tHandler) { tHandler(null); } }, 20000); }
+		$(`<button class="rcm-btn">${i18n("error-trymoretimes", pInc)}</button>`).appendTo(errorCont).on("click", retry);
+		
+		if(this.isAutoRefreshEnabled()) { this.loadErrorTimeoutID = window.setTimeout(() => { retry?.(); }, 20000); }
 	}
 	
 	/* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
 	private _parseWiki(pData, pWikiData:WikiData) : void {
 		// Check if wiki doesn't have any recent changes
 		if(!pData || pData.length <= 0) {
-			this._onWikiParsingFinished(pWikiData);
 			return;
 		}
 		
@@ -726,10 +662,38 @@ export default class RCMManager
 			this._addRCDataToList(tNewRC);
 			pWikiData.resultsCount++;
 		});
-		
-		this._onWikiParsingFinished(pWikiData);
 	};
 	
+	private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
+		// Check if wiki doesn't have any abuse logs
+		if(!pLogs || pLogs.length <= 0) {
+			return;
+		}
+		
+		pWikiData.updateLastAbuseLogDate(Utils.getFirstItemFromObject(pLogs));
+		// Add each entry from the wiki to the list in a sorted order
+		pLogs.forEach((pLogData) => {
+			pLogData = RCDataLog.abuseLogDataToNormalLogFormat(pLogData);
+			const userEdited = pLogData.anon != "";
+			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, userEdited, pWikiData)) { return; }
+			
+			this.itemsToAddTotal++;
+			this._addRCDataToList( new RCDataLog(pWikiData, this, pLogData) );
+			pWikiData.abuseLogCount++;
+		});
+	}
+	
+	private _onAllWikisParsed=() : void => {
+		if(this.discussionsEnabled) {
+			this._startDiscussionLoading(this.ajaxID);
+		} else {
+			this.rcmChunkStart();
+		}
+	}
+	
+	/***************************
+	* General RCData Management methods
+	***************************/
 	private _changeShouldBePrunedBasedOnOptions(pUser:string, pUserEdited:boolean, pWikiData:WikiData) : boolean {
 		// Check if edits belonging to current user should be hidden (for normal RC this is handled by rcexcludeuser, but still needed for other RC types)
 		if(Global.username && pUser && pWikiData.rcParams.hidemyself && Global.username == pUser) { return true; }
@@ -745,26 +709,6 @@ export default class RCMManager
 		else if(pWikiData.rcParams.hideliu && pUserEdited) { return true; }
 		
 		return false;
-	}
-	
-	private _parseWikiAbuseLog(pLogs, pWikiData:WikiData) : void {
-		// Check if wiki doesn't have any logs
-		if(!pLogs || pLogs.length <= 0) {
-			// this._onWikiParsingFinished(pWikiData);
-			return;
-		}
-		
-		pWikiData.updateLastAbuseLogDate(Utils.getFirstItemFromObject(pLogs));
-		// Add each entry from the wiki to the list in a sorted order
-		pLogs.forEach((pLogData) => {
-			pLogData = RCDataLog.abuseLogDataToNormalLogFormat(pLogData);
-			const userEdited = pLogData.anon != "";
-			if(this._changeShouldBePrunedBasedOnOptions(pLogData.user, userEdited, pWikiData)) { return; }
-			
-			this.itemsToAddTotal++;
-			this._addRCDataToList( new RCDataLog(pWikiData, this, pLogData) );
-			pWikiData.abuseLogCount++;
-		});
 	}
 	
 	// TODO: Make it more efficient if using hideenhanced by ignoring some calls.
@@ -829,62 +773,6 @@ export default class RCMManager
 			this.recentChangesEntries.push( tNewList = new RCList(this).addRC(pNewRC) );
 		}
 		tNewRcCombo.list = tNewList;
-	}
-	
-	// /* Check wiki data one at a time, either as it's returned, or after the current data is done being processed. */
-	// private _parseWikiOld(pData, pLogData, pWikiData:WikiData) : void {
-	// 	// Check if wiki doesn't have any recent changes
-	// 	if(pData.length <= 0) {
-	// 		this._onWikiParsingFinished(pWikiData);
-	// 		return;
-	// 	}
-	//
-	// 	mw.log(pWikiData.servername, pData);
-	//
-	// 	var tNewRC, tDate, tChangeAdded;
-	// 	// Add each entry from the wiki to the list in a sorted order
-	// 	pData.forEach((pRCData) => {
-	// 		// Skip if user is hidden for whole script or specific wiki
-	// 		if(pRCData.user && this.hideusers.indexOf(pRCData.user) > -1 || (pWikiData.hideusers && pWikiData.hideusers.indexOf(pRCData.user) > -1)) { return; }
-	// 		// Skip if user is NOT a specified user to show for whole script or specific wiki
-	// 		if(pRCData.user && (this.onlyshowusers.length != 0 && this.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
-	// 		if(pRCData.user && (pWikiData.onlyshowusers != undefined && pWikiData.onlyshowusers.indexOf(pRCData.user) == -1)) { return; }
-	//
-	// 		this.itemsToAddTotal++;
-	// 		tNewRC = new RCData( pWikiData, this ).init(pRCData, pLogData);
-	// 		tChangeAdded = false;
-	// 		this.recentChangesEntries.every((pRCList:RCList, i:number) => {
-	// 			if(tNewRC.date > pRCList.date) {
-	// 				this.recentChangesEntries.splice(i, 0, new RCList(this).addRC(tNewRC));
-	// 				tChangeAdded = true;
-	// 				return false;
-	// 			} else {
-	// 				if(this.rcParams.hideenhanced == false && pRCList.shouldGroupWith(tNewRC)) {
-	// 					pRCList.addRC(tNewRC);
-	// 					tChangeAdded = true;
-	// 					return false;
-	// 				}
-	// 			}
-	// 			return true;
-	// 		});
-	// 		if(!tChangeAdded || this.recentChangesEntries.length == 0) { this.recentChangesEntries.push( new RCList(this).addRC(tNewRC) ); }
-	// 	});
-	//
-	// 	this._onWikiParsingFinished(pWikiData);
-	// };
-	
-	// After a wiki is loaded, check if ALL wikis are loaded; if so add results; if not, load the next wiki, or wait for next wiki to return data.
-	private _onWikiParsingFinished(pWikiData:WikiData) : void {
-		this.wikisNode.onWikiLoaded(pWikiData);
-		this._onParsingFinished(() => { this._onAllWikisParsed() });
-	}
-	
-	private _onAllWikisParsed() : void {
-		if(this.discussionsEnabled) {
-			this._startDiscussionLoading(this.ajaxID);
-		} else {
-			this.rcmChunkStart();
-		}
 	}
 	
 	/***************************
@@ -1323,10 +1211,6 @@ export default class RCMManager
 	isAutoRefreshEnabled() : boolean {
 		return localStorage.getItem(this.autoRefreshLocalStorageID) == "true" || this.autoRefreshEnabledDefault;
 	}
-	
-	calcLoadPercent() : number {
-		return Math.round((this.totalItemsToLoad - this.wikisLeftToLoad) / this.totalItemsToLoad * 100);
-	};
 	
 	// take a "&" seperated list of RC params, and returns a Object with settings.
 	// NOTE: Script does not currently support: "from" and "namespace" related fields (like invert)
