@@ -5,8 +5,7 @@ import RCMModal from "./RCMModal";
 import WikiData from './WikiData';
 import { RCDataAbstract, RCDataArticle, RCDataFandomDiscussion } from './rc_data';
 import { JsonModelDataProps } from './rc_data/RCDataFandomDiscussion';
-
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 //########################################################
 // #### GlobalModal - static class for general modals ####
@@ -25,8 +24,7 @@ export function previewDiff(pPageName:string, pageID:string|number, pAjaxUrl:str
 	
 	var tTitle = `${pPageName} - ${i18n('modal-diff-title')}`;
 	// Need to push separately since undo link -may- not exist (Wikia style forums sometimes).
-	var tButtons = [];
-	tButtons.push(modalLinkButton('modal-diff-open', "diff", pDiffLink));
+	var tButtons = [ modalLinkButton('modal-diff-open', "diff", pDiffLink) ];
 	if(pUndoLink != null) {
 		tButtons.push(modalLinkButton('modal-diff-undo', "undo", pUndoLink));
 	}
@@ -125,10 +123,10 @@ export function previewImages(pAjaxUrl:string, pImageNames:string[], pArticlePat
 	let tButtons = [];
 	
 	let tAddLoadMoreButton = () => {
-		if(tImagesInLog.length > 0) {
+		let tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
+		if(!!tModal && tImagesInLog.length > 0) {
 			mw.log("Over 50 images to display; Extra images must be loaded later.");
-			let tModal = document.querySelector("#"+RCMModal.MODAL_CONTENT_ID);
-			let tGallery = tModal.querySelector(".rcm-gallery");
+			let tGallery = tModal.querySelector(".rcm-gallery")!;
 			let tCont = Utils.newElement("center", { style:'margin-bottom: 8px;' }, tModal);
 			let tButton = Utils.newElement("button", { innerHTML:i18n('modal-gallery-load-more') }, tCont);
 			
@@ -170,7 +168,7 @@ function previewImages_getGalleryItem(pPage:any, pArticlePath:string, pSize:numb
 	let tTitle:string = pPage.title,
 		tPageTitleNoNS = tTitle.indexOf(":") > -1 ? tTitle.split(":")[1] : tTitle,
 		tImage = pPage.imageinfo ? pPage.imageinfo[0] : null,
-		tInvalidImage:{ thumbHref:string, thumbText:string } = null
+		tInvalidImage:{ thumbHref:string, thumbText:string }|null = null
 	;
 	if(pPage.missing == "") {
 		tInvalidImage = {
@@ -279,19 +277,19 @@ export function previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServe
 				
 				// Convert <link> tags (not supported in shadow dom) to <style> tags via @import (bad, but neccisary)
 				// Do it for current wiki head first (since shadow dom strips all css)
-				let tCurPageHead = <HTMLElement>document.querySelector("head").cloneNode(true);
-				Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
+				let tCurPageHead = <HTMLElement>document.querySelector("head")?.cloneNode(true);
+				Utils.forEach(tCurPageHead.querySelectorAll("link[rel=stylesheet]"), (o) => {
 					tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 				});
 				// Prevent warnings from poping up about shadow dom not supporting <link>.
-				Utils.forEach(tCurPageHead.querySelectorAll("link"), (o, i, a) => { Utils.removeElement(o); });
+				Utils.forEach(tCurPageHead.querySelectorAll("link"), (o) => { Utils.removeElement(o); });
 				
 				// Add page info
-				Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
+				Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o) => {
 					tCont.innerHTML += "<style> @import url("+o.href+"); </style>";//o.outerHTML;
 				});
 				// Prevent warnings from poping up about shadow dom not supporting <link>.
-				Utils.forEach(tPreviewHead.querySelectorAll("link"), (o, i, a) => { Utils.removeElement(o); });
+				Utils.forEach(tPreviewHead.querySelectorAll("link"), (o) => { Utils.removeElement(o); });
 				
 				tCont.innerHTML += tCurPageHead.innerHTML;
 				tCont.innerHTML += "\n<!-- Loaded Wiki Styles -->\n";
@@ -301,12 +299,12 @@ export function previewPage(pAjaxUrl, pPageName:string, pPageHref:string, pServe
 			// Using scoped styles is only intended as a fallback since not many browsers yet allow modifying the shadow dom.
 			else if("scoped" in document.createElement("style")) {
 				let tPreviewHead = Utils.newElement("div", { innerHTML:pData.parse.headhtml["*"] });
-				Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o, i, a) => {
+				Utils.forEach(tPreviewHead.querySelectorAll("link[rel=stylesheet]"), (o) => {
 					tCont.innerHTML += "<style scoped> @import url("+o.href+"); </style>";//o.outerHTML;
 				});
 			}
 			// Fix all local links to point to wiki.
-			Utils.forEach(tCont.querySelectorAll("a[href^='/']"), (o, i, a) => {
+			Utils.forEach(tCont.querySelectorAll("a[href^='/']"), (o) => {
 				o.href = pServerLink + o.getAttribute("href");
 			});
 			mw.hook('wikipage.content').fire($(tCont)); // Makes sure infoboxes tabs/section collapsing works.

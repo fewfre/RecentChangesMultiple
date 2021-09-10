@@ -3,10 +3,7 @@ import RCMManager from "./RCMManager";
 import RCParams from "./types/RCParams";
 import UserData from "./UserData";
 import Utils from "./Utils";
-import i18n from "./i18n";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 interface CurrentUser {
 	rights:{
@@ -48,7 +45,7 @@ export default class WikiData
 	notificationsEnabled	: boolean; // Don't send notifications for this wiki.
 	
 	favicon					: string; // Full url of this wiki's favicon
-	rcParamsBase			: RCParams; // Works the same as this.manager.rcParams but for only this wiki.
+	rcParamsBase			: Partial<RCParams>; // Works the same as this.manager.rcParams but for only this wiki.
 	rcParams				: RCParams; // Combination of this.rcParamsOriginal and this.manager.rcParams to get final result.
 	username				: string; // Username to user for this wiki.
 	bgcolor					: string; // A valid CSS color code.
@@ -142,30 +139,29 @@ export default class WikiData
 		this.hidden = false;
 		
 		// Initial values set in setupRcParams() due to needing "days" value.
-		this.lastChangeDate			= null;
-		this.lastDiscussionDate		= null;
-		this.lastAbuseLogDate		= null;
+		// this.lastChangeDate			= null;
+		// this.lastDiscussionDate		= null;
+		// this.lastAbuseLogDate		= null;
 		this.resultsCount			= 0;
 		this.discussionsCount		= 0;
 		this.abuseLogCount			= 0;
 	}
 	
-	dispose() : void {
-		this.manager = null;
+	// dispose() : void {
+	// 	this.manager = null;
 		
-		this.hideusers = null;
-		this.onlyshowusers = null;
-		this.rcParamsBase = null;
-		this.rcParams = null;
+	// 	this.hideusers = null;
+	// 	this.onlyshowusers = null;
+	// 	this.rcParamsBase = null;
+	// 	this.rcParams = null;
 		
-		this.namespaces = null;
-		this.user = null;
+	// 	this.namespaces = null;
+	// 	this.user = null;
 		
-		this.lastChangeDate = null;
-		this.lastDiscussionDate = null;
-		this.lastAbuseLogDate = null;
-	}
-	// misc todo - fix discussions not using lang code - only when scriptdir used?
+	// 	this.lastChangeDate = null;
+	// 	this.lastDiscussionDate = null;
+	// 	this.lastAbuseLogDate = null;
+	// }
 	
 	// Parses LI element data to be able to retrieve information for the respective wiki.
 	initListData(pNode) : WikiData {
@@ -377,19 +373,19 @@ export default class WikiData
 	}
 	
 	setupRcParams() : void {
-		this.rcParams = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
+		let params = $.extend({}, this.manager.rcParamsBase); // Make a shallow copy
 		if(Object.keys(this.manager.optionsNode.rcParams).length > 0) {
-			this.rcParams = $.extend( this.rcParams, this.manager.optionsNode.rcParams );
+			params = $.extend( params, this.manager.optionsNode.rcParams );
 		}
 		if(this.rcParamsBase != null) {
-			this.rcParams = $.extend( this.rcParams, this.rcParamsBase );
+			params = $.extend( params, this.rcParamsBase );
 		}
 		
-		// if(this.rcParams == this.manager.rcParamsBase) {
+		// if(params == this.manager.rcParamsBase) {
 		// 	this.rcParams = this.manager.rcParams; // The manager's RC params are valid if no changes more specific than it exist.
 		// } else {
-			this.rcParams.paramString = this.createRcParamsString(this.rcParams);
-			this.rcParams = $.extend( this.manager.getDefaultRCParams(), this.rcParams );
+			params.paramString = this.createRcParamsString(params);
+			this.rcParams = $.extend( this.manager.getDefaultRCParams(), params );
 		// }
 		
 		// For some reason I added this `if`, but idr why; setupRcParams() is only called in `_start` (when `pUpdateParams` is true),
@@ -405,15 +401,13 @@ export default class WikiData
 	// Get the string for use with Special:RecentChanges link for this wiki.
 	// Don't pass in params with "default" values included, or the link will have them all specified.
 	createRcParamsString(pParams) : string {
-		var tArray = [];
-		$.each( pParams, function( tKey:string, tVal ) {
-			if( tKey != "paramString" ) {
-				if(tVal === true) { tVal="1"; }
-				if(tVal === false) { tVal="0"; }
-				tArray.push(tKey+"="+tVal);
-			}
-		});
-		return tArray.join("&");
+		return $.map( pParams, function( val, key:string ) {
+			if( key == "paramString" ) { return ''; }
+			
+			if(val === true) { val="1"; }
+			else if(val === false) { val="0"; }
+			return `${key}=${val}`;
+		}).join("&");
 	}
 	
 	// Since both initListData and initSiteinfo can set the wiki's favicon, set default favicon if none set
@@ -490,7 +484,7 @@ export default class WikiData
 					let username = user.name;
 					if(user.invalid === "" || user.missing === "") { Utils.removeFromArray(this.usersNeeded, username); return; }
 					// Keep track of data for future use.
-					this.users[username] = new UserData(this, this.manager).init(user);
+					this.users[username] = new UserData(this, this.manager, user);
 					Utils.removeFromArray(this.usersNeeded, username);
 					// Update data on the page.
 					const tNeededClass = "rcm-user-needed";
@@ -534,8 +528,8 @@ export default class WikiData
 	
 	// For retrieving 1-off wiki specific info (some of which is required to know before fetching changes)
 	buildWikiDataApiUrl() : string {
-		if(!this.needsSiteinfoData || !this.needsUserData) { return null; }
-		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
+		if(!this.needsSiteinfoData || !this.needsUserData) { return ""; }
+		let params = {}, tUrlList:string[] = [], tMetaList:string[] = [], tPropList:string[] = [];
 		
 		/***************************
 		* Siteinfo Data - https://www.mediawiki.org/wiki/API:Siteinfo
@@ -577,9 +571,6 @@ export default class WikiData
 		var tReturnText = "https:"+this.scriptpath+"/api.php?action=query&format=json&continue=&"+Utils.objectToUrlQueryData(params);
 		tReturnText.replace(/ /g, "_");
 		
-		tMetaList = null;
-		tPropList = null;
-		
 		Utils.logUrl("[WikiData](buildWikiDataApiUrl)", tReturnText);
 		return tReturnText;
 	}
@@ -587,6 +578,7 @@ export default class WikiData
 	// Gets URL for the Wikia discussions API;
 	// https://github.com/Wikia/app/blob/b03df0a89ed672697e9c130d529bf1eb25f49cda/lib/Swagger/src/Discussion/Api/PostsApi.php
 	buildWikiDiscussionUrl() : string {
+		// misc todo - fix discussions not using lang code - only when scriptdir used?
 		// Get results up to this time stamp.
 		var tEndDate = this.lastDiscussionDate;//this.getEndDate();
 
@@ -610,13 +602,13 @@ export default class WikiData
 	// This in needed because if some filters are blank it will load default rather than nothing
 	// We want to allow loading nothing, since Discussions + Abuse Filters may still be loaded
 	skipLoadingNormalRcDueToFilters() : boolean {
-		return this.rcParams.hidenewpages && this.rcParams.hidepageedits && this.rcParams.hidelogs;
+		return !!this.rcParams.hidenewpages && !!this.rcParams.hidepageedits && !!this.rcParams.hidelogs;
 	}
 	
 	// Returns the url to the Api, which will return the Recent Changes for the wiki (as well as Siteinfo if needed)
 	// https://www.mediawiki.org/wiki/API:RecentChanges
 	buildApiUrl() : string {
-		let params = {}, tUrlList = [], tMetaList = [], tPropList = [];
+		let params = {}, tUrlList:string[] = [], tMetaList:string[] = [], tPropList:string[] = [];
 		
 		// Get results up to this time stamp.
 		let tEndDate = this.lastChangeDate;//this.getEndDate();
@@ -632,23 +624,21 @@ export default class WikiData
 			params["rclimit"] = this.rcParams.limit;
 			params["rcend"] = tEndDate.toISOString();
 			
-			var tRcShow = [];
+			var tRcShow:string[] = [];
 			if(this.rcParams.hideminor) { tRcShow.push("!minor"); }
 			if(this.rcParams.hidebots) { tRcShow.push("!bot"); }
 			if(this.rcParams.hideanons) { tRcShow.push("!anon"); }
 			if(this.rcParams.hideliu) { tRcShow.push("anon"); } // Hide users
 			params["rcshow"] = tRcShow.join("|");
-			tRcShow = null;
 			
-			var tRcType = []; // external
+			var tRcType:string[] = []; // external
 			if(this.rcParams.hidenewpages == false) { tRcType.push("new"); }
 			if(this.rcParams.hidepageedits == false) { tRcType.push("edit"); }
 			if(this.rcParams.hidelogs == false) { tRcType.push("log"); }
 			params["rctype"] = tRcType.join("|");
-			tRcType = null;
 			
 			// Only one user can be excluded like this (so any additional ones will still have to be done manually), but might as well take advantage of it.
-			let tUserToHide = null;
+			let tUserToHide:string|undefined;
 			if(this.rcParams.hidemyself && this.username) {
 				tUserToHide = this.username;
 			} else if(this.manager.hideusers.length > 0) {
@@ -692,11 +682,6 @@ export default class WikiData
 		
 		let tReturnText = this.scriptpath+"/api.php?action=query&format=json&continue=&"+Utils.objectToUrlQueryData(params);
 		tReturnText.replace(/ /g, "_");
-		
-		tUrlList = null;
-		tMetaList = null;
-		tPropList = null;
-		tEndDate = null;
 		
 		Utils.logUrl("[WikiData](buildApiUrl)", tReturnText);
 		return tReturnText;

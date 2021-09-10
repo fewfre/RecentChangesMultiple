@@ -1,6 +1,5 @@
 import Utils from './Utils';
-
-let mw = window.mediaWiki;
+const { /*jQuery:$,*/ mediaWiki:mw } = window;
 
 // Since gender info isn't exposed, we can't know it - this constant should be used in such places to keep track of places that want the info
 export const UNKNOWN_GENDER_TYPE = undefined;
@@ -206,10 +205,11 @@ export default class Global
 	// Svg <symbol>s are added here and used via <use> tags to avoid injecting long html into the page multiple times.
 	// Due to how symbols work, this only needs to be injected once per script.
 	static initSymbols() : string {
-		if(!Global.SVG_SYMBOLS) { return; }
+		if(!Global.SVG_SYMBOLS) { return ""; }
 		let tSVG = `<svg xmlns:dc="http://purl.org/dc/elements/1.1/" style="height: 0px; width: 0px; position: absolute; overflow: hidden;">'
 			${Global.SVG_SYMBOLS.join("")}
 		</svg>`;
+		// @ts-ignore
 		delete Global.SVG_SYMBOLS;
 		return tSVG;
 	}

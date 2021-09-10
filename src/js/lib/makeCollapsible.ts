@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function(){
 	// Originally an import using 'mediawiki.special.recentchanges' on older wiki version, which included it as 'jquery.makeCollapsible'
 	(function ($, mw) {

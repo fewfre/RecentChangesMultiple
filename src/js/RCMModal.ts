@@ -1,11 +1,9 @@
 import Global from "./Global";
 import i18n from "./i18n";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 interface RCMModalProp {
-	title?:string,
+	title:string,
 	content?:string,
 	// vars?:any,
 	buttons?:{ text:string, event:string, callback:(any)=>void, closeOnClick?:boolean }[],
@@ -34,8 +32,8 @@ export default class RCMModal
 {
 	static readonly MODAL_ID = "rcm-modal";
 	static readonly MODAL_CONTENT_ID = "rcm-modal-content";
-	static modalFactory = null;
-	static modal = null;
+	static modalFactory;
+	static modal:any = null;
 	static isOpen = false;
 	
 	// Load factory and create modal for later use
@@ -89,7 +87,7 @@ export default class RCMModal
 			event: "close_button",
 			normal: false, primary: false,
 		});
-		events["close_button"] = function(){ RCMModal.modal.close(); };
+		events["close_button"] = function(){ RCMModal.modal?.close(); };
 		
 		// Optional buttons + events
 		pData.buttons && pData.buttons.forEach(function(o, i, a){
@@ -97,7 +95,7 @@ export default class RCMModal
 			if(o.closeOnClick !== false) {
 				events[o.event] = function(e){
 					o.callback(e);
-					RCMModal.modal.close();
+					RCMModal.modal?.close();
 				};
 			} else {
 				events[o.event] = o.callback;
@@ -137,7 +135,7 @@ export default class RCMModal
 		// 		.show()
 		// 	;
 		// } catch(e) {
-			document.querySelector("#"+RCMModal.MODAL_CONTENT_ID).innerHTML = pHTML;
+			document.querySelector("#"+RCMModal.MODAL_CONTENT_ID)!.innerHTML = pHTML;
 		// }
 		
 		// Update window size to fit new content

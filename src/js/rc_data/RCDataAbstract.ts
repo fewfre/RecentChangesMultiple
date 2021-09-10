@@ -1,12 +1,9 @@
-import Global from "../Global";
 import RCMManager from "../RCMManager";
 import WikiData from "../WikiData";
 import Utils from "../Utils";
 import i18n from "../i18n";
 import { RCData, RC_TYPE } from ".";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+// const { jQuery:$, mediaWiki:mw } = window;
 	
 //######################################
 // #### Recent Change Data ####
@@ -89,7 +86,7 @@ export default abstract class RCDataAbstract
 		delete this.manager;
 		// @ts-ignore - It's read only, but we still want it deleted here
 		delete this.wikiInfo;
-		
+		// @ts-ignore - yah yah, shouldn't be null; I'd rather it be null then a memory leak tyvm
 		this.date = null;
 	}
 	

@@ -4,9 +4,7 @@ import Utils from "../Utils";
 import i18n, {I18nKey} from "../i18n";
 import { RCDataArticle, RCDataAbstract, RC_TYPE } from ".";
 import { UNKNOWN_GENDER_TYPE } from "../Global";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { /*jQuery:$,*/ mediaWiki:mw } = window;
 
 // TODO:
 // https://github.com/Wikia/app/blob/9ece43e540fbd5e351534b2041b9edef045a8d72/includes/wikia/VariablesBase.php#L5575
@@ -171,7 +169,7 @@ export default class RCDataLog extends RCDataAbstract
 				break;
 			}
 			case "delete": {
-				const { count, ids, old:oldMask, new:newMask } = pRCData.logparams ?? {};
+				const { count, ids, /*old:oldMask,*/ new:newMask } = pRCData.logparams ?? {};
 				this.logParams = {
 					type: "delete",
 					ids_length: ids?.length ?? 1,
@@ -201,7 +199,7 @@ export default class RCDataLog extends RCDataAbstract
 				break;
 			}
 			case "protect": {
-				const { description, details, cascade, oldtitle_ns, oldtitle_title } = pRCData.logparams ?? {};
+				const { description, /*details,*/ cascade, /*oldtitle_ns,*/ oldtitle_title } = pRCData.logparams ?? {};
 				this.logParams = {
 					type: "protect",
 					description,
@@ -261,7 +259,7 @@ export default class RCDataLog extends RCDataAbstract
 		
 		switch(this.logParams.type) {
 			case "abuse": {
-				const { result, filter, filter_id } = this.logParams;
+				const { result, filter } = this.logParams;
 				let filterFromDesc: { id?:number, private?:boolean, found:number } = { found:0 };
 				if(filter.trim() != "") {
 					Object.keys(this.wikiInfo.abuseFilters).forEach((i)=>{
@@ -387,11 +385,11 @@ export default class RCDataLog extends RCDataAbstract
 			case "delete": {
 				const { ids_length, new_bitmask, count } = this.logParams;
 				
-				let arg4:string = undefined;
+				let arg4:string|undefined = undefined;
 				switch(this.logaction) {
 					case 'restore': {
 						if(count) {
-							let tArray = [];
+							let tArray:string[] = [];
 							if(count?.revisions > 0) {
 								tArray.push(i18n('restore-count-revisions', count.revisions));
 							}

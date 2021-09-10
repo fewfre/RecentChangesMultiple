@@ -1,13 +1,10 @@
 import Global from "../Global";
 import RCMManager from "../RCMManager";
-import RCMModal from "../RCMModal";
 import WikiData from "../WikiData";
 import { RCDataAbstract, RC_TYPE } from ".";
 import Utils from "../Utils";
 import i18n from "../i18n";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 export type JsonModelDataProps = 
 	// Content types
@@ -52,8 +49,8 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	threadId		: string;
 	threadTitle		: string;
 	forumId			: string;
-	forumName		: string; // name of the forum (may not be suitable for urls) - used on actual page
-	forumPageName	: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
+	forumName		?: string; // name of the forum (may not be suitable for urls) - used on actual page
+	forumPageName	?: string; // wiki's page for the wall/comment for use in links (not included by default; needs to be fetched separately)
 	
 	user_id			: string; // createdBy.id
 	user_avatarUrl	: string // createdBy.avatarUrl
@@ -133,8 +130,8 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		// This is a fake page name, so if we see it we want to treat it as unknown
 		else if(this.containerType == "ARTICLE_COMMENT") {
 			if(!this.forumName || this.forumName == "Root Forum") {
-				this.forumName = null;
-				this.forumPageName = null;
+				this.forumName = undefined;
+				this.forumPageName = undefined;
 			}
 			if(!this.threadTitle) {
 				if(thread?.firstPost?.jsonModel) {
@@ -158,8 +155,8 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		const showReply = isReply && !ignoreReply;
 		switch(this.containerType) {
 			case 'FORUM': return `${wikiInfo.scriptpath}/d/p/${threadId}${showReply ? `/r/${id}` : ''}${params ? '?'+$.param(params) : ''}`;
-			case 'WALL': return `${wikiInfo.getPageUrl(`Message_Wall:${Utils.escapeCharactersUrl(this.forumPageName)}`, { threadId, ...params })}${showReply ? `#${id}` : ''}`;
-			case 'ARTICLE_COMMENT': return wikiInfo.getPageUrl(Utils.escapeCharactersUrl(this.forumPageName), { commentId: threadId, ...showReply&&{ replyId: id }, ...params });
+			case 'WALL': return `${wikiInfo.getPageUrl(`Message_Wall:${Utils.escapeCharactersUrl(this.forumPageName!)}`, { threadId, ...params })}${showReply ? `#${id}` : ''}`;
+			case 'ARTICLE_COMMENT': return wikiInfo.getPageUrl(Utils.escapeCharactersUrl(this.forumPageName!), { commentId: threadId, ...showReply&&{ replyId: id }, ...params });
 		}
 	}
 	
@@ -168,7 +165,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		switch(this.containerType) {
 			case 'FORUM': return `${wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest`;
 			case 'WALL': return !this.forumPageName ? "#" : this.wikiInfo.getPageUrl(`Message_Wall:${this.forumPageName}`);
-			case 'ARTICLE_COMMENT': return !this.forumPageName ? "#" : this.getUrl(null, false); // TODO: we currently group by thread, might be better to group by page? might have issues with RCList though, not sure
+			case 'ARTICLE_COMMENT': return !this.forumPageName ? "#" : this.getUrl(undefined, false); // TODO: we currently group by thread, might be better to group by page? might have issues with RCList though, not sure
 		}
 	}
 	
@@ -213,7 +210,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	
 	jsonModelToSummary(jsonModel:JsonModelDataProps, maxLength:number) : string {
 		const tJsonToSummary=(props:JsonModelDataProps):string => {
-			if("content" in props) { return props.content.map(tJsonToSummary).join(""); }
+			if("content" in props && props.content) { return props.content.map(tJsonToSummary).join(""); }
 			if(props.type == "text") { return props.text; }
 			else if(props.type == "image") { return " ␚ "; } // use temp here, since html injected here won't play nice with string length
 			return "";
@@ -235,12 +232,12 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			case "FORUM": {
 				let tForumLink = `<a href="${this.getForumUrl()}">${this.forumName}</a>`;
 				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
-				return i18n.wiki2html(tText, `<a href="${this.getUrl(null, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`, tForumLink);//+(pIsHead ? "" : this.getUpvoteCount())
+				return i18n.wiki2html(tText, `<a href="${this.getUrl(undefined, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`, tForumLink);//+(pIsHead ? "" : this.getUpvoteCount())
 			}
 			case "WALL": {
 				let tText = i18n.MESSAGES["wall-recentchanges-thread-group"].replace(/(\[\[.*\]\])/g, "$2"); // Replace internal link with a single non-link spot
 				return i18n.wiki2html(tText,
-					`<a href="${this.getUrl(null, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`,
+					`<a href="${this.getUrl(undefined, pIsHead)}">${this.threadTitle}</a>${ajaxIcon}`,
 					`<a href="${this.getForumUrl()}">${this.forumName}</a>`,
 				);
 			}
@@ -255,7 +252,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		this.updateFromOldCommentFetchDataIfNeeded();
 		
 		// If already loaded and saved
-		if(this.forumPageName) { return `<a href='${this.getUrl(null, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? this.forumName : text}</a>`; }
+		if(this.forumPageName) { return `<a href='${this.getUrl(undefined, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? this.forumName : text}</a>`; }
 		
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
@@ -264,22 +261,22 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			if(!this || !this.date) { return; }
 			
 			this.updateDataFromCommentFetch(articleData);
-			$(`.rcm${uniqID}`).attr("href", this.getUrl(null, !showReply));
+			$(`.rcm${uniqID}`).attr("href", this.getUrl(undefined, !showReply));
 			if(text == "set-to-page-name") {
-				$(`.rcm${uniqID}`).text(this.forumName);
+				$(`.rcm${uniqID}`).text(this.forumName!);
 			}
 		} });
 		
 		this.fetchCommentFeedsAndPostsIfNeeded();
 		
-		return `<a class="rcm${uniqID}" href='${this.getUrl(null, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? null : text}</a>`;
+		return `<a class="rcm${uniqID}" href='${this.getUrl(undefined, !showReply)}' title='${this.title}'>${text=="set-to-page-name" ? null : text}</a>`;
 	}
 	
 	getCommentForumNameLink(pIsHead:boolean=false) : string {
 		this.updateFromOldCommentFetchDataIfNeeded();
 		
 		// If already loaded and saved
-		if(this.forumName) { return `[${this.getUrl(null, pIsHead)} ${this.forumName}]`; }
+		if(this.forumName) { return `[${this.getUrl(undefined, pIsHead)} ${this.forumName}]`; }
 		
 		// Else name unknown and must be loaded
 		let uniqID = Utils.uniqID();
@@ -288,7 +285,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			if(!this || !this.date) { return; }
 			
 			this.updateDataFromCommentFetch(articleData);
-			$(`.rcm${uniqID} a`).attr("href", this.getUrl(null, pIsHead)).text(this.forumName);
+			$(`.rcm${uniqID} a`).attr("href", this.getUrl(undefined, pIsHead)).text(this.forumName!);
 		} });
 		
 		this.fetchCommentFeedsAndPostsIfNeeded();
@@ -326,7 +323,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	// If loaded but page not updated for some reason, then update values first
 	updateFromOldCommentFetchDataIfNeeded() {
 		if(!this.forumName && this.wikiInfo.discCommentPageNames.has(this.forumId)) {
-			let articleData = this.wikiInfo.discCommentPageNames.get(this.forumId);
+			let articleData = this.wikiInfo.discCommentPageNames.get(this.forumId)!; // come on typescript, there's a has() check right there!
 			this.updateDataFromCommentFetch(articleData);
 		}
 	}
@@ -364,7 +361,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	actionText() : string {
 		const userDetails = this.userDetails();
 		let forumLink = `<a href="${this.getForumUrl()}">${this.forumPageName}</a>`;
-		let threadLink = `<a href="${this.getUrl(null, true)}">${this.threadTitle}</a>`;
+		let threadLink = `<a href="${this.getUrl(undefined, true)}">${this.threadTitle}</a>`;
 		let viewLink = " "+i18n('parentheses', `<a href="${this.getUrl()}">${i18n('socialactivity-view')}</a>`);
 		const summary = i18n('quotation-marks', `<em>${this.summary}</em>`);
 		switch(this.containerType) {

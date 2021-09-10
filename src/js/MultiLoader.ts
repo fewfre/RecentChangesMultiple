@@ -1,8 +1,6 @@
 import RCMManager from "./RCMManager";
 import Global from "./Global";
-
-const $ = window.jQuery;
-const mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 const TIMEOUT = 15000; // Error out after 15s
 
@@ -31,7 +29,7 @@ interface MultiLoadProps<T> {
 interface SingleLoadProps<T> {
 	item:T;
 	url:string;
-	dataType?:"json"|"jsonp";
+	dataType:"json"|"jsonp";
 	tries?:number;
 	maxTries:number;
 	
@@ -61,7 +59,15 @@ export default class MultiLoader<T>
 	
 	// constructor
 	constructor(public manager:RCMManager){
-		this.state == "idle";
+		this.state = "idle";
+		this.ajaxID = this.manager.ajaxID;
+		
+		// Default values
+		this.totalItemsToLoad = 0;
+		this.itemsLoaded = 0;
+		this.delayStack = 0;
+		this.maxTries = 0;
+		this.erroredItems = [];
 	}
 	
 	/***************************

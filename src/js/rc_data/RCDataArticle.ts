@@ -1,12 +1,9 @@
-import Global from "../Global";
 import RCMManager from "../RCMManager";
 import WikiData from "../WikiData";
 import Utils from "../Utils";
 import i18n from "../i18n";
 import { RCDataAbstract, RC_TYPE } from ".";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+// const { jQuery:$, mediaWiki:mw } = window;
 	
 //######################################
 // #### Recent Change Data ####

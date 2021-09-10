@@ -4,9 +4,7 @@ import Utils from "./Utils";
 import i18n from "./i18n";
 import { WikiaMultiSelectDropdown } from "./lib/WikiaMultiSelectDropdown";
 import RCParams from "./types/RCParams";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, /*mediaWiki:mw*/ } = window;
 
 //######################################
 // #### Run-time Options ####
@@ -22,7 +20,7 @@ export default class RCMOptions
 	/***************************
 	 * Data
 	 ***************************/
-	rcParams			: any;
+	rcParams			: Partial<RCParams>;
 	discNamespaces		: { FORUM:boolean, WALL:boolean, ARTICLE_COMMENT:boolean };
 	
 	/***************************
@@ -48,41 +46,13 @@ export default class RCMOptions
 	discussionsDropdown			: WikiaMultiSelectDropdown;
 	
 	// Constructor
-	constructor(pManager:RCMManager) {
+	constructor(pManager:RCMManager, pElem:HTMLElement|Element) {
 		this.manager = pManager;
 		this.localStorageID = Global.OPTIONS_SETTINGS_LOCAL_STORAGE_ID + "-" + pManager.modID.replace(".", "");
-	}
-	
-	dispose() : void {
-		this.removeEventListeners();
 		
-		this.manager = null;
-		this.root = null;
-		
-		this.rcParams = null;
-		this.discNamespaces = null;
-		
-		this.settingsSaveCookieCheckbox	= null;
-		this.settingsShowDiscussionsCheckbox= null;
-		
-		this.limitField					= null;
-		this.daysField					= null;
-		
-		this.minorEditsCheckbox			= null;
-		this.botsCheckbox				= null;
-		this.anonsCheckbox				= null;
-		this.usersCheckbox				= null;
-		this.myEditsCheckbox			= null;
-		this.groupedChangesCheckbox		= null;
-		this.logsCheckbox				= null;
-		this.newPagesCheckbox			= null;
-		this.pageEditsCheckbox			= null;
-		this.abuseLogsCheckbox			= null;
-	}
-	
-	init(pElem:HTMLElement|Element) : RCMOptions {
 		this.root = <HTMLElement>pElem;
 		
+		// Handle save data
 		let tSave = this.getSave();
 		
 		this.rcParams = tSave.options || {};//$.extend({}, this.manager.rcParamsBase);
@@ -97,9 +67,34 @@ export default class RCMOptions
 		this.manager.abuseLogsEnabled = tSave.abuseLogsEnabled ?? this.manager.abuseLogsEnabled;
 		
 		this._addElements();
-		
-		return this;
 	}
+	
+	// dispose() : void {
+	// 	this.removeEventListeners();
+		
+	// 	this.manager = null;
+	// 	this.root = null;
+		
+	// 	this.rcParams = null;
+	// 	this.discNamespaces = null;
+		
+	// 	this.settingsSaveCookieCheckbox	= null;
+	// 	this.settingsShowDiscussionsCheckbox= null;
+		
+	// 	this.limitField					= null;
+	// 	this.daysField					= null;
+		
+	// 	this.minorEditsCheckbox			= null;
+	// 	this.botsCheckbox				= null;
+	// 	this.anonsCheckbox				= null;
+	// 	this.usersCheckbox				= null;
+	// 	this.myEditsCheckbox			= null;
+	// 	this.groupedChangesCheckbox		= null;
+	// 	this.logsCheckbox				= null;
+	// 	this.newPagesCheckbox			= null;
+	// 	this.pageEditsCheckbox			= null;
+	// 	this.abuseLogsCheckbox			= null;
+	// }
 	
 	private _addElements() : RCMOptions {
 		var tFieldset = Utils.newElement("fieldset", { className:"rcoptions collapsible" }, this.root);
@@ -110,7 +105,7 @@ export default class RCMOptions
 		 * RCMOptions settings
 		 ***************************/
 		var tSettingsPanel = Utils.newElement("aside", { className:"rcm-options-settings" }, tContent);
-		tSettingsPanel.innerHTML = Global.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg").style.cssText = "vertical-align: top;";
+		tSettingsPanel.innerHTML = Global.getSymbol("rcm-settings-gear", 19); tSettingsPanel.querySelector("svg")!.style.cssText = "vertical-align: top;";
 		var tSettingsPanelContent = Utils.newElement("div", { className:"rcm-options-settings-cont" }, tSettingsPanel);
 		
 		this.settingsSaveCookieCheckbox = this._createNewSettingsOption(i18n('optionspanel-savewithcookie'), this.isSaveEnabled(), tSettingsPanelContent);
@@ -426,14 +421,18 @@ export default class RCMOptions
 	 ***************************/
 	// Will add / edit the url param & script value with details entered.
 	afterChangeNumber(pKey:keyof RCParams, pVal:number, pHardRefresh:boolean=false) : void {
+		//@ts-ignore - doesn't like the values of various keys not all matching
 		this.rcParams[pKey] = pVal;
+		//@ts-ignore - doesn't like the values of various keys not all matching
 		this.manager.rcParams[pKey] = pVal;
 		this.manager.hardRefresh(true);
 		this.save();
 	}
 	
 	afterChangeBoolean(pKey:keyof RCParams, pVal:boolean, pHardRefresh:boolean=false) : void {
+		//@ts-ignore - doesn't like the values of various keys not all matching
 		this.rcParams[pKey] = pVal;
+		//@ts-ignore - doesn't like the values of various keys not all matching
 		this.manager.rcParams[pKey] = pVal;
 		this.manager.hardRefresh(true);
 		this.save();
@@ -448,10 +447,8 @@ export default class RCMOptions
 	}
 	
 	getSave() : any {
-		return localStorage.getItem(this.localStorageID)
-			? JSON.parse(localStorage.getItem(this.localStorageID))
-			: {}
-			;
+		const item = localStorage.getItem(this.localStorageID);
+		return item ? JSON.parse(item) : {};
 	}
 	
 	isSaveEnabled() : boolean {

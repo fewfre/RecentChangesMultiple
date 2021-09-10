@@ -1,14 +1,14 @@
 {
 	"compileOnSave": false,
 	"compilerOptions": {
-		"noImplicitAny": false,
-		"noUnusedLocals": false,
-		"noUnusedParameters": false,
-		"skipLibCheck": true,
 		"target": "es5",
-        "lib": [
-            "es5", "es2015.promise", "es2015.collection", "dom"
-        ]
+		"lib": ["es5", "es2015.promise", "es2015.collection", "dom"],
+		"strict": true,
+		"strictPropertyInitialization": false,
+		"noImplicitAny": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": false,
+		"skipLibCheck": true
 	},
 	"exclude": [
 		"node_modules"

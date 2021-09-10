@@ -3,9 +3,7 @@ import WikiData from "./WikiData";
 import Global from "./Global";
 import Utils from "./Utils";
 import i18n, { I18nKey } from "./i18n";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, /*mediaWiki:mw*/ } = window;
 
 //######################################
 // #### Wiki Panel ####
@@ -42,20 +40,20 @@ export default class RCMWikiPanel
 		this.loadedWikis = [];
 	}
 	
-	dispose() : void {
-		this.manager	= null;
-		this.root		= null;
+	// dispose() : void {
+	// 	this.manager	= null;
+	// 	this.root		= null;
 		
-		this.wikisNode	= null;
-		this.infoNode	= null;
+	// 	this.wikisNode	= null;
+	// 	this.infoNode	= null;
 		
-		this.loadedNode	= null;
-		this.loadedListNode	= null;
-		this.hiddenNode	= null;
-		this.hiddenListNode	= null;
+	// 	this.loadedNode	= null;
+	// 	this.loadedListNode	= null;
+	// 	this.hiddenNode	= null;
+	// 	this.hiddenListNode	= null;
 		
-		this.loadedWikis = null;
-	}
+	// 	this.loadedWikis = null;
+	// }
 	
 	// Should only be called once.
 	init(pElem:HTMLElement) : RCMWikiPanel {
@@ -114,7 +112,7 @@ export default class RCMWikiPanel
 		// and since it never changes, we don't need to refresh it past the first time
 		if(this.singleWiki) {
 			if(!this.infoNode.innerHTML) {
-				this.onIconClick(this.manager.chosenWikis[0], null);
+				this.onIconClick(this.manager.chosenWikis[0]);
 			}
 			return;
 		}// Else add the list
@@ -142,7 +140,7 @@ export default class RCMWikiPanel
 		this.refresh();
 	}
 	
-	onIconClick(pWikiInfo:WikiData, e:MouseEvent) : void {
+	onIconClick(pWikiInfo:WikiData, e?:MouseEvent) : void {
 		let infoBanner = <HTMLElement>this.infoNode.querySelector(".rcm-wiki-info-banner");
 		// If already open for that wiki, then close it.
 		if(infoBanner && (<any>infoBanner.dataset).wiki == pWikiInfo.servername && /*Not called via click()*/ e && (e.screenX != 0 && e.screenY != 0)) {
@@ -166,7 +164,7 @@ export default class RCMWikiPanel
 				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
 			].filter(o=>!!o);
 			
-			const buttons = [];
+			const buttons:string[] = [];
 			if(!this.singleWiki) {
 				if(!pWikiInfo.hidden) {
 					buttons.push(`<button id="rcm-hide-cur-wiki" class="rcm-btn rcm-btn-short">${i18n('hide')}</button>`);
@@ -243,12 +241,12 @@ export default class RCMWikiPanel
 		
 		this.infoNode.innerHTML = html;
 		if(addCloseButton) {
-			this.infoNode.querySelector(".rcm-wiki-info-banner .close").addEventListener("click", this.closeInfo.bind(this));
+			this.infoNode.querySelector(".rcm-wiki-info-banner .close")!.addEventListener("click", this.closeInfo.bind(this));
 		}
 	}
 	
 	closeInfo() : void {
-		$(this.infoNode.querySelector(".rcm-wiki-info-banner")).animate({ height: "toggle", opacity: "toggle" }, 200, function(){
+		$(this.infoNode).find(".rcm-wiki-info-banner").animate({ height: "toggle", opacity: "toggle" }, 200, function(){
 			$(this).remove();
 		});
 	}
@@ -259,7 +257,7 @@ export default class RCMWikiPanel
 			if(!Utils.elemIsVisible(btn)) {
 				let tScrollOffset = Global.config.skin == "oasis" ? -46 : 0;
 				// $('html, body').animate({ scrollTop: $(btn).offset().top }, 0);
-				$('html, body').scrollTop( $(btn).offset().top + tScrollOffset - 6 );
+				$('html, body').scrollTop( $(btn).offset()!.top + tScrollOffset - 6 );
 			}
 			btn.click();
 		}

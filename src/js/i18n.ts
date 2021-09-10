@@ -1,7 +1,5 @@
 import Global from "./Global";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 /*
 *  devI18n - Uses I18n-js script on dev wiki. Custom text used in the script to explain what's happening. $1 means that the script will input a number / word / url here on the fly, and is expected / potentially important.
@@ -67,18 +65,18 @@ type I18nDevKeys =
 
 // Using a function as the base of this Singleton allows it to be called as a function directly for ease-of-use and conciseness.
 interface i18nInterface {
-	(pKey:I18nKey, ...pArgs:(string|number)[]):string;
+	(pKey:I18nKey, ...pArgs:(string|number|undefined)[]):string;
 	defaultLang: string,
 	devI18n: DevI18n,
-	init: (pLang:string) => void,
+	init: (pLang?:string) => void,
 	exists: (pKey:string) => boolean,
 	MESSAGES: any,
 	mwLanguageData: any,
-	wiki2html: (pText:string, ...pArgs:(string|number)[]) => string
+	wiki2html: (pText:string, ...pArgs:(string|number|undefined)[]) => string
 }
-var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number)[]) : string {
+var i18n:i18nInterface = <i18nInterface>function(pKey:string, ...pArgs:(string|number|undefined)[]) : string {
 	let tText:string;
-	let devMsg = i18n.devI18n.msg(pKey, ...pArgs);
+	let devMsg = i18n.devI18n.msg(pKey, ...pArgs as any);
 	if(devMsg.exists) {
 		// return devMsg.parse();
 		tText = devMsg.plain();
@@ -664,7 +662,7 @@ i18n.mwLanguageData = {
 * Convert wiki syntax found in messages into HTML
 ********************************************************************************/
 // http://download.remysharp.com/wiki2html.js
-i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
+i18n.wiki2html = function(pText:string, ...pArgs:(string|number|undefined)[]) : string {
 	if(pText == undefined) { mw.log(`ERROR: [RecentChangesMultiple] i18n.wiki2html was passed an undefined string`); return pText; };
 
 	return pText
@@ -708,7 +706,7 @@ i18n.wiki2html = function(pText:string, ...pArgs:(string|number)[]) : string {
 		// {{GENDER}} - cannot be checked by script, so just uses {{{1}}}/{{{2}}}
 		.replace(/{{GENDER:(.*?)}}/g, function(m, l) {
 			let p = l.split("|");
-			let user = p.shift(); // Remove user object from list
+			/*let user =*/ p.shift(); // Remove user object from list
 			return mw.language.gender(Global.userOptions.gender, p);
 		})
 		// {{PLURAL}} - only does default support

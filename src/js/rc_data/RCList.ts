@@ -5,9 +5,7 @@ import i18n, { I18nKey } from "../i18n";
 import Global from "../Global";
 import {previewDiff,previewDiscussionHTML,previewImages,previewPage} from "../GlobalModal";
 import { RCData, RCDataArticle, RCDataLog, RCDataFandomDiscussion, RC_TYPE } from ".";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 
 //######################################
 // #### Recent Change List ####
@@ -48,8 +46,10 @@ export default class RCList
 		
 		for(let i=0; i < this.list.length; i++) {
 			this.list[i].dispose();
+			// @ts-ignore - yah yah, shouldn't be null; I'd rather it be null then a memory leak tyvm
 			this.list[i] = null;
 		}
+		// @ts-ignore - yah yah, shouldn't be null; I'd rather it be null then a memory leak tyvm
 		this.list = null;
 		
 		// // Remove event listeners.
@@ -59,6 +59,7 @@ export default class RCList
 		// }
 		// this.removeListeners = null;
 		
+		// @ts-ignore - yah yah, shouldn't be null; I'd rather it be null then a memory leak tyvm
 		this.htmlNode = null;
 	}
 	
@@ -114,11 +115,10 @@ export default class RCList
 		}
 	}
 	
-	// TODO: Convert to a Map once ES6 is used.
 	private _contributorsCountText() : string {
 		const contribs = this.list.reduce((map, rc) => {
 			if(map.has(rc.author)) {
-				map.get(rc.author).count++;
+				map.get(rc.author)!.count++; // There's a has() right there, don't force me to use a ! here TS you dumbdumb
 			} else {
 				map.set(rc.author, { count:1, anon:!rc.userEdited, avatar:(rc.type == RC_TYPE.DISCUSSION ? rc.getCreatorAvatarImg() : "") });
 			}
@@ -154,7 +154,7 @@ export default class RCList
 	}
 	
 	// https://www.mediawiki.org/wiki/API:Revisions
-	addPreviewDiffListener(pElem:HTMLElement|Element, pFromRC:RCData, pToRC?:RCData) : void {
+	addPreviewDiffListener(pElem:HTMLElement|Element|null, pFromRC:RCData, pToRC?:RCData) : void {
 		if(!pElem) { return; }
 		if(pToRC == undefined) { pToRC = pFromRC; }
 		// Only apply listener if normal RC (in theory no other types should have an element that triggers this, but this is mostly for type checking)
@@ -187,13 +187,10 @@ export default class RCList
 		};
 		
 		this._addAjaxClickListener(pElem, () => { previewDiff(pageName, pageID, ajaxLink, diffLink, undoLink, diffTableInfo); });
-		
-		pFromRC = null;
-		pToRC = null;
 	}
 	
 	// https://www.mediawiki.org/wiki/API:Imageinfo
-	addPreviewImageListener(pElem:HTMLElement|Element, pImageRCs:RCData|RCData[]) : void {
+	addPreviewImageListener(pElem:HTMLElement|Element|null, pImageRCs:RCData|RCData[]) : void {
 		if(!pElem) { return; }
 		
 		// Discussions won't have an element that triggers this, so safe to ignore them
@@ -207,7 +204,7 @@ export default class RCList
 	}
 	
 	// https://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
-	addPreviewPageListener(pElem:HTMLElement|Element, pRC:RCData) : void {
+	addPreviewPageListener(pElem:HTMLElement|Element|null, pRC:RCData) : void {
 		if(!pElem) { return; }
 		
 		switch(pRC.type) {
@@ -233,7 +230,7 @@ export default class RCList
 	}
 	
 	private _addAjaxClickListener(pElem:HTMLElement|Element, pCallback:()=>void) : void {
-		let tRCM_AjaxIconClickHandler = (e:MouseEvent) => {
+		let tRCM_AjaxIconClickHandler:EventListener = (e) => {
 			e.preventDefault();
 			pCallback();
 		}
@@ -268,10 +265,10 @@ export default class RCList
 	// 	return ;
 	// }
 	
-	static readonly FLAG_INFO_MAP = {
-		newpage:     { letter:"newpageletter",     tooltip:"recentchanges-label-newpage" } as { letter:I18nKey, tooltip:I18nKey },
-		minoredit:   { letter:"minoreditletter",   tooltip:"recentchanges-label-minor" } as { letter:I18nKey, tooltip:I18nKey },
-		botedit:     { letter:"boteditletter",     tooltip:"recentchanges-label-bot" } as { letter:I18nKey, tooltip:I18nKey },
+	static readonly FLAG_INFO_MAP : Record<'newpage'|'minoredit'|'botedit', { letter:I18nKey, tooltip:I18nKey }> = {
+		newpage:     { letter:"newpageletter",     tooltip:"recentchanges-label-newpage" },
+		minoredit:   { letter:"minoreditletter",   tooltip:"recentchanges-label-minor" },
+		botedit:     { letter:"boteditletter",     tooltip:"recentchanges-label-bot" },
 		// unpatrolled: { letter:"unpatrolledletter", tooltip:"recentchanges-label-unpatrolled" } as { letter:I18nKey, tooltip:I18nKey },
 	}
 	
@@ -386,7 +383,7 @@ export default class RCList
 		
 		var tBlockHead = this._toHTMLBlockHead();
 		for(var i=0; i < this.list.length; i++) {
-			tBlockHead.querySelector("tbody").appendChild( this._toHTMLBlockLine(this.list[i]) );
+			tBlockHead.querySelector("tbody")?.appendChild( this._toHTMLBlockLine(this.list[i]) );
 		}
 		// Make "blocks" collapsible - for this to work, make sure neither this NOR IT'S PARENT is modified via innerHTML after this has been added (to avoid event being "eaten").
 		if($(tBlockHead).makeCollapsibleRCM) { $(tBlockHead).makeCollapsibleRCM(); }
@@ -421,7 +418,7 @@ export default class RCList
 			}
 			case RC_TYPE.DISCUSSION: {
 				html += this.newest.getThreadTypeIcon()+" ";
-				html += this.newest.discussionTitleText( null, true );
+				html += this.newest.discussionTitleText( undefined, true );
 				html += " "+i18n('parentheses-start');
 				html += i18n("nchanges", this.list.length);
 				html += i18n('parentheses-end');
@@ -472,7 +469,7 @@ export default class RCList
 		
 		switch(pRC.type) {
 			case RC_TYPE.NORMAL: {
-				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.getRcRevisionUrl(null, pRC.revid)}' title='${pRC.title}'>${pRC.time()}</a></span>`;
+				html += `<span class='mw-enhanced-rc-time'><a href='${pRC.getRcRevisionUrl(undefined, pRC.revid)}' title='${pRC.title}'>${pRC.time()}</a></span>`;
 				let diffs = [
 					`<a href='${pRC.getRcRevisionUrl(0, pRC.revid)}'>${i18n("cur")}</a>`,
 					pRC.editFlags.newpage == false ? `<a href='${pRC.getRcRevisionUrl(pRC.revid, pRC.old_revid)}'>${i18n("last")}</a>`+this.getAjaxDiffButton() : i18n("last"),

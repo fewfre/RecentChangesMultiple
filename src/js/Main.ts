@@ -5,11 +5,9 @@ import i18n from "./i18n";
 import RCParams from "./types/RCParams";
 import RCMModal from "./RCMModal";
 import addMakeCollapsible from "./lib/makeCollapsible";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { jQuery:$, mediaWiki:mw } = window;
 // @ts-ignore
-let Notification = window.Notification;
+const Notification = window.Notification;
 
 //######################################
 // Main (instance class) - Start script and store values.
@@ -55,22 +53,20 @@ class Main
 		* Initial Param Parsing
 		****************************/
 		let tFirstWrapper = <HTMLElement>document.querySelector('.rc-content-multiple, #rc-content-multiple');
-		let tDataset:any = tFirstWrapper.dataset;
+		let tDataset = tFirstWrapper.dataset;
 		i18n.init(tDataset.lang);
 		if(tDataset.localsystemmessages === "false") { Global.useLocalSystemMessages = false; }
 		// Set load delay (needed for scripts that load large numbers of wikis)
-		if(tDataset.loaddelay) { Global.loadDelay = tDataset.loaddelay; }
+		if(tDataset.loaddelay) { Global.loadDelay = parseFloat(tDataset.loaddelay); }
 		if(tDataset.timezone) { Global.timezone = tDataset.timezone.toLowerCase(); }
 		if(tDataset.timeformat) { Global.timeFormat = tDataset.timeformat.toLowerCase(); }
 		// Unless specified, hide the rail to better replicate Special:RecentChanges
-		if(tDataset.hiderail !== "false") { document.querySelector("body").className += " rcm-hiderail"; }
-		tDataset = null;
-		tFirstWrapper = null;
+		if(tDataset.hiderail !== "false") { document.querySelector("body")!.className += " rcm-hiderail"; }
 		
 		/***************************
 		* Preload
 		****************************/
-		let tLoadPromises = [];
+		let tLoadPromises:Promise<any>[] = [];
 		
 		// Load the css for module
 		Utils.newElement("link", { rel:"stylesheet", type:"text/css", href:"https://dev.fandom.com/load.php?mode=articles&articles=MediaWiki:RecentChangesMultiple.css&only=styles" }, document.head);
@@ -92,7 +88,7 @@ class Main
 		tLoadPromises[tLoadPromises.length] = new Promise<void>((resolve)=>{
 			mw.hook('dev.i18n').add(function () {
 				// Convert version to a number
-				let [,ma,mi,ch] = Global.version.match(/(\d*)\.(\d*)(\w*)/);
+				let [,ma,mi,ch] = Global.version.match(/(\d*)\.(\d*)(\w*)/)!;
 				ch = ch ? String("a".charCodeAt(0)-96) : "0";
 				let versionAsNum = Number([ma,mi,ch].map(n=>Utils.pad(n, 3, "0")).join(""));
 				
@@ -130,7 +126,7 @@ class Main
 		* Get rcParams from url
 		***************************/
 		// Options from Special:Preferences > Under the Hood
-		let tBaseUserValues:RCParams = {
+		let tBaseUserValues:Partial<RCParams> = {
 			"days": mw.user.options.get("rcdays") || 7,
 			"limit": mw.user.options.get("rclimit") || 50,
 			"hideenhanced": ((mw.user.options.get("usenewrc")==1 ? "0" : "1") || 0)=="1",
@@ -189,7 +185,6 @@ class Main
 				tRCMManager.init();
 			});
 		});
-		tWrappers = null;
 		
 		$(".rcm-refresh-all").on("click", () => { this._refreshAllManagers(); });
 	}
@@ -278,8 +273,8 @@ class Main
 	/***************************
 	* Call to blink the window title (only while window doesn't have focus).
 	****************************/
-	private _blinkInterval:number;
-	private _originalTitle:string;
+	private _blinkInterval:number = 0;
+	private _originalTitle:string = document.title;
 	
 	blinkWindowTitle(pTitle:string) : void {
 		this.cancelBlinkWindowTitle();
@@ -291,14 +286,14 @@ class Main
 	cancelBlinkWindowTitle() : void {
 		if(!this._blinkInterval) { return; }
 		clearInterval(this._blinkInterval);
-		this._blinkInterval = null;
+		this._blinkInterval = 0;
 		document.title = this._originalTitle;
 	}
 	
 	/***************************
 	* Manage Notifications
 	****************************/
-	private _notifications = [];
+	private _notifications:Notification[] = [];
 	
 	addNotification(pTitle:string, pOptions:{ icon?:string, body?:string }) : void {
 		if(Notification.permission !== "granted") { return; }
@@ -312,9 +307,8 @@ class Main
 			window.focus(); //just in case, older browsers
 			this.close();
 		};
-		tNotification = null;
 		if(this._notifications.length > 1) {
-			this._notifications.shift().close();
+			this._notifications.shift()?.close();
 		}
 	}
 	clearNotifications() : void {

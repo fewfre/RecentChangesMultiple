@@ -1,7 +1,5 @@
 import Global from "./Global";
-
-let $ = window.jQuery;
-let mw = window.mediaWiki;
+const { /*jQuery:$,*/ mediaWiki:mw } = window;
 
 interface CommonElementAttributes {
 	// Special mapped ones
@@ -42,8 +40,9 @@ export default class Utils
 		var element = document.createElement(tag);
 		if(!!attributes) {
 			for(var key in attributes) {
+				if(attributes[key] === undefined || attributes[key] === null) { continue; }
 				if(key == "style") {
-					element.style.cssText = attributes[key];
+					element.style.cssText = attributes[key] as string;
 				} else {
 					element[key] = attributes[key];
 				}
@@ -53,9 +52,10 @@ export default class Utils
 		return element;
 	}
 	
-	static removeElement(pNode:HTMLElement|Element) : void {
+	static removeElement(pNode?:HTMLElement|Element|null) : void {
+		if(!pNode) { return; }
 		pNode = <HTMLElement>pNode;
-		pNode.parentNode.removeChild(pNode);
+		pNode.parentNode?.removeChild(pNode);
 	}
 	
 	static addTextTo(pText:string, pNode:HTMLElement|Element) : void {
@@ -69,7 +69,7 @@ export default class Utils
 	}
 	
 	static insertAfter(pNewNode:HTMLElement|Element, pRef:HTMLElement|Element) : HTMLElement {
-		return <HTMLElement>(pRef.nextSibling ? pRef.parentNode.insertBefore(pNewNode, pRef.nextSibling) : pRef.parentNode.appendChild(pNewNode));
+		return <HTMLElement>(pRef.nextSibling ? pRef.parentNode?.insertBefore(pNewNode, pRef.nextSibling) : pRef.parentNode?.appendChild(pNewNode));
 		// if (pRef.nextSibling) {
 		// 	return <HTMLElement>pRef.parentNode.insertBefore(pNewNode, pRef.nextSibling);
 		// } else {
@@ -204,7 +204,7 @@ export default class Utils
 		return out;
 	}
 	
-	static removeFromArray<T>(pArray:T[], pData:T) : T {
+	static removeFromArray<T>(pArray:T[], pData:T) : T|null {
 		let i = pArray.indexOf(pData);
 		if(i != -1) {
 			return pArray.splice(i, 1)[0];
@@ -226,7 +226,7 @@ export default class Utils
 	 * @param chunk_size {Integer} Size of every group
 	 */
 	 static chunkArray<T>(myArray:T[], chunk_size:number) : T[][] {
-		var index = 0, arrayLength = myArray.length, chunkedArray = [];
+		var index = 0, arrayLength = myArray.length, chunkedArray:T[][] = [];
 		
 		for (index = 0; index < arrayLength; index += chunk_size) {
 			chunkedArray.push( myArray.slice(index, index+chunk_size) );
@@ -250,7 +250,7 @@ export default class Utils
 	
 	// { foo=1, bar=2 } -> "foo=1&bar=2"
 	static objectToUrlQueryData(data:any) : string {
-		const ret = [];
+		const ret:string[] = [];
 		for (let d in data) {
 			ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
 		}
@@ -259,7 +259,7 @@ export default class Utils
 	
 	// Assumes the file has already been checked to be in namespace 6
 	static isFileAudio(pTitle:string) : boolean {
-		var tExt = null, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia
+		var tExt:string, audioExtensions = ["oga", "ogg", "ogv"]; // Audio extensions allowed by Wikia
 		for(var i = 0; i < audioExtensions.length; i++) {
 			tExt = "."+audioExtensions[i];
 			if(pTitle.indexOf(tExt, pTitle.length - tExt.length) !== -1) { return true; } // If title ends with extension.
@@ -277,7 +277,7 @@ export default class Utils
 	
 	// http://phpjs.org/functions/version_compare/
 	// Simulate PHP version_compare
-	static version_compare(v1Arg:string|number, v2Arg:string|number, operator:string) : string {
+	static version_compare(v1Arg:string|number, v2Arg:string|number, operator:string) : string|null {
 		//       discuss at: http://phpjs.org/functions/version_compare/
 		//      original by: Philippe Jausions (http://pear.php.net/user/jausions)
 		//      original by: Aidan Lister (http://aidanlister.com/)
