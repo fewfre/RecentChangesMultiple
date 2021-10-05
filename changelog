@@ -1,6 +1,11 @@
-== 2.16c - ?? ==
+== 2.16c - 4 October 2021 ==
 - Moved majority of multi-loading logic out of RCMManager and into it's own class
 - Activated strict mode in `tsconfig`, and fixed the resulting errors.
+- Changed i18n message used for "articles" on wiki info table to one with better translation support
+- [Bug] Fixed bug with links to block anon users linking to a userpage instead of contributions page as it's meant to
+- [Bug] When linking to anon users, talk page no longer given as an option for fandom wikis (since they don't work)
+- Added support for curseprofile logs
+- [Bug] Fixed "undefined" bug in message wall summaries if message was only an image
 
 
 == 2.16b - 5 September 2021 ==

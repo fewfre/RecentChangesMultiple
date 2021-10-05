@@ -181,7 +181,7 @@ export default class RCMWikiPanel
 			let statsHTML = ""
 			+ "<table class='wikitable center statisticstable' style='margin: 0;'>"
 			+ "<tr>"
-				+ `<td>${tLinkNum("Special:AllPages", "articles", pWikiInfo.statistics.articles)}</td>`
+				+ `<td>${tLinkNum("Special:AllPages", "statistics-articles", pWikiInfo.statistics.articles)}</td>`
 				+ `<td>${tLinkNum("Special:ListFiles", "prefs-files", pWikiInfo.statistics.images)}</td>`
 				+ `<td>${tLinkNum("Special:ListUsers", "statistics-users-active", pWikiInfo.statistics.activeusers)}</td>`
 				+ `<td>${tLinkNum("Special:ListAdmins", "group-sysop", pWikiInfo.statistics.admins)}</td>`

@@ -10,7 +10,7 @@ export const UNKNOWN_GENDER_TYPE = undefined;
 export default class Global
 {
 	static readonly version					: string = "2.16c";
-	static readonly lastVersionDateString	: string = "Nov 2 2020 00:00:00 GMT";
+	static readonly lastVersionDateString	: string = "Oct 4 2021 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
 		"skin",

@@ -51,6 +51,10 @@ export default class RCDataLog extends RCDataAbstract
 			oldmodel: string, // name of old model type
 			newmodel: string, // name of new model type
 		}
+		| { type:"curseprofile", // Gamepedia-only log when editing profiles
+			section:string,
+			comment_id:number,
+		}
 		| { type:"delete",
 			ids_length:number, // Number of revisions
 			new_bitmask:number, // action taken on visibility change
@@ -168,6 +172,15 @@ export default class RCDataLog extends RCDataAbstract
 				};
 				break;
 			}
+			case "curseprofile": {
+				const { "4:section":section, "4:comment_id":comment_id } = pRCData.logparams ?? {};
+				this.logParams = {
+					type:"curseprofile",
+					section,
+					comment_id,
+				};
+				break;
+			}
 			case "delete": {
 				const { count, ids, /*old:oldMask,*/ new:newMask } = pRCData.logparams ?? {};
 				this.logParams = {
@@ -233,6 +246,7 @@ export default class RCDataLog extends RCDataAbstract
 			case "abusefilter"	: return i18n("abusefilter-log");
 			case "block"		: return i18n("blocklogpage");
 			case "contentmodel"	: return i18n("log-name-contentmodel");
+			case "curseprofile"	: return i18n("curseprofile_log_name");
 			case "delete"		: return i18n("dellogpage");
 			case "import"		: return i18n("importlogpage");
 			case "merge"		: return i18n("mergelog");
@@ -352,11 +366,15 @@ export default class RCDataLog extends RCDataAbstract
 				tLogMessage += i18n(<I18nKey>("logentry-block-"+this.logaction),
 					this.userDetails(),
 					UNKNOWN_GENDER_TYPE,
-					`<a href='${this.href}'>${affectedUser}</a>`,
+					undefined,//SET BELOW - //`<a href='${this.href}'>${affectedUser}</a>`,
 					UNKNOWN_GENDER_TYPE, // api doesn't tell use the blocked user's gender
 					duration,
 					flags && i18n('parentheses', flags),
 				);
+				// Replace the 3rd (undefined) paramater from above; due to some wierd gender tags (not sure
+				// why they're used? names go there, not pronouns), adding userDetails breaks it (due to `|` seperator in it).
+				// So just bypass the gender tag and manually replace it after
+				tLogMessage = tLogMessage.replace("$3", RCDataArticle.formatUserDetails(this.wikiInfo, affectedUser, false, !mw.util.isIPAddress(affectedUser)));
 				break;
 			}
 			case 'contentmodel': {
@@ -379,6 +397,40 @@ export default class RCDataLog extends RCDataAbstract
 				}
 				if(this.logaction == "change" && this.wikiInfo.user.rights.editcontentmodel) {
 					tLogMessage += ` (<a href='${this.wikiInfo.getPageUrl('Special:ChangeContentModel', { pagetitle:this.titleUrlEscaped, model:oldmodel, reason:i18n('logentry-contentmodel-change-revert') })}'>${i18n('logentry-contentmodel-change-revertlink')}</a>)`
+				}
+				break;
+			}
+			case "curseprofile": {
+				const { section, comment_id } = this.logParams;
+				
+				// Regex only matches first ":", and thus removed the "User:" namespace
+				const affectedUser = this.title.split(/:(.+)/)[1] ?? this.title;
+				
+				switch(this.logaction) {
+					case "profile-edited":
+					{
+						tLogMessage += i18n("logentry-curseprofile-"+this.logaction as I18nKey,
+							this.userDetails(),
+							UNKNOWN_GENDER_TYPE,
+							`<a href='${this.href}'>${affectedUser}</a>`,
+							section.replace("profile-", ""), // yah, sorry, but I am -not- supporting all those translations
+						);
+						break;
+					}
+					default: {
+						let commentLink = i18n('logentry-curseprofile-comment');
+						if(comment_id != 0) {
+							commentLink = `<a href="${this.wikiInfo.getPageUrl(`Special:CommentPermalink/${comment_id}#comment${comment_id}`)}">${commentLink}</a>`;
+						}
+						// logaction assumed: comment-created, comment-replied, comment-edited, comment-deleted, comment-purged
+						tLogMessage += i18n("logentry-curseprofile-"+this.logaction as I18nKey,
+							this.userDetails(),
+							UNKNOWN_GENDER_TYPE,
+							`<a href='${this.href}'>${affectedUser}</a>`,
+							commentLink,
+						);
+						break;
+					}
 				}
 				break;
 			}

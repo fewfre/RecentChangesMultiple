@@ -171,9 +171,9 @@ const MESSAGES = i18n.MESSAGES = {
 	'randompage' : 'Random page',
 	'group-sysop' : 'Administrators',
 	'group-user' : 'Users',
+	'statistics-articles' : 'Content pages',
 	'statistics-users-active' : 'Active users',
 	'prefs-files' : 'Files',
-	'articles' : 'Articles',
 	'edits' : 'Edits',
 	// Other
 	'filedelete-success' : "'''$1''' has been deleted.",
@@ -213,6 +213,7 @@ const MESSAGES = i18n.MESSAGES = {
 	'abuselog'							: 'Abuse log',
 	// Content model
 	'log-name-contentmodel'				: 'Content model change log',
+	'curseprofile_log_name'				: 'Profile log',
 
 	/***************************
 	* Log Actions -
@@ -279,6 +280,15 @@ const MESSAGES = i18n.MESSAGES = {
 	// ## Non-standard Mediawiki logs ##
 	// User Rename - https://github.com/Wikia/app/blob/808a769df6cf8524aa6defcab4f971367e3e3fd8/extensions/wikia/UserRenameTool/SpecialRenameuser.i18n.php
 	'userrenametool-success' : 'The user "$1" has been renamed to "$2".',
+	// Curse Profile
+	'logentry-curseprofile-comment' : 'comment',
+	'logentry-curseprofile-comment-created' : '$1 left a $4 on $3\'s profile',
+	'logentry-curseprofile-comment-deleted' : '$1 deleted a $4 on $3\'s profile.',
+	'logentry-curseprofile-comment-edited' : '$1 edited a $4 on $3\'s profile.',
+	'logentry-curseprofile-comment-purged' : '$1 purged a $4 on $3\'s profile.',
+	'logentry-curseprofile-comment-replied' : '$1 replied to a $4 on $3\'s profile.',
+	'logentry-curseprofile-profile-edited' : '$1 edited the $4 on $3\'s profile.',
+	
 	
 	/***************************
 	* Social Activity: Discussions / Walls / Comments

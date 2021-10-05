@@ -73,12 +73,36 @@ export default class RCDataArticle extends RCDataAbstract
 	static formatUserDetails(pWikiInfo:WikiData, pAuthor:string, pUserHidden:boolean, pUserEdited:boolean) : string {
 		if(pUserHidden) { return '<span class="history-deleted">'+i18n("rev-deleted-user")+'</span>'; }
 		
-		var blockText = pWikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		const authorUrlEscaped = Utils.escapeCharactersUrl(pAuthor);
+		let userLink:string, userTools:string[] = [];
+		
 		if(pUserEdited) {
-			return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='"+pWikiInfo.getUserClass(pAuthor)+"' "+pWikiInfo.getUserClassDataset(pAuthor)+">{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersUrl(pAuthor), pAuthor);
+			userLink = `<a href="${pWikiInfo.getPageUrl(`User:${authorUrlEscaped}`)}" class="${pWikiInfo.getUserClass(pAuthor)}" ${pWikiInfo.getUserClassDataset(pAuthor)}>${pAuthor}</a>`;
+			
+			userTools.push(`<a href="${pWikiInfo.getPageUrl(`User_talk:${authorUrlEscaped}`)}">${i18n("talkpagelinktext")}</a>`);
+			userTools.push(`<a href="${pWikiInfo.getPageUrl(`Special:Contributions/${authorUrlEscaped}`)}">${i18n("contribslink")}</a>`);
 		} else {
-			return Utils.formatString("<span class='mw-usertoollinks'><a class='rcm-useranon' href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersUrl(pAuthor), pAuthor);
+			userLink = `<a href="${pWikiInfo.getPageUrl(`Special:Contributions/${authorUrlEscaped}`)}" class='rcm-useranon'>${pAuthor}</a>`;
+			
+			// Normal mediawiki wikis let you talk to anons; fandom does not, so don't add talk link unless not a fandom wiki
+			if(!pWikiInfo.isWikiaWiki) {
+				userTools.push(`<a href="${pWikiInfo.getPageUrl(`User_talk:${authorUrlEscaped}`)}">${i18n("talkpagelinktext")}</a>`);
+			}
 		}
+		
+		if(pWikiInfo.user.rights.block) {
+			userTools.push(`<a href="${pWikiInfo.getPageUrl(`Special:Block/${authorUrlEscaped}`)}">${i18n("blocklink")}</a>`);
+		}
+		
+		const userToolsString = userTools.length === 0 ? "" : " "+i18n('parentheses-start')+userTools.join(i18n("pipe-separator"))+i18n('parentheses-end');
+		return `<span class='mw-usertoollinks'>${userLink}${userToolsString}</span>`;
+		
+		// var blockText = pWikiInfo.user.rights.block ? i18n("pipe-separator")+"<a href='{0}Special:Block/{1}'>"+i18n("blocklink")+"</a>" : "";
+		// if(pUserEdited) {
+		// 	return Utils.formatString("<span class='mw-usertoollinks'><a href='{0}User:{1}' class='"+pWikiInfo.getUserClass(pAuthor)+"' "+pWikiInfo.getUserClassDataset(pAuthor)+">{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+i18n("pipe-separator")+"<a href='{0}Special:Contributions/{1}'>"+i18n("contribslink")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersUrl(pAuthor), pAuthor);
+		// } else {
+		// 	return Utils.formatString("<span class='mw-usertoollinks'><a class='rcm-useranon' href='{0}Special:Contributions/{1}'>{2}</a> (<a href='{0}User_talk:{1}'>"+i18n("talkpagelinktext")+"</a>"+blockText+")</span>", pWikiInfo.articlepath, Utils.escapeCharactersUrl(pAuthor), pAuthor);
+		// }
 	}
 	
 	static tweakParsedComment(pParsedComment:string, pDeleted:boolean, pWikiInfo:WikiData) : string {

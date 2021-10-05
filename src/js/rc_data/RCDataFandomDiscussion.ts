@@ -104,10 +104,10 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 			if(post.poll) {
 				this.summary = `${Global.getWdsSymbol('rcm-disc-poll')} ${i18n('activity-social-activity-poll-placeholder')}`;
 			}
-			else if(this.containerType == "ARTICLE_COMMENT" && post.jsonModel) {
+			else if(post.jsonModel) { // for some reason I had a check to only allow ARTICLE_COMMENT running this; but sometimes wall needs to. and idr why I had the check - so removing it and hoping foe the best! sorry future me if this causes bugs.
 				this.summary = this.jsonModelToSummary(jsonModel, 100);
 			}
-			else if(this.containerType == "ARTICLE_COMMENT" && post.renderedContent) {
+			else if(post.renderedContent) { // for some reason I had a check to only allow ARTICLE_COMMENT running this; but sometimes wall needs to. and idr why I had the check - so removing it and hoping foe the best! sorry future me if this causes bugs.
 				this.summary = $(`<div>${post.renderedContent}</div>`).text();
 				if(this.summary.length > 100) { this.summary = this.summary.slice(0, 100).trim()+"..."; }
 			}
@@ -210,8 +210,8 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	
 	jsonModelToSummary(jsonModel:JsonModelDataProps, maxLength:number) : string {
 		const tJsonToSummary=(props:JsonModelDataProps):string => {
-			if("content" in props && props.content) { return props.content.map(tJsonToSummary).join(""); }
-			if(props.type == "text") { return props.text; }
+			if("content" in props && props.content) { return props.content.map(tJsonToSummary).join(" "); }
+			else if(props.type == "text") { return props.text; }
 			else if(props.type == "image") { return " ␚ "; } // use temp here, since html injected here won't play nice with string length
 			return "";
 		};
