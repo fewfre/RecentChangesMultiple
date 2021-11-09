@@ -105,17 +105,15 @@ class Main
 			'mediawiki.special.changeslist',
 			'mediawiki.special.changeslist.enhanced',
 			
-			'skin.oasis.recentChanges.css',
-			
 			'ext.fandom.photoGallery.gallery.css',
-			"mediawiki.diff.styles", "skin.oasis.diff.css", // AjaxDiff css
+			"mediawiki.diff.styles", // AjaxDiff css
 		])
 		.then(function(){
 			// Fallback support for UCP wiki
 			// if(!$.fn.makeCollapsible) {
 				addMakeCollapsible();
 			// }
-		});
+		})
 		
 		/***************************
 		* Setup SVG symbols
@@ -151,6 +149,7 @@ class Main
 		// None of the stuff in this promise prevents _parsePage() from working,
 		// So we allow script to continue and only stop the script later on to give user visual input.
 		// Workaround (legacy only?) - Seems legacy wikis jQuery doesn't like promises? So make them Deferreds I guess...?
+		tLoadPromises.forEach(p=>{ p["catch"](console.error) });
 		tLoadPromises = tLoadPromises.map(p=>{ let d = $.Deferred(); p.then(d.resolve); return d; });
 		let initDef = $.when(...tLoadPromises);
 		this._start(initDef);
