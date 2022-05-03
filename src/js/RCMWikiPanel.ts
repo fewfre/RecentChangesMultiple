@@ -161,7 +161,7 @@ export default class RCMWikiPanel
 				tLink("Special:Log", "log"),
 				pWikiInfo.isWikiaWiki && pWikiInfo.user.rights.analytics && tLink("Special:Analytics", "admindashboard-control-analytics-label"),
 				tLink("Special:Random", "randompage"),
-				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/d'>"+i18n("discussions")+"</a>",
+				pWikiInfo.usesWikiaDiscussions && "<a href='"+pWikiInfo.scriptpath+"/f'>"+i18n("discussions")+"</a>",
 			].filter(o=>!!o);
 			
 			const buttons:string[] = [];
