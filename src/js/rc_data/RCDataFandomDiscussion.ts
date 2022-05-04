@@ -154,7 +154,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		const { threadId, id, isReply, wikiInfo } = this;
 		const showReply = isReply && !ignoreReply;
 		switch(this.containerType) {
-			case 'FORUM': return `${wikiInfo.scriptpath}/d/p/${threadId}${showReply ? `/r/${id}` : ''}${params ? '?'+$.param(params) : ''}`;
+			case 'FORUM': return `${wikiInfo.scriptpath}/f/p/${threadId}${showReply ? `/r/${id}` : ''}${params ? '?'+$.param(params) : ''}`;
 			case 'WALL': return `${wikiInfo.getPageUrl(`Message_Wall:${Utils.escapeCharactersUrl(this.forumPageName!)}`, { threadId, ...params })}${showReply ? `#${id}` : ''}`;
 			case 'ARTICLE_COMMENT': return wikiInfo.getPageUrl(Utils.escapeCharactersUrl(this.forumPageName!), { commentId: threadId, ...showReply&&{ replyId: id }, ...params });
 		}
@@ -163,7 +163,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 	getForumUrl() : string {
 		const { wikiInfo } = this;
 		switch(this.containerType) {
-			case 'FORUM': return `${wikiInfo.scriptpath}/d/f?catId=${this.forumId}&sort=latest`;
+			case 'FORUM': return `${wikiInfo.scriptpath}/f?catId=${this.forumId}&sort=latest`;
 			case 'WALL': return !this.forumPageName ? "#" : this.wikiInfo.getPageUrl(`Message_Wall:${this.forumPageName}`);
 			case 'ARTICLE_COMMENT': return !this.forumPageName ? "#" : this.getUrl(undefined, false); // TODO: we currently group by thread, might be better to group by page? might have issues with RCList though, not sure
 		}
@@ -181,7 +181,7 @@ export default class RCDataFandomDiscussion extends RCDataAbstract
 		// If user isn't anon then add contributions link, as it's not needed for anon users as their name itself links to contributions
 		if(this.userEdited) {
 			// For discussion posts link to discussion contributions, but since walls/comments are part of wiki, list to wiki contribs
-			let tUserContribsLink = this.containerType === "FORUM" ? `${this.wikiInfo.scriptpath}/d/u/${this.user_id}` : `${this.wikiInfo.articlepath}Special:Contributions/${this.author}`;
+			let tUserContribsLink = this.containerType === "FORUM" ? `${this.wikiInfo.scriptpath}/f/u/${this.user_id}` : `${this.wikiInfo.articlepath}Special:Contributions/${this.author}`;
 			toolLinks.push(`<a href='${tUserContribsLink}'>${i18n("contribslink")}</a>`);
 		}
 		// Only add block link for users that can use it
