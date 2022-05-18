@@ -1184,11 +1184,11 @@ export default class RCMManager
 		
 		checkBox.addEventListener("click", function tHandler(e){
 			if((<HTMLInputElement>document.querySelector(self.modID+" .rcm-autoRefresh-checkbox")).checked) {
-				localStorage.setItem(self.autoRefreshLocalStorageID, true.toString());
+				localStorage.setItem(self.autoRefreshLocalStorageID, 'true');
 				self.refresh();
 				Notification.requestPermission();
 			} else {
-				localStorage.setItem(self.autoRefreshLocalStorageID, false.toString());
+				localStorage.setItem(self.autoRefreshLocalStorageID, 'false');
 				clearTimeout(self.autoRefreshTimeoutID);
 			}
 		});
