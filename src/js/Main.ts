@@ -40,10 +40,10 @@ class Main
 				mw.log = <any>console.log;
 			}
 			
-			$(document).ready($.proxy(this._ready, this));
-			$(document).on("unload", $.proxy(this._unload, this));
-			
-			$(window).focus($.proxy(this._onFocus, this));
+			$(this._ready.bind(this)); // .ready
+			$(document).on("unload", this._unload.bind(this));
+
+			$(window).on('focus', this._onFocus.bind(this));
 		});
 	}
 	

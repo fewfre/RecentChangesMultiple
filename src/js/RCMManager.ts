@@ -305,7 +305,7 @@ export default class RCMManager
 	
 	private _handleWikiDataLoadError=(pWikiData:WikiData, pTries:number, pID:number, pErrorMessage:I18nKey, pInc:number) : void => {
 		const errorCont = $("<div>").appendTo($(this.statusNode).find(".rcm-status-alerts-cont"));
-		let string = `<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${pWikiData.servername}</span>]`, pTries)}</div>`;
+		let string = `<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${mw.html.escape(pWikiData.servername)}</span>]`, pTries)}</div>`;
 		if(pErrorMessage == "error-loading-syntaxhang" && 'https:' == document.location.protocol) {
 			string += `<div class='rcm-error'>${i18n("error-loading-http")}</div>`;
 		}
@@ -613,7 +613,7 @@ export default class RCMManager
 		clearTimeout(this.loadErrorTimeoutID); this.loadErrorTimeoutID = 0;
 		
 		const errorCont = $("<div>").appendTo($(this.statusNode).find(".rcm-status-alerts-cont"));
-		errorCont.html(`<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${pWikiData.servername}</span>]`, pTries)}</div>`);
+		errorCont.html(`<div class='rcm-error'>${i18n(pErrorMessage, `[<span class='errored-wiki'>${mw.html.escape(pWikiData.servername)}</span>]`, pTries)}</div>`);
 		
 		this.addRefreshButtonTo(errorCont[0]);
 		errorCont.append(" ");
