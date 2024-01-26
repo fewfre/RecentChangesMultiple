@@ -225,7 +225,7 @@ export default class RCMManager
 			let tMessage:I18nKey = pFailStatus==null ? "error-loading-syntaxhang" : "error-loading-connection";
 			pHandleErrorCallback(pWikiData, pTries, pID, tMessage, RCMManager.LOADING_ERROR_RETRY_NUM_INC);
 		} else {
-			this.statusNode.querySelector(".errored-wiki")!.innerHTML += ", "+pWikiData.servername;
+			this.statusNode.querySelector(".errored-wiki")!.innerHTML += ", "+mw.html.escape(pWikiData.servername);
 		}
 	}
 	
@@ -293,7 +293,7 @@ export default class RCMManager
 						break;
 					}
 					case "unknown": {
-						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${mw.html.escape(wikiData.servername)}</div>${JSON.stringify(info.error)}</div>`;
 						throw "Wiki returned error";
 						break;
 					}
@@ -508,7 +508,7 @@ export default class RCMManager
 						break;
 					}
 					case "unknown": {
-						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${mw.html.escape(wikiData.servername)}</div>${JSON.stringify(info.error)}</div>`;
 						throw "Wiki returned error";
 						break;
 					}
@@ -599,7 +599,7 @@ export default class RCMManager
 						break;
 					}
 					case "unknown": {
-						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${wikiData.servername}</div>${JSON.stringify(info.error)}</div>`;
+						this.statusNode.innerHTML = `<div class='rcm-error'><div>ERROR: ${mw.html.escape(wikiData.servername)}</div>${JSON.stringify(info.error)}</div>`;
 						throw "Wiki returned error";
 						break;
 					}
