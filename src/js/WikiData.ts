@@ -178,6 +178,10 @@ export default class WikiData
 		this.htmlName = this.servername.replace(/([\.\/])/g, "-");
 		
 		this.isWikiaWiki = (this.servername.indexOf(".wikia.") > -1) || (this.servername.indexOf(".fandom.") > -1) || (this.servername.indexOf(".gamepedia.") > -1);
+		// be extra strict on what url domains are allowed for security
+		var urlParts = this.servername.split('/')[0].split('.'); // runescape.fandom.com/fr/ === [runescape, fandom, com]
+		var tld = urlParts[urlParts.length-1], dmn = urlParts[urlParts.length-2];
+		this.isWikiaWiki = this.isWikiaWiki && ['wikia', 'fandom', 'gamepedia'].indexOf(dmn) > -1 && tld == 'com';
 		
 		// todo - allow / - consequences?
 		// if(this.servername.indexOf("/") > -1) {
@@ -255,7 +259,7 @@ export default class WikiData
 			this.username = Global.username;
 		}
 		
-		this.scriptpath =  `//${this.servername}${this.scriptdir}`;
+		this.scriptpath = `//${this.servername}${this.scriptdir}`;
 		
 		this.infoID = "wiki-"+this.htmlName;
 		this.rcClass = "rc-entry-"+this.htmlName;

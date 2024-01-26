@@ -20,6 +20,7 @@ type I18nDevKeys =
 | "error-loading-http"
 | "error-loading-connection"
 | "error-trymoretimes"
+| "error-external-wiki"
 
 | "status-loading"
 | "status-discussions-loading"

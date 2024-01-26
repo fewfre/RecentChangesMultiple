@@ -81,6 +81,8 @@ export default class RCMManager
 	lastLoadDateTime			: Date|null; // The last time everything was loaded. This is also updated if window regains focus.
 	lastLoadDateTimeActual		: Date|null; // Even if lastLoadDateTime hasn't been updated (due to auto refresh), this always has the actual last loaded date
 	
+	wikisNotAllowedToLoad		: string[]; // just a list to be shown
+	
 	// Constructor
 	constructor(pWrapper:HTMLElement|Element, pModID:string|number) {
 		this.modID			= "rcm"+pModID;
@@ -172,6 +174,13 @@ export default class RCMManager
 		
 		// Wikis for the script to load
 		this.chosenWikis = $(this.resultCont).find(">ul>li").toArray().map((pNode)=>new WikiData(this).initListData(pNode));
+		// For security reasons we no longer allow external wikis
+		const externalWikis = this.chosenWikis.filter(w=>!w.isWikiaWiki);
+		this.chosenWikis = this.chosenWikis.filter(w=>w.isWikiaWiki);
+		if(externalWikis.length > 0) {
+			this.wikisNotAllowedToLoad = externalWikis.map(w=>mw.html.escape(w.servername));
+		}
+		
 		// Remove duplicates
 		this.chosenWikis = Utils.uniq_fast_key(this.chosenWikis, "scriptpath"); //todo - mke sure this now also checks /fr/ and such
 		
@@ -190,6 +199,10 @@ export default class RCMManager
 		* HTML Elements/Nodes
 		***************************/
 		this.optionsNode	= new RCMOptions(this, Utils.newElement("div", { className:"rcm-options" }, this.resultCont));
+		if(this.wikisNotAllowedToLoad) {
+			const errorCont = $("<div>").appendTo(this.resultCont);
+			errorCont.html(`<div class='rcm-error'>${i18n('error-external-wiki', `[${this.wikisNotAllowedToLoad.join(', ')}]`)}</div>`);
+		}
 		this.statusNode		= Utils.newElement("div", { className:"rcm-status" }, this.resultCont);
 		this.wikisNode		= new RCMWikiPanel(this).init(Utils.newElement("div", { className:"rcm-wikis" }, this.resultCont));
 		Global.showUpdateMessage(this.resultCont);

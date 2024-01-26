@@ -9,8 +9,8 @@ export const UNKNOWN_GENDER_TYPE = undefined;
 //###########################################################
 export default class Global
 {
-	static readonly version					: string = "2.16c";
-	static readonly lastVersionDateString	: string = "Oct 4 2021 00:00:00 GMT";
+	static readonly version					: string = "2.17";
+	static readonly lastVersionDateString	: string = "Jan 26 2024 00:00:00 GMT";
 	
 	static readonly config					: any = mw.config.get([
 		"skin",
@@ -219,12 +219,11 @@ export default class Global
 	**************************************/
 	static showUpdateMessage(pMessageCont:HTMLElement) {
 		Global._addUpdateMessage(pMessageCont, {
-			messageID: "rcm-news-V2-14-i18n-rework",
+			messageID: "rcm-news-no-external",
 			messageColor: "gold",
-			endDate: "Sep 28 2020 00:00:00 GMT",
+			endDate: "Feb 16 2024 00:00:00 GMT",
 			message:`
-			Script translation now uses the I18n-js system, and can easily be edited <a href="https://dev.fandom.com/wiki/Special:BlankPage/I18nEdit/RecentChangesMultiple">here</a> (must be logged in)!
-			Adding a new language is simple as well, by visiting the same link.
+			Due to security concerns, external non-fandom wikis can no longer be loaded via this script. Thank you for your understanding.
 			`,
 		});
 	};
