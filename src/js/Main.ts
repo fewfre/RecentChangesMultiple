@@ -101,7 +101,6 @@ class Main
 		
 		// Misc Loading - https://www.mediawiki.org/wiki/ResourceLoader/Modules#mw.loader.load
 		tLoadPromises[tLoadPromises.length] = mw.loader.using([
-			'mediawiki.special.recentchanges', // This does things like allow "fieldset" to collapse in RCMOptions
 			'mediawiki.special.changeslist',
 			'mediawiki.special.changeslist.enhanced',
 			
