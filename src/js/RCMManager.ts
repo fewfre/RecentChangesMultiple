@@ -656,7 +656,7 @@ export default class RCMManager
 		let tNewRC;
 		// Add each entry from the wiki to the list in a sorted order
 		pData.forEach((pRCData) => {
-			const userEdited = pData.user != "" && pData.anon != "";
+			const userEdited = pRCData.user != "" && pRCData.anon != "";
 			if(this._changeShouldBePrunedBasedOnOptions(pRCData.user, userEdited, pWikiData)) { return; }
 			
 			this.itemsToAddTotal++;
