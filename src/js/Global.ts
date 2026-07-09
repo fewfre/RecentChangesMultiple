@@ -21,7 +21,6 @@ export default class Global
 		"wgServer",
 		"wgScriptPath",
 		"wgMonthNames",
-		"wgVersion",
 	]);
 	static userOptions						: any; // Unlike config user data potentially needs to be loaded first.
 	static readonly debug					: boolean = Global.config.debug || mw.util.getParamValue("useuserjs")=="0" || mw.util.getParamValue("safemode")=="1";
